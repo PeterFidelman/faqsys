@@ -1,0 +1,73 @@
+Newsgroups: comp.graphics
+From: mcdonald@aries.scs.uiuc.edu (J. D. McDonald)
+Subject: Re: Raytracing transparent objects.
+Date: Mon, 22 Feb 1993 16:40:25 GMT
+Organization: UIUC SCS
+--------------------------------------
+
+[Another poster asks:]
+
+     The problem:
+
+      \
+       \
+        \     /  <-reflection
+         \   /
+          \ /
+     --------------------
+            \
+             \
+              \  <-refraction
+
+     How much of the incoming ray is reflected, and how much is
+     refracted, according to the angle, the intersecting ray hits the
+     transparent object? I heard for raytracing this is only a
+     constant. (Let's say, 20% are reflected, the rest goes through the
+     transparent object.) But whats the solution to this problem in the
+     real world? Any physicians out there? I assume (and every
+     physics-book says the same), that the portions of the
+     reflected/refracted ray depend on the angle (the smaller the
+     angle, the smaller is the refracted portion, and vice versa), but
+     in *what* way? Linear to the angle? Sinus? Arcussinus?
+     Arcuscosecans hyperbolicus? :)
+
+     Wolfram
+
+For light polarized in the plane of incidence the fraction R reflected is
+
+        2
+     sin (I - I')
+R = ----2------------
+     sin (I + I')
+
+and for that perpendicular to the plane of incidence,
+
+        2
+     tan (I - I')
+R = ----2----------
+     tan (I + I')
+
+where I is angle of incidence and I' angle of refraction.
+
+Of course sin(I') = N sin(I) / N'
+
+For glass N' = 1.523 versus air, here's a table:
+
+                      I (deg) R(%) parallelR(%) perp.
+                        0          4            4
+                        10         4            4
+                        20         4            4
+                        30         7            3
+                        40         9            2
+                        50         12          0.5
+                        60         20          0.5
+                        70         33           7
+                        80         60          25
+                        90        100          100
+
+Ref: Smith, Modern Optical Engineering, McGraw-Hill , pp 167-168 For getting
+the appearance of a complicated scene right, you can't neglect polarization.
+You could do so only if all the angles of incidence are 40 degrees or less,
+or if there were no sequential reflection.
+
+Doug McDonald

@@ -1,0 +1,168 @@
+Hidden Surface Removal
+
+Fifth part of The 3D Coding Blackhole tutorial series
+
+Home at http://3Dblackhole.base.org
+
+NOTE: Some part of functions and some members of structures are not
+explained here, but we'll discuss them in other tutorials of the series.
+They're usually displayed in totality for the sake of similarity between
+the different tutorials and with the complete 3D engine.
+---------------------------------------------------------------------------
+
+   * The Dilemna
+   * Backfaces removal
+   * Z-Buffering
+
+The Dilemna
+
+The heart of a 3D engine is its HSR system... So you must think twice about
+which one to chose... I'll point right now the pros and cons of the most
+popular ones:
+
+Painter's algorithm
+
+        o Required time increase faster
+        o Hard to implement (especially overlapping tests)
+        o Unable to sort correctly complex scenes
+
+BinarySpacePartitioning trees
+
+        o Extremely fast
+        o Hard to implement
+        o Can only sort static polygons
+        o Need stored trees
+
+Z-Buffering
+
+        o Required time increasing linearly with the number of polygons
+        o Faster than the Painter's above 5000 polygons
+        o Able to render any scene perfectly, even logically incorrect ones
+        o Extremely easy to implement
+        o Straightforward
+        o Requires a lot of memory
+        o Usually slow
+
+My own choice is Z-Buffering. I will only talk about it, so if you want
+some reference for the other algorithms, take a look at my list in the last
+chapters.
+
+Backfaces removal
+
+In addition to these methods, we can easily remove back facing polygons to
+save a lot of computing time. We will start by defining some useful
+function to compute our plane and normals and all that stuff. Later, we
+will add texture and shading computaions to this function. These numbers
+will be kept in global variables:
+
+float A,B,C,D;
+BOOL backface;
+
+And our function's beginning will look like this. We start by extracting
+every coordinate in float variables:
+
+void ENG3D_SetPlane(Polygon_t *Polygon,Object_t *Object)
+{
+   float x1=Vert(0).Aligned.x;
+   float x2=Vert(1).Aligned.x;
+   float x3=Vert(2).Aligned.x;
+   float y1=Vert(0).Aligned.y;
+   float y2=Vert(1).Aligned.y;
+   float y3=Vert(2).Aligned.y;
+   float z1=Vert(0).Aligned.z;
+   float z2=Vert(1).Aligned.z;
+   float z3=Vert(2).Aligned.z;
+
+Then we compute every member of the plane equation:
+
+   A=y1*(z2-z3)+y2*(z3-z1)+y3*(z1-z2);
+   B=z1*(x2-x3)+z2*(x3-x1)+z3*(x1-x2);
+   C=x1*(y2-y3)+x2*(y3-y1)+x3*(y1-y2);
+   D=-x1*(y2*z3-y3*z2)-x2*(y3*z1-y1*z3)-x3*(y1*z2-y2*z1);
+
+Then we check if it's facing us or not:
+
+   backface=D<0;
+}
+
+Z-Buffering
+
+Z-Buffering consists in keeping the z coordinate of every point we put on
+the screen in a huge array, and when we come to put another at the same
+place, we check if it is closer to the viewer or if it behind. We only draw
+it in the first case. As you can see, the only thing we have to do is to
+compute the z value for every point. But first of all, we declare a global
+array and allocate space for it (MEMORYSIZE is the product of the vertical
+and horizontal resolutions):
+
+typedef long ZBUFTYPE;
+ZBUFTYPE *zbuffer;
+zbuffer=(ZBUFTYPE *)malloc(sizeof(ZBUFTYPE)*MEMORYSIZE);
+
+We use a long as the z-buffer type, because we're gonna use fixed points.
+And you must not forget to set every z coordinate to the farthest value
+possible:
+
+   int c;
+   for(c=0; c<MEMORYSIZE; c++)
+      zbuffer[c]=-32767;
+
+And now come more maths. How do you find the z coordinate? We only have
+them for the defined vertices, not for EVERY point of the polygon.
+Actually, what you need is to do is the inverse of projection. And our
+projection equations were:
+                               u = f · x / z
+and
+                               v = f · y / z
+where u is the x coordinate on the screen, minus XOrigin, and v is the y
+coordinate on the screen, minus YOrigin. The plane equation is:
+                            Ax + By + Cz + D = 0
+And once we've isolated x and y we get:
+                                 x = uz / f
+and
+                                 y = vz / f
+If we replace the variables in the plane equation, it becomes:
+                      A(uz / f) + B(vz / f) + Cz = -D
+and we can extract the z component:
+                      z(A(u / f) + B(v / f) + C) = -D
+So to find what we're looking for:
+                     z = -D / (A(u / f) + B(v / f) + C)
+But since we would need to execute all this divides for each pixel, it's
+much faster to compute the 1/z value instead:
+                   1 / z = -(A(u / f) + B(v / f) +C) / D
+                 1 / z = -(A / (fD))u - (B / (fD))v - C / D
+So at the beginning of a run of pixels:
+                1 / z = -(A / (fD))u1 - (B / (fD))v - C / D
+And for each pixels, it increments of:
+                                -(A / (fD))
+What will the code look like?
+
+   #define FIXMUL (1<<20)
+
+   int offset=y*MODEINFO.XResolution+x1;
+   int i=x1-Origin.x, j=y-Origin.y;
+   float z_,dz_;
+   ZBUFTYPE z,dz;
+
+   //Initialize 1/z value (z: 1/z)
+   dz_=((A/(float)Focal_Distance)/-D);
+   z_=((dz_*i)+( (B*j/(float)Focal_Distance) + C) /-D);
+   dz=dz_*FIXMUL;
+   z=z_*FIXMUL;
+
+Then for each pixel, we simply do a:
+
+   if(z>ZBuffer[offset])
+   {
+      zbuffer[offset]=z;
+      SCREENBUFFER[offset]=color;
+   }
+   z+=dz;
+
+And we got it!
+---------------------------------------------------------------------------
+E-mail me at jerstlouis@videotron.ca
+Back to Jerome St-Louis's Homepage
+Back to The 3D Coding BlackHole
+
+                                                  Last Updated: 08-24-1997

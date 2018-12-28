@@ -1,0 +1,160 @@
+[Image]  Quake Hidden Surface Removal [Image]
+
+This is the third of the references provided by Derek Nickel, another
+article published in the Dr. Dobbs Sourcebook:
+
+   Michael Abrash, "Quake's Hidden-Surface Removal"
+   In: Dr. Dobb's Sourcebook, May/June 1996, #257
+       Ramblings In Real Time, pp. 48-52
+
+In this article Michael Abrash discusses the Hidden Surface Removal (HSR)
+that still has to follow the Visible Surface Determination he (VSD)
+described in an earlier arcticle.
+
+Moving objects and a z-buffer
+
+He starts with some remarks on the problems of handling moving objects
+(billboards/sprites, BSP models like doors, items, polygon models) with a
+BSP, and the solution revealed in his CGDC talk: using a z-buffer. The BSP
+provides all polygons of the static world in a perfectly sorted order. This
+could be used to z-fill the z-buffer (saving a separate z-buffer clear)
+without read/compare. He states that the performance impact for this pass
+is about 10 percent. Note that this pass has to be done separately from
+actually texture mapping the polygons in question (which involves a
+z-calculation per pixel, too, for perspective correct texture mapping), due
+to the lack of registers with i586 processors.
+
+If I understood correctly, the z-buffer is actually used for billboards
+(sprites) and polygon models (whose triangles potentially could intersect)
+and special effects introduced later (once the z-buffer was already in)
+like particles. BSP models are handled diffently (see below). The
+z-read/compare/write performance impact is reported to vary a lot,
+averaging to about 20 percent.
+
+Finally, the memory footprint is about 128K for 320x200. According to this,
+the same 16bit z-buffer depth uses 1.3MB with the 960x720 modes I am
+occasionally running with Linux/XFree86. This sounds like much, but
+according to Michael Abrash, the game requires 8MB anyway, and the surface
+cache is likely to use a lot more if only available.
+
+Level performance and Sorted Spans
+
+The back-to-front approach to render the static world which John Carmack
+tried with the PVS did not provide level performance because of varying
+overdraw. I guess back-to-front rendering with painters algorithm is not a
+useful approach for scalable, densely occluded environments anyway. Michael
+Abrash states that they considered a beam-tree like approach (I wonder
+whether Weiler-Atherton clipping would be a good idea), and discarded it,
+because they already tried it for Visible Surface Determination, and it
+suffered from overhead and varying performance.
+
+In consequence, they decided to solve the HSR task on span-level instead of
+polygon level. He sketches the bsic idea of sorted spans, and discusses two
+alternatives: edge sorting or span sorting. I do not know much about the
+latter, and will not attempt to summarize his explanation of the former - a
+good description of Active Edges based rendering can be found in Foley, van
+Dam et.al, in the VSD/Scan-Line section. Btw., Chris Laurels "wt" and the
+scanline-based renderer we wrote used a modified edge-sorted rasterizer -
+with DOOM-style restrictions it is a good idea to rotate by 90 degrees, to
+draw wall spans in the most efficient way.
+
+Following the overview of both approaches, he summarizes that there does
+not seem to be a conclusive answer which technique to prefer. For Quake,
+they decided to use an edge-sorted rasterizer with some advantages:
+
+   * horizontal coherence allowing for quick sorting
+   * edges can be shared between adjacent polygons
+   * concave polygons are possible
+
+The details of the exge-sorted rasterizer will be described in the
+July/August issue of Dr. Dobbs Sourcebook. The source has been available
+since march.
+
+Some Basics of Edge Sorting
+
+The remainder of the article covers some details. Abrash explains that
+using 1/z instead of z as a sorting key has various advantages:
+
+   * 1/z is linear in screen space
+   * increasing resolution with decreasing distance
+
+He refers the reader to Chris Hecker's much recommended series on Texture
+Mapping in the Game Developer's Magazine with respect to the behaviour of z
+gradients in various spaces. The alternative he goes into is using the
+order given by the BSP traversal to assign keys. The did this in fact with
+Quake, but were using 1/z keys at the time the article was written. Abrash
+comments that the decision might well happen the last days before they
+ship. The disadvantage of BSP-based keys is that moving BSP objects have to
+be split by world BSP planes, which increases the number of polygons. Using
+1/z sorting, it is not necessary to split BSP model polygins. In addition,
+the 1/z key solves merging the BSP model drawing order in the world BSP
+drawing order (which ideally breaks down to merging two already sorted
+lists, methinks).
+
+He finishes by explaining how to obtain an 1/z value and an arbitrary point
+on the polygon in an efficient way, using a plane equation in terms of
+viewspace z and screen space x,y, and gives the approximate costs on a
+Pentium as about six cycles.
+
+Handling BSP Models
+
+As stated above, the BSP models are not rendered using a z-buffer
+read/compare. BSP objects therefore provide overdraw reduction - doors,
+most notably, block any surface behind them in the edge-sorted rasterizer.
+In consequence, BSP models have to be clipped against world polygons, to
+avoid interpenetrations (I wonder if a sufficiently large bounding box for
+wall-object collision detection is not sufficient). This is not necessary
+for polygon models and billboards and particles, as z-compares account for
+intersections. This is obvious from passable lava/water surfaces.
+
+Sources
+
+The README says: a Z-sorted spans demo program, consisting of a Visual C++
+Makefile, resource and include file and, more important, the demo itself:
+zsort.c. The download archive of the source that will be discussed in the
+next issue has been available for quite some time already, and there is a
+local copy with permission. Remarks by Michael Abrash:
+
+   Note: In this implementation, polygon faces must not be
+   interpenetrating. Also, correct sorting is not guaranteed
+   if two polygonal objects butt up against each other. In other
+   words, each polygonal object must be made of a continuous,
+   non-self-intersecting skin, and polygonal objects must not
+   interpenetrate or touch in order for proper sorting to result.
+   More complex, slower sorting is required to make those cases
+   work reliably.
+
+   Note: polygon processing could be considerably more efficient
+   if polygons shared common edges and edges shared common vertices.
+   Also, indirection to vertices could be used to avoid having to
+   copy all the vertices during every clip test. Outcode-type
+   testing could be used to determine completely clipped or
+   unclipped polygons ahead of time, avoiding the need to clip and
+   copy entirely for such polygons. Outcode-type tests work best in
+   viewspace, with the frustum normalized so that the field of view
+   is 90 degrees, so simple compares, rather than dot products, can
+   be used to categorize points with respect to the frustum.
+
+References
+
+   * James D. Foley, Andries van Dam, Steven K. Feiner, John F. Hughes
+     "Computer Graphics - Principles and Practice",
+     Addison-Wesley, 1990
+
+   * David Rogers
+     "Procedural Elements of Computer Graphics"
+     McGraw-Hill, 1985
+
+   * Chris Hecker
+     "Under the Hood/Behind the Screen: Perspective Texture Mapping",
+     in several issues of the Game Developer's Magazine,
+     from April/May 1995 to April/May 1996.
+
+---------------------------------------------------------------------------
+[home]  [qdev] [qdev]  [dread] [rsc]  [qdev] [doom]  [license] [web]
+
+home dEr95 r3D dread netrsc quake doom legal web
+---------------------------------------------------------------------------
+Author: B., email to bernd@nero.uni-bonn.de, with public PGP key
+Copyright (©) 1995, 1996 by author. All rights reserved.
+Source: $Id: ddjzsort.html,v 1.2 1996/06/19 23:50:29 b1 Exp $

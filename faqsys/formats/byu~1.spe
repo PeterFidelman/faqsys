@@ -1,0 +1,113 @@
+Ok this is the BYU format (well at least this is what I think is the
+	BYU format.)
+
+Line 1 has the number of parts, number of vertices, number of polygons and
+	number of elements in the connectivity array.
+
+Line 2 has the start polygon number and end polygon number for part 1
+Line 3 has the start polygon number and end polygon number for part 2
+.
+.
+.
+
+Line 18 has the x y z coordinates for vertex 1 and vertex 2
+Line 19 has the x y z coordinates for vertex 3 and vertex 4
+.
+.
+.
+Line 12715 has the connectivity array for the first polygon
+	example:
+		1 2 3 -4
+	vertex 1 to vertex 2 to vertex 3 to vertex 4 and back to vertex 1
+
+	a negative number show the last vertex of a polygon
+
+-------------------------------------------------------------------------
+/* source to read in BYU format
+	written by Kalvin Quinkert kalvin@uswest.com
+	sometime between January 1992 and May 1992
+*/
+#include <stdio.h>
+#include <stdlib.h>
+
+int     np,nj,npt,ncon; /* number of parts,vertices,polygons,connectivity*/
+int     npl[3][MAX_PARTS];/* start and end polygons for each part*/
+float   xpp[MAX_VERTICES];
+float   ypp[MAX_VERTICES];
+float   zpp[MAX_VERTICES];
+int     ivq[MAX_VERTICES];/*connectivity array*/
+
+
+rwmovi(filename)
+    char *filename;
+{
+    readasc(filename);
+}
+
+readasc(filename)
+    char *filename;
+{
+    FILE *fp;
+    int  i;
+
+    if(np>0)return 1;
+    printf("opening %s\n",filename);
+    if(!(fp=fopen(filename,"r")))
+    {
+        fprintf(stderr,"cannot open %s\n",filename);
+        exit(1);
+    }
+
+    fscanf(fp,"%d%d%d%d\n",&np,&nj,&npt,&ncon);
+    for(i=0;i<np;i++)
+    {
+        fscanf(fp,"%d %d\n",&npl[1][i],&npl[2][i]);
+    }
+    for(i=0;i<nj;i+=2)
+    {
+    printf("vertex %d\n",i);
+        if(i+1<nj)
+        {
+            fscanf(fp,"%f %f %f %f %f %f\n",&xpp[i],&ypp[i],&zpp[i],
+                                        &xpp[i+1],&ypp[i+1],&zpp[i+1]);
+        }
+        else
+        {
+            fscanf(fp,"%f %f %f\n",&xpp[i],&ypp[i],&zpp[i]);
+        }
+    }
+    for(i=0;i<ncon;i++)
+    {
+        printf("connectivity %d\n",i);
+        ivq[i] = readint(fp);
+    }
+}
+
+int readint(fp)
+    FILE *fp;
+{
+    int value=0;
+    int sign=1;
+    char ch;
+
+    while(!feof(fp))
+    {
+        while(1)
+        {   ch=fgetc(fp);
+            if((ch=='+')||(ch=='-')||(ch>='0'&&ch<='9')) break;
+        }
+        while(1)
+        {
+            if(ch=='+')
+                sign=1;
+            else if(ch=='-')
+                sign=-1;
+            else if(ch>='0'&&ch<='9')
+                value = (value*10)+(ch-'0');
+                return(value);
+            }
+            ch=fgetc(fp);
+        }
+    }
+}
+

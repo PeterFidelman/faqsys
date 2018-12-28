@@ -1,0 +1,80 @@
+From pdxgate!ogicse!uwm.edu!spool.mu.edu!agate!doc.ic.ac.uk!cc.ic.ac.uk!!tparso Sun Feb  7 15:27:34 PST 1993
+
+In article <1993Feb1.125118.1427@uoft02.utoledo.edu> prungta@.cse.utoledo.edu writes:
+>Keywords: 
+>
+>Dear freinds,
+>  this seems to be a simple problem, but I am having a hard time solving
+>it. I have to map points inside a four sided polygon to a square. the
+>quadilateral can be of any shape. If anyone has any ideas let me know.
+>
+>bye
+>
+>Pankaj Rungta
+>email:parungta@jupiter.cse.edu
+>.
+>
+Try this, mate...
+
+/************************************************************************/
+void BillinearMapping(
+  PosVector *mncoords, 
+  PosVector *xycoords, 
+  PosVector *corners)
+{
+  /* Purpose: Transform a point in m,n-space, (contained in the PosVector
+   * that 'coords' points to), lying within a square of side 2 centred on 
+   * the origin, into a point in x,y-space lying within the quadrilateral 
+   * defined by the four corner points contained within the array that 
+   * 'corners' points to. The final position is placed back into the 
+   * PosVector that 'coords' points to.                                 */
+
+  /* Definitions: Local Variables...                                    */
+  double a0, a1, a2, a3;
+  double w0, w1, w2, w3;
+
+  /* Calculate coefficients of the final expression...                  */
+  a0 = (1+mncoords->x);
+  a1 = (1-mncoords->x);
+  a2 = (1+mncoords->y); 
+  a3 = (1-mncoords->y); 
+
+  w0 = a1*a3; 
+  w1 = a0*a3; 
+  w2 = a1*a2; 
+  w3 = a0*a2;
+
+  /* The final expression...                                            */
+  xycoords->x = 0.25 *
+	 (w0*corners[0].x + 
+ 	  w1*corners[1].x + 
+	  w2*corners[2].x + 
+	  w3*corners[3].x);
+  xycoords->y = 0.25 *
+	 (w0*corners[0].y + 
+	  w1*corners[1].y + 
+	  w2*corners[2].y + 
+	  w3*corners[3].y);
+}
+
+/****************************************************************************/
+
+Ohh, and you'll need this too...
+
+typedef struct {
+  double x,y;
+} PosVector;
+
+Hope that helps!
+
+
+                             Tim Parsons
+ .               +           _________________________________________________
+       .                .    Department of Aeronautics
+ .               .    .      Imperial College of Science,Technology & Medicine
+             \o              Prince Consort Road, London SW7 2AY, U.K.
+   .    +  __/\    .         Phone: 44i-71-589-5111 x4036  Fax: 44-71-584-8120
+             \               e-mail: t.parsons@ae.imperial.ac.uk
+            .       +        _________________________________________________
+  .       .                  "Only a person who risks is free."
+

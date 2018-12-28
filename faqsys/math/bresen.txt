@@ -1,0 +1,37 @@
+Bresenham's Line Drawing Algorithm
+
+Presented by J.E. Bresenham in 1965 (IBM Systems journal 4, No. 1 pg 25-30
+
+Drawing a line in a 2D plane requires four pieces of information, two
+cooridinate pairs (x1,y1) and (x2,y2), the endpoints. We could calculate
+the slope of the line from these two endpoints as
+
+                  y2-y1
+             m = -------
+                  x2-x1
+
+and then use the formula
+
+              y = mx + b
+
+to plot points on the x,y plane. The problem with this is it involves
+floating point arithmetic and division. Even thought today's newer CPU's
+may have a floating point coprocessor, using integer (whole numbers)
+arithmetic is still faster. We can also avoid the slow process of dividing.
+
+The Bresenham's Algorithm uses a method known as "incremental division".
+For instance, the number 45 can be divided by 3 by subtracting 3 until what
+you have left is less than 3. The number of times you subtracted is 45/3.
+What you have left is the remainder.
+
+As it turns out, the reason you need division in drawing lines is to
+determing the rise vs run or x vs y of a line. That is, how far in the x
+direction should I draw until the y coordinate should change?. We don't
+need to know the slope at the beginning, but just how many x's in a number
+of y's or vice-versa.
+One point before we continue: The Major axis is the one in which the line
+travels furthest, and the other is the Minor axis, e.g. for the line
+(1,1)(7,9), y is the Major axis.
+Bresenham's algorithm does this: Begin drawing at the starting point. Each
+time through the loop, move one pixel in the major axis toward the endpoint
+and check to see if it is necessary to move one pixel in the minor axis.

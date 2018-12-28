@@ -1,0 +1,199 @@
+From - Mon Aug 24 12:52:10 1998
+Path: ifi.uio.no!news-feed.ifi.uio.no!sol.no!news-stkh.gip.net!news-peer.gip.net!news.gsl.net!gip.net!logbridge.uoregon.edu!pln-w!spln!extra.newsguy.com!newsp.newsguy.com!enews2
+From: "Moses O. McKnight" <moses@texoma.net>
+Newsgroups: comp.graphics.algorithms
+Subject: Re: I need a flood fill algorithm
+Date: Thu, 13 Aug 1998 08:44:30 -0500
+Organization: http://extra.newsguy.com
+Lines: 180
+Message-ID: <35D2EDBE.F4850318@texoma.net>
+References: <6qt6s8$gkm@sjx-ixn3.ix.netcom.com>
+NNTP-Posting-Host: p-608.newsdawg.com
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-Mailer: Mozilla 4.5b1 [en] (Win95; I)
+X-Accept-Language: en
+To: hobyrne@ix.netcom.com
+Xref: ifi.uio.no comp.graphics.algorithms:73685
+
+Hugh O'Byrne wrote:
+> 
+>   I'm looking for a flood fill algorithm.  I'm using C++, but a pseudocode
+> algorithm would be fine too.
+> 
+>   Actually, I want a modified flood fill algorithm.  A point will be bounded
+> by grey or white lines, or the border of the screen.  I want to fill the
+> enclosed area to red, and I also want to change the grey pixels adjacent to
+> the filled area to red (i.e. a grey pixel sharing a side with a filled pixel
+> is to be turned red - a grey pixel sharing only a corner with a filled pixel
+> is to remain grey - a grey pixel that is adjacent to a grey pixel that
+> turned red, but is itself not adjacent to a filled pixel is to remain grey).
+> One way to accomplish this is to fill the area as described, turning grey
+> pixels adjacent to the filled area (say) dark red instead of red, then when
+> the fill is complete, turn dark red pixels red.  I think if I have a generic
+> flood fill algorithm, I can make the modification myself, but if anyone
+> wants to give it a try, be my guest!
+
+
+Hello Hugh,
+
+   After trying four different algorithms to which I had sample code, I finally
+found the code below which is fast and works on regions that are quite complex.
+It has been modified for selecting a fuzzy region (like Photoshop's Magic Wand
+tool), but it is basically the same.  The main difference between this code and
+a normal flood fill is that it does the fill into a separate image and it compares
+each pixel with a range of colors instead of a single one (a tolerance of 0 will
+do a single color).  I believe that the original was made to work with bounding
+colors instead of the seed point color.  All you need to do is change it so it
+checks the current pixel to see if it equals the pre-defined bounding color.
+
+Hope this helps.
+
+Moses McKnight
+
+
+void CBmp::GetFuzzyRegionMask(int x, int y, CBmp* pBmp, int tolerance)
+{
+
+#define BUF_SIZE 10000
+
+	static struct { int yy, xl, xr, dy; } buffer[BUF_SIZE];
+	int dy, sp=0, start, x1, x2;
+	RGBAPIXEL c;
+	RGBAPIXEL seed_color=GetPixel(x,y);
+	RGBAPIXEL fill_color = 0x0;
+
+	// Create mask bitmap and set all pixels to white.
+	pBmp->Create(m_Width, m_Height, 32, FALSE);
+	for (int h = 0; h < m_Height; h++)
+		for (int w = 0; w < m_Width; w++)
+			pBmp->SetPixel(w, h, 0xFFFFFF);
+
+	buffer[sp].yy   = y;
+	buffer[sp].xl   = x; 
+	buffer[sp].xr   = x;
+	buffer[sp++].dy = 1;
+	buffer[sp].yy   = y+1;
+	buffer[sp].xl   = x;
+	buffer[sp].xr   = x;
+	buffer[sp++].dy = -1;
+	while(sp>0)
+	{      
+		//// Check next lower item on stack
+
+		dy = buffer[--sp].dy;
+		if(sp<0 || sp>BUF_SIZE-1) break;
+		y = buffer[sp].yy + dy;
+		x1 = buffer[sp].xl;
+		x2 = buffer[sp].xr;
+		x = x1;
+
+		//// Fill left until pixel is not within tolerance or y is off screen or it hits
+		//// a color already filled
+
+		if(y >= 0 && y < m_Height)
+		{
+			c = pBmp->GetPixel(x,y);
+			while(x >= 0 && x < m_Width &&
+					true == is_pixel_within_tolerance(x, y, seed_color, tolerance) &&
+					c != fill_color)
+			{    
+				pBmp->SetPixel(x--, y, fill_color);
+				c = pBmp->GetPixel(x,y);
+			}
+		}
+
+		if(y<0)
+			continue;//break; 
+		if(y >= m_Height) dy=-dy; 
+
+		if(x >= x1) goto enter;
+		start = x + 1;
+
+		//// Check next higher item on stack
+
+		if(start < x1)
+		{
+			buffer[sp].yy   = y;
+			buffer[sp].xl   = start;
+			buffer[sp].xr   = x1 - 1;
+			buffer[sp++].dy = -dy;
+			if(sp<0 || sp>BUF_SIZE-1) break;
+		}
+		x = x1 + 1;
+		do        
+		{  
+			//// Fill right until pixel is not within tolerance or the pixel has already been filled
+
+			if(y >=0 && y < m_Height)
+			{
+				c = pBmp->GetPixel(x,y);
+				while(x >= 0 && x < m_Width &&
+						true == is_pixel_within_tolerance(x, y, seed_color, tolerance) &&
+						c != fill_color)
+				{
+					pBmp->SetPixel(x++, y, fill_color);
+					c = pBmp->GetPixel(x,y);
+				}
+			}
+			buffer[sp].yy = y;
+			buffer[sp].xl = start;
+			buffer[sp].xr = x - 1;
+			buffer[sp++].dy = dy;
+			if(sp<0 || sp>BUF_SIZE-1) break;
+			if (x > (x2 + 1))
+			{
+				buffer[sp].yy = y;
+				buffer[sp].xl = x2 + 1;
+				buffer[sp].xr = x - 1;
+				buffer[sp++].dy = -dy;
+				if(sp<0 || sp>BUF_SIZE-1) break;
+			}
+enter:   
+			//// Read right until it hits a pixel within tolerance or a non-filled space
+           
+			x++;
+			if(y >= 0 && y < m_Height)
+			{
+				c = pBmp->GetPixel(x,y);
+				if (x2 >= m_Width) x2 = m_Width-1;
+				while( x <= x2 && 
+						(false == is_pixel_within_tolerance(x, y, seed_color, tolerance) ||
+						c == fill_color) )
+				{
+					x++;
+					c = pBmp->GetPixel(x,y);
+				}
+			}
+			start = x;
+		}
+		while(x <= x2);
+		if(sp>=BUF_SIZE-1) break;
+	}
+	int num = sp;
+}
+
+
+bool CMyBmp::is_pixel_within_tolerance(int x, int y, RGBAPIXEL seed_color, int tolerance)
+{
+	if (x >= m_Width || y >= m_Height)
+		return false;
+	RGBAPIXEL color = GetPixel(x, y);
+	int diff=0, max=0, b;
+	unsigned char *col1, *col2;
+	col1 = (unsigned char*)&color; col2 = (unsigned char*)&seed_color;
+
+	for (b = 0; b < 3; b++)
+	{
+		diff = col1[b] - col2[b];
+		diff = abs (diff);
+		if (diff > max)
+			max = diff;
+	}
+
+	if (max > tolerance)
+		return false;
+	else
+		return true;
+}

@@ -1,0 +1,354 @@
+              S-Buffering; The Latest Fad In Software Rendering
+
+----------------------------------------------------------------------------
+
+Introduction
+
+S-Buffering is pretty much one of the latest crazes in software rendering,
+especially since the release of Quake. (Update: I'm not sure if Quake uses
+S-Buffers exactly, or if its a variation on Edge Tables. I'll try and find
+out ... ) But what is it? It was originally described in a FAQ by Paul
+Nettle. However, I have seen literature being referenced going back much
+further than that. In simple, S-Buffering is used to reduce overdraw, by
+sorting and splitting spans. Hence Span-Buffering. Its often used where
+there is a large overhead when writing a pixel; for example perspective
+texture mapping, or true phong shading. It works best with systems dealing
+with a small-medium polygon load, and a large per-pixel overhead, with large
+polygons.
+
+Fundamental Concepts
+
+Span buffering is built about the concept of a span. But what is a span? A
+span is simply a horizontal row of pixels, all on the same scanline (Y),
+with a start, an end, and some fill information:
+
+X                               <- Pixel
+XXXXXXX                         <- Span
+AAAAABBCCCCCDDDEE               <- Row of screen built from multiple spans
+
+When rasterising our polygons, we convert them to spans, and insert them to
+some data structure. Commonly, this data structure is a linked list, which,
+has its benefits. However, I feel that a better structure for this is a
+binary tree (greets Jazzvibe :). You'll soon realize why later on.
+
+Also we shall present spans to the renderer in front->back order. This means
+that we must clip new spans against existing spans; so that the new spans
+only fill "new" portions of screen. For example:
+
+C = current span
+N = new span
+
+        CCCCCCC
+            NNNNNNN
+
+If we were to insert that span, we would first clip its left edge against
+the "current" span:
+
+        CCCCCCC
+               NNNN
+
+Then we would insert it to the right branch of "current"s binary tree; or,
+if a branch already exists, we would then traverse that sub-branch.
+
+This presents us with the problem of working out how to handle each case and
+sub-case of span-overlap; its quite an extensive problem, and is the key to
+obtaining fast performance from an s-buffer.
+
+Span Overlap
+
+There are a number of cases that can occur when inserting spans; however a
+lot of them are similar, and so we can build an if() tree to handle them.
+
+C = Current
+N = New
+
+1)      CCCCCCCCCCC
+         NNNNNNNNN
+
+2)          CCCC
+        NNNNNNNNNNN
+
+3)      CCCCC
+             NNNNN
+
+4)           CCCCC
+        NNNNN
+
+5)      CCCCCC
+           NNNNNNN
+
+6)          CCCCCC
+        NNNNNNN
+
+7)       (no span)
+        NNNNNNNNNNN
+
+Now, most of these are similar, and easy to solve. Lets see what we need to
+do for each case:
+
+  1. Reject the new span, totally obscured. Trivial reject
+  2. Break the new span into two pieces, and recur with them, or build new
+     tree branches with them
+  3. Either insert the new span to the right tree branch, or continue
+     processing with curr->right tree branch. Trivial accept/loop cycle
+  4. Either insert the new span to the left tree branch, or continue
+     processing with curr->left tree branch. Trivial accept/loop cycle
+  5. Trim off the portion of span thats obscured, and then perform (3) with
+     the resulting piece. Note you will have to adjust texture pos etc
+  6. Trim off the portion to the right, and then perform (4) with the
+     resulting pieces.
+  7. Simply use this span to root the tree
+
+Data Structures
+
+Now, you may be wondering what kind of data structures we will need for
+this. Well, two things are needed; a table of span pointers for every
+scanline, and a span structure. Something like:
+
+Structure Span
+        Integer x1
+        Integer x2
+        Integer Width
+        Colour colour
+        Texture Pointer texture
+        Integer u
+        Integer v
+        Integer du
+        Integer dv
+        Span Pointer left
+        Span Pointer right
+End Structure
+
+Span Pointer spantable[YResolution]
+
+Initially, spantable will all be set to NULL. Also, as each new span is
+allocated/freed, its left and right members will also be set to NULL. These
+pointers will then be updated as we go. When we are complete, we will have a
+binary tree, storing that scanline. And, with this tree, we can traverse it,
+to give us scanline order - more on that later.
+
+Now, some notes on inserting spans. Where above I said "insert" the span, I
+meant insert it to the part of the tree, so if you have a span that is
+totally to the right of the current span, you would do something like:
+
+If Span.x1 > Current.x2 Then (totally to the right)
+        If Current.right == NULL Then
+                Current.right = Span
+                Return
+        Else
+                Current = Current.right
+                Next Loop
+        End If
+End If
+
+A similar piece of code would be used for the left. Note that in the above
+cases, span overlap cases that are not trivial accept/reject will be reduced
+to that by the use of clipping. Then it will simply become a case of
+inserting the span, or traversing the corresponding branch.
+
+Pseudo Code For Insert Routine
+
+The insert routine is perhaps the most critical routine in an S-Buffer
+engine; every span must pass through it, both its coding and design must
+provide for efficient operation. If the routine is slow, then inserting the
+span will take longer than the overdraw would have cost. Likewise if a very
+large number of polygons are processed, the benefits will disappear, as
+insert time rises sharply with the number of polygons, and this growth is
+only compensated for by the level of overdraw; too little overdraw, and
+it'll work *slower* than painters. With plenty of overdraw, it'll give speed
+gains.
+
+A general "rule of thumb" for working out the efficiency is quite simply;
+the efficiency is the average time taken to insert a span, multiplied by the
+number of spans, divided by the level of overdraw. Its not very accurate,
+but it gives a crude estimate of the efficiency.
+
+This should insert a span to the span tree. Note it doesn't handle case (7),
+that is simple enough to do.
+
+Subroute InsertSpan(Span Pointer span, Span Pointer current)
+        While((current != NULL) And (span != NULL))
+                If span.x1 > current.x2 Then
+                        If current.right == NULL Then
+                                current.right = span
+                                Return
+                        Else
+                                current = current.right
+                                Next While
+                        End If
+                Else If span.x2 < current.x1 Then
+                        If current.left == NULL Then
+                                current.left = span
+                                Return
+                        Else
+                                current = current.left
+                                Next While
+                Else If span.x1 >= current.x1 Then
+                        If span.x2 <= current.x2 Then
+                                Free(span)
+                                Return
+                        End If
+
+                        If span.x1 <= current.x2 Then
+                                (you should adjust u, v here)
+                                span.x1 = current.x2
+                                span.width = span.x2 - span.x1
+
+                                If current.right == NULL Then
+                                        current.right = span
+                                        Return
+                                Else
+                                        current = current.right
+                                        Next While
+                                End If
+                        End If
+                Else If span.x1 < current.x1 Then
+                        If span.x2 > current.x2 Then
+                                newspan = NewCopyOfSpan(span)
+
+                                span.x2 = current.x1
+                                span.width = span.x2 - span.x1
+
+                                newspan.x1 = current.x2
+                                newspan.width = newspan.x2 - newspan.x1
+
+                                If current.left == NULL Then
+                                        current.left = span
+                                        span = NULL
+                                Else
+                                        InsertSpan(span, current.left)
+                                End If
+
+                                If current.right == NULL Then
+                                        current.right = newspan
+                                        Return
+                                Else
+                                        InsertSpan(newspan, current.right)
+                                End If
+                        Else If span.x2 <= current.x2 Then
+                                span.x2 = current.x1
+                                span.width = span.x2 - span.x1
+
+                                If current.left == NULL Then
+                                        current.left = span
+                                        Return
+                                Else
+                                        current = current.left
+                                        Next While
+                                End If
+                        End If
+                End If
+        End While
+End Subroutine
+
+Painting The Span Tree
+
+Painting the span tree is simple enough, just a recursive process. However,
+recursion may not be the most efficient process for this; I've been toying
+with the idea of including a span pointer called "parent", to let me climb
+back up the tree, without using recursion. Haven't tried it yet, but I might
+do soon. But, for now, heres pseudo code for a function to draw the span
+tree:
+
+Subroutine DrawSpanTree(Span Pointer root)
+        If root.left != NULL Then
+                DrawSpanTree(root.left)
+        End If
+
+        DrawSpan(root)
+
+        If root.right != NULL Then
+                DrawSpanTree(root.right)
+        End If
+End Subroutine
+
+This routine is quite special; it gives us ascending X order. This is handy,
+because it will maximize cache access. If you consider that your painters
+algorithm or Z-Buffer render may be passing it polygons that could appear
+anywhere. You could have one in the top left corner, then one in the bottom
+right, then one in the centre, etc, etc. With S-Buffer, we are going from
+top->bottom, then left->right. Very handy.
+
+Again, this function needs to be optimized for fast performance. Also, I
+think it might be interesting to see if you can come up with a way of
+balancing the tree, so that both less recursion is used, and also the insert
+time should be reduced. If you consider the tree:
+
+                        A
+                 /------|-------\
+                B       B        B
+              /
+            C
+          /
+        D
+      /
+    E
+
+Then inserting to (E) will be fairly expensive, as you have to go further
+down the tree, examine more spans, and so on. But inserting to (B) will be
+quick. However, the tree:
+
+                        A1
+                 /------^------\
+                B1              B2
+              /   \           /   \
+            C1      C2      C3       C4
+          /   \   /   \   /   \    /    \
+         D1    D2D3    D4D5    D6 D7     D8
+
+Will, on average, have a roughly similar insert time for each level of the
+tree. Inserting to any (C) will be a similar speed, as will (D) or (B). Note
+that I say similar; tree structure is just one part of getting increased
+speed; organizing the tree to have the minimum number of clipped spans will
+also help matters, and even more so if you reduce the number of broken
+spans. Coming back to this tree though, run the DrawSpanTree pseudo-code
+through you head. You should find that we get the order: [D1, C1, D2, B1,
+D3, C2, D4(, etc...)]. Thats the order of increasing X, another benefit.
+
+Also note that polygons over triangles will give an increased speed using
+S-Buffers, due to the reduction in the number of spans to process. Consider:
+
+|------------|                          |------------|
+|AAAAAAAAAAAA|                          |AA\BBBBBBBBB|
+|AAAAAAAAAAAA|                          |AAAAA\BBBBBB|
+|AAAAAAAAAAAA|(1)               vs      |AAAAAAAA\BBB|(2)
+|AAAAAAAAAAAA|                          |AAAAAAAAAAA\|
+|------------|                          |------------|
+
+Case (2) will give us twice as many spans to insert as case (1). Similar
+increases may be found as the number of vertices increases.
+
+Another point to consider is that of trivial rejection; if we could somehow
+build a structure containing the bounding spans of spans, then we could
+further increase the speed of trivial rejection. For example:
+
+        AAABBB  CCCCCCCC  DDEEFF        GGGGGGGGGGGGGGGGGG
+
+Could have a structure, stored in addition to the span tree, that stores:
+
+        AAABBB  CCCCCCCC  DDEEFF        GGGGGGGGGGGGGGGGGG
+        111111  22222222  333333        444444444444444444
+
+So that if he tried to insert a span Z:
+
+        AAABBB  CCCCCCCC  DDEEFF        GGGGGGGGGGGGGGGGGG
+        111111  22222222  333333        444444444444444444
+                                          ZZZZZZZZZZZZZ
+
+It could be quickly rejected, as long as G was not the tree root, say a part
+of the tree was
+                D
+                  \
+                    F
+                      \
+                        G
+
+I also tried a "span mask" to try and reject spans quickly. What I did was
+keep a bit mask of the pixels that were currently covered by spans, updating
+it as new spans were inserted. However, it had a flaw: It was crap.
+
+Well, thats all I can think of for now. I'm going to explore the concept of
+spans a little further though, they seem pretty useful in a
+non-3D-accelerated system.
+
+               Tom Hammersley, tomh@globalnet.co.uk [Image]

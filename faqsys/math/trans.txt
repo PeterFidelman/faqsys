@@ -1,0 +1,42 @@
+From - Mon Apr 13 20:53:32 1998
+Newsgroups: comp.graphics.algorithms
+Path: ifi.uio.no!news-feed.ifi.uio.no!uninett.no!news.maxwell.syr.edu!news-peer.gip.net!news-raspail.gip.net!news.gsl.net!gip.net!news.dotcom.fr!rain.fr!filnet.fr!not-for-mail
+From: Hubert <h.nguyen@cryo-interactive.com>
+Subject: Re: - 16 bpp color transparency -
+Message-ID: <352E1F33.4627@cryo-interactive.com>
+Date: Fri, 10 Apr 1998 15:31:31 +0200
+References: <01bd6140$c946bf20$LocalHost@speedy> <3529644D.FF78659C@netscape.com>
+Reply-To: h.nguyen@cryo-interactive.com
+Organization: Cryo
+X-Mailer: Mozilla 3.01Gold [fr] (Win95; I)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Lines: 24
+Xref: ifi.uio.no comp.graphics.algorithms:66757
+
+Hello,
+
+I have a 50% tranparency method wich is quite fast but only
+works at 50% !!!
+
+the method is simply to perform :
+final color = (color1/2) + (color2/2)
+
+to implement this :
+
+right shift color1 by 1
+right shift color2 by 1
+
+mask the high bit of each RGB component with 0
+color1 &= 0x3DEF (1555) - 0x7BEF (565)
+color2 &= 0x3DEF (1555) - 0x7BEF (565)
+final color = color1+color2
+
+you can use this in a software rasterizer, it's pretty
+fast and is a cheap way to perform transparency...
+
+hope this gave you some ideas...
+
+Hubert Nguyen.
+

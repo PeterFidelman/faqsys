@@ -1,0 +1,619 @@
+.
+ Efficient Antialiasing                                    24.july.1997   GFX
+
+by Hin Jang
+
+Increasing the sampling rate or removing the high frequency components of an
+image are two ways of limiting the effects of aliasing. Both methods,
+however, have high rendering costs. An incremental algorithm that is derived
+in the spatial domain under a subjectively meaningful error term is
+described herein. Its simplicity suggests a practical hardware
+implementation and produces the same pixels as Fujimoto-Iwata's algorithm at
+a fraction of the latter's computational cost [1, 2].
+
+Let y = f(x) be a curve digitised in the raster plane. Sampling in a scan
+coherent fashion requires that for every pixel along the x axis, the sample
+value f(i) is quantised to some integer Yi. A dynamic error arises if
+
+   | f(i) - Yi | > 0
+
+In trying to mimimise the loss of dynamic information, thus producing a more
+appealing image, an antialiasing technique should aim to perserve the
+convexity of the curve. This is achieved by applying the following two-point
+scheme.
+
+     For a given value of (i, f(i)) the ideal addressable pixel may be
+     visually simulated by defining
+
+        I[i, floor(f(i))]   = Io[ceiling(f(i)) - f(i)]
+        I[i, ceiling(f(i))] = Io[f(i) - floor(f(i))]
+
+     where I[i,j] is the intensity of pixel (i,j) and Io is the
+     intended intensity of the curve at (i, f(i)). If pixel (i,j) is a
+     considered a unit square centered at (i,j) then pµ = (i, f(i)) is
+     the center of gravity of the two points
+
+        p0 = (i, floor(f(i)))
+        p1 = (i, ceiling(f(i)))
+
+     because
+
+        Iopµ = I[i, floor(f(i))]p0 + I[i, ceiling(f(i))]p1
+
+     The lit area Io is focused at pµ, the perceived pixel exactly on
+     the original curve.
+
+Given a line in the first octant, let (x0, y0) and (x1, y1) be the endpoints
+of the line where x1 > x0 and y1 > y0. If the line is defined as f(x) = kx,
+the equations of the two-point antialiasing scheme can rewritten as
+
+   I[x, ceiling(kx)] = I0[kx - floor(f(i))]
+   I[x, floor(kx)]   = I0 - I[x, ceiling(kx)]
+
+The values of (x, floor(kx)), (x, ceiling(kx)), and their intensities I(x,
+floor(kx)) and I(x, ceiling(kx)) can be determined using an incremental
+algorithm operating on a single integer D, a machine word of n bits [2]. As
+initial values, D = 0 and I(x0, y0) = I. The increment of D is
+
+   d = floor(k2n + 0.5)
+
+where the overflow of D = D + d is recorded. When D overflows, the two-point
+pixel band moves diagonally; otherwise it moves horizontally. Given 2m - 1
+discrete grey-scale intensity levels,
+
+   I(x, ceiling(kx)) = I0(kx - floor(kx))
+                     = (2m - 1)(D2-n + (k - d2-n)x)
+                     = D2m-n + (2m - 1)(k - d2-n)x - D2-n
+
+Assuming n > m, the intensity can be approximated by the first term; the m
+most significant bits of D. Given that Io = 2m - 1, the integer 2m - 1 -
+D2m-n is the inverse of D2m-n. As such, I(x, floor(kx)) is the bitwise
+inverse of I(x, ceiling(kx)).
+
+   Line()
+   {
+      PutPixel(x0, y0, I)
+      PutPixel(x1, y1, I)
+      D = 0
+      k = (y1 - y0) / (x1 - x0)
+      d = floor(k * 2^n + 0.5)
+
+      while(x0 < x1) {
+
+         x0++
+         x1--
+
+         D = D + d       /* module 2^n addition */
+
+         if (D overflows) {
+             y0++
+             y1--
+         }
+
+         I = D div 2^(n-m)
+         PutPixel(x0, y0, I)
+         PutPixel(x1, y1, I)
+
+         I = ~I          /* bit-wise inverse */
+
+         PutPixel(x0, y0+1, I)
+         PutPixel(x1, y1-1, I)
+      }
+   }
+
+It suffices to consider one octant of the circle x2 + y2 = r2 to extend the
+two-point antialiasing scheme for this primitive. The pair of pixel
+intensity equations is then
+
+   I(floor(h) ,j)   = I(ceiling(h) - h)
+   I(ceiling(h), j) = I - I(floor(h), j)
+
+where
+
+   h = sqrt(r2 - j2)
+   1 <= j <= r / sqrt(2)
+
+To move the pixel band to the left by one step, assuming scan-conversion
+occurs in the y axis from 0 to r / sqrt(2), the critical values of t in
+
+   ceiling(sqrt(r2 - (t - 1)2)) - ceiling(sqrt(r2 - t2)) = 1
+
+must be computed. Wu showed that the equation holds if and only if
+
+        ceiling(sqrt(r2 - (t - 1)2)) - ceiling(sqrt(r2 - t2)) >
+        ceiling(sqrt(r2 - t2)) - sqrt(r2 - t2)
+
+[2]. As such, for given values of r,
+
+   ceiling(h) - h,  1 <= j <= r / sqrt(2)
+
+determines the pixel positions and pixel intensities. For an intensity range
+from 0 to 2m - 1,
+
+   D(r, j) = floor((2m - 1)(ceiling(h) - h) + 0.5)
+
+which gives rise to
+
+   I(floor(h), j)   = D(r, j)
+   I(ceiling(h), j) = bitwise-wise inverse of D(r ,j)
+
+since
+
+   I(ceiling(h), j) + I(floor(h), j) = I = 2m - 1
+
+A D(r,j) table is used to facilitate the speed of the algorithm. If RMAX is
+the maximum allowable radius, the table size is sqrt(2) / 4 * RMAX The
+two-point antialiasing scheme for circles can also be realised at the
+hardware level.
+
+   Circle()
+   {
+      i = r
+      j = 0
+      PutPixel(i, j, I)
+      T = 0
+
+      while (i < j) {
+
+         j++
+
+         if (D(r, j) > T)
+             i--
+
+         I = ~D(r, j)    /* bit-wise inverse */
+
+         PutPixel(i, j, I)
+         PutPixel(i-1, j, D(r, j))
+         T = D(r, j)
+
+      }
+   }
+
+----------------------------------------------------------------------------
+
+     [1] Fujimoto, A., and K. Iwata, "Jay-free Images on Raster
+     Displays" IEEE Computer Graphics and Applications, 3(9):26-34,
+     December 1983
+
+     [2] Wu, X., "An Efficient Antialiasing Technique," Computer
+     Graphics, SIGGRAPH 1991 Proceedings, 25(4):143-152
+
+.
+ Isosurface Generation                                     16.july.1997   GFX
+
+by Hin Jang
+
+An isosurface is defined by a set of points that satisfy the following
+equation
+
+   S(x, y, z) - C = 0
+
+where S is a spatial function and C is a constant. The surface is usually
+displayed as set of triangles, all of which are formed by local
+intersections between cells and the surface. Cells that do not intersect the
+surface are not part of the volume. Ito and Koyamada developed an efficient
+algorithm that visits only intersecting cells and cells that are included in
+cell lists [2].
+
+Isosurface generation consists of a preprocess and a main process.
+
+   main()
+   {
+      /* -------------------------------- Pre-process  */
+
+      ExtractExtrema()
+      GenerateGraph()
+      GenerateBoundList()
+
+      /* -------------------------------- Main process */
+
+      while(1) {
+         C = SpecifyScalarValue()
+         GenerateSurface(C)
+      }
+   }
+
+Determining the extrema points requires a comparison of the scalar values of
+all points for each cell.
+
+   ExtractExtrema()
+   {
+      for (each cell) {
+         if (point_is_not_maximum)
+            mark point as not_maximum
+         if (point_is_not_minimum)
+            mark point as not_minimum
+      }
+
+      for (each point) {
+         if (point is not either 'not maximum' or 'not minimum')
+            insert point into extrema list
+      }
+   }
+
+An extrema graph is a group of arcs that connects two extrema points a and
+b, the start and goal points, respectively. The cost of the graph, (ie. the
+number of cells inserted into the cell list), is minimal when closer extrema
+points are chosen. Starting from the cell that contains the start point,
+adjacent cells that share the face whose distance is minimum are visited in
+order. The minimum and maximum values of the start and goal points are
+updated by the scalar values of the points visited herein. This process is
+repeated until the traversal reaches the cell containing the goal point. If
+reaching the goal point results in leaving the volume, the traversal is
+terminated and a similar traveral begins when the next-closest extrema is
+declared the goal point.
+
+   GenerateGraph()
+   {
+      for (each extrema i)
+         extrm[i].flag = extrm[i].gID
+      for (each extrema n) {
+         for (each other extrema i) {
+            if (extrm[n].flag != extrm[i].flag)
+               if (extrm[i] is not too far)
+                   Enqueue(extrm[i])
+         }
+
+         while (path_is_not_connected) {
+            Dequeue(extrm[m])
+            if (Make_Graph1(extrm[n], extrem[m]) == SUCCESS)
+                break
+            if (Queue_Is_Empty() == TRUE) {
+                Make_Graph2(extrm[n], extrm[m])
+                break
+            }
+         }
+
+         for (each extrema i)
+            if (extrm[i].flag == extrm[m].flag)
+                extrm[i].flag = extrm[n].flag
+      }
+   }
+
+   MakeGraph1(extrmA, extrmB)
+   {
+      visit_cell = A cell that contains extrmA
+
+      while (1) {
+         arc.cID[arc.numC++] = cell
+         arc.value[0] += arc.eID[0]
+         arc.value[1] -= arc.eID[1]
+         if (visit_cell includes extrmB)
+             return SUCCESS
+         visit_cell = adjacent cell that intersects arc
+            if (visit_cell == NULL)
+                return FAILURE
+      }
+   }
+
+   MakeGraph2(extrmA, extrmB)
+   {
+      visit_cell = A cell that contains extrmA
+
+      while (1) {
+         arc.cID[arc.numC++] = cell
+         arc.value[0] += arc.eID[0]
+         arc.value[1] -= arc.eID[1]
+         if (visit_cell includes extrmB)
+             return SUCCESS
+         visit_cell = adjacent cell that shares the nearest arc
+      }
+   }
+
+A boundary cell list is a group of cells that have faces not connected to an
+adjacent cell.
+
+   GenerateBoundList()
+   {
+      for (each boundary cell cID[i]) {
+         cID[i].max = FindMaximum()
+         cID[i].min = FindMinimim()
+      }
+
+      Generate_Sorted_Maximum_Based_List()
+      Generate_Sorted_Minimum_Based_List()
+   }
+
+Isosurfaces propagate themselves from seed cells. The minimum-based boundary
+cell list is traversed until the minimum value becomes higher than the given
+value. If the maximum value of the visited cell is higher, the cell is
+denoted as the seed cell. The maximum-based boundary cell list can also be
+used to select a cell from which propagation occurs. Seed cells are then
+searched for by traversing the arcs of the extrema graphs. If the specified
+scalar value lies between the minimum and maximum values of the arc, all the
+cells in the list are visited in order. An isosurface is generated when an
+extracted seed cell is unmarked.
+
+   GenerateSurface(float C)
+   {
+      for (each cell bcell[i] in the boundary cell list)
+
+         if (bcell[i].min < C
+             && bcell[i].max > C
+             && bcell[i] is not marked)
+
+             PropagateSurface(bcell[i], C);
+
+      for (each arc in the extrema graph)
+         if (arc.value[1] < C && arc.value[0] > C)
+            for (each unmarked cell in the arc) {
+               if (cell.cID[i] is intersected)
+                   PropagateSurface(cID[i], C)
+            }
+   }
+
+   PropagateSurface(int cellID, float C)
+   {
+      Enqueue(cellID)
+
+      while (Queue_Is_Empty == FALSE) {
+         Dequeue(cellID)
+         Draw_Triangle(cellID);
+         Enqueue(cellIDs of all unmarked adjacent, intersected cells)
+         Mark_Cells_in_Queue();
+      }
+   }
+
+----------------------------------------------------------------------------
+
+     [1] Grimm, C.M., and J.F. Hughes, "Smooth Isosurface
+     Approximation," Eurographics Conference on Implicit Surfaces,
+     April 1995
+
+     [2] Itoh, T., and K. Koyamada, "Isosurface Generation by Using
+     Extrema Graphs," 1994 IEEE Visualisation Conference, 77-83
+
+     [3] Lorensen, W.E., and H.E. Cline, "Marching Cubes: A High
+     Resolution 3D Surface Construction Algorithm," Computer Graphics,
+     SIGGRAPH 1987 Proceedings, 21(4):163-169
+
+     [4] Matveyev, S.V., "Approximation of Isosurface in the Marching
+     Cube: Ambiguity Problem," 1994 IEEE Visualisation Conference,
+     288-292
+
+     [5] Montani, C., R. Scateni, and R. Scopigno, "Discretised
+     Marching Cubes," 1994 IEEE Visualisation Conference, 281-287
+
+.
+ Shadow Rendering Algorithms                            02.september.1997  GFX
+
+by Hin Jang
+
+Shadows provide a visual cue to the spatial relationships among objects in a
+given scene. Simulating hard shadows is possible using clever approximations
+[1]. More robust algorithms that simulate shadows cast by moving, complex
+objects onto multiple planar surfaces have also been developed [2, 3]. Soft
+shadows caused by extended light sources, however, require greater
+computation; those areas with an umbra (fully shadowed regions) and penumbra
+(partially shadowed regions). At true interactive rates, simulating soft
+shadows in a dynamic and complex scene require high-end, parallel hardware.
+The principle of shadow generation is based on a modified perspective
+projection and is easily incorporated into any rendering pipeline.
+
+A point P(x, y, z) that is illuminated by a light source L(x, y, z) casts a
+shadow at
+
+   S = a(L - P) - P
+
+and assuming the shadow falls upon a ground plane, where z = 0, solving for
+a yields
+
+           zP
+   a = ---------
+        zL - zP
+
+The coordinates of the shadow point S are then
+
+        xPzL - xLzP
+   xS = ----------
+         zL - zP
+
+        yPzL - yLzP
+   yS = ----------
+         zL - zP
+
+Assuming a homogeneous coordinate system where
+
+   xS = xS' / wS'
+   yS = yS' / wS'
+
+   wS' = zL - zP
+
+S can be calculated using matrix multiplication
+
+                                       |  zL   0   0   0 |
+                                       |  0   zL   0   0 |
+   [ xS' yS' 0  wS' ] = [ xP yP zP 1 ]  | -xL  -yL   0  -1 |
+                                       |  0    0   0  zL |
+
+To generalise the 4x4 matrix so that the algorithm can perspectively project
+a shadow point onto any plane, consider an arbitrary point on the line from
+P to L represented in homogeneous coordinates
+
+   aP + bL
+
+where a and b are scalars. The matrix above assumes a ground plane G whose
+normal is represented as a four-element column vector.
+
+        | 0 |
+        | 0 |
+   G =  | 1 |
+        | 0 |
+
+The point on the shadow line that intersects G is given by (a, b) where
+
+   (aP + bL) . G = 0
+
+Rearranging the equation yields
+
+   a(P . G) + b(L . G) = 0
+
+which can be satisfied by any scalar multiple of
+
+   a = (L . G)
+   b = -(P . G)
+
+The shadow point S is then
+
+   S = (L . G)P - (P . G)L
+
+Recall that P and L are row vectors and G is a column vector. Matrix
+multiplication is associative; therefore,
+
+   (P . G)L  =  P(GL)
+
+and note that GL is a 4x4 matrix and (L . G) is a scalar. Given that I is a
+4x4 identity matrix
+
+   S = P[(L . G)I - GL]
+
+The generalised 4x4 matrix used to perspectively project a shadow point onto
+any plane is
+
+   [(L . G)I - GL]
+
+where G is the normal of the plane onto which S is cast.
+
+Shadows points, or a given subset, forms the vertices of a hard shadow. The
+real world, however, contains mostly soft shadows. The ideal method of
+computing soft shadows should 1) have a memory requirement independent of
+the number of light source samples and 2) exploit graphics hardware that
+determines visibility and calculates shading. If such hardware is
+unavailable, calculations can be done in software using a graphics
+subroutine interface, as such OpenGL. The premise of the algorithm developed
+by Heckbert and Herf is to precompute the emitted radiance at each point on
+every polygon to produce a set of hard shadows [2]. These shadows are then
+averaged to compute the soft shadow image.
+
+The emitted radiance from a surface is given by summing the contributions
+over all sample points on all light sources
+
+   Lc(x) = pc(x)Lac
+
+                 nl
+         ----   ----               cos+tli cos+tli' Lc(xli')
+      +  \      \     (ali pc(x))  -------------------------  v(x, xli')
+         /      /                          pi rli2
+         ----   ----
+          l     i=1
+
+where
+
+   * x = (x, y, z) is a point on the reflective surface, and xli' is the
+     sample point i on light source l
+   * ali is the area associated with sample point i
+   * t is the polar angle (angle from normal) at x, t' is the angle at xli'
+   * r is the distance between x and xli'
+   * t, t' and r are functions of x and xli'
+   * Lc is the outgoing radiance at point x for color channel c
+   * Lac is the ambient radiance
+   * pc is reflectance
+   * v(x, xli') is a Boolean visibility function that equals 1 if point x is
+     visible from point xli', else 0
+   * cos+t = max(cost, 0), for backface testing
+   * pi is the constant
+
+The summand is the product of three factors
+
+  1. the area times the reflectance of the receiving polygon
+  2. the cosine of the angle on the receiver times the cosine of the angle
+     on the light source times the radiance of the light source divided by
+     pi r2
+  3. the visibility between a point on a light source and each point on the
+     receiver
+
+To generate the set of hard shadow images, the algorithm requires a
+projective transformation. For a given parallelogram P fitted around the
+receiver polygon, a pyramid can be constructed with P as its base and the
+light point as its apex. The 4x4 homogeneous transformation that
+accomplishes this is the matrix tranform M of interest. The pyramid lies in
+object space with coordinates (xo, yo, zo) with apex a and its parallelogram
+base has one vertex at b and edge vectors ex and ey. Applying M yields a
+parallelepiped in unit screen space with coordinates (xu, yu, zu). Viewed
+from a, the left and right sides of the volume map to parallel planes xu = 0
+and xu = 1. The bottom and tops sides map to yu = 0 and yu = 1, and the base
+plane and the plane parallel through the apex map to zu = 0 and zu ->
+infinity.
+
+The matrix M has the form
+
+       / axnxx   axnxy   axnxz   -axnx.b \
+   M = | aynyx   aynyy   aynyz   -ayny.b |
+       |   0      0      0        1   |
+       \ awnwx   awnwy   awnwz   -awnw.a /
+
+where
+
+   nx = ew × ey                   ax = 1 / (nx . ex)
+   ny = ex × ew        and        ay = 1 / (ny . ey)
+   nw = ey × ex                   aw = 1 / (nw . ew)
+
+Averaging the hard shadows is done by a weighted, linear combination of
+images
+
+                   ----
+        Ac(x, y) = \     aiIic(x, y)
+                   /
+                   ----
+                     i
+
+where Iic is a channel (red, green or blue) for image i, ai is the weight,
+and Ac is a channel of the accumulator array. The algorithm to precompute
+radiance textures is then
+
+   RadianceTexture()
+   {
+      for (each receiver polygon R) {
+         select resolution of receiver's texture (sx X sy pixels)
+         clear accumulator image of sx X sy pixels to black
+         create temporary image of sx X sy pixels
+         for (each light source l) {
+            if (l is behind R || R is behind l)
+                skip to next l
+            for (each sample point i on light source l) {
+                if (xli' is behind R)
+                    skip to next i
+                compute transform matrix M, where a = xli'
+                  with parallelogram base fitted around R
+                set transform matrix to scale (sx, sy, 1) . M
+                set clipping planes to zu.near = 1 - e
+                  and zu.far = big
+                draw R with illumination from xli', as
+                  described in the equation for Lc, into
+                  temporary image
+                for (each other object in scene) {
+                   draw object with ambient colour into temporary image
+                }
+                add temporary image into accumulator image with weight
+                  al / nl
+            }
+         }
+         save accumulator image as texture for polygon R
+      }
+   }
+
+To render a scene with shadows, simply
+
+   RenderWithShadows()
+   {
+      for (each object in scene)
+         if (object receives shadows)
+               draw object with radiance textures and no illumination
+         else  draw object with illumination
+   }
+
+----------------------------------------------------------------------------
+
+     [1] Blinn, J. F., "Me and My (Fake) Shadow," IEEE Computer
+     Graphics and Applications, 8(1):82-86, January 1988
+
+     [2] Heckbert, P., and M. Herf, Simulating Soft Shadows with
+     Graphics Hardware, CMU-CS-97-104, CS Dept, Carnegie Mellon
+     University, January 1997
+
+     [3] Loscos, C., and G. Drettakis, Interactive High Quality Soft
+     Shadows in Scenes with Moving Objects, iMAGIS/GRAVIR-INRIA, 1997
+
+     [4] Stewart, J. A., and S. Ghali, Fast Computation of Shadow
+     Boundaries Using Spatial Coherence and Backprojections, Department
+     of Computer Science, University of Toronto, 1995

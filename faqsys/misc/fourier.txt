@@ -1,0 +1,121 @@
+From pdxgate!usenet.ee.pdx.edu!ogicse!emory!wupost!usc!hela.iti.org!cs.widener.edu!dsinc!ub!acsu.buffalo.edu!lusardi Wed Mar  3 09:24:23 PST 1993
+
+These are all the things that I found on complex number manipulation.
+
+Question: How does one manipulate the Forward and Reverse Fourier
+Transform?
+
+My best reference is:
+Introduction to Complex Variables by F. Greenleaf (QA 331 G73).
+
+						Chrstopher Lusardi
+
+-----------------------------------------------------------------------------
+z = a + bi
+	polar form: r(cos theta + i sin theta)
+	exponential form: r exp(i theta)
+
+cos theta = a/square-root(square(a) + square(b))
+sin theta = b/square-root(square(a) + square(b))
+
+[Notation: exp (i) = e to power i]
+-----------------------------------------------------------------------------
+                         n
+(cos theta - i sin theta)  = cos n theta + i sin n theta
+
+-----------------------------------------------------------------------------
+cos theta = exp(i theta) + exp(-i theta)   
+n            ----------------------------
+                         2
+
+sin theta = exp(i theta) - exp(-i theta)   
+            ----------------------------
+                         2 i
+-----------------------------------------------------------------------------
+f(x) = exp(i x) = cos x + i sin x
+this can be written: f(x) = u(x) + i v(x)
+
+derivative of f(x) is: f'(x) = u'(x) + i v'(x)
+similarly:
+integral f(x) dx = integral u(x) dx + i integral v(x) dx
+-----------------------------------------------------------------------------
+d    2
+-- (z + z + 1) = 2z + 1
+dz
+-----------------------------------------------------------------------------
+b                                        b
+integral (alpha times f)(t) dt = alpha integral f(t) dt
+a                                        a
+
+if alpha is any complex number
+-----------------------------------------------------------------------------
+d
+-- (exp(alpha x)) = alpha exp(alpha x) if alpha is any complex number
+dx
+
+integral exp(alpha x) dx = 1/2 exp(alpha x) + Constant    alpha not equal 0
+-----------------------------------------------------------------------------
+exp (i theta) = 1 iff theta = 2 pi k
+-----------------------------------------------------------------------------
+z = r exp(i theta) and
+w = p exp(i phi) are equal iff r = p and theta - phi = 2 pi k
+-----------------------------------------------------------------------------
+|a + i b| = square-root(square(a) + square(b))
+-----------------------------------------------------------------------------
+exp(i pi) = cos pi + i sin pi = -1
+exp(z + 2 pi i) = exp (z)
+exp(2 pi i) = cos 2 pi + i sin 2 pi = 1
+               n
+(exp(2 pi i/n))  = exp(2 pi i) = 1
+
+Table:
+.............................................................................
+        |||theta = 0||theta = pi/4 || theta=pi/2||theta = pi|| theta = 3 pi/2
+............................................................................
+exp(i theta) = ||| 1 || 1/square-root(2)(1 + i)||i  ||-1  ||  -i
+............................................................................
+
+exp(x + i y) = exp(x)(cos y + i sin y) = (exp(x) cos y) + i(exp(x) sin y)
+-----------------------------------------------------------------------------
+exp(z + w) = exp(z) exp(w)
+exp(-z) = 1/exp(z)
+exp(w - z) = exp (w)/exp(z)
+exp(-i theta) = 1/exp(i theta)
+exp(i theta) = 1 iff theta = 2 pi k, for k = ... -2,-1,0,1,2,...
+-----------------------------------------------------------------------------
+e(z) is periodic when the variable is translated by 2 pi i:
+exp(z + 2 pi i) = exp(z) forall z
+-----------------------------------------------------------------------------
+A complex number Wo is called a period for a function f(z) if we have 
+f(z + Wo) = f(z) forall z; The numbers ... -2Wo,-Wo,0,Wo,2Wo,... are
+also periods. The numbers Wk = 2 pi k i are periods for exponential function.
+The exponential function has no other periods. This periodicity of exp(z)
+means that we know how exp(z) behaves everywhere in the plane once we know how
+it acts in any horizontal strip of width 2 pi:
+
+Eg:                    i y
+                        ^
+                   4 pi-|<.
+                        | .
+                        |.
+                   2 pi-|<
+                      0 | .
+<-----------------------|<--------------------> x
+                        |  .
+                  -2 pi-|.
+                        |
+                        |
+                        V
+-----------------------------------------------------------------------------
+exp(u + i v) = exp(u) exp(i v)
+cos(z) has periods Zk = 2 pi k + i theta
+tan(z) has periods Zk = pi k + i theta
+tan z = sin z/cos z
+-----------------------------------------------------------------------------
+-- 
+|  .-,                ###|Christopher M. Lusardi, Richmond Quadrangle
+| /   /   __  ,  _    ###|University At Buffalo, Buffalo New York
+| \_>/ >_/ (_/\_/<>_     |library catalog + abstracts: bison.acsu.buffalo.edu
+|_                14261 _|(When in doubt ask: xarchie, xgopher, or xwais.)
+
+

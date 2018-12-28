@@ -1,0 +1,183 @@
+Bump Mapping
+
+---------------------------------------------------------------------------
+(c) 1995 Brian Lingard
+
+Introduction
+
+This article will briefly summarize Blinn's method for performing bump
+mapping and will skip over some of the mathematical detail. Interested
+readers should consult the references given at the end. An example of
+applying bump mapping to the task of embossing is given in the second
+section, along with some sample images and source code.
+
+Blinn's Method
+
+In 1978, James Blinn presented a method of performing what is called bump
+mapping. Bump mapping simulates the bumps or wrinkles in a surface without
+the need for geometric modifications to the model. The surface normal of a
+given surface is perturbed according to a bump map. The perturbed normal is
+then used instead of the original normal when shading the surface using the
+Lambertian technique. This method gives the appearance of bumps and
+depressions in the surface.
+
+A similar method for adding wrinkles to surfaces is displacement mapping.
+Displacement mapping is applied to a surface by first dividing the surface
+up into a mesh of coplanar polygons. The vertices of these polygons are
+then perturbed according to the displacement map. The resulting model is
+then rendered with any standard polygon renderer. But to achieve a fine
+resolution in the texture of the wrinkles, the additional polygons would
+get ever smaller and more numerous, placing a tremendous burden on the
+renderer.
+
+Blinn saw that instead of using the perturbed vertices to calculate normals
+used in shading, why not perturb the original surface normal. The perturbed
+normal would then be used in the Lambertian shading equation. One problem
+with this method is that the simulated wrinkles would not extend all the
+way to silhouette of the object. To implement bump mapping, a way must be
+found to perturb the surface normal that is independent of the surface's
+orientation and position. This requirement arises from the observation that
+if a bump mapped object was being animated, we would not want the surface
+wrinkles to change shape or appearance. Thus we should base the
+perturbation function on the local surface derivatives.
+
+We can parameterize a surface of an object using the function O(u,v),
+letting this function be the position vectors of this surface. Thus the
+surface normal N is given by:
+
+        N = O   X  O
+             u      v
+
+where:
+        O  and O  are partial derivatives of the surface at point O.
+         u      v
+
+We can define two other vectors, A and B, that lie in the same plane, which
+when combined with N form a coordinate system that is independent of the
+surface's orientation and position. Using components of these two vectors,
+we can derive a perturbation vector D. Mathematically, we can see:
+
+  A = N  X  O  ,  B = N  X  O  , and  D = B  A - B  B
+             v               u             u      v
+
+where:
+        B  and B  are partial derivatives of the bump map B(u,v).
+         u      v
+
+The perturbation vector D is added to the original surface normal N to
+obtain a perturbed normal vector N prime or N' = N + D. The formal proof of
+the method is left as an exercise for the reader. The process of
+calculating perturbed normals is performed for every point on the surface
+O. This method can be combined with the scan line algorithm for shading
+polygons.
+
+One difficulty that arises with this method is that when the surface is
+scaled by a factor of two, the surface normal is scaled by a factor of
+four, but the perturbation vector is only scaled by a factor of two. This
+has the effect of smoothing out the simulated wrinkles. We can derive a D
+which is scale invariant by:
+
+                2    2 1/2
+        D' = (B  + B  )     D  (mag N / mag D)
+               u    v
+
+It is possible to address the problem of the silhouette lacking the bump
+mapped wrinkles by combining this technique with displacement mapping only
+those regions close to the silhouette.
+
+An Example: Embossing
+
+A popular feature of image processing programs on computers is that of
+embossing images. Embossing an image or painting is exactly analogous to
+the process of bump mapping. The source image can come from many sources
+including text, scanned in logos, etc.
+
+John Schlag's Graphics Gems IV note applies a method similar to Blinn's
+bump mapping to embossing an image. Given in this section is a brief
+summary of his gems note and an explanation of some sample code using his
+embossing function.
+
+We can consider a bump map image as a 3D surface P(u,v), and we can
+interpret the intensity values of the bump map image as height
+displacements. Thus black pixels having an intensity of 0 would be low
+heights, and white pixels having an intensity of 255 would be high. The
+surface normal can be derived using partial derivatives as in Blinn's
+method. We can express P(u,v) as a vector:
+
+        P(u,v) = [ u  v  i(u,v) ]
+
+where i(u,v) is intensity at (u,v), and have the surface normal N at point
+P as:
+
+        N(P) = P   X  P   = [ -i   -i   1 ]
+                u      v        u    v
+
+where,
+
+        i  and i  are partial derivatives of i(u,v).
+         u      v
+
+The partial derivatives of i(u,v) can be estimated by convolving the bump
+map image with the following masks:
+
+                | -1 0 1 |              |  1  1  1 |
+        i (P) = | -1 0 1 |      i (P) = |  0  0  0 |
+         u      | -1 0 1 |       v      | -1 -1 -1 |
+
+These masks will blur the resulting image somewhat since they are 3x3
+masks, and will actually help to antialias sharp edges. The response of the
+masks must be compensated for by scaling either i(u,v) or by scaling the z
+component of the normal vector N. The scaling factor regulates the width of
+the translation region or "bevel". This can help control the apparent depth
+of the embossing effect. The sample embossing code "emboss.c" found in
+Graphics Gems IV, uses the width formula:
+
+        N  = 6 * 255 / w
+         z
+
+which is based on assuming i(u,v) = au, and after convolution yielding
+i(u,v) = 6a. The parameter 'w' is used to control the width of the bevel.
+
+Decent shading results can be obtained by using the Lambertian shading
+formula N dot L / (mag N * mag L). Several optimizations can help speed up
+the processing like pre-multiplying some terms and noticing that many of
+the pixels in the map image may be black and thus yield the same shading
+values. These can be pre-computed by [0 0 1] dot L. The shading result can
+be used for a grey scale image or applied against another texture image to
+get color.
+
+An example program using Schlag's embossing code is given in the file
+"embdemo.c". This program produces simple grey scaled images in a ".img"
+format described in the source code. Some code to bump map any grey scale
+image either by itself or onto a texture image is given in "bumpdemo.c".
+This code uses some functions found in "imagfile.c" and "imagfile.h" to
+read and write standard 24-bit Windows Bitmap (BMP) files. The Bumpdemo
+program reads in the bump map image and converts it from an RGB 3 byte per
+pixel image to a grey scale 1 byte per pixel image. If a textured image is
+desired, a texture image is read in next. Schlag's embossing function is
+called to perform the actual bump mapping. The resulting embossed image is
+output to a BMP image file. There is also a "makefile" for compiling the
+executables. Shown below are some examples produced by the bump map demo
+program, top left is source bump map image, top right is just the embossed
+bump map, and both bottom images are embossed texture images:
+
+ [input image]   [ouput image1]
+
+ [ouput image2]   [ouput image3]
+
+References
+
+Blinn, "Simulation of Wrinkled Surfaces", Computer Graphics, (Proc.
+Siggraph), Vol. 12, No. 3, August 1978, pp. 286-292.
+
+Max and Becker, "Bump Shading for Volume Textures", IEEE Computer Graphics
+and Animation, July 1994, pp. 18-20.
+
+Schlag, "Fast Embossing Effects on Raster Image Data", Graphics Gems IV, AP
+Professional, 1994, gem VIII.1, pp. 433-437.
+
+Watt and Watt, Advanced Animation and Rendering Techniques, Addison-Wesley,
+1992, pp. 199-201.
+
+---------------------------------------------------------------------------
+lingard@wpi.wpi.edu

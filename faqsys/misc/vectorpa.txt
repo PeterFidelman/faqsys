@@ -1,0 +1,52 @@
+
+eyal@fir.canberra.edu.au (Eyal Lebedinsky) writes:
+
+>Hi,
+> This should be simple but I can do without figuring it out myself.
+>Basically I have two objects and I need to find thei closure rate. So if
+>the vector between them is A and their relative velocity is V then I want
+>to find that part of B along A. A unit vector for A should be sufficient
+>and I want to do NO trig, just simple mul/add. I think this should be
+>simple (maybe just an inner product of the unit vector and V?) but am
+>not sure.
+
+>Thanks in advance.
+
+Yes, it is simple. So simple, I keep looking in my lin. alg. book for
+it. (And I do not have that here...)
+
+-------*---------------> Vector A
+\      +
+ \     +
+  \    +
+   \   +
+    \  +
+     \ +
+      _| Vector B
+
+It was something like: a * aTb / aTa (From base to *)
+              [ x ]
+(In which a = [ y ] , so aT = [ x y z ], thus aTb (and aTa) is a number, not
+              [ z ]
+ a vector or a matrix)
+                                 [ 4 ]         [  1 ]
+I'll run a check in 2d:  Say A = [ 0 ] and B = [ -3 ].
+
+Then aTb = (4*1) + (0* -3 ) = 4
+aTa = 16, so aTb/aTa = 1/4. 
+                    [1]
+So, a * aTb / aTa = [0], and that's correct.
+
+geesh, I still remember! And that straight out of my head. No references.
+Great.
+
+BTW, If you want the vector perpendicular to A, you calculate of course:
+
+b - ( a * aTb / aTa ).
+
+Hope this helps,
+
+Wouter Liefting
+wlieftin@cs.vu.nl
+
+

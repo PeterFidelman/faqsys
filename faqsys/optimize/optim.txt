@@ -1,0 +1,477 @@
+ 
+                                     Member of the Internet Link Exchange
+
+                                   Doing It Fast 
+
+                                     Bob Pendleton 
+
+                                      bobp@pendleton.com 
+
+In this column I'm going to talk about some of the techniques that are used to get the kind of graphics speed you see in
+programs like REND386 and DOOM. I plan to continue this topic in later columns. Let's start of by looking at arithmetic. 
+
+Fixed Point Arithmetic 
+
+It seems natural to use floating point arithmetic in graphics programs. Floating point arithmetic is easy to use and it comes
+closer to working the way we expect arithmetic to work than any other kind of arithmetic we can use in programs. 
+
+Interactive graphics demands speed and floating point is not usually the fastest kind of arithmetic available on personal
+computers. Because graphics programs do so much arithmetic we want to do the arithmetic as fast as possible. On most
+machines we want to use integer arithmetic instead of floating point arithmetic because it is much faster. 
+
+If you have a fast 486 DX2 or DX4, a Pentium, or any of the RISC processors with floating point hardware you might not
+get much by avoiding floating point arithmetic. But if you want your programs to run quickly on anything but the newest
+processors with floating point hardware you want to avoid floating point arithmetic as much as possible. 
+
+The alternatives to floating point arithmetic are fixed point and integer arithmetic. Fixed point arithmetic uses ordinary integer
+operations to do arithmetic with numbers that have both a whole part and a fractional part. A fixed point number is called
+fixed point because the decimal point (I'm going to use decimal numbers in the first part of this discussion) is in a fixed
+location in the number. (Floating point on the other hand lets the decimal point float around.) You also have a fixed number
+of digits to work with. 
+
+Let's say we have a machine that lets us do arithmetic on signed 4 digit decimal numbers. That is, the numbers we can work
+with have a range from -9999 to 9999. 
+
+Let's assume we have an addition instruction that will add two of these numbers and give us a 4 digit result and a carry. We
+also have a subtraction instruction that subtracts two 4 digit numbers and gives us a 4 digit result and a borrow. 
+
+Our example machine also has multiply and divide instructions. Multiplication and division are not like addition and
+subtraction. The multiplier takes two 4 digit numbers and gives us an 8 digit result. The divider divides an 8 digit number by
+a 4 digit number and gives us a 4 digit quotient and a 4 digit remainder. 
+
+Multiply and divide might seem a little odd, but take a look at the 386 multiply and divide instructions. The multiply takes
+two 32 bit numbers and gives a 64 bit result and the divider divides a 64 bit number by a 32 bit number and gives a 32 bit
+quotient and a 32 bit remainder. 
+
+The number of digits you get when you multiply 2 numbers is the sum of the number of digits in the two numbers. This means
+that multiplication naturally gives you numbers twice as long as the ones you started with. Once you have the double long
+numbers you get from multiplying you need a divide operation that can scale them back down to 4 digits. 
+
+Having a double length intermediate value makes it possible to evaluate expressions like: 
+
+                                       x = (a * b ) / c 
+
+without getting the wrong answer. For example. 
+
+     x = 1000 * 10 / 2
+     x = 10000 / 2
+     -----
+     x = 5000
+
+If products weren't allowed to be longer than normal numbers then we would have: 
+
+     x = 1000 * 10 / 2
+     x = 0000 / 2
+     x = 0
+
+because 10,000 is a five digit number and we're only allowed 4 digit numbers the 1 at the top would get lost and we would
+get the wrong answer. 
+
+Ok, that gives us a nice definition of decimal integers. But what about fractions? 
+
+Just pretend that there is a decimal point in the middle of our numbers. This means that instead of writing "1" as 0001 we
+write one as 01.00. "01.00" is still a 4 digit decimal number. Inside our machine it is represented at "0100." The computer
+doesn't know or care about our imaginary decimal point. 
+
+We call this way of looking at numbers a "2.2" fixed point format because it has 2 digits on each side of the decimal point.
+We could also pretend that the decimal point is all the way to left giving us a 0.4 format or, if we want to, we could use a
+3.1 format with one digit of fraction and 3 digits of integer. Of course, an ordinary 4 digit integer is in 4.0 fixed point format. 
+
+If we want to add 4 + 3 in 2.2 format we set it up like this: 
+
+     04.00
+    +03.00
+    ------
+     07.00 
+
+Notice that a normal add operation that adds 2 integers also adds 2 fixed point numbers. It doesn't matter what format they
+are in, it just adds. 
+
+The same is true for subtraction: 
+
+     05.00
+    -07.00
+    ------
+    -02.00 
+
+Integer subtraction works on fixed point numbers just like it does on integers. Remember that we are the ones deciding
+where the decimal point is, the hardware neither knows nor cares. 
+
+Fixed point multiplication and division are not quite as easy as addition and subtraction. 
+
+When I learned to multiply decimal fractions I was taught to do the multiplication ignoring the decimal points and then, at the
+end, put the decimal point in the product so that the number of digits of fraction in the product is the sum of the number of
+digits of fraction in the multiplier and the multiplicand. For example: 
+
+    12.345 * 67.89 = 838.10205
+    12345  * 6789  = 83810205
+
+The digits in the product depend on the digits in the multiplier and the multiplicand. They do not depend on where the
+decimal points are in the multiplier or the multiplicand. 
+
+Here are some rules to remember when multiplying fixed point numbers: 
+
+   1.The maximum number of digits you can have in the product is the sum of the number of digits in the multiplier and the
+     multiplicand. 
+   2.The number of digits of fraction in the product is the sum of the number of digits of fraction in the multiplier and the
+     number of digits of fraction in the multiplicand. 
+   3.An integer is a fixed point number with 0 digits of fraction. 
+
+This means that when you multiply a fixed point number in an M.N format by an integer the result is a number in M.N
+format. For example let's multiply integer 7 by 3 in 2.2 fixed point format. 
+
+0007 * 03.00 = 21.00 
+
+When you multiply 2 fixed point numbers in M.N format you get a result that has 2N digits of fraction. For example: 
+
+07.00 * 03.00 = 21.0000 
+
+To get back to an M.N format number you throw away the low order N digits of the fraction. That is, you shift the number
+left by N digits. Truncating the low order digits is a source of error in fixed point arithmetic. You can round the fraction
+instead of truncating it, but that takes longer. 
+
+These rules also imply that you can multiply numbers in different fixed points formats and get a meaningful result. For
+example, you might have a table of sines in 2.30 binary fixed point format (in a binary format the numbers are the number of
+bits, not the number of digits) that you want to multiply by numbers in an 18.14 format. The result will be numbers in a 20.44
+fixed point format. You can get back to 18.14 format by throwing away the bottom 30 bits of the fraction and the top two
+extra bits of the integer part of the number. 
+
+When I first learned to do long division I was taught to write the answer as a quotient and a remainder. Later I learned how
+to continue the division to produce a decimal fraction by adding zeros to the right end of the dividend. A few years ago I
+realized that adding zeros is the same as shifting the dividend left. In fixed point arithmetic you shift the number left before
+you divide instead of adding one zero at a time as you do in long division. 
+
+Think about dividing 1 by 3. We know that the decimal fraction for 1/3 is 0.333... the threes just keep going on and on and
+on. But, if we divide the integer value 1 by the integer value 3 on a computer we get 0. Zero is not a very good
+approximation of 1/3. So, let's try adding a zero at the end of the 1. The result of dividing the integer 10 by 3 is 3. And the
+result of dividing 100 by 3 is 33. For every 0 we tack on to the 1 we get another 3 in the result. 
+
+In the 2.2 fixed point we've been using for our examples 1 is 01.00 which is really the integer 100 or 1 with 2 zeros tacked
+on the end. Dividing 01.00 by 3 is the same as dividing 0100 by 3 and we get the same 33 as a result. But, since we started
+with 01.00 we interpret the result as 00.33. This shows that when a fixed point number is divided by an integer the result is a
+fixed point number. 
+
+To divide a fixed point by a fixed point you have to tack on even more zeros to the end of the number you are dividing. This
+means that if we want 2 digits of fraction in the result we have to shift the dividend to the left by 2 digits before the division
+takes place. 
+
+ 
+       0100 / 0300 = 0000
+      01000 / 0300 = 0003
+     010000 / 0300 = 0033
+
+When we want to use fixed point arithmetic in a program we have to decide what format to use and how to implement it
+within the programming language we are using. 
+
+The first thing you have to do is pick a fixed point format. On 32 bit computers it is tempting to use a 16.16 format. That is,
+16 bits of fraction and 16 bits of integer. My experience with that format is that it is very easy to mess up the sign of the
+number during multiplies when the result of a multiply uses all the available bits. I like to leave a spare bit at the top of the
+format to guard against overflow. I tend to use a 17.15 format or 18.14 format to avoid these problems overflow problems. 
+
+You can use as many different fixed point formats as you need. If you are working with numbers that you know are always
+in the range 0 to 1 then an unsigned 1.31 format might be exactly what you want. If you are doing color computation then
+you might use a 0.8 format and pack each number in a byte. Using the right format can prevent a lot of problems. 
+
+Your choice of fixed point formats is restricted by your choice of programming language. If you pick a 32 bit fixed point
+format like 16.16 then you need to be able to multiply two 32 bit numbers, get a 64 bit result, and then shift the result right
+to get it back into the original fixed point format. Most PC C compilers don't provide the 64 bit integer type that you need
+for the intermediate values you generate when you multiply 32 bit numbers. 
+
+This means that if you want to stick to "pure" high level language programming you need to restrict yourself to 16 bit fixed
+point formats so that the product of 2 numbers will fit in a 32 bit "long" variable. You can do 3D graphics programming using
+16 bit fixed point formats in pure C. I've done it, it works, and it's a royal pain. It is especially painful when you know that
+with just a few lines of assembly language you can write the 32 bit fixed point multiply and divide routines you want. 
+
+My personal opinion is that you should use small amounts of assembly language in macros or in inline procedures to
+implement the fixed point operations and do the rest in the high level language of your choice. 
+
+When choosing a fixed point format look carefully at how many digits of fraction you need to do the job. If you only need a
+couple of digits of fraction then you can live with fixed point numbers with 7 bits of fraction. Two decimal digits of fraction
+gives you 100 steps between 0 and 1 or any two adjacent integer numbers. Seven bits of fraction gives you 128 steps
+between integers. If you need 3 decimal digits of fraction then 10 bits of fraction will do the job and so on. 
+
+Using more bits of fraction makes your fixed point number more precise at the expense of the range of numbers you can
+use. If you take 16 bits out of 32 total bits then you have limited the range of numbers you can represent to the range
+-32768 to 32767 for two's compliment integers or 0 to 65535 for unsigned integers. 
+
+The files fixed.cpp and fixed.h contain type definitions and in line assembly language arithmetic routines for an 18.14 fixed
+point format written in Watcom C including a couple of fixed point square root functions and table based sine and cosine
+functions. 
+
+The multiply and divide functions use assembly language to get at the hardware arithmetic capabilities that are hidden by high
+level programming languages. 
+
+One of the fixed point square root routines uses a standard Newton iteration to extract the root. It just happens to use fixed
+point arithmetic to do it. The routine is surprisingly (at least to me) accurate and fast enough to be useful, but only slightly
+faster than a software floating point square root and not nearly as accurate as the square root provided in the Watcom math
+library. 
+
+The other fixed point square root routine uses the integer square root procedure that is also in fixed.cpp. This routine uses
+the fact that fixed point numbers are really integers. The integer square root of a fixed point number divided by the square
+root of 2 to the F power where F is the number of bits of fraction in the fixed point number is the square root of the original
+fixed point number. If you have an even number of bits of fraction you can convert the integer square root to the fixed point
+square root with a shift. Otherwise you have to do one divide to recover the square root. 
+
+Since the integer square root routine is simple and fast the second fixed point routine is faster than the first one. But, it is not
+as accurate, especially when taking the roots of large numbers. 
+
+The file demo.cpp contains code that tests the fixed point and integer square root routines and does a timing test on each of
+them. There is also a timing test of the C library sqrt() function. It is interesting to compare the speed and accuracy of the
+double precision floating point square root and the 32 bit fixed point square roots. 
+
+On my home machine, a 386/40 with no floating point coprocessor the fast fixed point square root is about 2.5 times faster
+than the library floating point square root. 
+
+The sine and cosine functions are implemented as arrays of 256 fixed point sine values and 256 fixed point cosine values.
+The trick is to use 256 "degrees" instead of 360. This lets you use a simple masking operation to make sure that you don't
+over run the array boundaries. 
+
+256 degrees seems to be plenty for interactive graphics applications. If it isn't good enough for your application it is easy to
+generate tables with 512, 1024, 2048, or more entries. If you can live with slower functions but need better accuracy then
+linear interpolation between adjacent table entries is a good compromise. It you need better accuracy than that you're
+probably not going to be happy using fixed point arithmetic. 
+
+Code for generating the sine and cosine tables is also in demo.cpp. It's worth looking at that code if you are planning to
+generate tables of other functions. It is very easy to build tables that have cumulative errors built into them. Errors caused by
+bad tables are awfully hard to find. Also remember that the tables are only as good as the source of the values in the tables. 
+
+Fixed.cpp and fixed.h also contain a couple of routines that are handy for doing integer arithmetic. I've already mentioned
+the integer square root routine. This routine is based on one I picked up off the net sometime ago. I tested a number of
+integer square root routines and this one worked, it's simple, and it's fast. After a little study I even convinced myself that I
+understand how it works. It seems to be an implementation of the pencil and paper root extraction algorithm you may have
+learned in grade school. It takes advantage of the fact that all even powers of 2 are the squares of even powers of 2. 
+
+The other routine is mulDiv(a, b, c) this function multiplies A times B and then divides by C. The nice thing about the routine
+is that it multiplies 32 bit numbers and keeps around the 64 bit intermediate result. This means that you can do the common
+(A*B)/C operation over the entire range of 32 bit numbers and get the correct answer. 
+
+Transformations 
+
+Ok, let's start using some arithmetic. Pick up your typical graphics book and you'll find a chapter or three on 2 dimensional
+and 3 dimensional transformations. Transformations are used to convert coordinates in the coordinate system used to
+describe the world into the coordinate system used by the display screen as seen from the eye point. The world tends to be
+described in units like feet or millimeters while the screen is measured in pixels. 
+
+The "eye point" is where you are in the virtual world. The eye "point" actually has 4 parts. The first part really is a point, an x,
+y, z coordinate that tells where we are. This coordinate is also known as the "position vector." Once you know where you
+are you need to know which direction you are looking. An eye can't see in all directions at once so you need to know which
+direction is forward, which way is up, and which way is to your left. You could get by with knowing which way backward,
+down, and right, the choice is a matter of taste and convention. These three values are called the direction vectors and each
+of these has 3 components just like the X, Y, and Z of the position vector. 
+
+The position vector tells you where you are relative to the 0, 0, 0 point of the coordinate system you are using to describe
+the world and the direction vectors tell you how far your personal forward, up, and left are rotated from the axes of the base
+coordinate system. 
+
+As long as you have 3 directions, all at right angles to each other, you have a coordinate system that defines how the eye
+sees the world. You also have the information you need to transform world coordinates into eye coordinates so that you can
+see the world from the location and orientation of the eye. 
+
+Traditionally this is all described using translations and rotations relative to the X, Y, and Z axes. I find that I can keep it all
+straight by thinking about walking around a room. Imagine that you are standing in a room with your head at the 0, 0, 0 point
+of the room. The Z axis is sticking out your nose, pointing in the direction you are looking. The Y axis is stick out of the top
+of your head, pointing up. And the X axis is sticking out of both ears pointing to the left and right. 
+
+Any kind of movement that leaves you looking in exactly the same direction, not tipping your head or turning, is a translation.
+If you take a step forward you have translated in the +Z direction. A step to the left is a -X translation, standing on your toes
+is a +Y translation. Mathematically a translation is simply increasing or decreasing the X, Y, or Z components of your
+location vector. 
+
+Rotations leave your location vector alone but change the direction vectors. If you already understand all this nod your head
+up and down for "yes." Otherwise turn your head left and right for "no." If you nodded yes you rotated your head around the
+X axis sticking through your years. First you rotated by a positive angle and then by a negative angle. Because you rotated
+about the X axis the rotation was in the YZ plane. If you didn't understand then you rotated your head about the Y axis and
+you did the rotation in the XZ plane. 
+
+Let's say you take a step forward, adding 1 to your Z coordinate. You have translated along the Z axis. To draw the room
+with the eye in the new position you subtract 1 from the coordinates of all the objects in the room before you draw them. If
+you rotate the eye so that it is looking to the right then you actually draw everything by first rotating them to the left. The eye
+is actually in the center of the universe and cannot be moved because it is out side looking at the computers screen. But we
+can move everything else the other way to give the impression that the eye location and viewing direction has changed. 
+
+If you look in any good book on 3D graphics you will see that each different kind of transformation can be described as a
+4x4 matrix and the effect of performing several different transformations in a row can be described as the product of a
+sequence of individual transformation matrices. Because matrix algebra is well understood, and works for this application,
+most 3D graphics books talk about transformations in terms of 4x4 matrices and talk about transforming points by
+multiplying vectors by transformation matrices to get the transformed points. 
+
+Let's say you want to simulate walking through a mutant filled fortress. You compute each frame of the animation by first
+updating the location and viewing direction of the player, creating a transformation matrix from the new location information,
+transform the X, Y, and Z, coordinates of everything the player can see, and then drawing visible objects including the walls,
+floor, and ceiling. The transformation of all those coordinates can take a lot of time. In an animation you can't spend a lot of
+time on each frame or you lose the sense of "being there" that is so essential to a good game or a virtual reality. 
+
+The first question to ask is whether or not we really spend much time generating transformation matrices and transforming
+points? It turns out that you don't spend very much time creating the transformation matrices. You may well render an entire
+scene using a single transformation matrix. But, you have to transform every vertex of every polygon you are going to
+render. Which means you may spend a lot of time transforming points. 
+
+I can think of 4 different techniques (ignoring building faster hardware) that can be used to speed up building transformation
+matrices and transforming points. The first thing to do is to pick the fastest kind of arithmetic you can use. That's the reason
+the first half of this article is about fixed point arithmetic. 
+
+The second and third techniques are standard code tweaking techniques for improving speed. Namely, loop unrolling and
+inlining. 
+
+Loop unrolling simply says that instead of writing a loop to execute N times you should make N copies of the loop body.
+For example: 
+
+ 
+     for (i = 0; i < 4; i++)
+     {
+         printf("%d\n", i);
+     }
+
+when unrolled becomes: 
+
+ 
+     printf("0\n");
+     printf("1\n");
+     printf("2\n");
+     printf("3\n");
+
+The unrolled code may be larger in both source and object form but it will run without the overhead of incrementing and
+testing the loop variable and without paying the cost of all those taken jump instructions. The result is that while the code is
+larger it is also faster. It can be very much faster. 
+
+Inlining simply means that you should copy critical pieces of code "in line" in the body of the program instead of putting it in a
+subroutine. The reason for doing this is that the cost of a subroutine call can have a dramatic effect on execution time. 
+
+The last technique is to take advantage of 0 elements in the transformation matrix. Since multiplying by zero gives zero and
+adding zero gives the original value then if you know that an element in the matrix is zero you can just skip doing any
+multiplies and adds that involve that element and save the time that you would have used doing useless arithmetic. The trick
+is to take advantage of zeros without spending more time discovering them than you save by using them. 
+
+People have found several ways to make use of zeros in the transformation matrix. A standard observation is that the fourth
+column in a 4x4 matrix is often [0 0 0 1]. Actually, you can arrange it so that the fourth column is always [0 0 0 1] which can
+save you quite a bit. What follows is a fully unrolled 4x4 matrix multiply that doesn't assume there are any zeros: 
+
+a00 = (b00*c00) + (b01*c10) + (b02*c20) + (b03*c30)
+a01 = (b00*c01) + (b01*c11) + (b02*c21) + (b03*c31)
+a02 = (b00*c02) + (b01*c12) + (b02*c22) + (b03*c32)
+a03 = (b00*c03) + (b01*c13) + (b02*c23) + (b03*c33)
+
+a10 = (b10*c00) + (b11*c10) + (b12*c20) + (b13*c30)
+a11 = (b10*c01) + (b11*c11) + (b12*c21) + (b13*c31)
+a12 = (b10*c02) + (b11*c12) + (b12*c22) + (b13*c32)
+a13 = (b10*c03) + (b11*c13) + (b12*c23) + (b13*c33)
+
+a20 = (b20*c00) + (b21*c10) + (b22*c20) + (b23*c30)
+a21 = (b20*c01) + (b21*c11) + (b22*c21) + (b23*c31)
+a22 = (b20*c02) + (b21*c12) + (b22*c22) + (b23*c32)
+a23 = (b20*c03) + (b21*c13) + (b22*c23) + (b23*c33)
+
+a30 = (b30*c00) + (b31*c10) + (b32*c20) + (b33*c30)
+a31 = (b30*c01) + (b31*c11) + (b32*c21) + (b33*c31)
+a32 = (b30*c02) + (b31*c12) + (b32*c22) + (b33*c32)
+a33 = (b30*c03) + (b31*c13) + (b32*c23) + (b33*c33)
+
+The following is also a 4x4 matrix multiply but this time the assumption is made that the fourth column of each matrix is [0 0
+0 1]: 
+
+a00 = (b00*c00) + (b01*c10) + (b02*c20)
+a01 = (b00*c01) + (b01*c11) + (b02*c21)
+a02 = (b00*c02) + (b01*c12) + (b02*c22)
+a03 = 0
+
+a10 = (b10*c00) + (b11*c10) + (b12*c20)
+a11 = (b10*c01) + (b11*c11) + (b12*c21)
+a12 = (b10*c02) + (b11*c12) + (b12*c22)
+a13 = 0
+
+a20 = (b20*c00) + (b21*c10) + (b22*c20)
+a21 = (b20*c01) + (b21*c11) + (b22*c21)
+a22 = (b20*c02) + (b21*c12) + (b22*c22)
+a23 = 0
+
+a30 = (b30*c00) + (b31*c10) + (b32*c20) + c30
+a31 = (b30*c01) + (b31*c11) + (b32*c21) + c31
+a32 = (b30*c02) + (b31*c12) + (b32*c22) + c32
+a33 = 1
+
+The general case matrix multiply takes 64 multiplies and 48 adds. The special case only needs 36 multiplies and 27 adds. 
+
+When transforming points the general case vector x matrix looks like: 
+
+a0 = (x*b00) + (y*b10) + (z*b20) + b30
+a1 = (x*b01) + (y*b11) + (z*b21) + b31
+a2 = (x*b02) + (y*b12) + (z*b22) + b32
+a3 = (x*b03) + (y*b13) + (z*b23) + b33
+
+The special case looks like: 
+
+a0 = (x*b00) + (y*b10) + (z*b20) + b30
+a1 = (x*b01) + (y*b11) + (z*b21) + b31
+a2 = (x*b02) + (y*b12) + (z*b22) + b32
+a3 = 1
+
+Not quite as dramatic a change but saving 3 multiplies and 3 adds each time you transform a point can make a serious
+difference when you are transforming hundreds or thousands of points. 
+
+Another way to make use of zeros is to restrict the kinds of transforms that you allow so that you know that specific
+elements in the body of the transformation matrix are always zero. Games like DOOM from Id Software let you translate
+your view point and rotate it around the Y axis, but they do not let you rotate around the X or Z axes. That is, they don't let
+you look up or down or stand on your head. These restrictions force several zeros in the matrix which lets you transform
+points much faster. 
+
+The demo contains code to measure how long it would take to transform 1,000,000 points using different techniques. In all
+cases the matrix multiply is fully unrolled. 
+
+When you run "demo trans" it prints 4 execution times. The first one measures how much time it takes to execute an empty
+loop 1,000,000 times. The second number is how long it takes to transform 1,000,000 points making a subroutine call for
+each point. The third time is the same test with the transform inlined. And, the fourth time is inlined, unrolled, and restricted
+so that only translation, scaling, and rotation about the Y axis are allowed. All times are in seconds. 
+
+On my 386/40 I get: 
+ Test
+           Time
+ Inline
+           7.48
+ Restricted
+           4.49
+ Empty loop
+           0.276
+ Subroutine
+           10.97
+
+
+In "Graphics Gems II" there is a very interesting chapter by Jim Arvo on classifying transformation matrices by their zero
+structure. Knowing the zero structure lets you use a matrix multiply optimized for a specific pattern of zeros. I haven't tested
+the technique, but it looks like a winner. 
+
+(I've tried building a matrix multiplier that has an unrolled matrix multiply optimized for all possible zero structures... (Ok, it
+was late at night and I had had way to much coffee...) It was pretty easy to write a program that would write the code for
+me. But none of the compilers I have would compile a 1.5 megabyte .c file with a switch statement that had 65536 cases.
+Even when I trimmed it down to 4096 cases it still croaked all my compilers.) 
+
+A very interesting chapter in the original "Graphics Gems" written by Joseph M. Cychosz talks about efficient ways to build
+transformation matrices without doing full matrix multiplies. This work also takes advantage of zeros in the matrices to
+reduce the amount of arithmetic needed to multiply a transformation matrix of a known structure by a matrix of unknown
+structure. I've used this technique and it works very well. 
+
+The books "Graphics Gems," "Graphics Gems II," "Graphics Gems III," "Graphics Gems IV," and "Graphics Gems V." are
+well worth the cost to anyone learning graphics programming or anyone doing graphics software development. 
+
+
+
+References: 
+
+"Graphics Gems", edited by Andrew Glassner, Academic Press 1990. 
+
+"Graphics Gems II", edited by Jim Arvo, Academic Press 1991. 
+
+"Principles of Interactive Computer Graphics", William M. Newman and Robert F. Sproull, McGraw-Hill 1979. 
+
+"Software Manual for the Elementary Functions", William J. Cody and William Waite, Prentice-Hall 1980. 
+
+"Computer Graphics, Principles and Practice", second edition, James D. Foley, Andries van Dam, Steven K. Feiner, and
+John F. Hughes, Addison-Wesley Publishing Company 1992. 
+
+"Numerical Analysis", second edition, Richard L. Burden, J. Douglas Faires, Albert C. Reynolds, Prindle, Weber &
+Schmidt 1981. 
+
+
+
+Copyright © 1993, 1996 Robert C. Pendleton. All rights reserved. 
+
+             

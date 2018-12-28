@@ -1,0 +1,376 @@
+In article <2479@orca.TEK.COM> brucec@orca.UUCP (Bruce Cohen) writes:
+>In article <6019@iuvax.UUCP> viking@iuvax writes:
+>>
+>>The major enhancements that Jim added to the program were to recode it in
+>>C and to use "a CORDIC rotator instead of trig functions".  I want to talk
+>>with Jim about his program....where is he?!
+>>
+>>Alternately, does anyone know anything about "CORDIC rotators"?  I'd like to
+>>see the source to his modification of Michiel's program.  The algorithm used
+>>was based on one developed by LucasFilm Ltd. and published in the Sept. '84
+>>Scientific American.
+
+The idea is really simple.  A rotation can be expressed as:
+
+	[ x' ]   [ cos t   -sin y ] [ x ]
+	[ y' ] = [ sin t    cos t ] [ y ]
+
+Factor out cos t, giving:
+
+	[ x' ]         [   1     -tan y ] [ x ]
+	[ y' ] = cos t [ tan t      1   ] [ y ]
+
+Now let t be expressed as a signed sum of 
+		        -1  -i
+	t = Sum { d  tan   2   },   where d  = {+1, -1}
+	     i     i                       i
+
+This yields (please forgive the cruddy typesetting; Mathtype doesn't work
+on UNIX):
+
+	                                      -i
+	[ x' ]                    [ 1     -d 2   ] [ x ]
+	[    ]                    [         i    ] [   ]
+	[    ] = Sum { C  } Sum { [    -i        ] [   ] }
+	[ y' ]    i     i    i    [ d 2      1   ] [ y ]
+				     i
+
+The first sum is a constant.  The second sum is a series of shifts and
+adds (or subtracts).
+
+
+This is illustrated by the following working code, which performs all of the
+following operations:
+	rotate a vector
+	polar to rectangular conversion
+	rectangular to polar conversion
+	simultaneous calculation of sine and cosine.
+	atan2()
+Note that the normalization and denormalization is done mainly to increase
+accuracy; if you're more concerned about speed, you'd probably hack this
+out entirely or just shift by a fixed amount.
+
+You can do similar sorts of things with hyperbolic functions, thereby
+being able to do exponential and logarithms.  I have never written such
+code, although I would like to have it, especially to calculate gamma
+correction tables.
+
+------------------------------------------------------------
+
+# define RADIANS 1
+# define COSCALE 0x22c2dd1c	/* 0.271572 */
+
+static long arctantab[32] = {
+# ifdef DEGREES		/* MS 10 integral bits */
+# define QUARTER (90 << 22)
+	266065460, 188743680, 111421900, 58872272, 29884485, 15000234, 7507429,
+	3754631, 1877430, 938729, 469366, 234683, 117342, 58671, 29335, 14668,
+	7334, 3667, 1833, 917, 458, 229, 115, 57, 29, 14, 7, 4, 2, 1, 0, 0, 
+# else
+# ifdef RADIANS	/* MS 4 integral bits */
+# define QUARTER ((int)(3.141592654 / 2.0 * (1 << 28)))
+	297197971, 210828714, 124459457, 65760959, 33381290, 16755422, 8385879,
+	4193963, 2097109, 1048571, 524287, 262144, 131072, 65536, 32768, 16384,
+	8192, 4096, 2048, 1024, 512, 256, 128, 64, 32, 16, 8, 4, 2, 1, 0, 0, 
+# else
+# define BRADS 1
+# define QUARTER (1 << 30)
+	756808418, 536870912, 316933406, 167458907, 85004756, 42667331,
+	21354465, 10679838, 5340245, 2670163, 1335087, 667544, 333772, 166886,
+	83443, 41722, 20861, 10430, 5215, 2608, 1304, 652, 326, 163, 81, 41,
+	20, 10, 5, 3, 1, 1, 
+# endif
+# endif
+};
+
+
+/* To rotate a vector through an angle of theta, we calculate:
+ *
+ *	x' = x cos(theta) - y sin(theta)
+ *	y' = x sin(theta) + y cos(theta)
+ *
+ * The rotate() routine performs multiple rotations of the form:
+ *
+ *	x[i+1] = cos(theta[i]) { x[i] - y[i] tan(theta[i]) }
+ *	y[i+1] = cos(theta[i]) { y[i] + x[i] tan(theta[i]) }
+ *
+ * with the constraint that tan(theta[i]) = pow(2, -i), which can be
+ * implemented by shifting. We always shift by either a positive or
+ * negative angle, so the convergence has the ringing property. Since the
+ * cosine is always positive for positive and negative angles between -90
+ * and 90 degrees, a predictable magnitude scaling occurs at each step,
+ * and can be compensated for instead at the end of the iterations by a
+ * composite scaling of the product of all the cos(theta[i])'s.
+ */
+
+static
+pseudorotate(px, py, theta)
+long *px, *py;
+register long theta;
+{
+	register int i;
+	register long x, y, xtemp;
+	register long *arctanptr;
+
+	x = *px;
+	y = *py;
+
+	/* Get angle between -90 and 90 degrees */
+	while (theta < -QUARTER) {
+	    x = -x;
+	    y = -y;
+	    theta += 2 * QUARTER;
+	}
+	while (theta > QUARTER) {
+	    x = -x;
+	    y = -y;
+	    theta -= 2 * QUARTER;
+	}
+
+	/* Initial pseudorotation, with left shift */
+	arctanptr = arctantab;
+	if (theta < 0) {
+	    xtemp = x + (y << 1);
+	    y     = y - (x << 1);
+	    x = xtemp;
+	    theta += *arctanptr++;
+	}
+	else {
+	    xtemp = x - (y << 1);
+	    y     = y + (x << 1);
+	    x = xtemp;
+	    theta -= *arctanptr++;
+	}
+
+	/* Subsequent pseudorotations, with right shifts */
+	for (i = 0; i <= 28; i++) {
+	    if (theta < 0) {
+		xtemp = x + (y >> i);
+		y     = y - (x >> i);
+		x = xtemp;
+		theta += *arctanptr++;
+	    }
+	    else {
+		xtemp = x - (y >> i);
+		y     = y + (x >> i);
+		x = xtemp;
+		theta -= *arctanptr++;
+	    }
+	}
+
+	*px = x;
+	*py = y;
+}
+
+
+static
+pseudopolarize(argx, argy)
+long *argx, *argy;
+{
+	register long theta;
+	register long yi, i;
+	register long x, y;
+	register long *arctanptr;
+
+	x = *argx;
+	y = *argy;
+
+	/* Get the vector into the right half plane */
+	theta = 0;
+	if (x < 0) {
+	    x = -x;
+	    y = -y;
+	    theta = 2 * QUARTER;
+	}
+
+	if (y > 0)
+	    theta = - theta;
+	
+	arctanptr = arctantab;
+	if (y < 0) {	/* Rotate positive */
+		yi = y + (x << 1);
+		x = x - (y << 1);
+		y = yi;
+		theta -= *arctanptr++;	/* Subtract angle */
+	}
+	else {		/* Rotate negative */
+		yi = y - (x << 1);
+		x = x + (y << 1);
+		y = yi;
+		theta += *arctanptr++;	/* Add angle */
+	}
+
+	for (i = 0; i <= 28; i++) {
+	    if (y < 0) {	/* Rotate positive */
+		yi = y + (x >> i);
+		x = x - (y >> i);
+		y = yi;
+		theta -= *arctanptr++;
+	    }
+	    else {		/* Rotate negative */
+		yi = y - (x >> i);
+		x = x + (y >> i);
+		y = yi;
+		theta += *arctanptr++;
+	    }
+	}
+
+	*argx = x;
+	*argy = theta;
+}
+
+
+/* Fxprenorm() block normalizes the arguments to a magnitude suitable for
+ * CORDIC pseudorotations.  The returned value is the block exponent.
+ */
+static int
+fxprenorm(argx, argy)
+long *argx, *argy;
+{
+	register long x, y;
+	register int shiftexp;
+	int signx, signy;
+
+	shiftexp = 0;		/* Block normalization exponent */
+	signx = signy = 1;
+
+	if ((x = *argx) < 0) {
+	    x = -x; signx = -signx;
+	}
+	if ((y = *argy) < 0) {
+	    y = -y; signy = -signy;
+	}
+	/* Prenormalize vector for maximum precision */
+	if (x < y) {	/* |y| > |x| */
+	    while (y < (1 << 27)) {
+		x <<= 1; y <<= 1; shiftexp--;
+	    }
+	    while (y > (1 << 28)) {
+		x >>= 1; y >>= 1; shiftexp++;
+	    }
+	}
+	else {		/* |x| > |y| */
+	    while (x < (1 << 27)) {
+		x <<= 1; y <<= 1; shiftexp--;
+	    }
+	    while (x > (1 << 28)) {
+		x >>= 1; y >>= 1; shiftexp++;
+	    }
+	}
+
+	*argx = (signx < 0) ? -x : x;
+	*argy = (signy < 0) ? -y : y;
+	return(shiftexp);
+}
+
+
+/* Return a unit vector corresponding to theta.
+ * sin and cos are fixed-point fractions.
+ */
+fxunitvec(cos, sin, theta)
+long *cos, *sin, theta;
+{
+	*cos = COSCALE >> 1;	/* Save a place for the integer bit */
+	*sin = 0;
+	pseudorotate(cos, sin, theta);
+
+	/* Saturate results to fractions less than 1, shift out integer bit */
+	if (*cos >= (1 << 30)) 
+	    *cos = 0x7FFFFFFF;		/* Just shy of 1 */
+	else if (*cos <= -(1 << 30))
+	    *cos = 0x80000001;		/* Just shy of -1*/
+	else
+	    *cos <<= 1;
+
+	if (*sin >= (1 << 30)) 
+	    *sin = 0x7FFFFFFF;		/* Just shy of 1 */
+	else if (*sin <= -(1 << 30))
+	    *sin = 0x80000001;		/* Just shy of -1*/
+	else
+	    *sin <<= 1;
+}
+
+
+/* Fxrotate() rotates the vector (argx, argy) by the angle theta. */
+fxrotate(argx, argy, theta)
+long *argx, *argy;
+long theta;
+{
+	register long x, y;
+	int shiftexp;
+	long frmul();
+
+	if (((*argx || *argy) == 0) || (theta == 0))
+	    return;
+
+	shiftexp = fxprenorm(argx, argy);  /* Prenormalize vector */
+	pseudorotate(argx, argy, theta);   /* Perform CORDIC pseudorotation */
+	x = frmul(*argx, COSCALE);	/* Compensate for CORDIC enlargement */
+	y = frmul(*argy, COSCALE);
+	if (shiftexp < 0) {		/* Denormalize vector */
+	    *argx = x >> -shiftexp;
+	    *argy = y >> -shiftexp;
+	}
+	else {
+	    *argx = x << shiftexp;
+	    *argy = y << shiftexp;
+	}
+}
+
+
+fxatan2(x, y)
+long x, y;
+{
+	if ((x || y) == 0)
+	    return(0);
+	fxprenorm(&x, &y);	/* Prenormalize vector for maximum precision */
+	pseudopolarize(&x, &y);	/* Convert to polar coordinates */
+	return(y);
+}
+
+
+fxpolarize(argx, argy)
+long *argx, *argy;
+{
+	int shiftexp;
+	long frmul();
+
+	if ((*argx || *argy) == 0) {
+	    *argx = 0;	/* Radius */
+	    *argy = 0;	/* Angle */
+	    return;
+	}
+
+	/* Prenormalize vector for maximum precision */
+	shiftexp = fxprenorm(argx, argy);
+	/* Perform CORDIC conversion to polar coordinates */
+	pseudopolarize(argx, argy);
+	/* Scale radius to undo pseudorotation enlargement factor */
+	*argx = frmul(*argx, COSCALE);
+	/* Denormalize radius */
+	*argx = (shiftexp < 0) ? (*argx >> -shiftexp) : (*argx << shiftexp);
+}
+
+
+# ifdef vax
+long
+frmul(a, b)		/* Just for testing */
+long a, b;
+{
+	/* This routine should be written in assembler to calculate the
+	 * high part of the product, i.e. the product when the operands
+	 * are considered fractions.
+	 */
+	return((a >> 16) * (b >> 15));
+}
+# endif
+
+##### This is the end of my posting #####
+-- 
+Ken Turkowski @ Apple Computer, Inc., Cupertino, CA
+UUCP: {mtxinu,sun,decwrl,nsc,voder}!apple!turk
+CSNET: turk@Apple.CSNET
+ARPA: turk%Apple@csnet-relay.ARPA
+
+
+ 

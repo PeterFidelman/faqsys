@@ -1,0 +1,973 @@
+HOW TO OPTIMIZE FOR THE PENTIUM PROCESSOR
+*****************************************
+Copyright (c) 1996 by Agner Fog
+
+Contents:
+
+1.  introduction
+2.  literature
+3.  debugging
+4.  memory model
+5.  alignment
+6.  cache
+7.  pairing integer instructions
+8.  first time vs. repeated execution
+9.  pairing multicycle instructions
+10. splitting complex instructions into simpler ones
+11. address generation interlock
+12. jumps and branches
+13. prefixes
+14. reducing code size
+15. scheduling floating point code
+16. loops
+17. discussion of special instructions
+18. using integer instructions to do floating point operations
+19. using floating point instructions to do integer operations
+20. list of integer instructions
+21. list of floating point instructions
+22. testing code speed
+23. considerations for other microprocessors
+
+
+1. INTRODUCTION
+===============
+This manual describes in detail how to write optimized code for the 
+Pentium(R) microprocessor.
+
+Programming in assembly language is much more difficult than high level 
+language. Making bugs is very easy, and finding them is very difficult. Now 
+you have been warned! It is assumed that the reader already is experienced 
+in assembly programming. If not, then please read some books on the subject 
+and get some programming experience before you begin to do complicated 
+optimations.  
+
+The hardware design of the Pentium chip has many features which are 
+optimized specifically for some commonly used instructions or instruction 
+combinations, rather than using general optimation methods. Consequently, 
+the rules for optimizing software for this design are quite complicated and 
+have many exceptions, but the possible gain in performance may be 
+substantial.  
+
+Before you start to convert your code to assembly, make sure that your 
+algorithm is optimal. Often you can improve a piece of code much more by 
+improving the algorithm than by converting it to assembler code.  
+
+Some high level language compilers offer reasonably good optimation for the 
+Pentium, and further optimation by hand may not be worth the effort except 
+for the most critical pieces of code - or for the sport of it.  
+
+Intel has recently announced that they will produce new versions of the 
+Pentium and PentiumPro processors with 57 new instruction opcodes for doing 
+integer vector operations. These are called multimedia extension (MMX) 
+instructions.  The Pentium chip with MMX will behave slightly different from 
+the Pentium without MMX, according to the technical documents. These 
+differences will be mentioned where appropriate. The Pentium Pro processor 
+behaves very differently from the Pentium, and will be covered only briefly 
+by this manual.
+
+The informations in this document are based mainly on my own experiments on 
+a Pentium computer. Informations about PentiumPro and MMX processors are 
+based solely on documents from Intel.
+
+Good luck with your hunt for nanoseconds!
+
+
+2. LITERATURE
+=============
+A lot of useful literature can be downloaded for free from Intel's www site:
+www.intel.com
+
+You can find the documents you need by using the search facilities at:
+http://www-cs.intel.com/search.htm
+and:
+http://www-techdoc.intel.com/cgi-bin/taos.pl
+
+The documents are in various different file formats. If a particular 
+document is in a format not supported by your word processing software then 
+you may seek an appropriate file viewer somewhere on the internet. Many 
+software companies are offering such file viewers for free to support their 
+file formats.  
+
+The most useful document is Intel's application note: 
+'AP-526 Optimizations for Intel's 32-bit Processors'
+which can be downloaded from the following URL:
+http://www-techdoc.intel.com/cgi-bin/synopsis_spangle.pl?\docs\microproc\general\app_note\242816+0
+
+A fancy tutorial named "Optimizing Applications for the Pentium Processor"
+is awailable at: 
+http://www.intel.com/ial/processr/cbt.htm 
+
+Detailed information on the MMX processors can be found in the documents:
+"Intel architecture MMX technology developer's manual", and
+"Intel architecture MMX technology programmers reference manual"
+both of which are awailable from:
+http://www.intel.com/pc-supp/multimed/MMX
+
+A lot of other sources than Intel also have useful information. These sources
+are listed in the comp.lang.asm.x86 FAQ. I would particularly recommend 
+http://www.x86.org.
+The shareware editor ASMEDIT has an online help which covers all instruction 
+codes etc. It is available from: 
+http://www.inf.tu-dresden.de/~ok3/asmedit.html
+
+
+3. DEBUGGING
+============
+Debugging assembly code can be quite hard and frustrating, as you probably 
+already have discovered. I would recommend that you start with writing the 
+piece of code you want to optimize as a subroutine in a high level language.  
+Next, write a test program that will test your subroutine thoroughly. Make 
+sure the test program goes into all branches and special cases.
+
+When your high level language subroutine works with your test program, then 
+you are ready to translate the code to assembly language (some high level 
+compilers will do this for you), and test it on the test program.
+
+Then you can start to optimize. Each time you have made a modification you 
+should run it on the test program to see if it works correctly.
+
+Number all your versions and save them so that you can go back and test them 
+again in case you discover an error which the test program didn't catch 
+(such as writing to a wrong address).
+
+
+4. MEMORY MODEL
+===============
+The Pentium is designed primarily for 32 bit code, and it's performance is 
+inferior on 16 bit code. Segmenting your code and data also degrades 
+performance significantly, so you should generally prefer 32 bit flat mode, 
+and an operating system which supports this mode (e.g. Windows 95, OS/2, or 
+a 32 bit DOS extender). The code examples shown in this manual assume a 32 
+bit flat memory model, unless otherwise specified.
+
+
+5. ALIGNMENT
+============
+All data in RAM should be aligned to adresses divisible by 2, 4, or 8 
+according to this scheme:
+
+operand size      alignment
+---------------------------
+1  (byte)          1
+2  (word)          2    (or adress mod 4 >< 3. other proc. require align by 2)
+4  (dword)         4
+6  (fword)         4    (Pentium Pro requires alignment by 8)
+8  (qword)         8
+10 (tbyte)         8    (Pentium Pro requires alignment by 16)
+
+Misaligned data will take at least 3 clock cycles extra to access.
+
+Aligning code is not necessary when you run on the Pentium, but for optimal 
+performance on other processors you may align subroutine entries and loop 
+entries by 8 or 16.
+
+
+6. CACHE
+========
+The Pentium has 8 kb of on-chip cache (level one cache) for code, and 8 kb 
+for data. Data in the level 1 cache can be read or written to in only one 
+clock cycle, whereas a cache miss may cost many clock cycles. It is 
+therefore important that you understand how the cache works in order to use 
+it most effectively. Most descriptions of the cache in other documents are 
+insufficient and difficult to understand. I hope you find this one better.
+
+The data cache consists of 256 lines of 32 bytes each. Each time you read a 
+data item which is not cached, the processor will read an entire cache line 
+from memory. The cache lines are always aligned to a physical address 
+divisible by 32. When you have read a byte at an address aligned by 32, then 
+the next 31 bytes can be read or written to at almost no extra cost. You can 
+take advantage of this by arranging data which are used near each other into 
+aligned blocks of 32 bytes of memory. If, for example, you have a loop which 
+accesses two arrays, then you may combine the two arrays into one array of 
+structures, so that data which are used together are also stored together.
+
+If the size of an array or other data structure is a multiple of 32 bytes, 
+then you should preferably align it by 32.
+
+A cache line can not be assigned to an arbitrary memory address. Each cache 
+line has a 7-bit set-value which must match bit 5 through 11 of the physical 
+RAM address (bit 0-4 define the 32 bytes within a cache line). There are two 
+cache lines for each of the 128 set-values, so there are two possible cache 
+lines to assign to any RAM address. The consequence of this is that the 
+cache can hold no more than two different data blocks which have the same 
+value in bits 5-11 of the address. You can determine if two addresses have 
+the same set-value by the following method: Strip off the lower 5 bits of 
+each address to get a value divisible by 32. If the difference between the 
+two truncated addresses is a multiple of 4096 (=1000H), then the addresses 
+have the same set-value.
+
+Let me illustrate this by the following piece of code, where ESI holds an 
+address divisible by 32:
+
+AGAIN:  MOV  EAX, [ESI]
+        MOV  EBX, [ESI + 13*4096 +  4]
+        MOV  ECX, [ESI + 20*4096 + 28]
+        DEC  EDX
+        JNZ  AGAIN
+
+The three addresses used here all have the same set-value because the 
+differences between the truncated addresses are multipla of 4096. This loop 
+will perform very poorly. At the time you read ECX there is no free cache 
+line with the proper set-value so the processor takes the least recently 
+used of the two possible cache lines, that is the one that was used for EAX, 
+and fills it with the data from [ESI + 20*4096] to [ESI + 20*4096 + 31] and 
+then reads ECX.  Next, when reading EAX, you find that the cache line that 
+held the value for EAX has been discarded, so you take the least recently 
+used line, which is the one holding the EBX value, and so on..  You have 
+nothing but cache misses and the loop takes something like 60 clock cycles.
+If the third line is changed to:
+
+        MOV  ECX, [ESI + 20*4096 + 32]
+
+then we have crossed a 32 byte boundary, so that we do not have the same 
+set-value as in the first two lines, and there will be no problem assigning 
+a cache line to each of the three addresses. The loop now takes only 3 clock 
+cycles (except for the first time) - a very considerable improvement!
+
+It may be very difficult to determine if your data addresses have the same 
+set-values, especially if they are scattered around in different segments.
+The best thing you can do to avoid problems of this kind is to keep all data 
+used in the critical part or your program within one contiguous block of 
+max.  8 kbytes or two contiguous blocks of max. 4 kbytes each (for example 
+one block for static data and another block for data on the stack). This 
+will make sure that your cache lines are used optimally.
+
+If the critical part of your code accesses big data structures or random 
+data addresses, then you may want to keep all frequently used variables 
+(counters, pointers, control variables, etc.) within a single contiguous 
+block of max 4 kbytes so that you have a complete set of cache lines free 
+for accessing random data. Since you probably need stack space anyway for 
+subroutine parameters and return addresses, the best thing is to copy all 
+frequently used static data to dynamic variables on the stack, and copy them 
+back again outside the main loop if they have been changed.
+
+Reading a data item which is not in the level one cache causes an entire 
+cache line to be filled from the level two cache, which takes approximately 
+200 ns (that is 20 clocks on a 100 MHz system), but the bytes you ask for 
+first are available already after 50-100 ns. If the data item is not in the 
+level two cache either, then you will get a delay of something like 200-300 
+ns. This delay will be somewhat longer if you cross a DRAM page boundary.
+(The size of a DRAM page is 1 kb for 4 MB 72 pin RAM modules, and 2 kb for 
+16 MB modules).
+
+When you write to an address which is not in the level 1 cache, then the 
+value will go right through to the level 2 cache or the RAM (depending on 
+how the level 2 cache is set up). This takes approximately 100 ns. If you 
+write eight or more times to the same 32 byte block of memory without also 
+reading from it, and the block is not in the level one cache, then it may be 
+advantageous to make a dummy read from the block first to load it into a 
+cache line. All subsequent writes to the same block will then go to the 
+cache instead, which takes only one clock cycle. (This is not needed on a 
+PentiumPro, which always loads a cache line on write misses). There is 
+sometimes a small penalty for writing repeatedly to the same address without 
+reading in between.
+
+Another way to reduce the number of write misses is to write 8 bytes at a 
+time using  FILD / FISTP  with qword operands rather than writing 4 bytes at 
+a time using integer registers. The extra cost of the slow FILD and FISTP 
+instructions is compensated for by the fact that you only have to do half as 
+many writes. However, this method is only advantageous on a Pentium, and 
+only if the destination is not in the cache. The method is explained in 
+section 19 below.
+ 
+Temporary data may conveniently be stored at the stack because stack data 
+are very likely to be in the cache. You should be aware, however, that if 
+you store QWORD data on a DWORD size stack, or DWORD data on a WORD size 
+stack, then you have a potential alignment problem.
+
+If the life ranges of two data structures do not overlap, then they may use 
+the same RAM area to increase cache efficiency. This is consistent with the 
+common practice of allocating space for temporary variables on the stack.
+
+Storing temporary data in registers is of course even more efficient. Since 
+registers is a scarce ressource, you may want to use [ESP] rather than [EBP] 
+for addressing data on the stack, in order to free EBP for other purposes.  
+Just don't forget that the value of ESP changes every time you do a PUSH or 
+POP. (You cannot use ESP under 16-bit Windows because the timer interrupt 
+will modify the high word of ESP at unpredictable places in your code.)
+
+The Pentium has a separate 8 kb cache for code, which is similar to the data 
+cache. It is important that the critical part of your code (the innermost 
+loops) fit in the code cache. Frequently used pieces of code or routines 
+which are used together should preferable be stored near each other. Seldom 
+used branches or procedures should go to the bottom of your code.
+
+
+7. PAIRING INTEGER INSTRUCTIONS
+===============================
+The Pentium has two pipelines for executing instructions, called the U-pipe 
+and the V-pipe. Under certain conditions it is possible to execute two 
+instructions simultaneously, one in the U-pipe and one in the V-pipe. This 
+can almost double the speed. It is therefore advantageous to reorder your 
+instructions to make them pair.
+
+The following instructions are pairable in either pipe:
+  MOV register, memory, or immediate into register or memory
+  PUSH register or immediate
+  POP register
+  LEA, NOP
+  INC, DEC, ADD, SUB, CMP, AND, OR, XOR, 
+  and some forms of TEST (see section 17.1)
+
+The following instructions are pairable in the U-pipe only:
+ADC, SBB
+SHR, SAR, SHL, SAL with immediate count
+ROR, ROL, RCR, RCL with an immediate count of 1
+
+The following instructions can execute in either pipe but are only pairable 
+when in the V-pipe: near call, short and near jump, short and near 
+conditional jump.
+
+All other integer instructions can execute in the U-pipe only, and are not 
+pairable.
+
+Two consecutive instructions will pair when the following conditions are met:
+
+7.1 The first instruction is pairable in the U-pipe and the second instruction
+    is pairable in the V-pipe.
+
+7.2 The second instruction cannot read or write a register which the first 
+    instruction writes to. Examples:
+    MOV EAX, EBX / MOV ECX, EAX     ; read after write, do not pair
+    MOV EAX, 1   / MOV EAX, 2       ; write after write, do not pair
+    MOV EBX, EAX / MOV EAX, 2       ; write after read, pair OK
+    MOV EBX, EAX / MOV ECX, EAX     ; read after read, pair OK
+    MOV EBX, EAX / INC EAX          ; read and write after read, pair OK
+
+7.3 In rule 7.2 partial registers are treated as full registers. Example:
+    MOV AL, BL  /  MOV AH, 0        ; writes to different parts of the same
+                                    ; register, do not pair
+
+7.4 Two instructions cannot access the same dword of memory simultaneously.
+    The following examples assume that ESI is divisible by 4:
+    MOV AL, [ESI] / MOV BL, [ESI+1]   ; within same dword, do not pair.
+    MOV AL, [ESI+3] / MOV BL, [ESI+4] ; on each side of a dword boundary, pair.
+
+7.5 Rule 7.4 is extended to the case where bit 2-4 is the same in the two 
+    adresses. For dword adresses this means that the difference between the
+    two adresses should not be divisible by 32. Examples:
+    MOV [ESI], EAX / MOV [ESI+32000], EBX ;  do not pair
+    MOV [ESI], EAX / MOV [ESI+32004], EBX ;  pair OK
+
+7.6 Two instructions which both write to parts of the flags register can pair
+    despite rule 7.2 and 7.3.  Example:
+    SHR EAX,4 / INC EBX   ; pair OK
+
+7.7 An instruction which writes to the flags can pair with a conditional jump
+    despite rule 7.2.  Example:
+    CMP EAX, 2 / JA LabelBigger   ; pair OK
+
+7.8 The following instruction combinations can pair despite the fact that they
+    both modify the stack pointer:
+    PUSH + PUSH,  PUSH + CALL,  POP + POP
+    Examples:
+    PUSH EAX / CALL MySub  ; pair OK
+    PUSH AX  / PUSH BX     ; (16 bit mode) do not pair if SP is divisible by 4
+                           ; because of rule 7.4
+
+7.9 There are restrictions on the pairing on instructions with prefix.
+    There are several types of prefixes:
+    - instructions adressing a non-default segment have a segment prefix.
+    - instructions using 16 bit data in 32 bit mode, or 32 bit data in 16 bit 
+      mode have an operand size prefix.
+    - instructions using 32 bit base or index registers in 16 bit mode have
+      an address size prefix.
+    - repeated string instructions have a repeat prefix.
+    - locked instructions have a LOCK prefix.
+    - many instructions which were not implemented on the 8086 processor 
+      have a two byte opcode where the first byte is 0FH. The 0FH byte 
+      behaves as a prefix on the Pentium without MMX, but not on the Pentium 
+      with MMX. The most common instructions with 0FH prefix are: MOVZX, 
+      MOVSX, PUSH FS, POP FS, PUSH GS, POP GS, LFS, LGS, LSS, SETcc, BT, 
+      BTC, BTR, BTS, BSF, BSR, SHLD, SHRD, and IMUL with two operands and no 
+      immediate operand.
+
+    On the Pentium without MMX, a prefixed instruction can only execute in
+    the U-pipe, except for conditional near jumps.
+    On the Pentium with MMX, instructions with operand size, address 
+    size, or 0FH prefix can execute in either pipe, whereas instructions with 
+    segment, repeat, or lock prefix can only execute in the U-pipe.
+
+7.10 An instruction which has both a displacement and immediate data is not
+     pairable on the Pentium without MMX and only pairable in the U-pipe on 
+     Pentium with MMX:
+     MOV DWORD PTR DS:[1000], 0    ; not pairable or only in U-pipe
+     CMP BYTE PTR [EBX+8], 1       ; not pairable or only in U-pipe
+     CMP BYTE PTR [EBX], 1         ; pairable
+     CMP BYTE PTR [EBX+8], AL      ; pairable
+
+A further condition is that both instructions must be preloaded and decoded.
+This is explained in the next section:
+
+
+8. FIRST TIME VERSUS REPEATED EXECUTION
+=======================================
+Loading and decoding instructions may take more time than executing them.
+Therefore code which is not in the cache may be delayed by the time it takes 
+to read the code from RAM.
+
+In some cases decoding the code is the bottleneck. If it takes one clock 
+cycle to determine the length of an instruction, then it is not possible to 
+decode two instructions per clock cycle, because the processor doesn't know 
+where the second instruction begins. The Pentium solves this problem by 
+remembering the length of any instruction which has remained in the cache 
+since last time it was executed. As a consequence of this, a set of 
+instructions will not pair the first time they are executed, unless the 
+first of the two instructions is only one byte long.
+
+For these two reasons, a piece of code inside a loop will generally take 
+much more time the first time it executes than the subsequent times. A third 
+reason is that any data used by this piece of code may not be cached the 
+first time.
+
+If you have a big loop which doesn't fit in the code cache then you will get 
+the first-time penalty all the time because it doesn't run from the cache.
+
+
+9. PAIRING MULTICYCLE INSTRUCTIONS
+==================================
+Pairable instructions which do not access memory take one clock cycle, 
+except mispredicted jumps. MOV instructions to or from memory also take only 
+one clock cycle if the data area is in the cache and properly aligned. There 
+is no penalty for using complex addressing modes such as scaled index 
+registers.
+
+Pairable instructions which read from memory, does some calculation, and 
+stores the result in a register or flags, take 2 clock cycles. (read/modify 
+instructions).
+
+Pairable instructions which read from memory, does some calculation, and 
+writes the result back to the memory, take 3 clock cycles. 
+(read/modify/write instructions).
+
+The number of clock cycles used by two paired instructions is:
+
+                      |             First instruction
+                      | MOV or             read/       read/modify/
+Second instruction    | register only      modify      write
+----------------------|----------------------------------------------
+MOV or register only  |      1               2              3
+read/modify           |      2               2              4
+read/modify/write     |      3               3              5
+----------------------|-----------------------------------------------
+Examples:
+ADD [mem1], EAX / ADD EBX, [mem2]  ; 4 clock cycles
+ADD EBX, [mem2] / ADD [mem1], EAX  ; 3 clock cycles
+
+When two paired instructions both take extra time due to cache misses, 
+misalignment, or jump misprediction, then the pair takes more time than each 
+instruction, but less than the sum of the two.
+
+
+10. SPLITTING COMPLEX INSTRUCTIONS INTO SIMPLER ONES
+====================================================
+You may split up read/modify and read/modify/write instructions to improve
+pairing. Example:
+ADD [mem1],EAX / ADD [mem2],EBX    ; 5 clock cycles
+This code may be split up into a sequence which takes only 3 clock cycles:
+MOV ECX,[mem1] / MOV EDX,[mem2] / ADD ECX,EAX / ADD EDX,EBX
+MOV [mem1],ECX / MOV [mem2],EDX
+
+Likewise you may split up non-pairable instructions into pairable instructions:
+PUSH [mem1] / PUSH [mem2]  ; non-pairable
+Split up into:
+MOV EAX,[mem1] / MOV EBX,[mem2] / PUSH EAX / PUSH EBX  ; everything pairs
+
+Other examples of non-pairable instructions which may be split up into simpler
+pairable instructions:
+CDQ  split into:  MOV EDX,EAX / SAR EDX,31
+NOT EAX  change to  XOR EAX,-1
+NEG EAX  split into  XOR EAX,-1 / INC EAX
+MOVZX EAX,BYTE PTR [mem]  split into  XOR EAX,EAX / MOV AL,BYTE PTR [mem]
+JECXZ  split into  TEST ECX,ECX / JZ 
+LOOP   split into  DEC ECX / JNZ
+XLAT   change to   MOV AL,[EBX+EAX]
+
+If splitting instructions doesn't improve speed, then you may keep the complex 
+or nonpairable instruction in order to reduce code size.
+
+
+11. ADDRESS GENERATION INTERLOCK (AGI)
+======================================
+It takes one clock cycle to calculate the address needed by an instruction 
+which accesses memory. Normally, this calculation is done at a separate 
+stage in the pipeline while the preceding instruction or instruction pair is 
+executing. But if the address depends on the result of an instruction 
+executing in the preceding clock cycle, then you have to wait an extra clock 
+cycle for the address to be calculated. This is called an AGI stall.
+
+Example:
+ADD EBX,4 / MOV EAX,[EBX]    ; AGI stall
+The stall in this example can be removed by putting some other instructions
+in between  ADD EBX,4  and  MOV EAX,[EBX]  or by rewriting the code to:
+MOV EAX,[EBX+4] / ADD EBX,4
+
+You can also get an AGI stall with instructions which use ESP implicitly for 
+adressing, such as PUSH, POP, CALL, and RET, if ESP has been changed in the 
+preceding clock cycle by instructions such as MOV, ADD, or SUB. The Pentium 
+has special circuitry to predict the value of ESP after a stack operation so 
+that you do not get an AGI delay after changing ESP with PUSH, POP, or CALL.
+You can get an AGI stall after RET only if it has an immediate operand to 
+add to ESP.
+
+Examples:
+ADD ESP,4 / POP ESI            ; AGI stall
+POP EAX   / POP ESI            ; no stall, pair
+MOV ESP,EBP / RET              ; AGI stall
+CALL L1 / L1: MOV EAX,[ESP+8]  ; no stall
+RET / POP EAX                  ; no stall
+RET 8 / POP EAX                ; AGI stall
+
+The LEA instruction is also subject to an AGI stall if it uses a base or
+index register which has been changed in the preceding clock cycle. Example:
+INC ESI / LEA EAX,[EBX+4*ESI]  ; AGI stall
+
+
+12. JUMPS AND BRANCHES
+======================
+The Pentium attempts to predict whether a conditional jump is taken or not.
+It uses a 'branch target buffer' (BTB), which can remember the history of 
+256 jump instructions.
+
+The Pentium without MMX makes the prediction on the basis of the last two 
+events. It guesses that a conditional jump will be taken if it was taken 
+the previous time or the time before. It guesses that the jump is not taken 
+if it was not taken the last two times. A conditional jump which has not 
+been seen before (or is not in the BTB) is predicted as not taken.
+
+The Pentium with MMX (and the PentiumPro) makes its prediction on the basis 
+of the last four events, so that it is able to predict a simple repetitive 
+pattern. A conditional jump which has not been seen before (or is not in the 
+BTB) is predicted as taken if it goes backwards (e.g. a loop), and as not 
+taken if it goes forward.
+
+If a conditional jump is properly predicted (i.e. if the guess was correct) 
+then it takes only one clock cycle. A mispredicted branch takes 4 clock 
+cycles if it is in the U-pipe and 5 clock cycles if it is in the V-pipe. 
+
+The penalty for misprediction is doubled or tripled if another jump or call 
+follows in the first clock cycle after the mispredicted branch. The first 
+two instructions after a possibly mispredicted branch should therefore not 
+be branch, jump, or call instructions. You may put in NOP's or other 
+instructions to avoid this.
+
+The Pentium with MMX may also have a penalty in this case, but only if the 
+two consequtive branch instructions end within the same aligned dword of 
+memory.  This problem may be avoided by using a near displacement rather 
+than short on the second branch instruction to make it longer, but this 
+method doesn't help on the Pentium without MMX so you should rather put in 
+some NOP's or other instructions.
+
+The jump prediction algorithm is optimal for a loop where the testing is at 
+the bottom, as in this example: 
+
+        MOV ECX, [N]
+L:      MOV [EDI],EAX
+        ADD EDI,4
+        DEC ECX
+        JNZ L
+
+Since the jump prediction algorithm for the Pentium without MMX is 
+asymmetric, there may be situations where you can improve performance by 
+reordering your code. Consider for example this if-then-else construction: 
+
+        TEST EAX,EAX
+        JNZ  SHORT A1
+        CALL F0
+        JMP  SHORT E
+A1:     CALL F1
+E:
+
+If F0 is called more often than F1, and F1 is seldom called twice in 
+succession, then you can improve jump prediction on the Pentium without MMX 
+by swapping the two branches. However, This will be slightly suboptimal on 
+the Pentium with MMX and the PentiumPro because they may mispredict the 
+branch if it is not in the branch target buffer. Another tradeoff is that 
+the code cache is used less efficiently when the seldom used branch comes 
+first. You may put in two NOP's before each of the CALL instructions here to 
+avoid the penalty of a call after a mispredicted jump.
+
+Indirect jumps and calls through function pointers will be poorly predicted 
+on the Pentium with MMX and the PentiumPro.
+
+All calls should be matched with returns in order for the returns to be 
+predicted correctly on the Pentium with MMX and the PentiumPro.
+
+Avoiding branches
+-----------------
+Sometimes it is possible to obtain the same effect as a branch by ingenious 
+manipulation of bits and flags. For example you may calculate the absoulte 
+value of a signed number without branching:
+MOV EDX,EAX
+SAR EDX,31
+XOR EAX,EDX
+SUB EAX,EDX
+
+The carry flag is particularly useful for this kind of tricks.
+Setting carry if a value is zero:  CMP [value],1
+Setting carry if a value is not zero:  XOR EAX,EAX  /  CMP EAX,[value]
+Incrementing a counter if carry:  ADC EAX,0
+Setting a bit for each time the carry is set:  RCL EAX,1
+Generating a bit mask if carry is set:  SBB EAX,EAX
+
+This example finds the minimum of two unsigned numbers:  if (b < a)  a = b;
+SUB EBX,EAX
+SBB ECX,ECX
+AND ECX,EBX
+ADD EAX,ECX
+
+This example chooses between two numbers:  if (a != 0)  a = b;  else a = c;
+CMP EAX,1
+SBB EAX,EAX
+AND ECX,EAX
+XOR EAX,-1
+AND EAX,EBX
+OR  EAX,ECX
+
+Whether or not such tricks are worth the extra code depend on how 
+predictable a conditional jump would be. Un a PentiumPro you can use 
+conditional move instructions to obtain the same effect.
+
+
+13. PREFIXES
+============
+An instruction with one or more prefixes may not be able to execute in the 
+V-pipe (se paragraph 7.9), and it takes one clock cycle extra for each 
+prefix to decode, except for 0FH prefixes on the Pentium with MMX and 
+conditional near jumps.
+
+Adress size prefixes can be avoided by using 32 bit mode.
+Segment prefixes can be avoided in 32 bit mode by using a flat memory model.
+Operand size prefixes can be avoided in 32 bit mode by using only 8 bit and 
+32 bit integers.
+
+Where prefixes are unavoidable, the decoding delay may be masked if a 
+preceding instruction takes more than one clock cycle to execute. The rule 
+for the Pentium without MMX is that any instruction which takes N clock 
+cycles to execute (not to decode) can 'overshadow' the decoding delay of N-1 
+prefixes in the next two (sometimes three) instructions or instruction 
+pairs. In other words, each extra clock cycle that an instruction takes to 
+execute can be used to decode one prefix in a later instruction. This 
+shadowing effect even extends across a predicted branch. Any instruction 
+which takes more than one clock cycle to execute, and any instruction which 
+is delayed because of an AGI stall, cache miss, misalignment, or any other 
+reason except decoding delay and branch misprediction, has a shadowing 
+effect. On the Pentium with MMX, unpaired instructions also have a shadowing 
+effect.
+
+Examples:
+
+CLD / REP MOVSD
+The CLD instruction takes two clock cycles and can therefore overshadow the 
+decoding delay of the REP prefix. The code would take one clock cycle more 
+if the CLD instruction was placed far from the REP MOVSD.
+
+CMP DWORD PTR [EBX],0 / MOV EAX,0 / SETNZ AL
+The CMP instruction takes two clock cycles here because it is a read/modify 
+instruction. The 0FH prefix of the SETNZ instruction is decoded during the 
+second clock cycle of the CMP instruction, so that the decoding delay is 
+hidden.
+
+
+14. REDUCING CODE SIZE
+======================
+As explained in paragraph 6, the code cache is 8 kb. If you have problems 
+keeping the critical parts of your code within the code cache, then you may 
+consider reducing the size of your code.
+
+32 bit code is usually bigger than 16 bit code because adresses and data 
+constants take 4 bytes in 32 bit code and only 2 bytes in 16 bit code.
+However, 16 bit code has other penalties such as prefixes and problems with 
+accessing adjacent words simultaneously (see rule 7.4 and 7.8 above). Some 
+other methods for reducing the size or your code are discussed below.
+
+Both jump adresses, data adresses, and data constants take less space if 
+they can be expressed as a sign-extended byte, i.e. if they are within the 
+interval from -128 to +127.
+
+For jump adresses this means that short jumps take two bytes of code, 
+whereas jumps beyond 127 bytes take 5 bytes if unconditional and 6 bytes if 
+conditional.
+
+Likewise, data adresses take less space if they can be expressed as a 
+pointer and a displacement between -128 and +127.
+Example:
+MOV EBX,DS:[100000] / ADD EBX,DS:[100004]          ; 12 bytes 
+Reduce to: 
+MOV EAX,100000 / MOV EBX,[EAX] / ADD EBX,[EAX+4]   ; 10 bytes 
+
+The advantage of using a pointer obviously increases if you use it many 
+times. Storing data on the stack and using EBP or ESP as pointer will thus 
+make your code smaller than if you use static memory locations and absolute 
+adresses, provided of course that your data are within 127 bytes of the 
+pointer. Using PUSH and POP to write and read temporary data is even more 
+advantageous.
+
+Data constants may also take less space if they are between -128 and +127. 
+Most instructions with immediate operands have a short form where the 
+operand is a sign-extended single byte. Examples:
+PUSH 200      ; 5 bytes
+PUSH 100      ; 2 bytes
+
+ADD EBX,128   ; 6 bytes
+SUB EBX,-128  ; 3 bytes
+
+The only instruction with an immediate operand which doesn't have such a 
+short form is MOV. Examples:
+MOV EAX, 1              ; 5 bytes
+XOR EAX,EAX / INC EAX   ; 3 bytes
+PUSH 1 / POP EAX        ; 3 bytes
+
+If the same constant is used more than once then you may of course load it 
+into a register. Example: 
+MOV DWORD PTR [EBX],0 / MOV DWORD PTR [EBX+4],0   ; 13 bytes
+XOR EAX,EAX / MOV [EBX],EAX / MOV [EBX+4],EAX     ;  7 bytes
+
+You may also consider that different instructions have different lengths.
+The following instructions take only one byte and are therefore very 
+attractive: PUSH reg, POP reg, INC reg32, DEC reg32.
+INC and DEC with 8 bit registers take 2 bytes, so  INC EAX  is shorter than
+INC AL.
+
+XCHG EAX,reg is also a single-byte instruction and thus takes less space 
+than MOV EAX,reg, but it is slower and not pairable.
+
+Some instructions take one byte less when they use the accumulator than when 
+they use any other register. Examples:
+
+MOV EAX,DS:[100000]  is smaller than  MOV EBX,DS:[100000]
+ADD EAX,1000         is smaller than  ADD EBX,1000
+
+Instructions with pointers take one byte less when they have only a base 
+pointer (not ESP) and a displacement than when they have a scaled index 
+register, or both base pointer and index register, or ESP as base pointer. 
+Examples: 
+MOV EAX,[array][EBX]  is smaller than  MOV EAX,[array][EBX*4]
+MOV EAX,[EBP+12]      is smaller than  MOV EAX,[ESP+12]
+Instructions with EBP as base pointer and no displacement and no index take
+one byte more than with other registers: 
+MOV EAX,[EBX]    is smaller than  MOV EAX,[EBP],  but
+MOV EAX,[EBX+4]  is same size as  MOV EAX,[EBP+4].  
+
+
+15. SCHEDULING FLOATING POINT CODE
+==================================
+Floating point instructions cannot pair the way integer instructions can, 
+except for one special case, defined by the following rules:
+
+- the first instruction (executing in the U-pipe) must be FLD, FADD, FSUB, 
+  FMUL, FDIV, FCOM, FCHS, or FABS 
+
+- the second instruction (in V-pipe) must be FXCH
+
+- the instruction following the FXCH must be a floating point instruction
+
+This special pairing is important, as will be explained shortly.
+
+While floating point instructions in general cannot be paired, many can be 
+pipelined, i.e. one instruction can begin before the previous instruction has 
+finished. Example: 
+
+FADD ST(1),ST(0)   ; clock cycle 1-3
+FADD ST(2),ST(0)   ; clock cycle 2-4
+FADD ST(3),ST(0)   ; clock cycle 3-5
+FADD ST(4),ST(0)   ; clock cycle 4-6
+
+Obviously, two instructions cannot overlap if the second instruction needs 
+the result of the first. Since almost all floating point instructions 
+involve the top of stack register, ST(0), there are seemingly not very many 
+possibilities for making an instruction independent of the result of 
+previous instructions. The solution to this problem is register renaming.
+The FXCH instruction does not in reality swap the contents of two registers, 
+it only swaps their names. Instructions which push or pop the register 
+stack also work by renaming. Register renaming has been highly optimized on 
+the Pentium so that a register may be renamed while in use. Register 
+renaming never causes stalls - it is even possible to rename a register more 
+than once in the same clock cycle, as for example when you pair FLD or 
+FCOMPP with FXCH.
+
+By the proper use of FXCH instructions you may obtain a lot of overlapping in 
+your floating point code. Example: 
+
+FLD     [a1]    ; clock cycle 1
+FADD    [a2]    ; clock cycle 2-4
+FLD     [b1]    ; clock cycle 3
+FADD    [b2]    ; clock cycle 4-6
+FLD     [c1]    ; clock cycle 5
+FADD    [c2]    ; clock cycle 6-8
+FXCH    ST(2)   ; clock cycle 6
+FADD    [a3]    ; clock cycle 7-9
+FXCH    ST(1)   ; clock cycle 7
+FADD    [b3]    ; clock cycle 8-10
+FXCH    ST(2)   ; clock cycle 8
+FADD    [c3]    ; clock cycle 9-11
+FXCH    ST(1)   ; clock cycle 9
+FADD    [a4]    ; clock cycle 10-12
+FXCH    ST(2)   ; clock cycle 10
+FADD    [b4]    ; clock cycle 11-13
+FXCH    ST(1)   ; clock cycle 11
+FADD    [c4]    ; clock cycle 12-14
+FXCH    ST(2)   ; clock cycle 12
+
+In the above example we are interleaving three independent threads. Each 
+FADD takes 3 clock cycles, and we can start a new FADD in each clock cycle. 
+When we have started an FADD in the 'a' thread we have time to start two new 
+FADD instructions in the 'b' and 'c' threads before returning to the 'a' 
+thread, so every third FADD belongs to the same thread. We are using FXCH 
+instructions every time to get the register that belongs to the desired 
+thread into ST(0). As you can see in the example above, this generates a 
+regular pattern, but note well that the FXCH instructions repeat with a 
+period of two while the threads have a period of three. This can be quite 
+confusing, so you have to 'play computer' in order to know which registers 
+are where.
+
+All versions of the instructions FADD, FSUB, FMUL, and FILD take 3 clock 
+cycles and are able to overlap, so that these instructions may be scheduled 
+using the method described above. Using a memory operand does not take more 
+time than a register operand if the memory operand is in the level 1 cache 
+and properly aligned.
+
+By now you must be used to the rules having exceptions, and the overlapping 
+rule is no exception: You cannot start an FMUL instruction one clock cycle 
+after another FMUL instruction, because the FMUL circuitry is not perfectly 
+pipelined. It is recommended that you put another instruction in between two 
+FMUL's. Example:
+
+FLD     [a1]    ; clock cycle 1
+FLD     [b1]    ; clock cycle 2
+FLD     [c1]    ; clock cycle 3
+FXCH    ST(2)   ; clock cycle 3
+FMUL    [a2]    ; clock cycle 4-6
+FXCH            ; clock cycle 4
+FMUL    [b2]    ; clock cycle 5-7    (stall)
+FXCH    ST(2)   ; clock cycle 5
+FMUL    [c2]    ; clock cycle 7-9    (stall)
+FXCH            ; clock cycle 7
+FSTP    [a3]    ; clock cycle 8-9
+FXCH            ; clock cycle 10     (unpaired)
+FSTP    [b3]    ; clock cycle 11-12
+FSTP    [c3]    ; clock cycle 13-14
+
+Here you have a stall before  FMUL [b2]  and before  FMUL [c2]  because 
+another FMUL started in the preceding clock cycle. You can improve this code 
+by putting FLD instructions in between the FMUL's:
+
+FLD     [a1]    ; clock cycle 1
+FMUL    [a2]    ; clock cycle 2-4
+FLD     [b1]    ; clock cycle 3
+FMUL    [b2]    ; clock cycle 4-6
+FLD     [c1]    ; clock cycle 5
+FMUL    [c2]    ; clock cycle 6-8
+FXCH    ST(2)   ; clock cycle 6
+FSTP    [a3]    ; clock cycle 7-8
+FSTP    [b3]    ; clock cycle 9-10
+FSTP    [c3]    ; clock cycle 11-12
+
+In other cases you may put FADD, FSUB, or anything else in between FMUL's to 
+avoid the stalls.  
+
+Overlapping floating point instructions requires of course that you have 
+some independent threads that you can interleave. If you have only one big 
+formula to execute, then you may compute parts of the formula in parallel to 
+achieve overlapping. If, for example, you want to add six numbers, then you 
+may split the operations into two threads with three numbers in each, and 
+add the two threads in the end: 
+
+FLD     [a]     ; clock cycle 1
+FADD    [b]     ; clock cycle 2-4
+FLD     [c]     ; clock cycle 3
+FADD    [d]     ; clock cycle 4-6
+FXCH            ; clock cycle 4
+FADD    [e]     ; clock cycle 5-7
+FXCH            ; clock cycle 5
+FADD    [f]     ; clock cycle 7-9    (stall)
+FADD            ; clock cycle 10-12  (stall)
+
+Here we have a one clock stall before  FADD [f]  because it is waiting for 
+the result of  FADD [d]  and a two clock stall before the last FADD because 
+it is waiting for the result of  FADD [f]. The latter stall can be hidden by 
+filling in some integer instructions, but the first stall can not because an 
+integer instruction at this place would make the FXCH unpairable.  
+
+The first stall can be avoided by having three threads rather than two, but 
+that would cost an extra FLD so we do not save anything by having three 
+threads rather than two unless there are at least eight numbers to add.  
+
+Not all floating point instructions can overlap. And some floating point 
+instructions can overlap more subsequent integer instructions than 
+subsequent floating point instructions. The FDIV instruction, for example, 
+takes 39 clock cycles. All but the first clock cycle can overlap with 
+integer instructions, but only the last two clock cycles can overlap with 
+floating point instructions. Example: 
+
+FDIV            ; clock cycle 1-39
+FXCH            ; clock cycle 1-2
+CMC             ; clock cycle 3-4
+RCR EAX,1       ; clock cycle 5
+INC EBX         ; clock cycle 5
+FADD [x]        ; clock cycle 38-40
+FXCH            ; clock cycle 38
+FMUL [y]        ; clock cycle 40-42
+
+The first FXCH pairs with the FDIV, but takes an extra clock cycle because 
+it is not followed by a floating point instruction. The CMC starts before 
+the FDIV is finished, but has to wait for the FXCH to finish. The RCR and 
+INC instructions are pairing. The FADD has to wait till clock 38 because new 
+floating point instructions can only execute during the last two clock 
+cycles of the FDIV. The second FXCH pairs with the FADD. The FMUL has to 
+wait for the FDIV to finish because it uses the result of the division.  
+
+If you have nothing else to put in after a floating point instruction with a 
+large integer overlap, such as FDIV or FSQRT, then you may put in a dummy 
+read from an address which you expect to need later in the program to make 
+sure it is in the level one cache. Example:
+        FDIV    QWORD PTR [EBX]
+        CMP     [ESI],EAX
+        FMUL    QWORD PTR [ESI]
+Here we use the integer overlap to pre-load the value at [ESI] into the 
+cache while the FDIV is being computed (we don't care what the result of the 
+CMP is).
+
+Paragraph 21 gives a complete listing of floating point instructions, and 
+what they can pair or overlap with.  
+
+One floating point instruction requires special mentioning, namely FST or 
+FSTP with a memory operand. This instruction takes two clock cycles in the 
+execution stage, but it seems to start converting the value in ST(0) already 
+at the address decode stage in the pipeline, so that there is a one clock 
+stall if the value to store is not ready one clock cycle in advance. This is 
+analogous to an AGI stall. Example: 
+
+FLD     [a1]    ; clock cycle 1
+FADD    [a2]    ; clock cycle 2-4
+FLD     [b1]    ; clock cycle 3
+FADD    [b2]    ; clock cycle 4-6
+FXCH            ; clock cycle 4
+FSTP    [a3]    ; clock cycle 6-7
+FSTP    [b3]    ; clock cycle 8-9
+
+The  FSTP [a3]  stalls for one clock cycle because the result of  FADD [a2]  
+is not ready in the preceding clock cycle. In many cases you cannot hide 
+this type of stall without scheduling your floating point code into four 
+threads or putting some integer instructions in between. No other 
+instructions have this weirdness. The two clock cycles in the execution 
+stage of the FST(P) instruction cannot pair or overlap with any subsequent 
+instructions.  
+
+Instructions with integer operands such as FIADD, FISUB, FIMUL, FIDIV, FICOM 
+may be split up into simpler operations in order to improve overlapping. 
+Example:
+
+FILD    [a]     ; clock cycle 1-3
+FIMUL   [b]     ; clock cycle 4-9
+
+Split up into:
+
+FILD    [a]     ; clock cycle 1-3
+FILD    [b]     ; clock cycle 2-4
+FMUL            ; clock cycle 5-7
+
+In this example, you save two clocks by overlapping the two FILD instructions.
+
+
+

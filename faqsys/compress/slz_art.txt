@@ -1,0 +1,878 @@
+Simple Compression using an LZ buffer
+Part 3 Revision 1.d:
+An introduction to compression on the Amiga by Adisak Pochanayon
+
+Freely Distributable as long as reproduced completely.
+Copyright 1993 Adisak Pochanayon
+
+-------------------------------------------------------------------------
+     In Part 1 (now obsolete) and Part 2 of the Amiga Compression series,
+I covered a new and extremely fast RLE (run-length encoding) method for
+graphics.
+
+     This article will delve further into the world of compression on
+the Amiga by covering my latest experiment in compression techniques and
+show the use of a simple LZ history compression algorithm.
+
+     In the second part of this article, I describe a Compressor (and
+DeCompressor) program in C.  It is not written for optimal speed merely
+because I wanted the code to be readable and the time that speed is
+really needed is decompression (which occurs in the super-fast assembly
+routine).  Using this code along with the unpacker.asm will allow you
+to include any raw compressed data easily in your own programs.
+
+Important Notes and Disclaimers.
+
+NOTE 1:
+
+     This is a "beta" document.  I welcome your suggestions but before you
+     employ the methods mentioned in this document, please try to realize
+     that I hope to provide a completely new compressor within a week or
+     two that should be an order of magnitude faster.  I may end up
+     slightly changing the compression technique as well to provide
+     better compression.  Also, I welcome suggestions to improve the
+     "readability" of the article as well.*
+
+     *Both of these features have been added.  Hashing with collision
+     detection in the compressor, the capability to alter the TAGs easily,
+     and a new unpacking algorithm have been added.
+
+NOTE 2:
+
+     A very common comment that I have received is "Why not use XPK or
+     PowerPacker libraries?"  I respond with several reasons.  (I also
+     removed a paragraph that some compression library programmers
+     found insulting -- Please understand that compression libraries
+     are good for the Amiga, but they are not always exactly what a
+     programmer wants.)
+
+     The first is simply that I wish to provide an alternative method.
+     Although, I have been "urged" to let professionals handle compression,
+     I would like to argue that any "amateur" can help the field.  My
+     compression algorithm has already consistently beat ZOO 2.1 and Arc 5
+     for compression ratios and decompression from RAM: to RAM: is
+     realistically more than twice as fast as any ZOO encoding.  When
+     SLZ is used within a program and compared to ZOO used on the RAM:
+     filing system (an unfair test I know), SLZ beats ZOO by a speed
+     factor of approximately 15.  So if you feel that a technique that
+     achieves better compression than the widely used ZOO and decompresses
+     twice as fast is for amateurs, then you might be right.  Then again,
+     you might be wrong.  I believe this is a viable "alternative" for
+     Amiga programmers.
+
+     The second involves distribution: PowerPacker can not be distributed with
+     commercial products and it is possible that modules of XPK be likewise
+     restricted at the discrimination of their authors.  This algorithm
+     is being released as Freely Distributable without restrictions to
+     commercial applications although I retain the copyright.  Also, many
+     programmers would rather have direct control over their data and not
+     go through the overhead of a library, regardless of how small that
+     overhead is.
+
+     Another factor, of course, is speed.  SLZ has one of the fastest LZ
+     unpacking algorithms available.  This is in part due to the very
+     little overhead imposed on the routine.  The original asm encoding
+     plus the enhancements made by Jesse Michael play no small role in
+     the speed factor though.  Combine that with the simple yet elegant
+     data format and you get some awesome speed.  To quote U.D. Mueller,
+     "Good implementations of the algorithm used by ZOO are about
+     an estimated half as fast as yours (check xpkBLZW)."  So if you want
+     TWICE the speed, drop ZOO -- go SLZ.
+
+     The final reason is even if you decide not to use SLZ, I hope this
+     article provides an educational benefit to Amiga programmers.  I have
+     certainly learned a lot by my experiments in data compression.  There
+     is so little "public" information on data compression available even if
+     you read the compression newsgroups.  I have also seen several postings
+     on the c.s.a.p. newsgroup recently requesting further information on
+     compression algorithms.  With the large positive response I got on the
+     RLE compression article earlier this year, I thought that an LZ
+     article might also be received positively.
+
+NOTE 3:
+
+     I have been told by several people that the compression algorithm I
+     created is almost identical to the LZRW algorithm (partially patented).
+     One person even sent me the specs of LZRW by e-mail.  Indeed, the
+     two algorithms are similar.  However, there are some distinct
+     differences.  SLZ attains better compression than LZRW by using
+     exhaustive history searching.  SLZ also now uses a 16 collision
+     HASHING for compression compared to the unit HASH used by LZRW.
+     Furthermore, SLZ codes compressed strings slightly different, both
+     with the END-TAGs, and the compressed string length.  By doing so,
+     SLZ again allows better compression (with a 4096-byte history,
+     SLZ allows string lengths to vary between 3 and 17 while LZRW
+     has a maximum of 15).  Due to the data representation differences
+     and the differences in the actual compression method, SLZ will
+     *ALWAYS* obtain better compression ratios than LZRW.  And yet another
+     difference is the ability to alter the TAG in SLZ such that a
+     2048 History and 33-byte maxstring can be achieved.  Finally, SLZ has
+     a (currently) faster decompression algorithm than LZRW.  Because of
+     all these differences, I warrant that SLZ is a new algorithm that
+     is simply in the same family as LZRW (After all I did say it is an
+     LZ compression routine).
+
+     I don't believe I have violated any patents with SLZ or broken any
+     copyrights as I genuinely came up with this idea on my own.  If
+     I had access to other good compression source codes, I wouldn't have
+     written SLZ to begin with.  However, if I am violating any such
+     ownership of intellectual property, I will remove SLZ from Freely
+     Distributable status and I will ask anyone who has a copy of this
+     article to destroy it and forbid my code from being used for any
+     purposes on the Amiga.
+
+
+  Comments, questions, spelling errors, or grammar police?  Let me know :)
+
+Improvements from 3.0a:
+     I have more than doubled the speed of compression on text and many
+     other forms of data by modifying my HASH code to allow for up to
+     16 HASH collisions to be detected before brute force exhaustive
+     searching occurs.  Users who do not use the hash option will not
+     notice the speedup in the C routines.
+     
+     I have also made the files more flexible to modify the TAG/CS
+     bit-orderings.  This will allow users to customize the file for
+     greater compression by trading off length of compression strings
+     for length of compression history.  I have found that a history
+     of 2048 instead of 4096 works much better for many graphics images
+     which have lots of "line" oriented repeats.  This allows me to
+     compress longer repeat strings with a single CS tag.
+
+     Many thanks to Jesse Michael of Haze of Epsilon (jdm@key880.rain.com),
+     for rewriting the assembly.   He unrolled my loops, freed a register,
+     restructured my branching, optimized literal copying by making the
+     speed of copying literal strings up to three times faster (on a 68000).
+     Basically, he built a Porsche out of VW parts (joke - the original
+     Porsches were built with VW parts :).  The asm code is similar to
+     the original (same excellent comments) and still easy to read.  The
+     asm takes a little more space, but the emphasis of this compressor
+     has always been the speed of decompression.
+
+     Thanks also go out to Urban Dominik Mueller (UDM) for pointing out some
+     mistakes I made in my previous article and allowing me to correct them.
+     Also, thank you for pointing out some obvious optimizations that I had
+     not implemented such as unrolled loops.
+
+     Finally, thanks to the 7-8 other people who responded with interesting
+     suggestions and to the person who sent me the SPECs on the similar
+     LZRW algorithm.
+
+Disclaimer:
+
+     Neither Adisak Pochanayon, nor SilverFox SoftWare, warrant the use
+     of this article for any means.  The author holds no responsibility
+     to the accuracy of the description of the routines or any adverse
+     side effects they may cause when used on any machine.
+
+-------------------------------------------------------------------------
+
+Adisak Pochanayon
+2525 University Avenue Apt #J
+Madison WI 53706
+608-238-2463
+pochanay@cae.wisc.edu
+
+     So you've plugged in your RLE compressor from Parts 1 and 2 and found
+that including fast compressed graphics is really easy to do in programs.
+But you want to include help text or other data that isn't easily compressed
+by RLE methods.  You don't want to give up the incredible speed from straight
+RLE yet you want better compression.
+
+     One simple solution might be to use one of the fine compression
+libraries available on the Amiga.  However, this isn't always the best
+solution.  Some libraries restrict commercial distribution, other libraries
+don't provide source code, and still others require you allocate complicated
+buffers and handles before using them.  None of them guarantee to work
+if you have shut down the OS, multi-tasking or are using nonstandard
+programming methods (not that I would ever advocate OS shutdowns). Even
+libraries that are simple to use are not always tolerant to "braindead"
+installation.  If a library is missing, or a wrong revision, your program
+won't run -- or worse, it could crash the machine.
+
+     For a beginning or intermediate programmer, the "best" solution might
+be the simplest solution.  Using a very simple, compact routine that can
+easily be linked or added to programs and used without worrying about
+opening libraries, looking for include files, allocating buffers, or any
+other overhead.  However, to be viable, the routine would have to feature
+very fast decompression and have full available source for any custom
+modifications that a more experienced programmer might wish to make.
+Before deciding on an exact format for the compression, a programmer might
+want to examine the available algorithms.
+
+     RLE, or run-length encoding is great for graphics where you have many
+repeating bytes of data.  That's why it was chosen as part of the IFF
+standard.  However, RLE's compression of this article would be feeble at best
+and the performance would be noticeably poorer than ZOO, ARC, or LHA.
+RLE's biggest advantage is it's extremely fast speed (Described in Part
+2 of this series).
+
+     A better method might be to reduce the "size" of codes for ASCII
+characters that appear often (e,r,o,s,t,l,etc.) and increase the "size" of
+codes that do not appear often (z,q,x,etc.).  Think of it as making the size
+of codes for the ASCII characters related to their SCRABBLE (tm) scores.
+This type of compression, which is known as HUFFMAN codes, is much better at
+compressing text than RLE methods.  Unfortunately, using huffman-coding or
+huffman variants can often be too slow for games or other programs that
+require extrememly fast decompression.  HUFFMAN coding also requires creation
+and maintainance of structures to describe the codes that can become quite
+confusing.  By varying the codes as one traverses through a file, the
+compression can be improved even more at a cost of greater file complexity.
+This is known as ADAPTIVE HUFFMAN compression.
+
+     Another method of compression is what is often called LZ (Lempel-Ziv)
+compression.  This involves a "history" of some sort representing the last
+X characters read and a pointer to a current character buffer that has
+yet to be compressed.  The compression program looks for strings matching
+the current string in the history and replaces matches with a data TAG
+which describes the offset and length of the data in the history buffer.
+This is the type of compression that will be discussed in this article.
+
+Important note from (UDM):  This actually describes the LZ77 group of LZ's.
+"There are other algorithms in the LZ family (like LZ78/LZW as used in
+'compress') that work totally different."
+
+     Slightly more complicated is a compression called LZH or LZ-Huffman
+compression.  LZH (or LH) often outperforms LZ.  This combines the LZ
+compression with HUFFMAN encoding methods.  Adaptive LZH is even more
+complicated, but again can lead to better compression.  Adaptive LZH is
+not always better as LhA uses static Huffman codes and usually outperforms
+LhArc which uses dynamic adaptive encoding (UDM).  However, these methods
+of compression are outside the scope of this article which is directed
+mainly towards intermediate programmers.
+
+     So which method is best?  Well, I planned on including text, graphics,
+and other files in programs, with an emphasis on EXTREMELY FAST unpacking
+of compressed data.  After examining all the methods available to me, I
+decided that the most flexible algorithm with enough speed would be a byte
+oriented LZ compression method.  I decided to eliminate CRCs (checks on the
+integrity of the data) since the data would be "included" within a program
+and data integrity is most often a problem during telecommunications
+where a program would normally be transfered as part of a "LZH" or "ZOO"
+archive.  I also eliminated bounds checking since from a programming
+perspective, I will always know the bounds of the data or I can include
+a simple structure to describe the size of the data without adding to the
+complexity of the compressed data itself.
+
+     These ideas led to my creation of a simple LZ compression method that
+I call SLZ (version 0).  After writing programs to implement my new
+compression technique, I found that compression was comparable to ZOO (v2.1)
+and ARC (v5.0).  As a matter of fact, on the Fred Fish Library Contents-870,
+a 1,451,420 byte text, SLZ-0 outperformed ZOO by over 34K and ARC by over
+40K !!!!  Compression times for the SLZ-0 program are considerably longer
+than similar compression times with ZOO however (the code is not optimized
+at all and features exhaustive searching in C which is excruciatingly slow).
+However, using the asm decompression routines from within a program yielded
+decompression at a level of speed about 15 times the speed of ZOO from the
+RAM: disk!!!  (Please see Note 2 for more on this claim).
+
+     Part of this incredible decompression speed comes from the simplicity
+of the encoding method.  SLZ-0 works on a TAG-data format.  First, an 8-bit
+TAG is read which describes the next 8 chunks of data to follow.  For each
+chunk in the data, a bit in the TAG will be set or cleared.  A set bit
+represents compressed data and a cleared bit represents uncompressed data.
+each time a cleared bit is encountered, the unpacker simply copies a byte
+from source to destination and continues on to the next chunk.  When a set
+bit is encountered in the tag, the unpacker reads a byte from the source.
+If this byte is zero, the routine exits.  Otherwise, a second byte is
+read.  The combination of these two bytes yields the location and length
+of the data to copy in the following form (O is offset - L is length):
+
+        O11 O10 O9 O8 L3 L2 L1 L0     O7 O6 O5 O4 O3 O2 O1 O0    H=4096
+
+The location of the data is determined by subtracting the offset from the
+current output buffer pointer (as compressed bytes are copied from output
+to output and not input to output).  The length is simply the value
+represented plus two.
+
+     The compressor and decompression routine allow you to easily modify
+the TAG format by changine #defines/EQU's to allow for a choice of
+History=4096 bytes/MaxString=17 or History=2048 bytes/MaxString=33.
+The normal default (I found it to be generally better on everything but
+bitmapped graphics which have long repeat strings), is a History=4096.
+Changing to History=2048 results in the following CS TAG.
+
+         O10 O9 O8 L5 L3 L2 L1 L0     O7 O6 O5 O4 O3 O2 O1 O0    H=2048
+
+Again, the location of the data is determined by subtracting the offset from the
+current output buffer pointer (as compressed bytes are copied from output
+to output and not input to output) and the length is simply the value
+represented plus two.  However, if you change the compression, be sure to
+be careful to call the correct decompression routine.
+
+     Believe it or not, this simple compression scheme yields compression
+ratios similar to ZOO and decompression speeds that are several times
+faster.  A simple asm implementation of the unpacker is provided for use in
+programs which include SLZ-0 compressed data.  To include compressed data
+in a file, simply compress it with the compressor and use a directive such
+as INCBIN from the CAPE 68K assembler to include the data.  Then call this
+routine from C or ASM with the source and destination pointers.  It's as
+easy as folling off a log :)
+
+     Here's the asm (highly documented for non-asm programmers).
+
+---------------------------BEGIN ASM----------------------------------------
+         CODE, PUBLIC
+
+*****    VOID __regargs UnPackSLZ(UBYTE *from, UBYTE *to)
+*****        calling from assembly:      a0   ,       a1
+
+*****    This code takes a SLZ packed buffer and unpacks it to
+*****  another buffer.  Note: for maximum speed, no checking of any
+*****  sort is performed for boundaries.  Also, there is no CRC or
+*****  error correction/detection.  It is assumed that your data is
+*****  valid.
+
+*****  Uncomment the following for use with C without __regargs.
+*****
+*****             XDEF _UnPackSLZ
+*****    _UnPackSLZ:
+*****             movea.l  4(SP),a0
+*****             movea.l  8(SP),a1
+
+*****     CS_MASK=(2^(8-CS_LSL))-1
+*****     CS_LSL increases with history size (4->H=4096)
+CS_MASK   EQU  15
+CS_LSL    EQU  4
+
+         XDEF @UnPackSLZ
+@UnPackSLZ:
+
+            movem.l d2-d3/a2,-(SP)  ; Save Registers
+ 
+            bra.b   slz_start       ; Skip to entry point
+ 
+slz_literal move.b  (a0)+,(a1)+     ; Copy 8 byte literal string FAST!
+            move.b  (a0)+,(a1)+
+            move.b  (a0)+,(a1)+
+            move.b  (a0)+,(a1)+
+            move.b  (a0)+,(a1)+
+            move.b  (a0)+,(a1)+
+            move.b  (a0)+,(a1)+
+            move.b  (a0)+,(a1)+
+ 
+slz_start   move.b  (a0)+,d0        ; Load compression TAG
+            beq.b   slz_literal     ; 8-byte literal string?
+ 
+            moveq   #7,d1           ; Loop thru 8 bits
+slz_nxtloop add.b   d0,d0           ; Set flags for this compression TAG
+            bcs.b   slz_comp        ; If bit is set then compress
+            move.b  (a0)+,(a1)+     ; Otherwise copy a literal byte
+            dbf     d1,slz_nxtloop  ; Check and loop through 8 iterations
+            bra.b   slz_start       ; Get next TAG
+
+slz_comp    moveq   #0,d2           ; Clear offset register
+            move.b  (a0)+,d2        ; Load compression specifier (cs) into d2
+            beq.b   slz_exit        ; If cs is 0, exit (decompression finished)
+            moveq   #CS_MASK,d3     ; Copy cs into number reg and mask off bits
+            and.w   d2,d3           ;   num = ( cs & CS_MASK ) [+ 2] ; {at least 3}
+            lsl.w   #CS_LSL,d2      ; Multiply cs_or by (2^CS_LSL)
+            move.b  (a0)+,d2        ;   and replace lsb with rest of cs
+            movea.l a1,a2           ; Now compute the offset from the current
+            suba.w  d2,a2           ;   output pointer (d2 auto-extends)
+
+            add.w   d3,d3           ; Compute the unroll offset and begin
+            neg.w   d3              ;   unrolled compressed data expansion
+            jmp     slz_unroll(pc,d3.w)
+
+slz_exit    movem.l (SP)+,d2-d3/a2  ; Restore Registers
+            rts                     ; EXIT routine
+
+****
+**** The following is an unrolled loop for compressed data copying.
+**** The first part of the loop (lines ;33 - ;18) are not necessary
+**** unless you have specified a history of size 2048 and made the
+**** apropriate changes to SLZ.c as well.
+****
+
+**** For when H=2048
+            move.b  (a2)+,(a1)+     ; 33
+            move.b  (a2)+,(a1)+     ; 32
+            move.b  (a2)+,(a1)+     ; 31
+            move.b  (a2)+,(a1)+     ; 30
+            move.b  (a2)+,(a1)+     ; 29
+            move.b  (a2)+,(a1)+     ; 28
+            move.b  (a2)+,(a1)+     ; 27
+            move.b  (a2)+,(a1)+     ; 26
+            move.b  (a2)+,(a1)+     ; 25
+            move.b  (a2)+,(a1)+     ; 24
+            move.b  (a2)+,(a1)+     ; 23
+            move.b  (a2)+,(a1)+     ; 22
+            move.b  (a2)+,(a1)+     ; 21
+            move.b  (a2)+,(a1)+     ; 20
+            move.b  (a2)+,(a1)+     ; 19
+            move.b  (a2)+,(a1)+     ; 18
+
+**** For when H=4096 do not include the above (18-35)
+            move.b  (a2)+,(a1)+     ; 17
+            move.b  (a2)+,(a1)+     ; 16
+            move.b  (a2)+,(a1)+     ; 15
+            move.b  (a2)+,(a1)+     ; 14
+            move.b  (a2)+,(a1)+     ; 13
+            move.b  (a2)+,(a1)+     ; 12
+            move.b  (a2)+,(a1)+     ; 11
+            move.b  (a2)+,(a1)+     ; 10
+            move.b  (a2)+,(a1)+     ;  9
+            move.b  (a2)+,(a1)+     ;  8
+            move.b  (a2)+,(a1)+     ;  7
+            move.b  (a2)+,(a1)+     ;  6
+            move.b  (a2)+,(a1)+     ;  5
+            move.b  (a2)+,(a1)+     ;  4
+            move.b  (a2)+,(a1)+     ;  3
+slz_unroll  move.b  (a2)+,(a1)+     ;  2
+            move.b  (a2)+,(a1)+     ;  1
+ 
+            dbf     d1,slz_nxtloop  ; Check and loop through 8 iterations
+            bra.s   slz_start       ; Process Next TAG
+ 
+     END
+---------------------------END ASM------------------------------------------
+
+     The compressor/decompressor program in C is mainly a utility to compress
+data for use by this high speed assembly unpacker.  In general the program
+applies a brute force method for matching strings within the history and
+provides extremely slow compression.  Decompression, however, is rather
+fast even within the C environment and using a file system.
+
+     Even though the exhaustive searching is what leads to compression on
+par with ZOO (often better), it's painful in C.  However, I didn't want to
+write this in asm as the code is currently very portable from machine to
+machine and it's much harder for intermediate programmers to read asm.
+
+     I have made some improvements to the C utility to improve compression
+speeds though.  By defining the symbol "hashing_on", the program will
+allocate a 256K HASH table that is used for quickly matching strings and
+performing up to 16 collision checks based on the first two bytes of
+the current string.  After these checks have been made, the program resorts
+to exhaustively scanning the rest of the history buffer.  However, the
+hash table does more than double the speed of the compression.  Even with
+the hashing on, compression can take a while but you'll be rewarded with
+the high speed at which your data can be decompressed.
+
+     The compressor works quite simply.  First, it examines the string in
+the input file that is currently being pointed to.  If the hashing option is
+present, the program checks hashed pointers for matching strings.  It then
+searches the remainder of the history buffer exhaustively for matches of
+length greater than two.  When it finds a string longer than the current
+best match, the current best match is updated.  If a string of the maximum
+compressed string length is found, the searching is halted.  As long as
+a string of length greater than two is found, the compressor sets a bit
+in the TAG and creates a CS specifier which contains data with the offset
+and length of the compressed sctring for the output file.  Otherwise, no
+bit in the TAG is set and a single literal byte is copied to the output.
+The program continues until the input is exhausted.  When the input is
+exhausted, the program sets a bit in the TAG and writes a zero (byte) to the
+output signifying it has finished compression.
+
+     An interesting aspect of this compression technique is how much data
+remains "intact" from input file to output file.  When looking at the output
+of most compression programs, a human will see nothing but jibberish.  The
+output of a text file compressed with SLZ will still look partially
+intelligible to a human and can be hand-decoded much more easily.
+
+     The decompression is simply a C version of the asm decompressor (the
+asm was actually written first) that is file oriented in it's output.  It
+is robust but lacks optimization.  This is OK though because it is still
+rather fast (extremely fast compared to compression).
+
+     If anyone writes a faster version of this program (very easy to do since
+I have made few optimizations and the program is more "robust" in error
+handling than "efficient" in speed), please let me know.  I plan on writing
+a faster version myself when I have the time but finding the time to write
+a ~40K article is hard enough.
+
+The program is used with the following syntax: SLZ (u or p) arg_src arg_dest
+
+               SLZ  FLAG  SOURCE  DESTINATION
+               FLAG can be U - unpack  P - pack
+
+
+---------------------------BEGIN C------------------------------------------
+;/* SLZ.c - SLZ (un)packer -- Source for Lattice/SAS C version 5.10
+
+LC -rr -b1 -ccist -v -O -L  SLZ.c
+quit
+
+*/
+
+/*****************************************************************************
+     SLZ - SLZ (un)packer.            C. 1993 SilverFox SoftWare.
+        Written by Adisak Pochanayon     All Rights Reserved.
+
+          This program is a simple example of using SLZ compression
+     upon a file.  It will allow you to both pack and unpack a file
+     using SLZ compression.  The syntax for calling this program from
+     the CLI is:
+
+               SLZ  FLAG  SOURCE  DESTINATION
+               FLAG can be U - unpack  P - pack
+
+*****************************************************************************/
+
+// Comment out the following line to save 256K of memory but can slow down
+//   compression (immensely :( ).
+#define hashing_on
+
+#include  <stdio.h>
+#include  <stdlib.h>
+
+/*  defines for interpreting the CLI arguments    */
+#define   arg_flag     1
+#define   arg_srce     2
+#define   arg_dest     3
+#define   arg_count    4
+
+/*  defines for handling argument and file errors */
+#define   slz_error   1024
+#define   error_read   0
+#define   error_args   1
+#define   error_srce   2
+#define   error_dest   4
+#define   error_write  8
+
+/*  defines for file compression / decompression  */
+#define   FILE_ERROR   0
+#define   TRUE         1
+#define   FALSE        0
+
+/*** GLOBAL VARIABLE FOR ERRORS AND FILES ***/
+int  error=0;
+long length;
+short lzhist_offset=0;
+
+/*
+ * SHIFT_UPPER is amount to multiply upper in one byte to get into next
+ *   higher byte. (H=4096 -> 16, H=2048 -> 8)
+ * LSR_upper is amount to shift codeword to get upper byte into lower byte.
+ *   (H=4096 -> 4, H=2048 -> 3)
+ * MAX_COMP_LENGTH = (2 ^ (8-LSR_upper)) + 1
+ */
+
+#define HISTORY_SIZE     4096
+#define MASK_history     (HISTORY_SIZE-1)
+#define MASK_upper       (0xF0)
+#define MASK_lower       (0x0F)
+#define SHIFT_UPPER      16
+#define LSR_upper        4
+#define MAX_COMP_LEN     17
+
+unsigned char LZ_history[HISTORY_SIZE];
+#ifdef hashing_on
+long far HASH_TABLE[65536];
+#define CHASH(a,b,c)  ( ((((a&63)<<6)+(b&63))<<4)+c )
+#endif
+
+void writechar(register unsigned char outchar, register FILE *outfile)
+{
+  if (putc(outchar,outfile)==EOF)
+    {
+      printf("Error writing output file.\n");
+      fcloseall();
+      exit(slz_error + error_write);
+    }
+  LZ_history[lzhist_offset]=outchar; lzhist_offset=(lzhist_offset+1)&MASK_history;
+}
+
+void UnPackSLZ(unsigned char *inbuffer, register FILE *outfile)
+{
+  short myTAG, mycount, myoffset;
+  long int loop1;
+
+  for(;;)  // loop forever (until goto occurs to break out of loop)
+    {
+      myTAG=*inbuffer++;
+      for(loop1=0;(loop1!=8);loop1++)
+        {
+          if(myTAG&0x80)
+            {
+              if((mycount=*inbuffer++)==0)  // Check EXIT
+                { goto skip2; } // goto's are gross but it's efficient :(
+              else
+                {
+                  myoffset=HISTORY_SIZE-(((MASK_upper&mycount)*SHIFT_UPPER)+(*inbuffer++));
+                  mycount&=MASK_lower;
+                  mycount+=2;
+                  while(mycount!=0)
+                    {
+                      writechar(LZ_history[(lzhist_offset+myoffset)&MASK_history],outfile);
+                      mycount--;
+                    }
+                }
+            }
+          else
+            { writechar(*inbuffer++,outfile); }
+          myTAG+=myTAG;
+        }
+    }
+skip2:
+  return;
+}
+
+#ifdef hashing_on
+void ADDHASH(long a,long b, long c)
+{
+  long *INHASH,*BEFINHASH;
+  INHASH=&HASH_TABLE[CHASH(a,b,15)];
+  BEFINHASH=INHASH-1;
+  *(INHASH--)=*(BEFINHASH--); *(INHASH--)=*(BEFINHASH--); *(INHASH--)=*(BEFINHASH--);
+  *(INHASH--)=*(BEFINHASH--); *(INHASH--)=*(BEFINHASH--); *(INHASH--)=*(BEFINHASH--);
+  *(INHASH--)=*(BEFINHASH--); *(INHASH--)=*(BEFINHASH--); *(INHASH--)=*(BEFINHASH--);
+  *(INHASH--)=*(BEFINHASH--); *(INHASH--)=*(BEFINHASH--); *(INHASH--)=*(BEFINHASH--);
+  *(INHASH--)=*(BEFINHASH--); *(INHASH--)=*(BEFINHASH--); *(INHASH)=*(BEFINHASH);
+  *BEFINHASH=c;  
+}
+#endif
+
+void PackSLZ(unsigned char *inbuffer, register FILE *outfile)
+{
+  long int loop1,loop2, startvalue, endvalue, wherefound;
+  unsigned char outchars[MAX_COMP_LEN*10];
+  unsigned char *a_buffer, *b_buffer;
+  short lenoutchars;
+  short myTAG, iter;
+  short done,found,temp;
+
+#ifdef hashing_on
+  long *INHASH;
+  short HASHCHECK;
+
+  for(loop1=0;loop1!=65536;loop1++)
+    {
+      HASH_TABLE[loop1]=-1;
+    }
+  HASH_TABLE[CHASH(inbuffer[0],inbuffer[1],0)]=0;
+#endif
+
+  loop1=1; loop2=length-1; iter=1;  // Always do a literal first byte
+  outchars[1]=inbuffer[0]; lenoutchars=2;
+  done=FALSE;
+
+  while(! done)
+    {
+      myTAG=0;
+      while((iter<8)&&(! done))
+        {
+
+/***--- This is the slowest part.  I should rewrite it in ASM ---***/
+
+          startvalue=loop1-MASK_history;
+          if (startvalue<0) startvalue=0;
+          found=0;
+
+#ifdef hashing_on
+          INHASH=&HASH_TABLE[CHASH(inbuffer[loop1],inbuffer[loop1+1],0)];
+          HASHCHECK=16; // Scan for matches in HASH TABLE
+          while((HASHCHECK)&&((endvalue=*INHASH++)>=startvalue))
+            {
+              temp=0;
+              a_buffer=&inbuffer[loop1];
+              b_buffer=&inbuffer[endvalue];
+              while((*(a_buffer++) == *(b_buffer++))&&(temp<MAX_COMP_LEN))
+                {
+                  temp++;
+                }
+              if(found<temp)
+                {
+                  if ((temp+loop1)>length)
+                    {
+                      temp=length-loop1;
+                      if(found<temp)
+                        {
+                          found=temp;
+                          wherefound=endvalue;
+                        }
+                    }
+                  else
+                    {
+                      found=temp;
+                      wherefound=endvalue;
+                    }
+                  if (found==MAX_COMP_LEN) { goto skip1; }
+                }
+              HASHCHECK--;
+            }
+#else
+          endvalue=loop1-1;
+#endif
+
+          while(endvalue>=startvalue) // Scan for matches
+            {
+              temp=0;
+              a_buffer=&inbuffer[loop1];
+              b_buffer=&inbuffer[endvalue];
+              while((*(a_buffer++) == *(b_buffer++))&&(temp<MAX_COMP_LEN))
+                {
+                  temp++;
+                }
+              if(found<temp)
+                {
+                  if ((temp+loop1)>length)
+                    {
+                      temp=length-loop1;
+                      if(found<temp)
+                        {
+                          found=temp;
+                          wherefound=endvalue;
+                        }
+                    }
+                  else
+                    {
+                      found=temp;
+                      wherefound=endvalue;
+                    }
+                  if (found==MAX_COMP_LEN) { goto skip1; }
+                }
+              endvalue--;
+            }
+skip1:
+
+/***--- End of *SLOW* exhaustive history scan :( WHEW! ---***/
+
+
+          if(found>2) // Compression will now occur
+            {
+              myTAG|=(128>>iter);
+              endvalue=loop1-wherefound;
+              startvalue=((endvalue>>LSR_upper)&MASK_upper)+(found-2);
+              outchars[lenoutchars++]=startvalue;
+              outchars[lenoutchars++]=(unsigned char)endvalue;
+              loop2-=found;
+              while(found!=0)
+                {
+#ifdef hashing_on
+                 ADDHASH(inbuffer[loop1],inbuffer[loop1+1],loop1);
+#endif
+                  loop1++; found--;
+                }
+            }
+          else // No Compression, copy literal byte
+            {
+#ifdef hashing_on
+              ADDHASH(inbuffer[loop1],inbuffer[loop1+1],loop1);
+#endif
+              outchars[lenoutchars++]=inbuffer[loop1++];
+              loop2--;
+            }
+          if(loop2<=0)
+            {
+              done=TRUE;
+              if(loop2<0)
+                {
+                  printf("HMMM... ooops!!!\n");
+                }
+            }
+          iter++;
+        }
+      if(! done)
+        {
+          outchars[0]=myTAG;
+          for(startvalue=0;startvalue!=lenoutchars;startvalue++)          
+            {
+//            writechar(outchars[startvalue],outfile);
+/*****/
+  if (putc(outchars[startvalue],outfile)==EOF)
+    {
+      printf("Error writing output file.\n");
+      fcloseall();
+      exit(slz_error + error_write);
+    }
+/*****/
+
+            }
+          lenoutchars=1;
+          iter=0;
+        }
+    }
+  if(iter==8)
+    {
+      outchars[0]=myTAG;
+      for(startvalue=0;startvalue!=lenoutchars;startvalue++)          
+        {
+          writechar(outchars[startvalue],outfile);
+        }
+      writechar(255,outfile); writechar(0,outfile);
+    }
+  else
+    {
+      outchars[0]=myTAG|(128>>iter);
+      for(startvalue=0;startvalue!=lenoutchars;startvalue++)          
+        {
+          writechar(outchars[startvalue],outfile);
+        }
+      writechar(0,outfile);
+    }
+}
+
+main(int argc, char *argv[])
+{
+  FILE *infile, *outfile;
+  unsigned char *inbuffer;
+
+  printf(" SLZ -- SLZ (un)packer.          C. 1993 SilverFox SoftWare.\n");
+  printf("   Written by Adisak Pochanayon     All Rights Reserved.\n\n");
+
+  if (argc != arg_count)
+    {
+      error= slz_error + error_args;
+      printf("Error -- Please check arguments.\n");
+    }
+  else if ((infile  = fopen(argv[arg_srce],"r"))==FILE_ERROR) 
+    {
+      error= slz_error + error_srce;
+      printf("Error -- SOURCE file could not be opened.\n");
+    }
+  else if ((outfile = fopen(argv[arg_dest],"w"))==FILE_ERROR)
+    {
+      error= slz_error + error_dest;
+      printf("Error -- DESTINATION file could not be opened.\n");
+    }
+  else
+    {
+/*
+ * Get the length of the input file (sorry it takes me 3 calls :( )
+ * If you have a better way, let me know.
+ */
+      fseek(infile,0,2); length=ftell(infile); rewind(infile);
+
+      if (length>2) if ((inbuffer=(unsigned char *)getml(length))!=0)
+        {
+          fread(inbuffer,1,length,infile);  // assume this goes no problem :)
+          switch (*argv[arg_flag])
+            {
+              case 'U' : case 'u' : printf("UnPacking File %s.\n",argv[arg_srce]);
+                         UnPackSLZ(inbuffer, outfile); break;
+              case 'P' : case 'p' : printf("Packing File %s.\n",argv[arg_srce]); 
+                         PackSLZ(inbuffer, outfile);   break;
+              default  : error=slz_error + error_args; printf("Error -- no FLAG selected.\n");
+            }
+          rlsml(inbuffer,length);
+        }
+    }
+
+  if (error!=0)
+     printf("\nSLZ command syntax is:  \"SLZ  FLAG  SOURCE  DESTINATION\"\n   where FLAG can be U - unpack  P - pack.\n\n");
+  else
+     printf("\nSLZ successfully completed\n");
+
+  fcloseall();
+  exit(error);
+}
+-----------------------------END C------------------------------------------
+
+I achieved compression to 44.07% by applying SLZ to this text file.
+This is better than ZOO by almost 1,000 bytes!
+(0%=impossibly good - 100+%=really bad).
+
+-----------------------------------------------------------------------
+
+     As usual, I invite any questions or comments.  Please feel free
+to e-mail me at pochanay@cae.wisc.edu for more indepth discussions.
+I am still looking for Amiga Artists to help with new games and
+programs I am planning on writing.  (Music, graphics, etc).
+
+     Also, if you're a commercial developer interested in exploiting
+my programming skills..... :)
+
+Adisak Pochanayon
+SilverFox SoftWare
+pochanay@cae.wisc.edu

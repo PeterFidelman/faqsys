@@ -1,0 +1,89 @@
+<html><pre>
+This is a simple tutorial on how to calculate the Roland checksum.
+
+I'm making a few assumptions here, if you are unfamiliar with the
+following terms then please get to grips with them before continuing.
+- You should have a basic understanding of a "hexadecimal" value.
+- You should know what a "byte" is.
+
+Firstly let's have a look at the construct of a complete system
+exclusive message (SysEx):
+
+        Header Address Data Checksum Eox
+
+The Header always starts with F0h which is the MIDI SysEx identifier.
+Next is the Manufacturers id. (e.g. Roland = 41h)
+Next is the Device id. (e.g. Unit#17 = 10h)
+Next is the Model id. (e.g. SCC-1 = 42h)
+Lastly is the command id for sending (12h) (or receiving (11h)).
+
+The Address is always a three byte value which tells the device where
+the data is to be written.
+
+The Data is the string of bytes which will be written starting from the
+address you specified.
+
+The checksum is a value derived from the address and the data. The
+device will also calculate it from the address and data it receives
+and check its checksum against the one you supply. If they match then
+it has received the SysEx message correctly.
+
+The Eox (end of exclusive) is always F7h according to the latest MIDI spec.
+
+Okay, now for the checksum calculation. Remember it only uses the address
+and the data. The first example we will use is the example at the bottom of
+page 39 of the SCC-1 manual, for adjusting the master volume. The address is
+40h 00h 04h and the data 64h. Here's how the checksum is derived:
+
+Add each of the values, one by one. Each time the value exceeds 127 (7Fh)
+subtract 128 (80h) from it. Finally subtract the resultant value from 128
+and you have your checksum!
+
+In hexadecimal: (I won't put h after each value for clarity)
+40 + 00 = 40 (Surprise!)
+40 + 04 = 44
+44 + 64 = A8 ( A8 > 7F so...)
+A8 - 80 = 28
+80 - 28 = 58 (The checksum is 58h)
+
+In decimal:
+64  +   0 = 0
+64  +   4 = 68
+68  + 100 = 168 ( 168 > 127 so...)
+168 - 128 = 40
+128 -  40 = 88  (The checksum is 88)
+
+
+To show what is actually happening I'll show you the last line in binary:
+
+10000000 - 00101000 = 01011000
+
+
+According to the manual "The error checking process uses a checksum that
+provides a bit pattern where the least significant 7 bits are zero when
+values for an address, [data], and that checksum are summed."
+The low bits in binary are on the right. In the binary calculation above,
+add the address, data and checksum and you get back to 128, which has all
+seven lower bits clear:
+
+address & data + checksum = 128
+00101000       + 01011000 = 10000000
+
+
+Note that in this example, while summing the values we exceeded 127 and
+had to subtract 128. This is not always necessary, as long as the
+summed values do not exceed 127.
+
+If the sum of the values comes to 128 then I'm sure it is clear that
+the checksum is 128! Look at the arithmetic:
+  x +   y = 128 ( 128 > 127 so...)
+128 - 128 = 0
+128 -   0 = 128 (The checksum is 128)
+
+
+If anything in this document is ambiguous or unclear, please let me know
+so that I can improve it for everyone's benefit.
+
+Eddie
+lotter@cc.und.ac.za
+</html>

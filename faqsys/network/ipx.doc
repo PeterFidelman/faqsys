@@ -1,0 +1,609 @@
+From: s921878@minyos.xx.rmit.EDU.AU (Daniel John Lee Parnell)
+Subject: Re: IPX document in x2ftp
+To: jon@stekt.oulu.fi
+Date: Mon, 3 Oct 1994 10:34:04 +1000 (EST)
+Content-Type: text/plain; charset=US-ASCII
+Content-Length: 23154
+
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+         IIIIII   PPPPPP     XX         XX
+           II     PP    PP    XX       XX
+           II     PP    PP     XX     XX
+           II     PP    PP      XX   XX
+           II     PP    PP       XX XX
+           II     PPPPPP          XXX
+           II     PP             XX XX
+           II     PP            XX   XX
+           II     PP           XX     XX     How to send IPX packets over a
+           II     PP          XX       XX    network by Daniel Parnell
+         IIIIII   PP         XX         XX   s921878@minyos.xx.rmit.oz.au
+                                             daniel@bunyip.ph.rmit.oz.au
+
+                                             Started : 29th March     1994
+                                             Last Mod:  2nd September 1994
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+
+  On March 24th 1994 I managed to send my first IPX packet.  This was a very
+exciting moment for me as it opened up a vast number of applications that
+were before closed to me.  NETWORKED GAMES!!!  :)    This document attempts
+to guide the would be IPXer in the techniques of sending IPX packets.
+Admittedly, it has only been 5 days since my first sucessful packet, but in
+that short time I have developed a set of routines that seem to work quite
+well.  :)   These routines are included in appendix A and an example program
+is included in appendix B.  These routines are written in Turbo Pascal 6.0,
+but should be reasonably portable to other languages.
+
+  First of all, a little background.  IPX is a protocol that allows packets
+of information to be sent over a network.  These packets can be sent from one
+machine to another or sent to all machines (nodes).  Sending a packet to all
+machines is called a BROADCAST.  A broadcast will usually be confined to just
+the local network, however there are ways around this which I will not go
+into here.  ;)  These packets have a specific structure which is shown in
+figure 1.
+
+                        Figure 1 - The IPX header
+   ------------------------------------------------------------------------
+   | Name          | Size (bytes) | Description                           |
+   ----------------|--------------|---------------------------------------|
+   |Check          | 2 bytes      | Bigendian check sum                   |
+   |Length         | 2 bytes      | Bigendian length of packet            |
+   |tc             | 1 byte       | Transport control (age of packet)     |
+   |pType          | 1 byte       | Packet type  (always use 0)           |
+   |dest           | 12 bytes     | Address of destination node           |
+   |src            | 12 bytes     | Address of source node                |
+   ----------------|--------------|---------------------------------------|
+
+  By the way, bigendian means that the first byte holds the most significant
+value, which is the opposite of the normal way of doing things on the PC.
+
+  For reasons better known to Novell, the checksum is always set to $ffff.
+The length field contains the total length of the packet, including the IPX
+header.  Transport control keeps a count of the number of routers a packet
+has been through.  The format of the address is shown in Figure 2.
+
+                       Figure 2 - The net address field
+   ------------------------------------------------------------------------
+   | Name          | Size (bytes) | Description                           |
+   ----------------|--------------|---------------------------------------|
+   |network        | 4 bytes      | Network address                       |
+   |node           | 6 bytes      | Node address                          |
+   |socket         | 2 byte       | Socket number                         |
+   ----------------|--------------|---------------------------------------|
+
+  Sockets are a device that lets a node decide if it will act on a packet.
+It allows multiple programs on the one PC to use IPX packets completely
+transparent to the others.  It also means that a broadcasted packet will only
+be received by a machine if it has a socket open for that which the packet is
+addressed.  So packets can be ignored by nodes that are not capable of
+accepting them.  Special care must be taken to ensure that no two programs try
+to send different types of packets to the same socket!
+
+  The next order of bussiness is to tell the PC that we want to open a socket.
+This is accomplished by creating an Event Control Block (ECB).  Figure 3 shows
+the format of the ECB.
+
+                      Figure 3 - Format of the ECB
+   ------------------------------------------------------------------------
+   | Name          | Size (bytes) | Description                           |
+   ----------------|--------------|---------------------------------------|
+   |Link           | 4 bytes      | Pointer to next ECB?                  |
+   |ESR            | 4 bytes      | Pointer to Event Service Routine      |
+   |InUse          | 1 byte       | Flag telling the ECB status           |
+   |complete       | 1 byte       | Flag telling the ECB completion code  |
+   |socket         | 2 bytes      | Bigendian socket number for ECB       |
+   |IPXwork        | 4 bytes      | Work space for IPX                    |
+   |Dwork          | 12 bytes     | Work space for driver                 |
+   |immedAddr      | 12 bytes     | Address to send to.                   |
+   |fragCount      | 2 bytes      | Number of fragments                   |
+   |FragData       | 4 bytes      | Pointer to data fragment              |
+   |FragSize       | 2 bytes      | Size of data fragment                 |
+   ----------------|--------------|---------------------------------------|
+
+  All the fields in the ECB should be set to zero before initializing the ECB.
+This makes the code to initialize the ECB much nicer!  No ESR is used in my
+routines which means the the program must constantly ckeck the ECB to see if
+a packet has arrived.  I don't see this as any great drawback however.
+
+  To send a broadcast, set the node address to all $ff.  This is done
+automatically by my routines.
+
+  FragData must be initialized to point to the IPX header and the data we want
+to send MUST follow directly after this header.  An example of this can be
+seen in Appendix B in the definition of the record type "Packet".  The ECB
+need not be included in the packet record, but for simplicity I chose to do
+so.
+
+  The procedures InitSendPacket and InitReceivePacket give examples of the
+initialization of both the ECB and IPX header.
+
+  Once all of the fields are initialized, it is necessary to tell the IPX
+driver about our ECB.  This is done by first opening a socket to use.
+Interrupt $7A is assigned to the Novell API, and is the old way of accessing
+the routines.  It is however a much easier to use than the recommended method
+(in my opinion anyway).  The sub-functions that we use are given in Table 1.
+
+                                Table 1
+-----------------------------------------------------------------------------
+|Function|Name        |Regs                                                 |
+-----------------------------------------------------------------------------
+|  $0000 |Open Socket |AL=Longevity  DX=Socket number  (bigendian)          |
+|        |            |Returns:AL=Error code  DX=Socket Number  (bigendian) |
+-----------------------------------------------------------------------------
+|  $0001 |Close Socket|DX=Socket number  (bigendian)                        |
+-----------------------------------------------------------------------------
+|  $0003 |Send Packet |ES=Seg of ECB  SI=Offset of ECB                      |
+-----------------------------------------------------------------------------
+|  $0004 |Listen for  |ES=Seg of ECB  SI=Offset of ECB                      |
+|        |packet      |Returns:AL=Error code                                |
+-----------------------------------------------------------------------------
+|  $0009 |Get Local   |ES=Seg of address array   SI=Offset of address array |
+|        |Address     |                                                     |
+-----------------------------------------------------------------------------
+|  $000A |Im Idle     |None                                                 |
+-----------------------------------------------------------------------------
+
+  NOTE:  The function number is stored in BX.
+
+  After attempting to open a socket it is advisable to test if IPX is
+present.  This is done by calling int $2F with AX=$7F00.  If on return AL
+does not  contain $FF, then IPX is not installed.  This is also a good point
+to get your local address as your program should only have to do this once.
+See the procedure InitIPX in appendix A for an example of this.
+
+  Once we have an open socket and some set up ECBs and IPX headers, we can
+tell the IPX driver about them.   First we will look at a recieving ECB and
+IPX header, followed by a sending.
+
+  For a recieve record, the IPX header does not need to be initialized at all.
+However, I think it is a good idea to zero all the fields just be on the safe
+side.  The ECB however, does need to have several fields set.  The inUse flag
+should be set to $1D  (don't ask me why, actually it works without this, but
+several of the recources I consulted did this).  The socket number must be
+initialized, and remember, this is bigendian so be careful!  Finally the
+fragCount, fragData and fragSize fields must be set.  All the other fields
+should be set to zero!
+
+  Once all these fields are set, call "Listen For Packet" to tell the IPX
+driver about the ECB.  This will return immediatly, but if any packets arrive
+for that socket they will be placed into the record.  To see if a packet has
+arrived, it is necessary to check the InUse flag in the ECB.  If this is $00,
+then a packet has arrived and needs to be processed before another can be
+accepted.  If a packet arrives when there is an unprocessed packet, then it
+will be lost.  This means that a packet should be processed as soon as
+possible.  The record can be released by simply calling "Listen For Packet"
+again.
+
+  OK, we now have a recieve record waiting for a packet to arrive.  Now we
+need a send record!  A send record needs all of the same fields as a receive
+record, but on top of that it also needs the IPX header to be filled in.
+The checksum is set to $ffff and the packet type is set to $00 (this is a
+packet exchange packet).  Next the destination address is set.  For a
+broadcast you should set the net address to your local net address, the node
+sould be the broadcast node ($ff,$ff,$ff,$ff,$ff,$ff) and the socket should be
+set up.  Your program should set up the source address with the info from the
+localAddr record, and the source socket can be anything, but again, for
+simplicity I usually set it to the same value as the destination socket.
+
+  We then put some data into the data portion of the record and call "Send
+Packet".  The packet will then be sent to the destination node on the network.
+If the node field is set to the broadcast address, the packet will be sent to
+all nodes on the network, including the source node.
+
+  As a point of interest, you should call "Im idle" whenever your program
+isn't doing anything an particular to allow the IPX driver to run more
+quickly.
+
+
+  So there you have it.  Hopefully you should now be able to send and receive
+IPX packets on a network.  Have fun!
+
+                                Daniel Parnell
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+    A    PPPPP  PPPPP  EEEEEE N       N DDDDDD  IIIII X     X         A
+   A A   P    P P    P E      NN      N D     D   I   X     X        A A
+  A   A  P    P P    P E      N N     N D     D   I   X     X       A   A
+ A     A P    P P    P E      N  N    N D     D   I    X   X       A     A
+ A     A P    P P    P E      N   N   N D     D   I     X X        A     A
+ AAAAAAA PPPPP  PPPPP  EEEE   N    N  N D     D   I      X         AAAAAAA
+ A     A P      P      E      N     N N D     D   I     X X        A     A
+ A     A P      P      E      N      NN D     D   I    X   X       A     A
+ A     A P      P      E      N       N D     D   I   X     X      A     A
+ A     A P      P      E      N       N D     D   I   X     X      A     A
+ A     A P      P      EEEEEE N       N DDDDDD  IIIII X     X      A     A
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+{ IPX 1.0 By Daniel Parnell 22 March 1994  s921878@minyos.xx.rmit.oz.au
+
+  This unit allows the sending of IPX packets over a Novell network
+
+  Use it if you want, but please give me some credit for it :)
+
+  See the other file which is a chat program for info on how to use this unit
+
+}
+unit ipx;
+
+interface
+
+uses dos;
+
+type
+  netAddr  = array[1..4] of byte;    { The address of a network }
+  nodeAddr = array[1..6] of byte;    { The address of a node in a network }
+
+  address  = array[0..1] of word;    { A pointer to the data 0=offset 1=seg }
+
+  netAddress = record
+                 Net    : netAddr;   { network address }
+                 Node   : nodeAddr;  { node address }
+                 Socket : word;      { Big endian socket number}
+               end;
+
+  localAddrT = record
+                 Net    : netAddr;   { my network address }
+                 Node   : nodeAddr;  { my node address }
+               end;
+
+  ECBType = record
+              link      : address;    { Pointer to next ECB? }
+              ESR       : address;    { Event Service Routine 00000000h if none }
+              inUse     : byte;       { In use flag }
+              complete  : byte;       { Completeing flag }
+              socket    : word;       { Big endian socket number }
+              IPXwork   : array[1..4] of byte;  { IPX work space }
+              Dwork     : array[1..12] of byte; { Driver work space }
+              immedAddr : nodeAddr;   { Immediate local node address }
+              fragCount : word;       { Fragment count }
+              fragData  : address;    { Pointer to data fragment }
+              fragSize  : word;       { Size of data fragment }
+            end;
+
+  IPXheader = record
+                check  : word;                { big endian checksum }
+                length : word;                { big endian length in bytes }
+                tc     : byte;                { transport control }
+                pType  : byte;                { packet type }
+                dest   : netAddress;          { destination network address }
+                src    : netAddress;          { source network address }
+              end;
+
+const
+  MYSOCKET  : word = $869C;        { This is the DOOM official socket number }
+  BROADCAST : nodeAddr = ($ff,$ff,$ff,$ff,$ff,$ff);  { Address for broadcast }
+
+var
+  localAddr    : localAddrT;
+
+function  IPXopenSocket(longevity : byte; var socketNumber : word):byte;
+procedure IPXcloseSocket(socketNumber : word);
+procedure GetLocalAddress;
+procedure IPXsendPacket(var E : ECBtype);
+function  IPXlistenForPacket(var E : ECBtype):byte;
+procedure ImIdle;
+procedure InitSendPacket(var ecb : ecbType; var ipx : ipxHeader; size,sock : word);
+procedure InitReceivePacket(var ecb : ecbType; var ipx : ipxHeader; size,sock : word);
+procedure InitIPX;
+
+implementation
+
+{ Open a socket
+  PARAMS:  longevity = $00 for open till close or terminate
+                     = $ff for open till close  use for TSR
+
+           socketNumber = 0 for dynamic allocation
+                        = anything else
+
+  RETURNS: completion code $00 = success
+                           $fe = socket table full
+                           $ff = socket already open }
+function IPXopenSocket(longevity : byte; var socketNumber : word):byte;
+var
+  regs : registers;
+
+begin
+  regs.bx:=$0000;
+  regs.al:=longevity;
+  regs.dx:=swap(socketNumber);
+
+  intr($7A,regs);
+
+  if socketNumber=$0000 then
+    socketNumber:=swap(regs.dx);
+
+  IPXopenSocket:=regs.al;
+end;
+
+{ Close a socket
+  PARMS:  socketNumber = a socket to close }
+procedure IPXcloseSocket(socketNumber : word);
+var
+  regs : registers;
+
+begin
+  regs.bx:=$0001;
+  regs.dx:=swap(socketNumber);
+
+  intr($7A,regs);
+end;
+
+{ Get my address and put it into the local address array! }
+procedure GetLocalAddress;
+var
+  regs : registers;
+
+begin
+  regs.bx:=$0009;
+  regs.es:=seg(localAddr);
+  regs.si:=ofs(localAddr);
+  intr($7A,regs);
+end;
+
+{ Send an IPX packet
+PARAMS:  var E = an initialized Event Control Block }
+procedure IPXsendPacket(var E : ECBtype);
+var
+  regs : registers;
+
+begin
+  regs.bx:=$0003;
+  regs.es:=seg(E);
+  regs.SI:=ofs(E);
+
+  intr($7A,regs);
+end;
+
+{ Listen for an IPX packet
+PARAMS:  var E = an initialize Event Control Block
+
+RETURNS: 0 for OK, nonzero for an error ????}
+function IPXlistenForPacket(var E : ECBtype):byte;
+var
+  regs : registers;
+
+begin
+  regs.bx:=$0004;
+  regs.es:=seg(E);
+  regs.SI:=ofs(E);
+
+  intr($7A,regs);
+
+  IPXlistenForPacket:=regs.al;
+end;
+
+{ Tell the IPX driver that we aren't doing anything at the moment }
+procedure ImIdle;
+var
+  regs : registers;
+
+begin
+  regs.bx:=$000A;
+
+  intr($7A,regs);
+end;
+
+{ Set up the fields in a send IPX record }
+procedure InitSendPacket(var ecb : ecbType; var ipx : ipxHeader; size,sock : word);
+begin
+  fillChar(ecb,sizeOf(ecb),#0);
+  fillChar(ipx,sizeOf(ipx),#0);
+  with ecb do
+    begin
+      socket:=swap(sock);               { Big endian socket number }
+      fragCount:=1;                     { Fragment count }
+      fragData[0]:=ofs(IPX);            { Pointer to data fragment }
+      fragData[1]:=seg(IPX);
+      fragSize:=sizeof(IPX)+size;       { Size of data fragment }
+      immedAddr:=BROADCAST;             { Needs to be BROADCAST?? }
+    end;
+
+  with ipx do
+    begin
+      check:=$ffff;                     { NO CHECKSUM }
+      ptype:=0;                         { Packet exchange packet }
+      dest.net:=localAddr.net;          { Send to this network }
+      dest.node:=BROADCAST;             { Send to everybody! }
+      dest.socket:=swap(sock);          { Send to my socket }
+      src.net:=localAddr.net;           { From this net }
+      src.node:=localAddr.node;         { From ME }
+      src.socket:=swap(sock);           { From my socket }
+    end;
+end;
+
+{ Set up the fields in a recieve IPX record }
+procedure InitReceivePacket(var ecb : ecbType; var ipx : ipxHeader; size,sock : word);
+begin
+  fillChar(ecb,sizeOf(ecb),#0);
+  fillChar(ipx,sizeOf(ipx),#0);
+  with ecb do
+    begin
+      inUse:=$1d;                               { ???? }
+      socket:=swap(sock);                       { Big endian socket number }
+      fragCount:=1;                             { Fragment count }
+      fragData[0]:=ofs(IPX);                    { Pointer to data fragment }
+      fragData[1]:=seg(IPX);
+      fragSize:=sizeof(IPX)+size;               { Size of data fragment }
+    end;
+
+  if IPXlistenForPacket(ecb)<>0 then ;          { Tell IPX to listen }
+end;
+
+{ Set up IPX and get the local address }
+procedure InitIPX;
+var
+  i    : integer;
+  regs : registers;
+
+begin
+  regs.ax:=$7A00;
+  intr($2f,regs);
+
+  if regs.al<>255 then
+    begin
+      writeln('ERROR WHILE INITIALIZING IPX!');
+      halt(1);
+    end;
+
+  getLocalAddress;
+end;
+
+
+begin
+end.
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+    A    PPPPP  PPPPP  EEEEEE N       N DDDDDD  IIIII X     X      BBBBBB
+   A A   P    P P    P E      NN      N D     D   I   X     X      B     B
+  A   A  P    P P    P E      N N     N D     D   I   X     X      B     B
+ A     A P    P P    P E      N  N    N D     D   I    X   X       B     B
+ A     A P    P P    P E      N   N   N D     D   I     X X        B     B
+ AAAAAAA PPPPP  PPPPP  EEEE   N    N  N D     D   I      X         BBBBBB
+ A     A P      P      E      N     N N D     D   I     X X        B     B
+ A     A P      P      E      N      NN D     D   I    X   X       B     B
+ A     A P      P      E      N       N D     D   I   X     X      B     B
+ A     A P      P      E      N       N D     D   I   X     X      B     B
+ A     A P      P      EEEEEE N       N DDDDDD  IIIII X     X      BBBBBB
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+program CHAT;
+uses CRT,IPX;
+
+type
+  Packet = record
+             ecb  : ECBType;
+             IPX  : IPXheader;
+             data : string;
+           end;
+
+var
+  send,receive : Packet;
+
+procedure Main;
+  
+var
+  line   : string;
+  y      : integer;
+  done   : boolean;
+  k      : char;
+  i      : integer;
+  handle : string;
+
+begin
+  ClrScr;
+  writeln('CHATER BOX v0.5 By Daniel Parnell  25th March 1994');
+  writeln;
+  write('Enter your handle :');
+  readln(handle);
+
+  window(1,1,80,23);
+  textBackground(Blue);
+  textColor(Yellow);
+  clrScr;
+  window(1,24,80,25);
+  textBackground(Red);
+  textColor(Yellow);
+  clrScr;
+
+  y:=1;
+  line:='';
+  done:=FALSE;
+
+  repeat
+    repeat
+    until KeyPressed or (receive.ecb.inuse=0);
+
+    if receive.ecb.inuse=0 then
+      begin
+        window(1,1,80,23);
+        gotoXY(1,y);
+        textBackground(Blue);
+        textColor(Yellow);
+        writeln(receive.data);
+        y:=WhereY;
+        if IPXlistenForPacket(receive.ecb)<>0 then
+          begin
+            writeln(#7,'ERROR TRYING TO receive A PACKET!');
+            halt(2);
+          end;
+
+        window(1,24,80,25);
+        GotoXY(1,length(line)+1);
+
+      end;
+
+    if KeyPressed then
+      begin
+        k:=ReadKey;
+        case k of
+          #13 : if line<>'' then
+                  begin
+                    send.data:='<<'+handle+'>>'+line;
+
+                    with send.ecb do
+                      for i:=1 to 6 do
+                        ImmedAddr[i]:=$ff;
+
+                    repeat
+                    until send.ecb.inuse=0;
+
+                    IPXsendPacket(send.ecb);
+                    line:='';
+                  end;
+          #8  : if length(line)>0 then
+                  line:=copy(line,1,length(line)-1);
+          #0  : k:=ReadKey;
+          #27 : done:=TRUE;
+        else
+          if length(line)<79 then
+            line:=line+k
+          else
+            begin
+              sound(1000);
+              delay(100);
+              noSound;
+            end;
+        end;
+
+        window(1,24,80,25);
+        textBackground(Red);
+        textColor(Yellow);
+        GotoXY(1,1); clreol; write(line);
+      end;
+  until done;
+end;
+
+begin
+  if IPXopenSocket(0,MYSOCKET)=0 then
+    begin
+      InitIPX;
+
+      with send do
+        InitSendPacket(ecb,ipx,sizeof(String),MYSOCKET);
+      with receive do
+        InitReceivePacket(ecb,ipx,sizeof(String),MYSOCKET);
+
+      Main;
+
+      IPXcloseSocket(MYSOCKET);
+    end;
+
+  TextColor(LightGray);
+  TextBackground(Black);
+  window(1,1,80,25);
+  clrScr;
+end.
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+Daniel Parnell  -  Email to s921878@minyos.xx.rmit.oz.au - AMIGA 500&600 1 MEG
+ Second Year Applied Physics student at R.M.I.T. Melbourne Australia.   *:|()
+   People who drink petrol shouldn't smoke.  AMOS 1.36 with Compiler and 3D
+    Squaxx Dek Thargo from prog 579 - C64 Amiga Mac CCPM 6502 8086 - Forth 
+
+

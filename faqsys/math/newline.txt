@@ -1,0 +1,678 @@
+Subject: Fastest line algorithm -- FINALLY...
+From: lukeh@kcbbs.gen.nz (Luke Hutchison)
+
+
+Hi,
+
+(FINALLY...  This paper should be *complete*... I've sorted out the
+problem with the newsreader, so it should post as normal.  Sorry for the
+half-finished and blank messages!)
+
+Here's the line-routine description, as promised... I wrote this a year ago,
+and it's written as a "paper" (I saw my first scientific paper not long
+before writing this, and copied the style!).
+
+Just a couple of things--IMPORTANT:
+
+(1) Please, please can I have your comments about this paper and the
+    algorithm it describes.  I will update the paper, and need to know
+    your opinions and need ideas for improvements.
+
+(2) If you ever use this algorithm in any application whatsoever, could
+    you please let me know.  I'm just really interested to see how and
+    where it is used.  You can reach me at the address/number/Email
+    address given at the end of the paper.
+
+Also remember that a claim to being "the fastest" line-drawing routine
+is very subjective...  but this is *very* fast...
+
+Have fun!
+
+Luke Hutchison (lukeh@kcbbs.gen.nz).
+--
+
+
+
+   -----------------------------------------------------------------------
+   A New Algorithm for the Fast Scan-Conversion and Rasterization of Lines
+   -----------------------------------------------------------------------
+
+               Copyright (C) 19 Jan 1994  Luke A. D. Hutchison
+
+
+
+
+ABSTRACT
+
+A new, fast algorithm for line-drawing is presented which makes use of
+a concept similar to that employed by Bresenham's "Run-length slice"
+algorithm, combined with fixed-point calculations which make redundant the
+error-variable decisions inherent in all Bresenham implementations.
+
+A working knowledge of fixed-point math and some previous knowledge of
+scan-conversion is assumed.
+
+Keywords and phrases:  Line drawing, scan-conversion, rasterization,
+                       Bresenham's Algorithm, application of fixed-point math
+
+
+
+INTRODUCTION
+
+Since the start of the computer age people have been developing and improving
+algorithms for the scan-conversion of graphical primitives.  Probably the most
+well-known of these algorithms are the ones developed by J.E.Bresenham for the
+plotting of a line, circle and other objects on a 2-dimensional raster device.
+
+Bresenham's line-drawing algorithm works by stepping along the major axis, at
+each step calculating how far from the ideal line the current minor distance is
+(the "error").  When the error gets too large the point is moved in the
+appropriate direction along the minor axis (ie. towards the line) and the error
+variable adjusted down accordingly.
+
+Efficient versions of Bresenham's original algorithm can be written, yet it is
+not the most efficient way to draw a line.  Bresenham later developed his
+"Run-length slice algorithm" which looks at the line as a series of horizontal
+or vertical "runs" or rows/columns of pixels, as shown below:
+
+
+                  +---------------------------------------+
+                  |                          **** (x2,y2) |
+                  |                       ***             |
+                  |                   ****                |
+                  |                ***                    |
+                  |            ****                       |
+                  | (x1,y1) ***                           |
+                  +---------------------------------------+
+                                    Fig.1
+
+
+The line in Fig.1 has a gradient of 6/21, or 1/3.5.  Notice that the average
+length of the rows of adjacent pixels is 3.5.
+
+The Run-length Slice Algorithm is different from a normal Bresenham's in that
+it steps along the minor axis, taking the integer reciprocal of the gradient
+(3 for the above line) and using this as the minimum "horizontal run-length"
+for the line.  This means that for every step along the minor axis, at least
+three pixels are drawn, and the fourth pixel is only drawn if the above
+error-decision system so indicates (this in fact works, in theory, by adding
+the fractional part of the reciprocal of the gradient to a "total"
+variable, and when this reaches 1.0 then the fourth pixel is drawn and 1.0 is
+subtracted from the total).
+
+
+
+
+THE NEW ALGORITHM
+
+A lot of needless processing is done by Bresenham's run-length slice algorithm.
+Why bother keeping track of the error, or total the fractional parts, when
+the gradient and the position along the major axis can be kept as fixed-point
+values?  To illustrate the point, refer again to the example given in Fig.1.
+
+Note that we will arbitrarily draw lines from bottom to top here, however either
+direction will work.  Also note that the below description applies only to
+X-major lines (the converse of the description applies Y-major lines).
+
+Starting at the bottom of the line, (x1,y1), we set a variable, 'x' to the
+fixed-point equivalent of 'x1':
+
+    x = x1 << 16;
+
+Note that we are using 32-bit integers and that we are using the lower 16 bits
+of the int as the fractional part of the fixed-point number.  A different
+number of bits could work for a given implementation as long as precision is
+not lost.
+
+Secondly the screen address of the pixel at (x1,y1) is found:
+
+    char *scr = scr_base + x1 + y1 * screen_width;
+
+This is where on the screen the linedrawing will commence.  Thirdly the inverse
+gradient is found, as with Bresenham's Run-length Slice Algorithm, only in
+fixed-point:
+
+    m = (dx << 16) / dy;                                                (Eq.1)
+
+Where:
+
+    dx = x2 - x1;
+    dy = y2 - y1;
+
+A variable is used to remember the previous position of 'x', which we shall
+call 'ox'.  It is initialized as:
+
+    ox = x;
+
+Now, in the algorithm's simplest form, another integer variable, 'y', steps
+between 'y1' and 'y2', ie. steps through all run-slices in turn, and for every
+run-slice a new value for 'x' is calculated by adding the inverse gradient to
+it:
+
+    x += m;
+
+The length of a given run is then:
+
+    rlen = ((x >> 16) - ((ox >> 16));
+
+(Or in other words the integer distance between the current and previous
+horizontal fixed-point positions).
+
+Finally a row of pixels is drawn starting at 'scr' and of length 'rlen'
+(note that 'scr' is updated on exit from the horizontal run-drawing code to
+point to the pixel at the end of the run), then 'scr' is updated to point
+to the scanline above the current one and 'ox' is set to 'x' as follows:
+
+    draw_H_run(&scr, rlen);
+    scr -= screen_width;        /* Move up one scanline */
+    ox = x;
+
+(draw_H_run() will draw the specified number of pixels in a horizontal line).
+The Y-loop then continues with the next run.
+
+As previously stated, the converse of all above remarks applies to Y-major
+lines.
+
+
+
+
+IMPLEMENTATION DETAILS
+
+There are a few special cases to consider, as well as some details that need
+to be taken into account for the line to be centred around the ideal (ie. for
+the rasterized version of the line to match as closely as possible the true
+line between the endpoints).
+
+Firstly, if (dy == 0) then the above statement for 'm' (Eq.1) is undefined.
+The same applies for (dx == 0).  If (dy == 0) then a horizontal line between
+(x1,y1) and (x2,y2) needs to be drawn (in other words a single horizontal run
+of length (dx + 1) needs to be drawn) instead of going through the normal
+process:
+
+    if (dy == 0) {
+        draw_H_run(&scr, dx + 1);
+        return;                 /* Line is now drawn so simply return */
+    }
+
+The same needs to be done for (dx == 0) with 'draw_V_run()' to avoid division
+by zero in the Y-major part of the routine.
+
+The second detail that needs to be considered is that the algorithm, as thus
+far stated, is not correct in that the line to be drawn is not necessarily
+centred about the ideal line, as illustrated below, and also the line will be
+too long:
+
+
+   +-----------------------------------+-----------------------------------+
+   |                       *** (x2,y2) |                   (x2,y2) *###    |
+   |                   ****            |                       ****        |
+   |                ***                |                   ****            |
+   |            ****                   |               ****                |
+   | (x1,y1) ***                       |   (x1,y1) ****                    |
+   +-----------------------------------+-----------------------------------+
+      Fig.2  (Ideal rasterized line)    Fig.3  (Line produced by algorithm
+                                                        thus far)
+
+The line in Fig.2 is what would be generated by a standard Bresenham's
+algorithm whereas Fig.3 shows what the above (simplified) description of
+the algorithm would produce.  The hashes ('#') in Fig.3 show the "extra" pixels
+which would be plotted but are in fact further to the right than 'x2'.  This
+is because dx = 16 and dy = 4, giving a run-length of 4.0.  However the first
+run (4 pixels in above example), plus the single pixel that is valid in the
+last run, must be split evenly between the first and last runs in order to
+balance the line about its centre.  This is done in the following way:
+
+Because we previously set 'ox' to 'x' just before the 'y'-loop, and to
+calculate the run-length 'rlen' we subtract the integer part of 'ox' from the
+integer part of 'x', to force the initial run to be shorter all we need to do
+is add a number to 'ox' so that 'rlen' is the length we require.
+
+We know that 'm' is the fixed-point version of the run-length, and we know
+that (m + 1.0) pixels need to be evenly divided between initial and final runs.
+We will in fact use (m + 1.5) so that rounding instead of truncating occurs.
+Hence instead of doing
+
+    ox = x;
+
+just before the 'y'-loop, we do:
+
+    ox = x + ((m + (3 << 15)) >> 1);
+
+Which boils down to "ox = x + (m + 1.5) / 2" because (1.5 << 16) is best
+expressed as (3 << 15).  But what happens at the other end, (x2, y2)?  We will
+modify the 'y'-loop from
+
+    for (y = y1; y <= y2; y++) {
+        ...
+    }
+
+to
+
+    for (y = y1; y < y2; y++) {
+        ...
+    }
+    draw_H_run(&scr, x2 - (x >> 16) + 1);
+
+The above change means that all but the last run will be plotted, then the
+last run will be plotted separately at the end.  As we already plotted a run of
+length (half of initial- & final-run total) or (m + 1.0) when we processed the
+initial run, the length of the final run should be the remaining half-run.
+
+The produced line now matches the ideal.
+
+
+
+
+EFFICIENCY CONSIDERATIONS AND OPTIMIZATION
+
+The presented algorithm is very fast.  But it could be improved on.
+
+
+CONSIDERATION #1:  Division
+
+Divisions are very slow.  But why divide when you could multiply?
+You know that the maximum height of a plottable line is the height of the
+screen.  As you are dividing 'dx' by 'dy' and getting a fixed-point result,
+the divisor is only ever within the range 1 to (screen_height - 1) inclusive
+(note that if the line is Y-major then this will be dy/dx hence the range
+will be 1 to (screen_width - 1) inclusive).  So we can create a lookup-table
+of size (MAX(screen_width, screen_height)) of fixed-point reciprocals where:
+
+    div_table[index] = (1 << 16) / index;
+
+This step is performed at initialization-time.  Then to perform, say, dx/dy in
+fixed-point we would later use:
+
+    m = dx * div_table[dy];
+
+This can typically be performed up to 50 times as fast as the previous division
+method on some processors.
+
+One other important point to note is that 16 bits may no longer be accurate
+enough for large screensizes as 1/table_size can lose accuracy due to underflow
+very quickly.  More bits can then be used to represent the reciprocals, and
+these shifted back to the 16.16-format fixed-point after the multiply as
+follows:
+
+    div_table[index] = (1 << 23) / index;
+
+(at initialization-time), then
+
+    m = (dx * div_table[dy]) >> (22 - 16)
+
+(when we require a division).  This forms the table in .22-format fixed-point,
+leaving the top 10 bits clear for the sign-bit plus the multiplication by dx
+(which may now be represented in 9 bits max, or has a maximum magnitude of 511).
+
+The above statistics are for 32-bit ints only.  No such problem exists on
+64-bit processors where 32.32 format fixed-point numbers may be used.  Note
+that the fixed-point format will need to be taylored for the application.
+
+
+CONSIDERATION #2:  Long Horizontal Runs
+
+The second speedup that could be employed on some processors is that after
+calculating 'm' for X-major lines, it could be tested to see if it were larger
+than a predefined threshold value, and if so then instead of calling the normal
+'draw_H_run()' procedure you could call a special 'draw_long_H_run()' procedure
+that did multiple-wordwise stores instead of just bytewise stores.  This will
+work on systems that have word-accessible video RAM and a way of blitting large
+amounts of consecutive data.  This type of line-draw is very fast but can often
+take copious amounts of time to start up, hence the threshold (some short lines
+will be drawn faster by bytewise stores).  This alternative code could either
+be invoked through a second copy of the linedrawing-routine, or through the
+use of a function-pointer to the routine to use to plot the lines.
+
+The case mentioned above where (dy == 0) would of course use the same
+alternative horizontal-line mechanism.
+
+Vertical runs will need to be drawn bytewise on most systems.
+
+
+CONSIDERATION #3:  Diagonal runs, Symmetry, Lookahead, Short lines,
+                   "Runs of Runs"
+
+Following are four concepts which could be used to make the line-drawing
+orders of magnitude faster, but require much extra coding and extrapolation
+of special cases.
+
+1)  This line-drawing algorithm is very fast for steep and shallow lines
+(because of the long runs in such primitives), and especially for the latter
+because of the runs' being horizontal.  But once the inverse-gradient gets
+less than 2.0, the following happens:
+
+
++-------------------+--------------------+-------------------+-----------------+
+| m = 7.33          | m = 2.0     **     | m = 1.2   *       | m = 1.0  *      |
+|             ***** |           **       |          *        |         *       |
+|       ******     -->        **        -->       **        -->       *        |
+|  *****            |       **           |       *           |       *         |
+|                   |     **             |      *            |      *          |
++-------------------+--------------------+-------------------+-----------------+
+                         Fig.4  (Progression of gradient)
+
+
+Notice how horizontal runs of (length > 2) become fewer when (m < 2.0).  Of
+course when (m < 1.0) then vertical runs are used instead, but in the range
+(1.0 <= m < 2.0) the algorithm becomes inefficient.  Notice though that there
+are now far more *diagonal* runs, with (num. diag. runs == num. horiz. runs)
+when (m == 2.0).
+
+In order to separate this special-case we need initially to check that
+(m < 2.0).  This is normally done using a division in fixed-point such as
+(dx / dy) to calculate 'm'.  However if the above condition is true, and
+we are handling a line with mostly diagonal runs, then a _second_ division
+must be performed as outlined below in order to determine the line's gradient
+with respect to the diagonal.  Performing two divisions per line is very
+wasteful, so an alternative method is required:
+
+ if (dy < (dx << 1)) {
+  /* Line is at least twice as long as it is high, use horizontal runs */
+ } else {
+  /* Line has more diagonal than horizontal runs, use diagonal runs */
+ }
+
+The above check is made to see whether or not (dx / dy < 2.0) without actually
+performing the divisions.  The respective calculations for 'm' would then be
+performed within the "then" and "else" blocks of the "if" statement.
+
+Diagonal run-lengths are calculated in exactly the same way as horizontal
+run-lengths except that they are calculated around the line (dx == dy):
+For "shallow" lines ( <= 45degrees), instead of
+
+    m = dy / dx;
+
+we write the following to calculate the gradient as offset from (dx == dy):
+
+    m_diag = dy / (dx - dy);
+
+(or more precisely
+
+    m_diag = (dy << 16) / (dx - dy);
+
+in order to produce a fixed-point result).  Of course a special case will now
+need to be taken out for (dx == dy) (diagonal lines) because the above equation
+would otherwise be undefined.  This check need only be done in the code which
+is *inclusive* of the diagonal:  when we check near the beginning of the
+algorithm whether we are dealing with X- or Y-major lines we might use the
+following:
+
+ if (ABS(dx) > ABS(dy)) {
+  /* X-major */
+ } else {
+  /* Y-major */
+ }
+
+Now we know that the condition (dx == dy), or the condition which is satisfied
+by a 45-degree line, can only occur in the Y-major part of the code as the
+X-major code is exclusive of this condition.  Hence the special-case
+diagonal-only code need only be placed somewhere in the Y-major part of the
+routine.
+
+The following equation must then be used again, as demonstrated above, to
+initiate the first run:
+
+    ox = x + ((m + (1 << 16)) >> 1);
+
+All the remaining runs excepting the final one are then drawn as diagonal-runs
+of 'rlen' pixels (as calculated for horizontal runs), after which the current
+pixel-address 'scr' must be moved _down_ one scanline so that the next
+diagonal-run starts to the right of the last pixel of the current run.
+The final run is then plotted as outlined above, with respect to the diagonal
+case of course.
+
+If diagonal runs are also processed then the algorithm starts to look very
+efficient.
+
+2)  The second speed-optimization that can be made is that of drawing the line
+from both ends at once, reducing the amount of actual calculation that needs
+to be done by half.  It is fairly well-known that this will nearly double
+the speed of a standard Bresenham's algorithm, however the speedup in the case
+of this algorithm will not be quite as large as the calculations will (usually)
+take a small amount of time compared to the time taken in plotting the runs.
+As the gradient approaches 2.0 (or the equivalent in any octant) however this
+optimization becomes more important as the runs can be quite short.
+
+Two screen-pointers now need to be employed, one for each endpoint.  A second
+version of the run-drawing procedures should be written, for speed, which work
+backwards, ie. they start at the passed address and work backwards through
+memory storing the run.  This is so that no extra pointer-manipulation needs to
+be done to ensure that the screen pointer for the duplicated half of the line
+always remains at the beginning of the duplicated half of the line.
+
+The bottom (or top) half of the line is then scan-converted, with each
+calculated run being plotted twice (once from each screen-pointer, with the
+duplicated half being plotted backwards towards the other half).  This is done
+inside the following loop:
+
+    for (y = y1; y < y1 + ((dy + 1) >> 1); y++) {
+        ...
+    }
+    if (!(dy & 1))
+        draw_H_run(&scr, (int) scr2 - (int) scr + 1);
+
+(This assumes the second screen-pointer is called 'scr2').  The equation
+((dy + 1) >> 1) is equal to the truncated integer number of runs which need
+drawing in order to complete half of the line.  The condition (!(dy & 1))
+checks to see whether there is an odd number of runs in the line and if so
+then the final, middle run is drawn -- the length of this run is the
+difference in the two screen-pointers plus one because the two screen-pointers
+are now on the same scanline.
+
+3)  The third optimization that could be employed, in conjunction with any or
+all of the others, is the use of a "lookahead".  I will not go into much
+detail here save to say that we know that for example if the fractional part of
+'m' is less than or equal to 0.25 then we can safely plot sets of 4 runs all the
+same length before adding (m << 2) to 'ox' and 'x'.  This can vastly speed up
+the drawing of many types of line.  More than one case can also be used:
+checks can be made on the fractional part of 'm' to see whether it is greater
+than 0.5, 0.25 and 0.125 for example.  Again the most optimal choice will have
+to be taken for the particular application and implementation.
+
+4)  One other factor which could be considered for applications where very
+"long" lines are to be drawn (eg. lines at a high resolution) is that we
+could consider "runs of runs": Say the fractional part of the gradient
+was 0.25, three runs in a row would be the same length, then the forth
+would be longer by one pixel.  (The number of runs in such a series can
+trivially be found.)  Of course, this could be extended to "runs of runs
+of runs" etc. *but* the initialization time would outweigh the gains in
+almost all applications.
+
+5)  The final optimization mentioned here is that it could be found in a given
+implementation that for very short lines a standard Bresenham's algorithm is
+faster.  This is up to the discression of the programmer to separate out as a
+special case.  If, for example, (ABS(dx) + ABS(dy) < threshold) then a normal
+Bresenham line could be drawn.  For some applications however the usage of
+very short lines is minimal and this new algorithm will provide a more
+efficient alternative.
+
+
+
+
+COMPLETE IMPLEMENTATIONS
+
+Nearly all above examples have been for the case of octant 0, ie. X-major
+lines with (m >= 0).  Y-major lines can generally be obtained by taking the
+converse of the above algorithm (swapping the X- and Y-variables).
+
+When (m < 0) some additional points need to be considered:  The absolute-value
+of the minor-axis delta may need to be taken if a division lookup-table is to
+be used, or alternatively a lookup-table which is twice the size can be used
+with negative values stored before and positive values stored after the
+reference-point from which the delta is used as an index, ie.
+
+    int index, div_tab[TABLE_SIZE * 2 - 1];
+
+    div_table = div_tab + TABLE_SIZE - 1;   /* div_table points to (dy == 0) */
+    for (index = -TABLE_SIZE + 1; index < TABLE_SIZE - 1; index++)
+        div_table[index] = (1 << 16) / index;
+
+Then to access the division table later, a signed quantity can be used as an
+index into 'div_table'.
+
+Some other points to note are that when (m < 0), the computation of 'rlen'
+performed above will be negative.  'rlen' could either be multiplied by the
+sign of 'm' (which could be slow on some processors) or the code could be
+extrapolated into a special-case for negative gradients where calculations
+such as
+
+    rlen = ((ox >> 16) - ((x >> 16));
+
+and
+
+    x -= m;
+
+would be performed instead of the previous positive equivalents.  Run-plotting
+should also happen in reverse for speed (avoiding pointer corrections such as
+having to subtract the run-length from the screen-address before and after
+plotting), or at least the screen-pointer needs do be updated in the reverse
+direction to normal.  This is a "problem" that is implementation-dependent
+as most systems will be able to work backwards but some may not.  Other
+solutions to the movement of the pointers could probably be readily found,
+again looking at the problem from an implementation-dependent point-of-view.
+
+One such solution would be to have 'scr' merely point to the start of the
+scanline which will hold the current run.  Then to draw a run a modified
+call to 'draw_H_run()' would be used as follows:
+
+ draw_H_run(scr, (ox >> 16), ((x >> 16) - (ox >> 16)));
+
+Where 'draw_H_run()' is declared as:
+
+ void draw_H_run(char *pscanline, int xstart, int rlen);
+
+To draw a run in the opposite or 'backwards' direction, one would merely swap
+the 'ox' and the 'x'.
+
+I will state again that the 16 bits of mantissa for the fixed-point variables
+'x', 'ox' etc. is arbitrary, as is the number of bits used in the division
+lookup-table.  This must be taylored to suit a given implementation.
+
+
+
+SUITABILITY OF ALGORITHM TO IMPLEMENTATION
+
+The presented algorithm is particularly suited to modern RISC architectures
+however may be developed for any system.  Integers of at least 32 bits in size
+are quite important if reasonably long lines are to be drawn without loss of
+accuracy however if this is not a problem then there is no reason why other
+sizes could not be accommodated.
+
+Because of the algorithm's particular suitability to the ARM series of
+processors originally designed by Acorn Computers and now developed by
+Advanced Risc Machines Ltd., I shall discuss in a bit more detail an
+implementation for such a chip and why it is suited.  The following comments
+may, and probably also apply to other modern processors:
+
+  *  The ARM processors have a built-in barrel-shifter in their ALU hence
+     they can do the 16-bit shifts in no processor time when combined with
+     another instruction, such as an 'add'
+
+  *  In an ARM implementation a block of code can be replicated at
+     assemble-time and jumped into by adding a multiple of the blocksize to
+     the 'pc' (Program Counter).  If there are 10 runs to draw out of a maximum
+     of 256 and each block (which processes one run) takes
+     (8 instructions * 4 bytes per instruction) then we jump ahead from the
+     current position in the program by ((256 - 10) * 8*4) bytes into the
+     following chunk of replicated blocks.  This is effectively completely
+     removing all looping constructs, which is a good thing to do on a
+     pipelined processor.
+
+There are also many more, less significant tricks that can be applied in the
+implementation of this algorithm on these processors and no doubt every
+implementation will have its own optimizations.  The above was given merely
+as an example of this put into practice for a possible implementation.
+
+
+
+
+ORIGIN OF ALGORITHM
+
+I was recently writing a polygon scan-converter, using the fact that I always
+drew from top to bottom, hence the move in the Y-direction would always be 1.
+I realised that adding the value of (dx / dy) to the current x-position with
+each move down by one scanline would give me the desired polygon edge.  It
+made sense to do this in fixed-point for speed.  I then worked out the method
+of using a lookup-table of reciprocals and multiplying instead of dividing
+for speed.
+
+One thing I noticed about any shallow edges of the polygon was that even a long
+shallow edge could be scan converted at an amazing speed.  I realised this
+could be put to use by remembering the previous x-position, 'ox', as well as
+the current, 'x', and drawing a horizontal line between them.
+
+I leter found that Bresenham had already come up with the concept of drawing
+lines in runs, however this fixed-point version of the algorithm should be
+faster than an implementation of such an algorithm because of the lack of
+true decision and error variables in this algorithm.
+
+
+   +-------------------------------------+
+   |                                     |
+   |         ##                          |   Fig.5:  Polygon scan-conversion,
+   |       #******#                      |   showing the positions of 'x'
+   |     #************#                  |   at the beginning and end of each
+   |   #******************#              |   scanline as a '#'.
+   | #************************#          |
+   |            #*****************#      |
+   |                        #*********#  |
+   |                                     |
+   +-------------------------------------+
+
+   +-------------------------------------+
+   |                                     |
+   |         **                          |   Fig.6:  Polygon scan-conversion
+   |       ********                      |   modified for line-drawing, showing
+   |     **************                  |   the positions of 'x' ('#') and
+   |   ********************              |   'ox' ('%') along the bottom edge.
+   | %**********#**************          |
+   |            %***********#******      |
+   |                        %*********#  |
+   |                                     |
+   +-------------------------------------+
+
+   +-------------------------------------+
+   |                                     |
+   |                                     |   Fig.7:  Horizontal-runs drawn
+   |                                     |   between 'ox' and 'x'.
+   |                                     |
+   |                                     |
+   | ***********                         |
+   |            ************             |
+   |                        ***********  |
+   |                                     |
+   +-------------------------------------+
+
+
+
+
+REFERENCES
+
+[I would place Bresenham's references here but I don't have them -- I have
+only heard of his algorithms from other sources but have yet to see any of
+his papers.  He is however acknowledged here for his work]
+
+
+
+
+CONTACT ADDRESS
+
+You can reach me via Email at:
+
+    lukeh@kcbbs.gen.nz .
+
+I am also reachable via SnailMail at:
+
+    Luke Hutchison
+    30 Long Bay Drive
+    Torbay
+    Auckland 1310
+    NEW ZEALAND
+
+    Tel. 649-473-9026
+
+
+
+<END>
+
+

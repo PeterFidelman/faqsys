@@ -1,0 +1,628 @@
+From pc@espr.demon.co.uk Thu Oct  6 00:53:37 1994
+Newsgroups: rec.games.programmer
+From: pc@espr.demon.co.uk (Phil Carlisle)
+Subject: Mode X Faq 
+Distribution: world
+Organization: Independant Graphics Research
+Reply-To: pc@espr.demon.co.uk
+X-Newsreader: Simple NEWS 1.90 (ka9q DIS 1.21)
+Date: Sun, 2 Oct 1994 13:01:25 +0000
+
+Ok, this might be the last post for a while, its archived on x2ftp.oulu.fi
+thanks to jouni, anyway, I am off again for a few weeks..
+
+
+      X-Mode Frequently Asked Questions - By Zoombapup (Phil)  2-Oct-94
+      ======================================================================
+
+      Foreword
+      --------
+
+      Hmm, whats new this time??
+
+      Well, I am off the net for a coupla weeks, which is kinda hard :)
+      dont forget x2ftp.oulu.fi is now a good programmers site, if a
+      little slow sometimes, in /pub/msdos/programming you can find
+      all sorts.
+
+      Basically, READ THE INDEX FILE before you ask about stuff, all jouni
+      seems to post is answers to "where is this file or that file" he was
+      kind enough to setup and moderate that site, least people could do is
+      to do a LITTLE of the work themselves.
+
+      Table of Contents
+      -----------------
+
+      1) What is this FAQ and why should I read it??
+      2) What IS mode X?
+      3) How do you set mode-x?  (asm source)
+      4) Source code reference list
+          a) Information Sources
+          b) Books & Other sources
+          c) Source Code etc...
+      5) Simple Questions and answers (read it ok??)
+      6) Further helpful reading  (Not necassarily Mode-X)
+
+
+      Section 1 - What is this FAQ and why should I read it??
+      -------------------------------------------------------
+
+      This FAQ (Frequently asked questions file) is here to provide the
+      reader with a brief outline of what Mode-X is and to provide some
+      useful references for looking into it further. It is also an
+      attemp by me to help cut down the posts on Comp.sys.ibm.pc.demos
+      asking for information on Mode-X programming when that very same
+      information is posted weekly (or seems like it).
+
+        It is also a chance for the reader to find reference material
+      that may take ages searching to do something specific in Xmode.
+
+      If youre really desperate to find something, then maybe its a
+      chance to learn how to use archie?? try telnetting to
+      archie.doc.ic.ac.uk (or one closer to you), login as archie
+      then try typing prog <filename> to search for a particular file
+      (and dont forget to note the result!).
+
+
+      Section 2 - What IS mode-X??
+      ----------------------------
+
+      Well, It has been mentioned that perhaps I should make it clear what
+      is meant by Mode-X, well, it can really mean two things, the first is
+      that it means a mode originally written about by Mike Abrash in Dr Dobbs
+      journal (a US programmers magazine), it basically involved tweaking
+      (reprogramming) some of the registers on the VGA display adaptor,
+      in effect it gave a resolution of 320x240 with 3 pages for graphics,
+      and he christened it Mode-X (because there was no bios mode for it).
+      After this article it became easier for everyone to write the same
+      type of things, using different resolutions, e.g. 320x200x4page etc..
+      the problem was, what would one call these modes?? as there are just
+      about unlimited combinations, I think it would be better to refer to
+      ALL tweaked VGA modes as Mode-X, and as far as I am concerned that
+      is what mode-x means......
+
+      Anyway, back to the text:-
+
+      Over to Themie Gouthias for that one..... (original author of Xlib)
+
+      Mode X is a derrivative of the VGA's standard mode 13h
+      (320x200 256 color). It is a (family) of undocumented video modes
+      that are created by tweaking the VGA's registers. The beauty of mode X
+      is that it offers several benefits to the programmer:
+
+      - Multiple graphics pages where mode 13h doesn't allowing for page
+        flipping (also known as double buffering) and storage of images
+        and data in offscreen video memory
+
+      - A planar video ram organization which although more difficult
+        to program, allows the VGA's plane-oriented hardware to be used
+        to process pixels in parallel, improving performance by up to
+        4 times over mode 13h
+
+      - Loads of other neat tricks associated with having multiple pages
+        of video memory to program with, and also smoother animations
+        (PC Note that one :) )
+
+      Please note BEFORE you go flooding Themie with email about Xlib
+      questions that he has taken a break from supporting it himself
+      for a while and has left two other people in charge. (see ref)
+
+      Section 3 - How to set up mode x
+      --------------------------------
+
+        Here's  the code needed to set up a tweaked 320*200*256-mode.
+        It  was  in  a  text  file  by  some  unknown finnish author,
+        It was translated by Saint/EMF (thanks Jani).
+        
+---------------------------------------------------------------
+1. Set the BIOS mode 13h, which is the standard 256-color mode.
+ 
+        mov     ax, 0013h
+        int     10h
+ 
+2. Put the CHAIN4-mode of Sequencer off
+ 
+        mov     dx, 03C4h
+        mov     ax, 0604h
+        out     dx, ax
+ 
+3. Clear the video memory (setting mode 13h clears only every fourth byte
+                           from each plane)
+ 
+        mov     ax, 0F02h
+        out     dx, ax
+        mov     dx, 0A000h
+        mov     es, dx
+        xor     di, di
+        xor     ax, ax
+        mov     cx, 8000h
+        rep     stosw
+
+Note: Parts 4 and 5 may need switching round, i.e. do part 5 first, then
+part 4... but it works anyway....
+ 
+4. Turn off the CRTC's LONG-mode
+ 
+        mov     dx, 03D4h
+        mov     ax, 0014h
+        out     dx, ax
+ 
+5. Turn on the CRTC's BYTE-mode
+ 
+        mov     ax, 0E317h
+        out     dx, ax
+ 
+   And now you are in tweaked mode!
+   If you want also double the vertical resolution to 320*400*256,
+   add this:
+ 
+        mov     ax, 4009h
+        out     dx, ax
+---------------------------------------------------------------
+ 
+        The last out is needed if you want to double the Y-resolution
+        to 400 lines,  so that  each scanline  has its  own  line  in
+        memory.  The bits 0-4 in  the  CTRC register 09h  define  the
+        number of  times  to display  the scanline minus one.  To get
+        back to  200-line mode,  out 4109h there,  or if  you  want a
+        100-line  mode,  out 4309h.  The same thing can be applied to
+        the Mode X to get 480- or 120-line modes.
+ 
+      Many Thanks to jani for this, I've only just decided to include
+      it in the faq (I had it for months, but I didnt want to confuse
+      beginners by supplying source like this, but WTH) -- Phil.
+
+
+      Section 4 - Source Code reference list
+      --------------------------------------
+
+      Alright, this is probably THE most important part, in that this
+      is where you'll find all the source code and information you'll
+      ever need to program proficiently in mode-x, so if you EVER
+      post a question about HOW TO PROGRAM MODE-X after reading this
+      list and getting the source etc, then YOU WILL BE SHOT AT DAWN :)
+
+      a) Information Sources
+      ----------------------
+      These sources are good for mode-x stuff..
+
+      Filename : xintro18.zip  Where: simtel archives... usually
+      Directory : I forgot to write it... should be /VGA will be confirmed.
+      Author   : Robert Shmidt (Ztiff Zox??)
+
+      Simtel Stuff can be gotten from oak.oakland.edu
+      
+      Description:
+
+      XDiscuss (now called Xintro :)) is a really good description of
+      How modeX works, how the memory is organised in planar fashion,
+      it includes a few graphics pictures to help visualise the memory
+      organisation, really a must have to understand the mode.
+
+      ----------------
+
+      Filename : Graphpro.lzh Where: wasp in pub/msdos/demo/
+						programming/source 
+      Author   : Michael Abrash (Mode X guru)
+
+      Description:
+
+      This file is a collection of texts and sample source code to loads of
+      graphics programming problems, mike was the first person to really
+      describe Mode-X in a magazine (Dr Dobbs Journal), in this file he
+      goes through a number of interesting routines etc, he also sets up
+      a simple 3D polygon filling, lightsourced program called X-Sharp,
+      all-in-all this file is A MUST HAVE!
+      ---------------------
+
+      Filename : Tweakxxx.zip  Where : same place as xintro above
+      Author: Robert Shmidt (again!)
+
+      Description:
+
+      Tweak is a utility that lets you mess around with the registers on
+      youre VGA card, which is a real help when trying to come up with
+      youre own Xmode, it enables you to test settings on the CRTC regs
+      and play with loads of settings.
+      ----------------------
+
+      Filename : Unchain.zip Where : probably most archives....
+      Author: Colin Buckley  (with correct tabs, honest :) )
+
+      Description:
+
+      Unchain is a utility to help people using turbo debugger to debug
+      mode-x programs (because they screw TD's display up usually),
+      it allows viewing of the pages in vid ram etc....
+
+      UPDATE: Unchain also works with BC,BP and loads of other products..
+      ------------------------
+
+
+      b) Books & Other Sources
+      ------------------------
+
+      Nothing I know of in this category as yet, some non-specific
+      graphics books are recommended in a FAQ in rec.games.programmer
+      I suggest anyone interested in graphics programming read that
+      newsgroup (or at the very least get the FAQ, I think its on
+      ftp.uwp.edu - but I'll confirm this)
+
+      NOTE: For those of you without a VGA reference for the registers
+            the r.g.p FAQ has loads of them in, so look out for it!!
+
+      Also you can READ comp.sys.ibm.pc.demos for a while, and you
+      will usually pick up any info you need to do something that
+      you cant get from the files below, only if you have read the
+      newsgroup for a while and have not seen what you need posted
+      should you post a question, PLEASE DON'T TIE UP THE GROUP
+      especially with questions that have been answered over and
+      over again....
+
+      c) Source Code
+      --------------
+	
+      Most of this stuff can be found on ftp.eng.ufl.edu in the
+      directory  pub/msdos/demos/programming/source
+
+      NOTE: when I refer to wasp, I mean the above site, this was
+      just the old name for the site.
+
+      Wasp is probably THE best place to look for new source right
+      now, as many other sites have had major space problems, but
+      wasp CAN be very slow..... some other programming stuff can
+      be found on archive.epas.utoronto.ca mainly soundcard info
+      for the gravis ultrasound. (Nice SDK and stuff) but as always
+      looking around is the order of the day...
+
+      --------------
+
+      Filename: Xlib06.zip  Where: wasp
+      directory: /pub/msdos/demos/programming/source
+      Author: Many contributors, originally by themie gouthias..
+
+      Decription:
+
+      This really is THE source code to get to be able to use Xmode.
+      the archive contains mainly C linkable assembler code that
+      covers pretty much everything possible with Mode-X, all the
+      code is copyright public domain, and is usually pretty fast.
+      In the archive there are also demo programs to show what is
+      possible and some useful doc's and further references.
+
+      ALSO: Note that there are 2 new re-workings of Xlib in pascal
+            called Xlib_tp5.zip and Xlibpas.zip available for pascal
+            coders available on the net (ftp etc...)
+
+      NOTE: If you have problems with the unit in Xlibpas not working
+            be sure to set the compiler switches {$G+} and {$X+} which
+            enable 286 code and extended syntax, then everything
+            should run allright.
+
+      ------------
+
+      Filename: stmik020.lzh   Where: TBC (to be confirmed)
+      directory: at a guess try ftp.uwp.edu somewhere...
+      Author: Future Crew
+
+      Description:
+
+      This archive is FC's release of the screamtracker music interface
+      kit (basically a mod player that you can use in youre demo's),
+      whats interesting about it is that they have included the whole
+      of thier MENTAL SURGERY demo, which has them setting a Mode-X
+      variant, and also I believe setting up a VBI int... good to see
+      how a well known (who am I kidding) group does things like
+      the usualy horizontal stars....  All code in assembler.
+
+      ------------
+
+      Filename: vlafont.zip  Where: wasp (look for vlapak1.zip)
+      directory: usual wasp programming dir....
+      Author: Draeden (of VLA)
+
+      Description:
+
+      This archive contains all the code and tools to incorporate a
+      scrolly mode-X font routine, has sample code (including Y scale)
+      and has a good re-working of Mode-X set code from Xlib, all code
+      in assembler...
+
+      Note: Generally try to get anything with VLA in the title,
+            Draeden has released a load of code, and although he's made
+            himself scarce for a while, the rest of VLA can be mailed,
+            also he has done IMHO the best ModeX setting code for asm
+            programmers...
+
+      ------------
+
+      Filename: mx2_vla.zip Where: TBC
+
+      Author: Draeden (of VLA)
+
+      This is THE best working of Mode-X set code I've seen, really an update
+      on the routines found in vlafont.zip, Its really a must have for asm
+      programmers (especially tasm users), it provides loads of useful routines
+      like mode setting (really flexible) and palette and other stuff like that.
+
+      More stuff about VLA releases next time.
+
+
+      Section 4 - Simple questions and answers
+      ----------------------------------------
+
+      1q) Is it possible to reset mode-x so that the addressing is linear
+         like good old 13h but with the 4 pages still??
+
+      1a) No, to the best of available knowledge no its not....
+
+      Note: Just to update this, there has been some discussion carried on
+            and it seems that it IS possible on a very few VGA cards, but
+            its so rare that it is practically useless, unless someone
+            can get it to work on ALL vga cards
+
+      2q) Is it possible to set up my own mode, in some way??
+
+      2a) Yes, but it is quite a tricky process, a utility to help you
+          try tweaking the registers for this sort of thing is in
+          the file section 3a) Information sources (tweak by Rob shmidt?)
+
+      3q) I have a (insert a crappy vid card name) VGA card, with 4meg memory
+          can I still use ModeX?
+
+      3a) Yeah, basically ANY card 100% ibm (tm) VGA compatible can do it..
+          and why have you got 4 meg?? :)
+
+      4q) I want to be able to double buffer using a VBL is there one on the
+          VGA and how do I use it??
+
+      4a) There isn't a built in VBL on the vga, but you CAN set one up by
+          re-synch-ing one of the timers (08h usually), there is an example
+          in the newer Xlib (ver 06).
+
+          Note: there are also VBL examples in mental-surgery by Future-Crew
+          and in the demoVT example code *for thier magnificent modplayer* :)
+          demoVT.arj  (at least demoVT is on ftp.eng.ufl.edu)
+
+      5q) I want to do a font routine in 320x200x256x4 mode x, and I cant
+          get hold of any fonts, the ones Ive got are scanned left to right
+          top to bottom, and they make for a hard font routine, is there
+          any fonts that I can use in a different format?
+
+      5a) Yes, you can get two utilities for fonts that are perfect for
+          mode-x formats, one is in VLAFONT, mentioned elsewhere in the FAQ
+          and another is in PCXTOOLS (which is also mentioned elsewhere), if
+          you get either one, they hold the font data scanned from top to
+          bottom, left to right (i.e. columnwise) which makes drawing them in
+          mode-x much faster (dont need to keep setting the plane), also
+          this layout lets you do things like move the start of the column
+          in a sine wave (for a sin scroller) and other effects..
+
+      6q) What sort of effects are possible in mode-x that are not possible
+          in 13h? and why would I use them?
+
+      6a) Well, basically the effects available in mode-x over the normal
+          mode 13h stem from the availability of off-screen video ram, this
+          means that you have access to the 256k ram on youre card, rather
+          than just the 64k that can be accessed by the PC (the pc address
+          space for VGA use is only a 64k window), using off screen ram,
+          it is possible to use VGA hardware to do scrolling (via the screen
+          start address and pixel pan registers), fast vram-vram copies,
+          double buffering (drawing to an offscreen page while you display
+          another and then flipping these two *also called page flipping*
+          there are MANY things that can be done with mode-x, but sadly
+          coding for it is more complex as a result.
+
+      NOTE: These techniques require a bit of practice, it would be wise
+            to learn the in's and out's of normal mode-x BEFORE posting
+            to newsgroups about "How do I?" questions, many times just
+            looking at Xlib and other related sources will show you how
+            to do these things.
+
+      Section 4 - Further Helpful reading
+      -----------------------------------
+
+      Newsgroups!! pretty simple really, read the graphics newsgroups,
+                   rec.games.programmer has some useful info on occasion
+                   alt.graphics, comp.graphics (I think), so get a list
+                   of newsgroups and take em all!! :) well, a few...
+
+      Note: NEVER just go straight to a newsgroup you've never read before
+            and post loads of questions, read it for about a month or so
+            this gives you a chance to see what the group is about, and
+            also to see if there's a faq posted, usually FAQ's are posted
+            at least once a month...
+
+      Reference Books
+      ---------------
+
+      General
+      -------
+
+Beginner:
+---------
+-"Assembly Language from Square One", Jeff Duntemann, Scott Foresman IBM
+Comptuter Books. ISBN 0-673-38590-6.
+-"Assembly Language for the IBM PC", Kip R. Irvine, ISBN 0-02-359840-9
+-"Mastering Turbo Assembler", by Tom Swan, Hayden Books, 1989.
+ISBN 0-672-48435-8.
+
+NOTE: Ive been told this is a good beginner book, might scan through
+it when I'm back at uni and do a review for newbie's...
+
+-"Assembly Language and Systems Programming for the IBM PC and
+Compatables", Karen A. Lemone, Little, Brown, & Co. ISBN 0-316-52069-1.
+-"Assembly Language Primer for the IBM PC/XT", Robert Lafore,
+Plume/Waite.
+-"Using Assembly Language", Allen L. Wyatt Sr., Que 1990.
+ISBN 0-88022-464-9.
+
+Intermediate:
+-------------
+-"The Zen of Assembly", Michael Abrash, Scott Foresman Publ.
+
+plus "Zen of code optimisation" same author
+
+-"Assembly Language Primer for the IBM PC/XT"
+-"IBM Microcomputers: A Programmer's Handbook", Julio Sanchez and Maria
+P. Canton, McGraw-Hill. ISBN 0-07-054594-4.
+-"Programmer's Problem Solver for the IBM PC, XT, and AT", Robert
+Jourdain, Prentice Hall 1986. ISBN 0-89303-787-7.
+-"IBM PC ASSEMBLER LANGUAGE AND PROGRAMMING", Peter Abel, 1987,
+Prentice-Hall, hardcover (college text). ISBN 0-13-448143-7.
+
+Advanced:
+---------
+-"80386: A Programming and Design Handbook", 2nd ed., Penn & Don Brumm,
+TAB Books. ISBN 0-8306-3237-9.
+-"80486 Programming", Penn & Don Brumm and Leo J. Scanlon, McGraw-Hill.
+ISBN 0-8306-3577-7.
+-"ADVANCED ASSEMBLY LANGUAGE", Steven Holzner and Peter Norton Computing,
+Inc., Brady Books/Simon and Schuster. ISBN 0-13-658774-7.
+
+
+       Video Graphics
+       --------------
+
+Intermediate:
+-------------
+-"Programmer's Guide to PC & PS/2 Video Systems", Richard Wilton,
+Microsoft Press. ISBN 1-55615-103-9.
+
+out of press now i believe.. supposedly good if you can find it..
+
+Advanced:
+---------
+-"Power Graphics Programming", Michael Abrash, Que Corporation. ISBN
+0-88022-500-9
+-"Programmers Guide to the EGA and VGA cards", 2nd Ed., Richard F.
+Ferraro, Addison-Wesley Publishing Co. ISBN 0-201-57025-4.
+
+I dont recommend this one..
+
+-"Advanced Programmers Guide to the EGA/VGA", George Sutty and Steve
+Blair, Brady Books/Prentice Hall Trade. ISBN 0-13-729039-X.
+
+
+       References/Specialized
+       ----------------------
+
+Intermediate:
+-------------
+-"Undocumented DOS", Andrew Schulman, Raymond J. Michels, Jim Kyle, Tim
+Paterson, David Maxey, and Ralf Brown, Addison-Wesley. ISBN
+0-201-57064-5.
+-"DOS Programmer's Reference", 2nd Edition, Terry Dettmann, QUE.
+ISBN 0-88022-458-4.
+
+Advanced:
+---------
+-"386SX Microprocessor Programmer's Reference Manual", Intel Corp.,
+McGraw-Hill. ISBN 0-07-881673-4.
+-"i486 Microprocessor Programmer's Reference Manual", Intel Corporation,
+McGraw-Hill. ISBN 0-07-881674-2.
+-"The Programmer's PC Sourcebook", Thom Hogan, Microsoft Press. ISBN
+1-55615-321-X.
+-"System BIOS for IBM PCs, Compatables, and EISA Computers", 2nd Ed.,
+Phoenix Technologies Ltd., Addison Wesley. ISBN 0-201-57760-7.
+-"PC Magazine Programmers Technical Reference: The Processor and
+Coprocessor", Robert L. Hummel, Ziff-Davis Press. ISBN 1-56276-016-5.
+-"Mastering Serial Communications", Peter W. Gofton, Sybex 1986.  ISBN
+0-89588-180-2.
+-"DOS Programmer's Reference", 2nd Ed.
+-"MS-DOS Programmer's Reference", MS Press. ISBN 1-555615-329-5.
+
+Also there is a PC programmers reference out there as a file, dosrefxx.zip
+which I can REALLY recommend, and also HELPPC21.ZIP which is good too,
+look for both on x2ftp.oulu.fi
+
+
+      Note: the above taken from a faq I had.. some books are out of print.
+      --------------
+
+      EGA/VGA a programmers reference guide by Bradley Dyck Kliewer
+      ISBN: 0-07-035099-X
+
+      Description:
+
+      Pretty clear VGA technical reference manual, I prefer it to ferraro's
+      (which I will post details on next time), it has all the info you need
+      on all the vga's registers, very clearly explained, probably THE best
+      vga reference for clarity, although perhaps not as exhaustive on the
+      svga than other ref's.
+
+      I'd say that this book is really an essential to all those who havent
+      got a VGA reference... (my personal opinion)
+      ---------------
+
+      Introduction to Algorithms - by Thomas H Cormen
+      ISBN: 0-262-03141-8  published by Mit press and McGraw Hill..
+
+      Description:
+
+      A radically good book, covers pretty much ALL the algorithms needed
+      in programming, although the title says introduction, it is not just
+      an introductory level text, but covers a wide range of levels, it has
+      timings, examples, discussion, and information to a mathematical level.
+
+      IMHO this book is another must have, at least read it once, I think
+      that it pays to have this book as a standard reference, really highly
+      recommended....
+      ---------------
+
+      Photorealism and Ray Tracing in C - Watkins, Coy and Finlay
+      ISBN:  1-55851-247-0 published by M&T books...
+
+      Description:
+
+      I've been looking for a good book that deals with 3D math for a
+      long time, given that math isn't my strong point, I wanted a book
+      with clear descriptions, diagrams and useful examples, anyway, I
+      accidentally ordered this book, (I dont program in C), but I've
+      got to say, its been better for 3D math, than ANY 3D math book
+      Ive seen to date!    It also covers stuff like colour reduction,
+      image enhancements and effects, anti-aliasing, and other useful
+      topics....
+
+      Overall, a must have book for any graphics programmer.... pc
+      -------------
+
+      Also It might be a good idea to get back issues of Dr Dobbs journal
+      with the articles Michael Abrash wrote about Mode-X in, as you really
+      need the pictures to appreciate his stuff.
+
+      Footnote: Apparently Mike is now working for Microsoft, poor man, what
+                a cruel twist of fate, that a man so into getting code to
+                run as fast as possible should have to work for them!!
+
+      Other magazine's, especially programmer based ones, PC Techniques have
+      had some articles, and also game designer magazine, although these
+      seem to have been deleted (they are magazine's on disk), try archie
+      for GMD*.* GDM1.ARJ and GDM2.ARJ I know about, but they are a little
+      too simple for my taste, may be helpful to newer games programmers.
+
+      Also, for the more acedemic, or those who are at a good school etc,
+      I would reccomend ACM Siggraph papers, and IEEE transactions on
+      graphics, both of which are really leading the way, can be a bit
+      heavy going, but some useful gems for us PC programmers too.
+
+      -=END OF FAQ=-
+
+      Written by PC (Phil... philc.... zoombapup etc  ))
+      please ask permission before re-printing somewhere else.....
+
+      Oh, and If Ive forgotten anyone-anything, please feel free to write
+      to me and ask for info to be included (not things like "please email
+      me source to set mode-x in quickfortran"), or general questions that
+      you feel arent answered here, or in the source files mentioned.
+
+      One last thing,
+
+      Take care y'all, and have a nice day!
+
+      Zoombapup // CodeX   :)
+
+
+
+
+

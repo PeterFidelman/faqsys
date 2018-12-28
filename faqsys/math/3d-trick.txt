@@ -1,0 +1,53 @@
+ MATH TRICKS
+
+This class is probably the most important one, but it is also the most
+difficult to explain. I mean, there is no standard optimization method
+formaths which will give good results on the general case. But it is
+probably the most important one! My only little examples will be for 3D
+vectors. When you rotate a point around an axis, you must do 4 MULS:
+
+x'=x*cos(é)+y*sin(é)
+y'=x*sin(é)-y*cos(é)
+z'=z
+
+So 3 rotations around 3 axes should be 12 MULS????? No, if you are an
+intelligent coder! You can develop you formulaes and get something like:
+
+x'=x*xvx+y*xvy+z*xvz+xv0
+y'=x*yvx+y*yvy+z*yvz+yv0
+z'=x*zvx+y*zvy+z*zvz+zv0
+
+where x',y',z' are the 3 coordinates of you point after the rotations and
+xvx,yvx,zvx,.... are some coefficients depending of the 3 rotation angles.
+So you first calculate these coefficients at the beginning of your frame
+code, then you have 9 MULs only for each dot! This is called the 3D matrix
+method for rotating the dots, but don't panic, you don't have to know any-
+thing about matrixes to use it! Another advantage of this method is that if
+you decide to use 123 rotations instead of 3, or to do some gelly vectors
+or whatever else, your formula remains the same, only the coefficients are
+different! There is also some other methods for rotating the dots, but this
+is the most precise one. Then you have the problem of calculating this 3D
+matrix, i.e. calculating the 12 coefficients. Well, each of them are a sum
+of products of sines and cosines of the different rotation angles, for ex.:
+
+yvy=sin(a)*cos(b)*sin(c)-cos(a)*cos(c)
+
+It should be interesting to eliminate the MULs instructs in this formula!
+Well, it is quite possible: This is what is called linearization in mathe-
+matical therms. For example you have:
+
+cos(a)*cos(b)=(cos(a+b)+cos(a-b))/2
+
+so, if you use this formula and some others like this, you can write yvy
+(and the others coefficients) as a sum of sines and cosines, which elimi-
+nates the MULs. (evidently you just get the sines and cosines in a table)
+There are thousands of other mathematical tricks but I can't explain them
+all, let's just say that if you are imaginative enough you can usually boost
+the speed of your code by 50% using this kind of tricks. If someone knows
+some very technical tips, I would be pleased to hear about.... for example
+math tricks for SpaceCode or SuperComplex 3D or something like that....
+Yes Mr.H. I'm talking to you.....
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Ripped from Imphobia Issue #7 by Dr. ZiXuS / TRiNiTY
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-

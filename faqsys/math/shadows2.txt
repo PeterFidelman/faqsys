@@ -1,0 +1,144 @@
+                                   Shadows
+
+Introduction
+
+Shadows add a lot of realism to a 3D engine. They help to impart a good deal
+of information about movement, lighting and shape. Shadows are your friend.
+Use them wisely.
+
+Fake Shadows
+
+Perhaps the easiest shadows to make are fake shadows. Amongst the easiest
+are casting them to the floor. An easy method is to project your triangle to
+the floor (Y = 0 in most 3D engines). Then do a simple divide by Y, so the
+higher an object is, the smaller the shadow. Simple, but effective. This
+doesn't take into account the direction of the light source. Again, this is
+easy to do:
+
+        s.x = p.x - (p.y / l.y)*l.x;
+        s.z = p.z - (p.y / l.y)*l.z;
+
+Where s is the shadows vertex, p is the point, and l is the light source.
+Very easy to code, and it works well. However, it doesn't really work well
+for much else than flat planes.
+
+Shadow Z-Buffer
+
+I also know another method of generating shadows. This requires the use of 2
+z-buffers though. The basic idea is that you generate two z-buffers: one
+from the point of view of the camera, and one from the point of view of the
+light. When you come to render, you need to do the following:
+
+If point is not visible, simply move on the the next pixel
+Map co-ordinate from 'camera space' into 'light space'
+Project down to 2-D again.
+Use x' and y' to index into the shadow Z-buffer
+If z is greater than shadow zbuffer, then a surface is nearer to the point
+than the light - so shadow it, using a 'shadow intensity'
+
+However, this method is pretty damn slow, as you might imagine.
+
+Shadow Volumes
+
+Another method of implementing shadows is by the use of a shadow volume. A
+shadow volume is an infinite volume of space, where light cannot be seen,
+because it is being blocked by a polygon. Making the volume is simple
+enough: Make vectors from the origin of the light, through the vertices of a
+polygon. Normalize them, and hey presto, a simple, infinite volume. These
+are now rays. Their equation would be:
+
+D = Direction
+O = origin of light
+L = light source point
+Vertex = polygon vertex
+
+D = vertex - light
+O = vertex
+Ray = O + D*infinity
+
+For this to be useful, it needs to lie withing the view volume. So, clip it
+to the view volume. Clipping lines against planes is covered somewhere
+within these pages. You won't be able to classify the two endpoints against
+the plane however: you'll have to find the intersection of the line and
+plane, and find out whether that is a valid part of the volume. I.E. the
+volume cannot be in the portion of space between the polygon and the light
+source, can it? Once the volume is clipped, you'll end up with a set of
+polygons, which will define the shadow volume.
+
+When it comes to rendering, it becomes more interesting. Consider the
+interation of the shadow volumes, with a ray shooting from the viewers
+position, for a given pixel. If a point on that ray is withing a shadow
+volume, then the point is clearly in shadow. But what if the point is
+between two shadow volumes? Then it is not in shadow! So, you will need some
+kind of flag. The flag will start at FALSE (point not in shadow). When it
+enters a shadow volume, it will become TRUE, and when it leaves, it will
+become FALSE again.
+
+Still, for a complex scene, this system will also be quite slow. The number
+of shadow polygons increases sharply as the number of polygons and light
+sources increases. Perhaps such issues are why realtime systems still only
+use fake shadows ...
+
+"Shadow Slabs"
+
+This is a little idea I've been brewing in my mind... it works similar to
+the shadow volumes above, but you can have a model half in shadow, half out
+of shadow.
+
+The idea is that we perform an extensive pre-process, and generate "slabs",
+which define where an area comes into shadow/goes out of shadow. This would
+be an extensive pre-process, calculating for all of the lights and polygons
+in the scene. However, when it is complete, you would have a list of
+polygons ("Shadow Slabs"), which define the borders of the shadow. Very
+similar to shadow volumes.
+
+Then, when rendering, you would clip against these slabs, in 3D. Then, the
+one half of the object will be considered as "illuminated", so its just
+rendered as normal. The other half will be considered as "shadowed", and
+this is where you can choose what to do next. If there shadowed area has
+zero lighting, then you can just discard the polygons -- a crafty piece of
+culling. However, if the area is lit, then you can just darken the polygon,
+say divide the colours at the triangle vertices by 2, 4, 8 whatever, for
+gouraud shading. The advantage of this is that you can have models
+emerge/submerge into shadowed volumes, with little extra processor power.
+With a well designed engine structure, I think it could most definitely be
+done real time. Any thoughts? Has this already been done? It wouldn't
+suprise me if it had. I'd be interested if anyone implemented such a system
+though.
+
+Realtime volumetric lighting
+
+Heres a quick and easy way of doing volumetric lighting in realtime. For
+those who don't know, volumetric lighting works along the lines of
+calculating the volume of space that is illuminated by a given light. So,
+when an objects falls into that volume, it is illuminated by the light, and
+when it comes out, it is not.
+
+The algorithm is very simple. We just invert shadow z-buffers. What we do is
+for each directional light source, we render a z-buffer from its point of
+view. The frustum for this view will define the volume of light, and the
+z-buffer will carry the depth information needed to correctly identify
+whether or not a vertex is lit. Then, when we come to light a vertex, we
+simple transform it into the camera space for the light (light-space),
+perspective project it, if it lies within the lights frustum. Then, we
+simply do a z-test against the buffer. If the vertex Z is less than the
+corresponding entry in the z-buffer, then we can light it. If it is not,
+then the vertex is not visible, so we must not light it. The z-buffer for
+the light needn't be rendered at too high a resolution, say maybe 64x64. In
+addition, this trick can be modified to run in realtime, for dynamic lights.
+Additonally, if you rasterise the polygon onto the z-buffer for the light,
+you can also work out good shadows casting onto walls and floors. If the
+polygon over-writes light z-buffer pixel i, then you can transform a polygon
+corresponding to that pixel, into world space, and draw it, using the z
+information. So, we'd take the pixel z, and its neighbours z. We also take
+the 2d co-ords of those points in light z-buffer space. We can now project
+back into 3d co-ords, then back into world co-ords via the camera matrix for
+the light. We could then use these 4 points to define a shadow polygon, and
+fill it as normal. The quality may not be that high, because the shadows
+will be staircased, but it should work.
+
+                    Tom Hammersley, tomh@globalnet.co.uk
+                                  [Image]
+
+References: 3D Computer Graphics 2e, Computer Graphics: Principles &
+Practice

@@ -1,0 +1,601 @@
+@TITLE =  ANIMATION TRICKS
+
+@AUTHOR = Jim Blinn 
+
+May 22, 1994
+
+@AUTHOR = Caltech, <BI>Project Mathematics!<D>
+
+@INTRODUCTION =  All animation is, in a sense, a trick. We show the 
+viewers a series of still pictures of inanimate objects and expect 
+them to see a moving scene of something that is alive. Most viewers 
+are aware of this trick. The really good tricks, however, are those 
+which wouldn't be noticed unless they are pointed out. In these notes 
+I am going to point out various tricks that  I've used to good effect 
+in production of several <169>realistic<170> space simulation movies 
+at JPL, and in the production of several, more schematic, animations 
+for <MI>The Mechanical Universe<D> and <MI>Project Mathematics!<D> 
+Some of these tricks are small, some are big. Some might actually 
+be useful to other people. 
+
+@INTRODUCTION = The concept of <169>trick<170> in some sense implies 
+chaos. Tricks don't always admit to categorization. Nevertheless, 
+due perhaps to my academic background, I will try to divide them into 
+somewhat related topics.
+
+@HEAD LEVEL 1 = DESIGN TRICKS
+
+@TEXT 1 = The basic intent of an animation is to communicate something. 
+Sometimes the most obvious animation is not sufficient to get the 
+desired idea across. Tricks in this category relate to how the design 
+of an animation can improve communication.
+
+@HEAD LEVEL 2 = Attraction Tricks
+
+@TEXT 2 = One of the important aspects of design, both for still and 
+for moving images, is the direction of the viewer's attention to what 
+the designer considers the important parts of the image. This is especially 
+important for moving images since they are on the screen for a short 
+time; the viewer typically does not have the option of studying them 
+for a long time. Furthermore, my educational animations typically 
+consist of some action, a pause for the viewer to absorb the intent, 
+and then some new action. It is important to get the viewer looking 
+at the place where the new action will occur before it is all over. 
+I'll list some simple, and fairly obvious, ways to do this roughly 
+in inverse order of subtlety.
+
+@HEAD LEVEL 3 = Appearing and Disappearing
+
+@TEXT 3 = The eye is attracted to change on the screen. What could 
+be more dramatic than someting changing from existance to non-existance 
+(or vice versa). I use this a lot in my animation of mathematical 
+proofs. A traditional textbook proof contains a diagram clutered with 
+a lot of labels and construction lines. The reader continually flips 
+back and forth between the diagram and the text trying to relate them; 
+<169>line <MI>AB<D> is parallel to <MI>CD<D> and intersects at point 
+<MI>P<D> at angle <$Ealpha><170>. In an animated proof I only need 
+to show auxilliary lines when they are needed. Often I don't need 
+to show many labels at all and can therefore keep the diagram as simple 
+as possible. The narration then can go something like <169><MI>this<D> 
+line [line appears] is parallel to <MI>this<D> one [other line appears] 
+and intersects at <MI>this<D> point [point appears] at <MI>this<D> 
+angle [angle arc appears, lines and point disappear]<170>.
+
+@TEXT 3 = Incidentally, having objects appear and disappar from a 
+screen in one frame time produces an overly percussive effect. I usually 
+use a 5 frame fade-in for all appearing and disappearing objects.
+
+@HEAD LEVEL 3 = Blinking
+
+@TEXT 3 = Simply blinking an object is rather unsubtle and I try to 
+use this technique as little as possible but you cannot deny that 
+having something blink before it moves gets your attention. I've found 
+that a blink rate of about 3 cycles per second is best. This can be 
+the obvious 5 frames on and 5 frames off, but it's sometimes more 
+interesting to try 7 frames on and 3 off. Actually the difference 
+is perhaps too subtle to notice.
+
+@HEAD LEVEL 3 = Anticipation and Overshoot
+
+@TEXT 3 = Conventional animation makes great use of this; Wiley Coyote 
+will rear back and pause for a second before dashing off screen. This 
+can be seen as an animator's version of the mathematical Gibb's phenomenon; 
+when a function is approximated with low frequency sine waves, the 
+function overshoots at the beginning and end of an abrupt transition. 
+In a similar manner I try to anticipate actions in dancing equations 
+by having objects back up a bit before moving in a desired direction. 
+The minimum values for this to be effective seems to be a 7 frame 
+anticipation followed by a 5 frame pause, followed by the final action. 
+I also find that, for my work the overshoot portion seems undesirable 
+and distracting.
+
+@HEAD LEVEL 3 = The See-saw effect
+
+@TEXT 3 = Many mathematical demonstrations consist of a series of 
+transformations that keep some quantity constant. For example a shape 
+keeps the same area if it is sheared, or translated, or rotated. I 
+sometimes lead the viewer into some such transformation by <169>rubbing 
+the transformation back and forth<170> a bit. This is somewhat like 
+anticipation with several cycles of oscillation of transformation 
+before the object begins to move.
+
+@HEAD LEVEL 3 = Parallel action
+
+@TEXT 3 = I often need to point up the connection between two things 
+on different parts of the screen. For example, in a substitution an 
+algebraic term appears in two different equation. I attract attention 
+to them by having them both shake up and down at the same time.
+
+@TEXT 3 = In other situations I need to show how an Algebraic quantity 
+ties in with its Geometric meaning. Here I typically have a label 
+on a diagram <169>ghost out<170> of the diagram and fly into the equation.
+
+@TEXT 3 = In contrast, there are sometimes situations where I want 
+to point out the differences between objects. For example, I typically 
+have two types of things that are mignt move: geomatric parameters 
+of a diagram (like angles or lengths of sides) and annotations (like 
+labels and equations). I want to try to distinguish between them via 
+motion as well as appearance. I do this by having motions of parameters 
+interpolate linearly (at a constant speed) and motions of annotations 
+do smooth ease-in and ease-out motions. This gives a more mechanical 
+motion to the mechanical parts of the diagram.
+
+@HEAD LEVEL 3 = Tension and Release
+
+@TEXT 3 = The mood of any scene goes through highs and lows. There 
+are several ways to effect this with both sound and visuals. Musicians 
+can set up tensions with dissonances or dominant 7th chords and can 
+bring about a sense of repose by resolving the chord back to the tonic. 
+Likewise, visually you can create tension by making shapes seem unbalanced, 
+nearly tipping over. Release comes from objects firmly placed.
+
+@TEXT 3 = I have used this technique to show intermediate results 
+in equations as unbalanced, with the equation tipped slightly, and 
+then literally balancing the equation when the equation is finally 
+solved.
+
+@HEAD LEVEL 3 = Hesitation
+
+@TEXT 3 = The final step of a proof is a sort of punch line to a scene. 
+To get the viewer involved I don't just move the shapes directly in 
+place; I sometimes make them pause a bit before final positioning 
+to build up anticipation. 
+
+@TEXT 3 = 
+
+@TEXT 3 = 
+
+@TEXT 3 = 
+
+@TEXT 3 = 
+
+@TEXT 3 = 
+
+@HEAD LEVEL 2 = Distraction Tricks
+
+@TEXT 2 = Stage magic is a process of distracting the audience from 
+the secret the magician is trying to disguise. In the same manner 
+it is sometimes necessary to distract the viewer from something on 
+the screen. This might be a glitch in the animation rendering, or 
+it might be a cheat that the animator is using to avoid some lengthy 
+or complicated computations. Here are some examples
+
+@HEAD LEVEL 3 = The old switcheroo
+
+@TEXT 3 = Often different models are needed for the same object at 
+different points of an animation. I have used these tricks in the 
+following situations
+
+@TEXT 3 = <B>Voyager -<D> The complete database of the Voyager spacecraft 
+was too big for early versions of my renderer.  I created two versions, 
+one containing only the polygons visible on the front side and one 
+containing only those visible on the back side. I switched models 
+from the front-side version to the back-side version when the spacecraft 
+was panned off the screen.
+
+@TEXT 3 = <B>Planets - <D>Moons and planets that are so small that 
+they project into less than 2 pixels are replaced by a simple anti-aliased 
+dot of the same color as the average of the texture map. I made sure 
+that the transition was minimized by adjusting the size of the dot 
+to approximately match the size of the sphere at the transition.
+
+@TEXT 3 = <B>Bomb -<D> I drew an exploding spherical bomb (used to 
+illustrate Center of Mass) with my special case planet drawing program 
+until it exploded. There was a flash during the explosion frame when 
+I replaced the bomb with an irregular polygonal model for the pieces 
+to fly apart.  
+
+@TEXT 3 = <B>Surface of Mimas -<D> A similar database/rendering switch 
+was used in a scene depicting a flight over Saturn's moon Mimas. When 
+viewed near the North pole I rendered the moon as a bump mapped sphere. 
+When viewed near the large crater at the equator I rendered it as 
+a brute force polygon mesh. The transition was made manually by first 
+generating the frames near the pole, stopping frame production, and 
+editing the control file to cause it to invoke a different rendering 
+program, and then re-starting production. The transition was done 
+when flying over the night side of the moon where the image was too 
+dark to notice the slight change in appearance. 
+
+@HEAD LEVEL 3 = Covering mistakes
+
+@TEXT 3 = An error in the database of the Mimas crater made another 
+trick necessary. Some of the polygons in the rim of the crater were 
+accidentally deleted during the production process. We didn't have 
+time to chase down the problem and re-render all the bad frames. I 
+was however able to re-render some of the frames near the problem. 
+I picked a time in the animation when the sun just pops over the limb 
+of the moon to make the switch. The eye is so surprised by the sudden 
+change in illumination that the viewers don't notice that a notch 
+appears in the crater rim.
+
+@HEAD LEVEL 2 = Timing Tricks
+
+@TEXT 2 = These tricks pertain to how long you make actions take to 
+occur.
+
+@HEAD LEVEL 3 = Speed adjustment
+
+@TEXT 3 = A lot of physical actions happen too quickly to see. A simple 
+solution is to slow down the time scale. Just as you scale size of 
+an object to fit on screen, you can scale time to fit to a sound track. 
+I especially needed to do this for several scenes of falling objects: 
+apples, amusement park rides, etc. These hit the ground much more 
+quickly than would allow time for the desired narration.
+
+@HEAD LEVEL 3 = Logarithmic zooms
+
+@TEXT 3 = When flying in to objects that vary greatly in scale it's 
+useful to animate the logarithm of the distance rather than the distance 
+directly. This was built in to the space flyby simulation program 
+and I used it explicitly in several other space simulations.
+
+@TEXT 3 = 
+
+@HEAD LEVEL 3 = When to double/single frame
+
+@TEXT 3 = A common cheat in animation is to do double framing, that 
+is, to only render every other frame and to record each rendered frame 
+twice. We all expect that single framing is preferable to double framing, 
+its only disadvantage is that single framing takes longer to render. 
+There is another effect of double framing however. A motion that is 
+double framed seems to move faster than one that is single framed, 
+even if they take an identical amount of wall-clock time to take place. 
+Double framing is therefore sometimes used by conventional animators 
+to add liveliness to scene.
+
+@HEAD LEVEL 3 = Rhythm
+
+@TEXT 3 = My current animations system allows me to specify keyframes 
+either dynamically or numerically via a spreadsheet like display. 
+Being numerically inclined I usually use the latter and have developed 
+the habit of making keyframe numbers be multiplies of 5, just to make 
+the numerical display look prettier. I started doing this for rough 
+tests, expecting to later change the numbers to more general values 
+determined from observing the timing of the rough tests. The composer 
+for the Mechanical Universe project, however, told me she liked the 
+timing of these animations because they have a rhythm to them. The 
+motion always started and stopped to a beat of 360 beats per minute. 
+Now that we are using a generic music library where a lot of the music 
+is composed to 120 beats per minute, the 5 frame timing constraint 
+makes the animation fit to the music quite well without doing any 
+explicit matching.
+
+@HEAD LEVEL 3 = Overlapping action
+
+@TEXT 3 = In <MI>The Illusion of Life<D>, Frank Thomas and Ollie Johnston 
+pointed up the technique of making an animation more alive by having 
+various actions overlap in time. Whenever I've tried this for my algebraic 
+ballets I haven't been satisfied with it. It seems that for my applications 
+the motion is much clearer if all the actions for a particular transformation 
+end at the same time. So even if I make the motion of several objects 
+start at different times I try to make them end at the same time.
+
+@HEAD LEVEL 2 = Motion Enhancement
+
+@TEXT 2 = Some sorts of motion are hard to convey without exaggerating 
+them in some way. Here are some examples.
+
+@HEAD LEVEL 3 = Falling bodies
+
+@TEXT 3 = Suppose you want to show something falling. It leaves the 
+screen almost immediately. So you decide to track it as it falls. 
+Now it appears stationary on the screen. How do you give the impression 
+of something falling continuously? Put some texture in the background 
+that scrolls up as you track the object. The texture doesn't even 
+have to be particularly realistic. I did this in two <MI>MU<D> scenes, 
+one showing a falling anvil and one showing a falling oil drop (for 
+the Millikan oil drop experiment).
+
+@TEXT 3 = You could also give impression of a falling object being 
+tracked by a human cameraman by adding some random fluctuation to 
+the position on the screen. This is an example of how our minds have 
+been trained to react to the visual artifacts of a particular technology; 
+we tend to date images as being made when that technology was common. 
+Other examples are the use of black and white images to give the impression 
+of pre-50's movies, or of using grainy jumpy camera work to give the 
+impression of home movies of the 50's and 60's. 
+
+@HEAD LEVEL 3 = Rolling ball
+
+@TEXT 3 = Here's the problem: show a ball rolling down an inclined 
+plane. The design of the scene was supposed to mimic a drawing in 
+Galileo's notebooks. This means the ball was to be drawn as just a 
+circle, which wouldn't look much like it was rotating. Now, it turns 
+out that I had a ball digitized from another scene that had a simple 
+line on it to represent a highlight. When I rolled it down the plane, 
+the highlight rotated with the ball, looking just like a mark on the 
+surface of the ball, and gave a nice impression of something rolling. 
+If I had planned this from the first I wouldn't have tried this because 
+I would have thought a mark near the edge of the ball would just look 
+wierd and make it look lopsided.
+
+@HEAD LEVEL 3 = The spinning top
+
+@TEXT 3 = A scene from the program on angular momentum required a 
+3D view of a spinning top. Again we have the problem of a symmetric 
+object spinning. The solution I explicitly used was to place a pair 
+of black marks near the top of the top in a sort of plus-sign shape. 
+These provided the asymmetry needed to follow the rotation. There 
+was another unintended trick that also helped though; the top was 
+made of Gouraud shaded polygons, with Gouraud shaded highlights. Even 
+though the number of polygons was large enough for a still frame to 
+look quite smooth, it was small enough so that irregularities in the 
+image, and particularly in the highlight, gave a nice impression of 
+motion.
+
+@HEAD LEVEL 1 = IMPLEMENTATION TRICKS
+
+@TEXT 1 = Many animation systems, my own included, are based on some 
+sort of keyframing system applied to a nested transformation scheme. 
+The animator must design the transformation structure and then specify 
+values for the transformations (i.e. translation, scale and rotations 
+values) and the keyframe numbers for them to have those values. Here 
+are some tricks on how to generate such animation control files.
+
+@HEAD LEVEL 2 = Top Down Design
+
+@TEXT 2 = There are two ways to proceed; animate each keyframe completely 
+and then proceed to the next keyframe, or animate the root level of 
+the transformation tree for all keyframes and then animate the next 
+highest level for all keyframes etc. Experince of myself and of several 
+other people is that the latter of the two is easiest. That is, you 
+animate the grosser motions of the centers of your objects first, 
+using simple linear interpolation between the keyframes. 
+
+@HEAD LEVEL 2 = Blocking
+
+@TEXT 2 = In a related vein there is the subject of timing. The conventional 
+technique is to have the narrator record the script first, time it 
+and then generate the animation to the timed sound track. This doesn't 
+work too well in our situation since we are modifying the wording 
+of the narration right up to the last minute. I find it best to first 
+lay out the entire sequence of events with no thought given to how 
+much time it takes for each event to occur. This is like blocking 
+out a play. This step often takes many iterations since I am still 
+trying to figure out in which order to show things. 
+
+@TEXT 2 = Only after the sequence is set do I go back and spread apart 
+the keyframe numbers to specify timing. I generally replay an animation 
+many times while reading the narration, repeatedly lengthening the 
+time durations of the motions and pauses to make sure there's time 
+for all the words. This doesn't always work since our narrator reads 
+more slowly than me. 
+
+@HEAD LEVEL 2 = Fine Tuning
+
+@TEXT 2 = Only after top level motions and time durations are set 
+do I add the detailed motion of sub-objects, e.g. limbs of a character. 
+Finally I add anticipation and overshoot to the linear interpolation 
+used for the first approximation.
+
+@HEAD LEVEL 2 = Changing Connectivity
+
+@TEXT 2 = Another common problem concerns the need to change the structure 
+of the transformation tree dynamically during an animation. A familiar 
+example would be if John gives an apple to Mary. When John holds the 
+apple it is best for it to be at the end of the transformation tree 
+of John's arm. When Mary holds the apple you want it to be at the 
+end of the arm in Mary's transformation tree. I have many similar 
+situations during algebraic ballets when an expression is factored 
+and the terms must change their association during the animation.
+
+@TEXT 2 = The common solution to this problem is to have the object 
+appear in the transformation tree at both positions, and utilize some 
+trick to make only one copy visible at any time. Most animators I 
+know use the trick of animating the translation parameters of the 
+undesired object to move it off screen. My particular solution is 
+to use the opacity channel of my system; I simply make the undesired 
+object transparent. This has the double advantages of optimizing the 
+tree (transparent compound objects are skipped during my tree traversal) 
+and avoiding having a translated object show up accidentally if the 
+viewing direction changes.
+
+@TEXT 2 = In any event, I generally need to manually align the two 
+versions of the object at the transition frame via their respective 
+transformation trees so that they are at the same place during the 
+transition.
+
+@HEAD LEVEL 2 = Squash and Stretch
+
+@TEXT 2 = Squash and stretch are commonly used to give life to inanimate 
+objects. The problems is that such objects are usually modelled centered 
+on their center of mass. Any squashing requires a scale factor about 
+this center. Animating the center and scale factor makes it difficult 
+to, e.g. keep the bottom of the object on a table before it jumps 
+off.
+
+@TEXT 2 = A nicer way is to provide pure positional handles on each 
+side of the object. It's more intuitive to animate these two locations 
+separately, typically with similar motions but just displaced in time 
+and position. You can then turn this into a centered translation and 
+scale factor by something like:
+
+     <$EX sub {center} ~~=~~ { X sub {top} ~-~ X sub {bottom} } over  2 
+^ ; ~~~~ X sub {scale} ~~=~~ {X sub {top} ~+~ X sub {bottom} } over 
+2 >
+
+@HEAD LEVEL 1 = ECONOMIZATION TRICKS
+
+@TEXT 1 = Here are some ways to produce scenes cheaply where a full 
+simulation of the situation would be too hard or too slow.
+
+@HEAD LEVEL 2 = Soft Objects 
+
+@TEXT 2 = Objects that are translucent or cloudy are hard to animate. 
+For some projects I was able to get away with the following.
+
+@HEAD LEVEL 3 = Scaling and Fading
+
+@TEXT 3 = You can make a somewhat schematic explosion by using a 2D 
+texture map of a hand drawn puff of smoke. Simply animate it getting 
+larger while making it progressively more transparent.
+
+@HEAD LEVEL 3 = 3D Sparkles 
+
+@TEXT 3 = A nice sparkling effect can be made by using a 3D model 
+of lines radiating randomly from a center. You then make the transparency 
+of each line interpolate from opaque at the center to transparent 
+at the endpoints. Then give the resultant shape a large rotation velocity 
+around a couple of axes. The result will be a spray of lines from 
+the origin that is radically different from one frame to the next.
+
+@HEAD LEVEL 2 = Temporal Anti-Aliasing
+
+@TEXT 2 = To properly portray motion with film or video one needs 
+to do motion blur. This is often a real pain as the rendering system 
+needs to know, not just about the postion of each object in the scene, 
+but the speed, and perhaps even the acceleration. Here are some ways 
+of doing this explicitly.
+
+@TEXT 2 = 
+
+@HEAD LEVEL 3 = Speed lines and streaks
+
+@TEXT 3 = Animators and even still cartoonists can enhance motion 
+by explictly drawing lines trailing a moving object. This is an intuitive 
+form of temporal antialiasing that can be used to great effect when 
+done explicitly with computers. I've done this with various moving 
+particles, for example:
+
+@TEXT 3 = <B>Rapidly moving particles in Saturn's rings -<D> I calculated 
+the location of the particle on the previous frame and on the subsequent 
+frame and drew a line between them. A correct temporal anti-aliasing 
+of such a line would have it opaque at the center and fade out to 
+transparency at the two endpoints. For largely intuitive reasons I 
+instead drew the line more comet shaped, opaque at the terminating 
+end transparent at the initial end. This seemed to work nicely even 
+though the bright end of the line was actualy at a locaton one frame-time 
+in the future.
+
+@TEXT 3 = A similar animation showed a proton moving in the magnetic 
+field of Jupiter with a bright dot trailing back to a more transparent 
+line showing its entire path in the past.
+
+@TEXT 3 = <B>Atomic motion -<D> Another scene involved showing atoms 
+moving in an ideal gas. The use of streaks here has an additional 
+purpose. I have found that the eyes' ability to judge speed differences 
+seems to be a lot less acute than its ability to judge, e.g. size 
+differences. For example if you saw two objects moving across the 
+screen one at a time it would be harder to tell which one moved faster 
+than if you saw two lines appearing on the screen and wanted to know 
+which one was larger. Therefore if you want to compare speeds it's 
+helpful to add streaks to translate speed perception into size perception. 
+I enhanced this effect by making the streaks for the atoms be about 
+6 times larger than the movement due to one frame time. Even in the 
+still images you get a nice sense of motion from this scene.
+
+@HEAD LEVEL 3 = The Spinning Earth
+
+@TEXT 3 = One scene from <MI>The Mechanical Universe<D> portrays long 
+term precession of the spin axis of the Earth. If one were to watch 
+this in speeded up motion the appearance of the Earth would, of course, 
+turn into a blur. I explicitly performed this temporal anti-aliasing 
+by pre-processing the Earth texture map to horizontally blur it. Simply 
+showing a globe with uniform equatorial streaks might just look like 
+a stationary globe with stripes. I got around this by speeding up 
+the rotation in steps. First the Earth spun slowly with no blurring, 
+then rather fast with moderate blurring, then real fast with extreme 
+blurring. Finally it was rendered with a completely horizontally blurred 
+pattern. In this case, of course, the physical model of the globe 
+didn't need to spin at all since it would have looked the same at 
+any angle. The build up, however, from the earlier speeds gave a tremendous 
+impression of speed to the final version.
+
+@HEAD LEVEL 2 = Simple Simulations
+
+@TEXT 2 = Often, even if a complete physically based model of some 
+scene is not feasable, making some portions of the motions physically 
+based is possible. The animator can have some <169>handles<170> on 
+parts of an object that are animated explicitly, these then serve 
+as inputs to some simple simulation of, say, internal structure of 
+an object. Also, you can derive explicit solutions to some of these 
+equations and give the animator control of the endpoints of the motion. 
+The computer can then calculate what accellerations are necessary 
+under the force laws to arrive at these endpoints.
+
+@TEXT 2 = Easy simulations include the following force laws
+
+@TEXT 3 = Gravity
+
+@EQUATION = <$E{bold roman F} ~=~ constant >
+
+@TEXT 3 = Damped Oscillation
+
+@EQUATION = <$E{bold roman F} ~=~ - k sub 1 ~{bold roman x} - k sub 
+2  ~{bold roman v}>
+
+@TEXT 3 = 
+
+@TEXT 3 = 
+
+@TEXT 3 = Lennard-Jones atomic force
+
+@EQUATION = <$E{bold roman F } ~=~ left ( {k sub 1} over {{r} sup 
+8} ~+~ {k sub 2} over {{r} sup 14} right ) ~~ {bold roman r}>
+
+@TEXT 3 = This latter requires numerical integration of many particles, 
+but can generate very interesting motions, as well as illustrate many 
+principles of thermodynamics.
+
+@HEAD LEVEL 1 =  PRODUCTION TRICKS 
+
+@TEXT 1 = The term <169>production<170> refers to the process of rendering 
+the frames and recording them to tape or film. These tricks go beyond 
+just design and implementation of a design. They are methods to get 
+the animation physically made. Many of these tricks are not glamorous, 
+they are mainly bookkeeping techniques to keep production from getting 
+out of hand.
+
+@HEAD LEVEL 3 = Start at frame 1000
+
+@TEXT 3 = I always start animations at frame 1000 instead of frame 
+0. This enables me to go back after the fact and prepend an animation 
+with other frames if necessary without needing negative frame numbers. 
+Since files for rendered frames typically have a frame number as part 
+of the file name, negative numbers might make invalid file names. 
+Four digit frame numbers also allows me to get a sorted listing of 
+frame files and have them come out in order; it avoids the problem 
+of, say, frame 10 coming before frame 2 in the filename sort sequence.
+
+@HEAD LEVEL 3 = Skip identical frames
+
+@TEXT 3 = My educational animations generally consist of motion sequences 
+interspersed with pauses. In production it is, of course, silly to 
+re-render frames that are identical during a pause. I have generated 
+an automatic mechanism that scans the animation control file and detects 
+frames for which all the rendering parameters are identical. It then 
+outputs a command file to render the scene in sections that actually 
+move. The recording program then also must interpret this frame sequence 
+file to record individual frames during a move and to repeat a frame 
+during pauses.
+
+@HEAD LEVEL 3 = Binary search rendering order
+
+@TEXT 3 = In order to debug the rendering on a scene it is often useful 
+to render several frames scattered through it. Then, if these are 
+ok you can render the rest. It's a shame to re-do the frames you have 
+already. One solution is to render every, say, 32 frames. Then render 
+every 32 frames halfway between these, then every 16 frames halfway 
+between these, then every 8 frames between these, etc. An anvantage 
+of this during time critical operations is that you can get a quadruple 
+framed version done; then if you have time you can render the between 
+frames to get a double framed version, and if you have still more 
+time you can get a single framed version. This happened on the <MI>Cosmos 
+<D>DNA sequence. We originally only had time to to a quadruple framed 
+version. When the producers saw it they gave us more time to do a 
+double framed version. This leads to an old adage familiar to many 
+production personel <169>There's never enough time to do it right; 
+there's always enough time to do it over<170>.
+
+@HEAD LEVEL 3 = Multiple machine parallelism
+
+@TEXT 3 = This was a trick when I first did it in 1980 but it is basically 
+the standard way to render, especially when machines are connected 
+on a network.
+
+@HEAD LEVEL 1 = CONCLUSION
+
+@TEXT 1 = Tricks are helpful and, as we all know, a <169>technique<170> 
+is simply a <169>trick<170> that you use more than once. <MI>
+
+

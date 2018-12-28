@@ -1,0 +1,322 @@
+From spl@ivem.ucsd.edu Sat Feb 20 12:55:11 1993
+Received:  from pdxgate.cs.pdx.edu by rigel.cs.pdx.edu (4.1/pdx-client-evision: 1.21 
+	id AA01544; Sat, 20 Feb 93 12:55:08 PST
+Received:  from jove.cs.pdx.edu ([131.252.20.12]) by pdxgate.cs.pdx.edu (4.1/pdx-gateway-evision: 1.27 
+	id AA19251; Sat, 20 Feb 93 12:54:56 PST
+Received:  from ucsd.edu by jove.cs.pdx.edu (4.1/pdx-client-evision: 1.21 
+	id AA00391; Sat, 20 Feb 93 12:54:51 PST
+Received: from ivem.ucsd.edu by ucsd.edu; id AA11170
+	sendmail 5.67/UCSD-2.2-sun via SMTP
+	Sat, 20 Feb 93 12:54:47 -0800 for idr@cs.pdx.edu
+Received: by ivem.UCSD.EDU (4.1/UCSDGENERIC.3)
+	id AA25977 to idr@rigel.cs.pdx.edu; Sat, 20 Feb 93 12:54:40 PST
+Date: Sat, 20 Feb 93 12:54:40 PST
+From: spl@ivem.ucsd.edu (Steve Lamont)
+Message-Id: <9302202054.AA25977@ivem.UCSD.EDU>
+To: idr@rigel.cs.pdx.edu
+Subject: Re: Program Wanted: A Learning Experience of the Fourier Transform
+Newsgroups: comp.graphics
+In-Reply-To: <6873@pdxgate.UUCP>
+References: <C2K123.HzH@acsu.buffalo.edu>
+Organization: University of Calif., San Diego/Microscopy and Imaging Resource
+Cc: 
+Status: RO
+
+In article <6873@pdxgate.UUCP> you write:
+>In article <C2K123.HzH@acsu.buffalo.edu> lusardi@cs.buffalo.edu (Christopher Lusardi) writes:
+>>Does anyone have a "simple" program in C (Modula 2, Pascal) that computes 
+>>the 1D or 2D Fourier transform on some data and maybe the inverse of the 
+>>transform? (How do I explictly use your implementation? What data should 
+>>I use on it et cetera?)
+>>
+>>I just want to learn the transform; so simplicity in the program is a must
+>>for me! Would you also send me your mathematical formula for the transform? 
+>>I'll accept anything that is working and is dissectable.
+>
+>I'd like to have a copy of that source too.  Would it be possible to put it
+>up for ftp somewhere, assuming it exists (the source, that is).  Thanks.
+
+I was going to post this but my nntp server seems to have indigestion
+right now.  If you wish to repost the code, you have my permission.
+
+This is from _Numerical Recipes_, adapted from FORTRAN to C.  Just
+for the heck of it, I've also attached the original FORTRAN, since I
+used it as a check against my C coding.  For an explanation of the
+theory, the code, and how to use it, see Press, _et_al_, _Numerical
+Recipes_ (ISBN 0-521-30811-9), pp. 449-453.
+
+							spl
+
+		  -------------cut here-------------
+#include <stdio.h>
+#include <math.h>
+
+/*
+ * N dimensional DFT, filched from Numerical Recipes and translated
+ * by hand from the original FORTRAN.
+ */
+
+#define PI 3.14159265358979323846
+#define TWO_PI ( PI * 2.0 )
+
+void ndfft( double *data, int *nn, int ndim, int isign )
+
+{
+
+    int ntot = 1;
+    int nprev = 1;
+    int idim;
+    double i2pi = isign * TWO_PI;
+
+    for ( idim = 0; idim < ndim; idim++ )
+	ntot *= *( nn + idim );
+
+    for ( idim = 0; idim < ndim; idim++ ) {
+
+	int n = *( nn + idim );
+	int nrem = ntot / ( n * nprev );
+	int ip1 = 2 * nprev;
+	int ip2 = ip1 * n;
+	int ip3 = ip2 * nrem;
+	int i2rev = 0;
+	int i2;
+	int ifp1;
+
+	/*
+	 * Bit reversal stuff.
+	 */
+
+	for ( i2 = 0; i2 < ip2; i2 += ip1 ) {
+
+	    int ibit;
+
+	    if ( i2 < i2rev ) {
+	
+		int i1;
+
+		for ( i1 = i2; i1 < i2 + ip1; i1 += 2 ) {
+
+		    register int i3;
+
+		    for ( i3 = i1; i3 < ip3; i3 += ip2 ) {
+
+			register int i3rev = i2rev + i3 - i2;
+			register double tempr = *( data + i3 );
+			register double tempi = *( data + i3 + 1 );
+
+			*( data + i3 ) = *( data + i3rev );
+			*( data + i3 + 1 ) = *( data + i3rev + 1 );
+			*( data + i3rev ) = tempr;
+			*( data + i3rev + 1 ) = tempi;
+
+		    }
+
+		}
+
+	    }
+
+	    ibit = ip2 / 2;
+	    while ( ( ibit > ip1 ) && ( i2rev > ibit - 1 ) ) {
+
+	        i2rev -= ibit;
+		ibit /= 2;
+		
+	    }
+
+	    i2rev += ibit;
+		
+	}
+
+	/*
+	 * Danielson-Lanczos stuff.
+	 */
+
+	ifp1 = ip1;
+	while ( ifp1 < ip2 ) {
+
+	    int ifp2 = 2 * ifp1;
+	    double theta = i2pi / ( ( double ) ifp2 / ip1 );
+	    register double wpr;
+	    register double wpi;
+	    register double wr = 1.0;
+	    register double wi = 0.0;
+	    int i3;
+
+	    wpr = sin( 0.5 * theta );
+	    wpr *= wpr * -2.0;
+	    wpi = sin( theta );
+	    
+	    for ( i3 = 0; i3 < ifp1; i3 += ip1 ) {
+
+		register int i1;
+		register double wtemp;
+
+		for ( i1 = i3; i1 < i3 + ip1; i1 += 2 ) {
+
+		    register int i2;
+
+		    for ( i2 = i1; i2 < ip3; i2 += ifp2 ) {
+
+			register int i21 = i2 + 1;
+			register int k2 = i2 + ifp1;
+			register int k21 = k2 + 1;
+			register double tempr = ( wr * *( data + k2 ) ) -
+			    ( wi * *( data + k21 ) );
+			register double tempi = ( wr * *( data + k21 ) ) +
+			    ( wi * *( data + k2 ) );
+
+			*( data + k2 ) = *( data + i2 ) - tempr;
+			*( data + k21 ) = *( data + i21 ) - tempi;
+
+			*( data + i2 ) += tempr;
+			*( data + i21 ) += tempi;
+
+		    }
+
+		}
+
+		wtemp = wr;
+		wr += ( wr * wpr ) - ( wi * wpi );
+		wi += ( wi * wpr ) + ( wtemp * wpi );
+
+	    }
+	    ifp1 = ifp2;
+
+	}
+	nprev *= n;
+
+    }
+
+}
+			----- and here ------
+      subroutine fourn( data, nn, ndim, isign )
+
+      implicit double precision ( a-h, o-z )
+      double precision data(*)
+      integer nn(ndim)
+      integer ndim
+      integer isign
+
+      ntot = 1
+
+      do idim = 1, ndim
+
+         ntot = ntot * nn(idim)
+
+      enddo
+
+      nprev = 1
+
+      do idim = 1, ndim
+
+         n = nn(idim)
+
+         nrem = ntot / ( n * nprev )
+
+         ip1 = 2 * nprev
+         ip2 = ip1 * n
+         ip3 = ip2 * nrem
+
+         i2rev = 1
+
+         do i2 = 1, ip2, ip1
+
+            if ( i2 .lt. i2rev ) then
+               
+               do i1 = i2, i2 + ip1 - 2, 2
+
+                  do i3 = i1, ip3, ip2
+
+                     i3rev = i2rev + i3 - i2
+
+                     tempr = data(i3)
+                     tempi = data(i3 + 1)
+                     
+                     data(i3) = data(i3rev)
+                     data(i3 + 1) = data(i3rev + 1)
+
+                     data(i3rev) = tempr
+                     data(i3rev + 1) = tempi
+
+                  enddo
+
+               enddo
+
+            endif
+
+            ibit = ip2 / 2
+            
+ 1          continue
+            if ( ( ibit .ge. ip1 ) .and. ( i2rev .gt. ibit ) ) then
+
+               i2rev = i2rev - ibit
+               ibit = ibit / 2
+               go to 1
+
+            endif
+            i2rev = i2rev + ibit
+
+         enddo
+         
+         ifp1 = ip1
+
+ 2       continue
+         if ( ifp1 .lt. ip2 ) then
+
+            ifp2 = 2 * ifp1
+
+            theta = isign * 3.14159265358979323846d0 * 2.0 / 
+     |           ( ifp2 / ip1 )
+            wpr = -2.0 * sin( 0.5d0 * theta )**2
+            wpi = sin( theta )
+
+            wr = 1.0
+            wi = 0.0
+
+            do i3 = 1, ifp1, ip1
+
+               do i1 = i3, i3 + ip1 - 2, 2
+
+                  do i2 = i1, ip3, ifp2
+
+                     k1 = i2
+                     k2 = k1 + ifp1
+
+                     tempr = ( wr * data(k2) ) - ( wi * data(k2 + 1) )
+                     tempi = ( wr * data(k2 + 1) ) + 
+     |                    ( wi * data(k2) )
+                     
+                     data(k2) = data(k1) - tempr
+                     data(k2 + 1) = data(k1 + 1) - tempi
+
+                     data(k1) = data(k1) + tempr
+                     data(k1 + 1) = data(k1 + 1) + tempi
+
+                  enddo
+
+               enddo
+               wtemp = wr
+               wr = ( wr * wpr ) - ( wi * wpi ) + wr
+               wi = ( wi * wpr ) + ( wtemp * wpi ) + wi
+
+            enddo
+
+            ifp1 = ifp2
+
+            go to 2
+
+         endif
+
+         nprev = n * nprev
+
+      enddo
+
+      return
+
+      end
+		     - - - - - all done - - - - --- 
+Steve Lamont, SciViGuy -- (619) 534-7968 -- spl@szechuan.ucsd.edu
+UCSD Microscopy and Imaging Resource/UCSD Med School/La Jolla, CA 92093-0608
+"maggotbox /mag'et-boks/ n. See Macintrash.  This is even more derogatory."
+                       - The New Hacker's Dictionary, Eric Raymond, ed.
+

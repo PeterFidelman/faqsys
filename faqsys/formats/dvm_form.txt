@@ -1,0 +1,130 @@
+Date: 27 Feb 95 18:45:00 
+Subject: DVM movie file format
+
+DESCRIPTION DVM FORMAT (v1.0, v2.0, v3.0 and v3.1)
+==================================================
+
+HEADER
+
+3 bytes:        "DVM"
+1 byte:         version 1.0: "Q": quarter screen, "F": full screen.
+..higher versions: "V".
+Only by versions 2.0 and higher:
+.1 byte version: Left nibble before point, right nibble after point.
+.1 byte infobyte: Bits got the folowing information:
+..bit 7:  0: quarter screen (160x100)     Version 2.0 and higher
+...1: full screen (320x200)
+..bit 6:  0: not compressed
+...1: compressed
+..bit 5:  0: standard palette (see next page)
+...1: enhanced palette
+..bit 4:  0: 16 colors                    Version 3.0 and higher
+...1: 256 colors
+..bit 3:  0: no text                      Version 3.1 and higher
+...1: text exist
+1 word: time (ms) to wait after each frame.
+If text exist:
+.1 word: number of characters:
+.x bytes: characters.
+
+N.B. by version 1.0 the shower should define infobyte like this:
+.If full screen: a0h = 160d
+.If quarter screen: 20h = 32d
+
+FRAMEDATA
+
+If enhanced palette:
+.If 16 colors: 48 bytes 6 bits rgb palette (r0, g0, b0, r1, g1, b1,
+......   ..., r15, g15, b15)
+.If 256 colors: 768 bytes rgb palette (0..255)
+
+Framedata: 
+>From left to right, from top to bottom. 
+Example (quarter screen uncompressed):
+
+.var
+.   bt: byte;
+.   fi: file;
+.   x, y: word;
+.(...)
+.for y:=0 to 99 do
+.   for x:=0 to 159 do
+.   begin
+.      blockread(fi,bt,1);
+.      putpixel(x,y,bt);
+.   end;
+
+If compressed: Left nibble = byte 1, right nibble = byte 2.
+Example (quarter screen compressed):
+
+.var
+.   bt: byte;
+.   fi: file;
+.   x, y: word;
+.(...)
+.for y:=0 to 99 do
+.   for x:=0 to 79 do
+.   begin
+.      blockread(fi,bt,1);
+.      putpixel(x*2,y,(bt and $f0) shr 4);
+.      putpixel(x*2+1,y,bt and $0f);
+.   end;
+
+STANDARD PALETTE
+
+Does not exist in file, should be included with viewer.
+Can be created like this;
+
+.var
+.   palette: array [0..255] of record red, green, blue: byte; end;
+.   b, c, g, r: byte;
+.(...)
+.for c:=0 to 15 do
+.   with palette[c] do
+.   begin
+.      red:=round(c*4.2);
+.      green:=round(c*4.2);
+.      blue:=round(c*4.2);
+.   end;
+.for r:=0 to 5 do
+.   for g:=0 to 5 do
+.      for b:=0 to 5 do
+.. with palette[r*36+g*6+b+16] do
+.. begin
+..    red:=round(r*12.6);
+..    green:=round(g*12.6);
+..    blue:=round(b*12.6);
+.. end;
+.for c:=0 to 7 do
+.   begin
+.      with palette[232+c] do
+.      begin
+.. red:=c*9;
+.. green:=0;
+.. blue:=0;
+.      end;
+.      with palette[240+c] do
+.      begin
+.. red:=0;
+.. green:=c*9;
+.. blue:=0;
+.      end;
+.      with palette[248+c] do
+.      begin
+.. red:=0;
+.. green:=0;
+.. blue:=c*9;
+.      end;
+.   end;
+
+The DVM format was created by Magic Software and may only be modified by
+members of Magic Software.
+
+Any questions or suggestions? Write me!
+E-mail: bert.greevenbosch@mmm.xs4all.nl
+-------------------------------------------------------------------------------
+    -> Internet: Bert.Greevenbosch@mmm.xs4all.nl
+                 ..\|/ Multi Media Master +31-10-4204461 \|/..
+    -> Standard disclaimer: The views of this user are strictly his own <-
+-------------------------------------------------------------------------------
+

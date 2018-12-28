@@ -1,0 +1,436 @@
+
+A Quaternion is a 'Julia-Set' in 4D. It has the same formula, Z(n) =
+Z(n-1)^2 + C, but Z and C are quaternion numbers, not complex. A quaternion
+number has 1 real value, and 3 imaginary, often showed as C = (a, bi, cj,
+dk)
+NOTE: Quaternion calculus is not commutativ ! (That is, bi*cj is not equal
+to cj*bi)
+
+As I showed in my Mandelbrot-tutorial,
+
+(a, bi)^2.real      = a*a - b*b
+(a, bi)^2.imaginary = 2*a*b
+
+With Quaternions, you get the same thing:
+
+(a, bi, cj, dk)^2.real         = a*a - b*b - c*c - d*d
+(a, bi, cj, dk)^2.imaginary(i) = 2*a*b
+(a, bi, cj, dk)^2.imaginary(j) = 2*a*c
+(a, bi, cj, dk)^2.imaginary(k) = 2*a*d
+
+The Quaternion-Set is found the same way as Mandelbrot- and Julia-Sets, by
+iterating the function Z(n) = Z(n-1)^2 + C , and see if Z(n)->infinity. The
+formula would be something like this : (In 'C')
+
+double calc_l(double x, double y, double z, double w)
+  double length;
+  double temp;
+  int m=0;
+  do {
+    temp=x+x;
+    x=x*x-y*y-z*z-w*w+cr;
+    y=temp*y+ci;
+    z=temp*z+cj;
+    w=temp*w+ck;
+
+    m++;
+    length=x*x+y*y+z*z+w*w;
+  } while (!((m>iter) && (length>4)));
+ return length;
+}
+
+This function is called with the four quaternion values, and uses the
+global constants cr, ci, cj and ck in the calculation. It returns the
+length of the vector represented by (x,y,z,w), the check to see if this is
+'infinite' is done where we call the function. (Of course you can make this
+function as you want. This is just an example..)
+
+Everyone used to making 2D-fractals (like Mandelbrot and Julia) might see
+the problem with Quaternions: We are using 4-dimensional values. What do we
+do if a 4D point is inside the quaternion-set ? (With 'standard' 2D
+fractals we only gave the correct 2D-pixel on screen a specific color). It
+is the 4D-thing that makes Quaternions so exciting, but also difficult to
+make. We are actually making a film of a 3D object! (But, usually we keep
+the 4th dimension constant, so we 'only' make a still-frame of a 3D object,
+like the one below)
+
+[Image]QUATERN1.GIF
+
+What I usually do when calculating Quaternions, is scanning a 3D room
+(having the 4th dimension constant), building up a Z-Buffer, and then
+'ray-tracing' it.
+
+The 3D-room has positive X-values to the right, positive Y-values at the
+bottom, and positive Z-values inside the screen. (See illustration)
+
+[Image]
+
+Since this room might be rotated, I often calculate the unit-vectors ex, ey
+and ez. (They could be the vectors on the illustration, but usually they
+are a lot smaller. I guess you want images with better resolution than 2*2
+or something :-)
+For the X-vector, this would be calculating the upper left corner and the
+upper right corner, and divide the delta x, y and z by the horisontal
+screen-size.
+
+dx.x=(rightx-leftx)/screenx;dx.y=(righty-lefty)/screenx;dx.z=(rightz-leftz)/screenx;
+The other two would be:
+dy.x=(rightx-leftx)/screeny;dy.y=(righty-lefty)/screeny;dy.z=(rightz-leftz)/screeny;
+dz.x=(rightx-leftx)/screenz;dz.y=(righty-lefty)/screenz;dz.z=(rightz-leftz)/screenz;
+
+Now, a given point (x,y,z) would in our rotated room be
+((x*dx.x+y*dy.x+z*dz.x),(x*dx.y+y*dy.y+z*dz.y),(x*dx.z+y*dy.z+z*dz.z)).
+This enables us to always trace trough a standard space (x,y,z), even if
+the images is to be rotated!
+
+For Mandelbrot-Sets, we had:
+
+FOR EVERY y:
+  FOR EVERY x:
+    COMPUTE Z(n)=Z(n-1)^2 + C for (x,y);
+
+With Quaternions, we get:
+
+FOR EVERY y:
+  FOR EVERY x:
+    FOR EVERY z UNTIL INSIDE SET:
+      COMPUTE Z(n)=Z(n-1)^2 + C for ROTATED(x,y,z);
+
+[Image]Difference between 2D and 3D
+
+When we, for a given (x,y), have found a z that result in (x,y,z) being
+inside the set, we put that z-value into our Z-Buffer. (If we reach zmax
+without getting into the QuaternionSet, we put zmax into the Z-Buffer).
+When we have enough values in the Z-Buffer, we can 'ray-trace' it, and we
+get our final, increadible-looking, image.
+To 'ray-trace' a given point, we need to know 4 points surrounding it.
+Knowing 4 points, we can calculate 2 vectors in 3D space, and calculate the
+vector-normal to those two vectors.
+
+[Image]
+
+In the left part of the illustration above, we are 'ray-tracing' the point
+represented by the thick red line (just under the intersection of all the
+black lines). If we imagine this point being (0,0), we also know point
+(-1,0), (1,0), (0,-1) and (0,1). You can see that I have connected (-1,0)
+and (1,0), and (0,-1) and (0,1). This black lines are the two I was talking
+about above. You can also see a black arrow where the two lines intersect.
+That is supposed to be the vector that is normal to both of the lines. (Not
+easy to explain, this one..).
+OK. That black arrow should also be normal to the Quaternion set in point
+(0,0). (Since fractals don't have a continous surface, it don't have a
+normal, but our arrow is a good aproximation)
+
+The reason why I have been talking about 'ray-tracing', is that we have a
+light-source in a given point. When we know the normal of a given point, we
+can also calculate the angle between that normal and the line from our
+point to the light-source. (As I try to show you in the right part of the
+illustration above..)
+The angle will be a number between -pi and pi, but we only need the
+absolute value of it, so we have a number between 0 and pi. If the angle
+between them is 0, they are parallell, and the point is facing away from
+the lightsource. If the angle is pi/2, the vector is normal to the ray from
+the lightsource, and if the angle is pi, it is pointing directly at the
+lightsource. Values from 0 - pi/2 should be colored black, and values from
+pi/2 - pi would result in brighter and brighter color. That is the whole
+magic behing Quaternions. Now it's just to code it :-)
+
+[Image]QUATERN2.GIF
+
+[Image]QUATERN3.GIF
+
+Here is an explanation of some of the things I do in my code
+
+  int zant=250;
+  int zant1=25;
+  int pixsize=2;
+  int vissize=1;
+
+zant is the number of steps I trace in the Z-direction. Bigger zant ->
+better resolution, but also longer computing-time.
+zant1 is the number of steps I divide one z-step into. The reason why I do
+this, is to get a good resolution without having a -very- big zant. I trace
+into to Z-axis with big steps until I hit the Quaternion, and then I trace
+out again till I'm out of the set, this time using small steps.
+pixsize is used in preview-calculations. If pixsize is 4, I only compute
+every 4th pixel, and will quick get a rough idea about how the image will
+be.
+vissize tells me how big each pixel is. If I use pixsize=4 and vissize=1, I
+will get a detailed image covering only 1/16th of the screen. If I use
+pixsize=4 and vissize=4, I will get a low-detail image covering the entire
+screen.
+
+  double xmin=-1.66, xmax=1;   //this values define
+  double ymin=-1, ymax=1;       //the 3D space
+  double zmin=-1.5, zmax=1.5; //to search for the QuaternionSet
+
+  int iter=30;     //Number of iterations. With Quaternions this can be a small number
+
+The lines above tell the program where to look for the Quaternion, and how
+many iterations to use. One of the cool things about Quaternions, is that
+you can get nice images even with few iterations. 2 of the images I show
+you on this page is computed with 10 iterations !!
+
+  double lightx=-1, lighty=1, lightz=-3;  //Location of lightsource
+
+  double vx=0, vy=0, vz=0;     //Rotationangle (in degrees) around x-, y- and z-axis
+
+Here we define where the lightsource is positioned, and how the image is to
+be rotated.
+
+  double cr=-0.46;  //constant real value
+  double ci=0.20;  //constant imaginary(1) value
+  double cj=0.6;  //constant imaginary(2) value
+  double ck=0.25;   //constant imaginary(3) value
+
+  double wk=0.022;   //4th dimension
+
+To compute a Julia-Set, you use 2 constant values. With Quaternions we have
+to use 4. Since the Quaternion is 4D, we also have to keep one of the
+dimensions constant. (I have chosen the 4th)
+
+  int background = 0;  //0 -> no background.
+
+This line simply tells the program if it shall raytrace the background, or
+just ignore it. I prefere no background..
+
+[.. Some lines of code deleted]
+
+void rotate3D(double &x,double &y,double &z)
+{
+  x-=origx;y-=origy;z-=origz;
+  double xy=y*cosx-z*sinx;
+  double xz=y*sinx+z*cosx;
+  double xx=x;
+  x=xx;
+  y=xy;
+  z=xz;
+  double yx=x*cosy+z*siny;
+  double yz=-x*siny+z*cosy;
+  x=yx;
+  z=yz;
+  double zx=x*cosz-y*sinz;
+  double zy=x*sinz+y*cosz;
+  x=zx;
+  y=zy;
+  x+=origx;y+=origy;z+=origz;
+}
+
+This routine simply rotates a point in 3D. If you don't understand it,
+never mind..
+
+void rotatevalues()
+{
+  rminx=xmin;rminy=ymin;rminz=zmin;
+  rotate3D(rminx, rminy, rminz);
+  tempx=xmax;tempy=ymin;tempz=zmin;
+  rotate3D(tempx, tempy, tempz);
+  dxx=(tempx-rminx)/sx;dxy=(tempy-rminy)/sx;dxz=(tempz-rminz)/sx;
+  tempx=xmin;tempy=ymax;tempz=zmin;
+  rotate3D(tempx, tempy, tempz);
+  dyx=(tempx-rminx)/sy;dyy=(tempy-rminy)/sy;dyz=(tempz-rminz)/sy;
+  tempx=xmin;tempy=ymin;tempz=zmax;
+  rotate3D(tempx, tempy, tempz);
+  dzx=(tempx-rminx)/zant;dzy=(tempy-rminy)/zant;dzz=(tempz-rminz)/zant;
+  dzx1=dzx/zant1;dzy1=dzy/zant1;dzz1=dzz/zant1;
+}
+
+This routine is called during setup, and rotates the 3D-room and calculates
+the ex-, ey- and ez-vectors. This is only done for speed purposes, you
+could rotate every point when you calculate. (I like it 'Quick'n'dirty')
+
+double calc_l(double x, double y, double z)
+  double lengde;
+  double temp;
+  double w=wk;
+  int m=0;
+  do {
+        temp=x+x;
+        x=x*x-y*y-z*z-w*w+cr;
+        y=temp*y+ci;
+        z=temp*z+cj;
+        w=temp*w+ck;
+
+        m++;
+        lengde=x*x+y*y+z*z+w*w;
+  } while (!((m>iter) && (lengde>2)));
+ return lengde;
+}
+
+Now we are getting somewhere!! This routine calculates a given 3D-point,
+and returns the length of the Quaternion vector. I had to invert the
+while-condition, because Netscape thought it was a hypertext-command..
+Please note that the number '2' in the while-condition is the
+bailout-value. This can be changed.
+
+double calc_angle(double w,double e,double n,double s,double cx,double cy,double cz)
+{
+  double lightdx=cx-lightx;
+  double lightdy=cy-lighty;
+  double lightdz=cz-lightz;
+
+  double lightlength=sqrt(lightdx*lightdx+lightdy*lightdy+lightdz*lightdz);
+
+  double fx=/*(0)*(s-n)*/-(e-w)*(dy+dy);
+  double fy=/*(e-w)*(0)*/-(dx+dx)*(s-n);
+  double fz=(dx+dx)*(dy+dy)/*-(0)*(0)*/;
+
+  double flength=sqrt(fx*fx+fy*fy+fz*fz);
+  double c=(fx*lightdx+fy*lightdy+fz*lightdz)/(flength*lightlength);
+  return c;
+}
+
+Here I calculate the light-to-point-vector, the length of it, the direction
+of the vector normal to the Quaternion-Set in a given point, its length and
+finally the angle between the lightbeam and the normal-vector. This should
+be standard calculus. If you don't understand it, read a book on
+vector-calculus.(and give it to me when you are finished)
+
+void show_buffer(int y)
+{
+  double a;
+
+  for (int t=1; tzmax) && (background==0)) {
+                         setfillstyle(1,0);
+                  } else if (a<0) {
+                         setfillstyle(1,1);
+                  } else {
+                         setfillstyle(1,1+15*a);
+                  }
+                  bar(t*vissize,(y+i)*vissize,t*vissize+vissize-1,(y+i)*vissize+vissize-1);
+                }
+         }
+  }
+
+  for (t=0; t<640; t++) {
+         z_buffer[t][0]=z_buffer[t][8];
+         z_buffer[t][1]=z_buffer[t][9];
+  }
+  buffer_y=2;
+}
+
+Now THIS is a routine I hate ! Here I 'ray-trace' the Z-Buffer. Since our
+'beloved' IBM-compatibles won't accept arrays bigger than 64Kb, this
+routine is quite messy. Sorry.
+(What I do, is for a every 10th line, trace line 1-8, copy line 8 to line
+0, copy line 9 to line 1, and continue computing the fractal)
+
+void main()
+{
+  int pz, pz1;
+  double l;
+
+        int gdriver = VGA, gmode = VGAHI, errorcode;
+        errorcode = registerbgidriver(EGAVGA_driver);
+        if (errorcode < 0) {
+                printf("Graphics error: %s\n", grapherrormsg(errorcode));
+                exit(1);
+        }
+
+        initgraph(&gdriver, &gmode, "");
+
+        errorcode = graphresult();
+        if (errorcode != grOk) {
+                printf("Graphics error: %s\n", grapherrormsg(errorcode));
+                exit(1);
+        }
+
+  for (int i=1; i<16; i++) {
+         setrgbpalette(i, 0, i*4, 0);
+         setpalette(i, i);
+  }
+  setrgbpalette(0,0,0,63);
+  setpalette(0, 0);
+
+Here I open a 640*480, 16-color screen (remember to link the
+egavga.obj-file!!). What, you don't like 640*480, 16-color ?!? Then change
+it !!
+I also initialize those 'pretty' green-colors on blue background..
+
+  sx=getmaxx()/pixsize;sy=getmaxy()/pixsize;
+  dx=(xmax-xmin)/sx;
+  dy=(ymax-ymin)/sy;
+  dz=(zmax-zmin)/zant;
+
+  origx=(xmin+xmax)/2;
+  origy=(ymin+ymax)/2;
+  origz=(zmin+zmax)/2;
+
+  vx=vx/180*3.14159265;
+  vy=vy/180*3.14159265;
+  vz=vz/180*3.14159265;
+
+  cosx=cos(vx);cosy=cos(vy);cosz=cos(vz);
+  sinx=sin(vx);siny=sin(vy);sinz=sin(vz);
+
+  rotatevalues();
+
+Calculates the screen-width, and the steps in our non-rotated 3D-space. I
+also calculate the origin, so I can rotate around other points than
+(0,0,0).
+I also convert the angles from degrees to radians, calculating the sinus
+and cosinus (precalced for speed purposes) and rotates the now-so-famous
+3D-room
+
+  buffer_y=0;
+  for (int py=0; py<=sy; py++) {
+         for (int px=0; px<=sx; px++) {
+                pz=0;
+                tempx=rminx+px*dxx+py*dyx/*+pz*dzx*/;
+                tempy=rminy+px*dxy+py*dyy/*+pz*dzy*/;
+                tempz=rminz+px*dxz+py*dyz/*+pz*dzz*/;
+                do {
+                  tempx+=dzx;
+                  tempy+=dzy;
+                  tempz+=dzz;
+                  l=calc_l(tempx,tempy,tempz);
+                  pz++;
+                } while ((l>2) && (!(pz>=zant)));
+                pz1=0;
+                do {
+                         pz1++;
+                         tempx-=dzx1;
+                         tempy-=dzy1;
+                         tempz-=dzz1;
+                         l=calc_l(tempx,tempy,tempz);
+                  } while (!(l>2));
+                if (pz < zant)
+                  z_buffer[px][buffer_y]=zmin+pz*dz-pz1*dz/zant;
+                else
+                  z_buffer[px][buffer_y]=zmax+dz;
+                setfillstyle(1,15-pz/10);
+                bar(px*vissize,py*vissize,px*vissize+vissize-1,py*vissize+vissize-1);
+                if (kbhit()) break;
+         }
+         buffer_y++;
+         if (buffer_y==10) show_buffer(py-9);
+         if (kbhit()) break;
+  }
+  if (!kbhit()) {
+         show_buffer(py-buffer_y);
+         cout  '\7';
+  }
+  getch();
+  closegraph();
+}
+
+The main-routine. Here I trace throug every Y, every X, and the necesarry
+number of Z-values, put the result into the Z-Buffer, traces this when it
+is full, exits if you press a key, beeps, and close the graphics-screen
+when finished. Phew !
+
+If you are still reading, that means you must be -very- interested in
+Quaternions. Perhaps so interested that you want the C++ Source-code ?
+(Never mind if you don't have a math-prossessor. SX's are too slow..)
+
+If there are any (if ??) confusing things here, please let me know. I will
+try to make it more understandable, but I don't have much time. (I join the
+army the 11th July..)
+
+[Image]QUATERN4.GIF
+
+[Image]QUATERN5.GIF
+
+                                  [Image]
+                     visitors sice 18th November 1995.
+Back to homepage

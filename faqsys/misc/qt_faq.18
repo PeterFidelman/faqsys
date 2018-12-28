@@ -1,0 +1,522 @@
+From alex@hal.rhein-main.de Wed Sep 21 23:46:29 1994
+Newsgroups: alt.binaries.multimedia,alt.binaries.pictures.d
+From: alex@hal.rhein-main.de (Alexander Lehmann)
+Subject: QuickTime FAQ (first draft)
+Content-Type: text/plain; charset=US-ASCII
+Followup-To: poster
+Content-Transfer-Encoding: 7bit
+X-Newsreader: TIN [version 1.2-(ISO/NeXT) PL2]
+Mime-Version: 1.0
+Date: Mon, 19 Sep 1994 19:52:17 GMT
+
+This is the first draft of my QuickTime FAQ. If you have additional info,
+please contribute, there are still some major gaps.
+
+(Note that I have set the Followup-To field to poster, which means that all
+ followups are mailed to me. If your news software doesn't support that, make
+ sure that you post to the appropriate group and maybe send me a copy of your
+ post. I might sometimes miss posts in alt.binaries, since I don't receive
+ these groups on my home machine)
+
+
+				QuickTime FAQ
+
+		($Id: qt.faq,v 1.8 1994/09/18 23:18:45 alex Exp $)
+
+This file attempts to answer some of the questions that appear frequently on
+alt.binaries.multimedia and other groups about QuickTime movie files. The FAQ
+is more centered on technical problems and not the QuickTime file format.
+
+
+0. Meta
+0.1 Copyright
+0.2 How to get this document?
+0.3 Notation, Abbreviation, etc.
+0.4 Mirror sites
+0.5 Additions
+0.6 Contributors
+
+1. General
+1.1 What is QuickTime?
+1.2 Where to get documentation about the QuickTime file format?
+
+2. QuickTime software
+2.1 Macintosh
+2.2 PC/MS Windows
+2.2.1 Sample ftp session
+2.3 unix/X11
+
+3. Macintosh file formats
+3.1 QuickTime
+3.2 BinHex
+3.3 MacBinary
+3.4 Segmented files
+3.5 Stuffit
+3.6 Compact Pro
+
+4. Decoder/Convertor software
+4.1 Macintosh
+4.2 PC/DOS
+4.3 unix
+
+5. Exchanging QuickTime files between Mac and other platforms
+
+6. Where to get QuickTime movies.
+
+
+0. Meta
+
+0.1 Copyright
+
+This file is copyright 1994 by Alexander Lehmann. This file may be copied and
+redistributed in whole or excerpts for any purpose. The author disclaims any
+responsibility about information contained in this file. You're on your own.
+
+0.2 How to get this document?
+
+As long as this posting is not approved by news.answers, the file will not be
+available from any archive. The file will be posted regularly and is available
+>from the author by email.
+
+0.3 Notation, Abbreviation, etc.
+
+Archive locations in this file use the URL notation, which is used in
+WorldWideWeb.
+
+ftp://site.edu/pub/foo/bar would be the anonymous ftp archive at site.edu in
+the directory /pub/foo/bar.
+
+Note that if a filename contains a space or other `unsual' character, it is
+encoded as 2digit hex number escaped with %, e.g. "File Name" -> File%20Name.
+If you access such a file with a terminal based ftp client, the name has to be
+enclosed in quotes. (see: sample ftp session)
+
+Unless otherwise mentioned, all values are stored in big endian form.
+
+0.4 Mirror sites
+
+Some of the FTP archives listed in this file have mirror sites, which might
+be nearer to you. If you use a mirror site instead of the root sites, this
+has a couple of advantages. The connection is probably faster, you take some
+load of the probably much more used server, and some archives have access
+restriction, which might be more relaxed with mirror sites.
+The easiest way for finding mirror sites is using archie to seach for the
+directory in which the file is contained or you can search for the filename.
+
+The following sites have many mirror sites:
+
+ftp://oak.oakland.edu/pub/msdos (also known as SimTel), e.g.
+ftp://ftp.informatik.rwth-aachen.de/simtel
+
+ftp://sumex-aim.stanford.edu/info-mac (not all dirs are mirrored)
+
+0.5 Additions
+
+If you have any additions or corrections for this file, please mail it to
+alex@hal.rhein-main.de. Please do not mail large files without prior
+notification, since this address receives mail over a telephone link, which
+costs money.
+
+0.6 Contributors
+
+This file draws from a number of sources:
+
+- articles in alt.binaries.multimedia and alt.binaries.pictures.d
+- the macutil source code
+- especially the following people:
+
+Wayne Brissette <wayneb@apple.com>
+
+
+1. General
+1.1 What is QuickTime?
+
+QuickTime offers several tools for adding video, animation, sound, and
+other time-based data to applications.  QuickTime also ensures that
+developers can create code and data for it now, and not have to scrap the
+work when QuickTime takes advantage of new technology later.
+
+Apple engineers designed QuickTime to meet the Macintosh computer future
+needs.  In particular, the Component Manager enables your program to choose
+needed services in an implementation-independent way.  For example, you can
+write a QuickTime program to use the best image compression to which it has
+access.  Today it can get the job done with one of Apple's software-only
+compression components.  Later, you can to put in a third-party hardware-
+compression card, and the program will be able to make use of it, even
+though the program was written before the compression card was designed.
+
+QuickTime is more than just a file format for video, it is more of a
+technology. QuickTime 2.0 for the Macintosh (and soon for Windows), allows
+you to have Video, Sound, Timebase code, Text Tracks, Midi music Tracks all
+in one file. QuickTime 2.0 also supports multiple Codecs, including MPEG.
+However, QuickTime 2.0's implementation of MPEG does require an actual MPEG
+board. It is not done through software decompression.
+
+QuickTime is available for the Macintosh, MS-Windows, SGI, FM-TOWNS (Japan).
+
+1.2 Where to get documentation about the QuickTime file format?
+
+Apple made the specification of the QuickTime movie file format public. The
+format is published in the Inside Macintosh series, and Apple is also
+working closely with developers in the hope that the QuickTime movie format
+will become an industrywide standard for time-based data for the Macintosh
+and other computer platforms. The Inside Macintosh books are available at
+most book stores. The format is also available as part of the QuickTime
+Developer's Kit from APDA. There are two kits, one for the Macintosh, and
+one for Microsoft Windows.
+
+
+2. QuickTime software
+2.1 Macintosh
+
+QuickTime is available as a system extension for Mac and is shipped with the
+current OS version (System7) [correct?]. The file is available as
+ftp://ftp.support.apple.com/pub/Apple%20SW%20Updates/Macintosh/Supplemental%20System%20Software/QuickTime%20(1.6.2).hqx
+
+2.2 PC/MS-Windows
+
+QuickTime for Windows is available as commercial product from Apple. The
+program is also included in a couple of CD-ROM games that use QuickTime to
+play their animations (e.g. Critical Path, Myst etc.). The QuickTime player
+is not redistributable due to copyright restrictions. The program is
+available as
+ftp://ftp.support.apple.com/pub/Apple%20SW%20Updates/Macintosh/Supplemental%20System%20Software/QuickTime for Windows (1.1.1).hqx
+This file is a hqx'ed file that contains a self-extracting DiskDoubler archive
+containing two disk images. This file is not extractable on non-Mac computers,
+since the version of DiskDoubler is not supported by non-Mac software [info,
+anyone?]. You will either need a Mac or a Mac emulator to execute the sfx
+archive.
+
+After decoding the archive, you get two disk images that either can be
+written to disk (3 1/2 HD)
+
+- Mac using DiskCopy
+
+To install and use Apple DiskCopy 4.2, follow these steps:
+
+1) Copy the DiskCopy 4.2 folder to your hard drive.
+
+2) Open the DiskCopy 4.2 folder and double-click the DiskCopy application
+   icon.
+
+3) The title screen appears; click the mouse to continue.
+
+4) The main screen appears; click the Load Image File... button.  (As
+   an alternative, from the File menu, you can select Load Disk Image or
+   press Command-L.)  A file selection dialog box appears.
+
+5) Choose the image file you want to copy to floppy disk.
+
+6) Click the Open button. A message appears: "Reading the master disk
+   image into memory..." After the image is loaded into memory, the Make A
+   Copy button is highlighted.
+
+7) Click the Make A Copy button and a prompt appears: "Please insert a
+   disk to COPY ONTO..."
+
+8) Insert a floppy disk (formatted or unformatted) into the main floppy
+   drive. This message appears: "Now copying and verifying a disk..."
+
+   If there is already data on the disk, a beep sounds and a dialog box
+   appears.  If it's okay to write over the disk, click the Duplicate
+   button. Otherwise, click the Eject button.  If you eject the disk, the
+   main screen reappears.  Click the Make A Copy button again and insert a
+   different disk.
+
+   When the image file has been transferred to the floppy disk, the disk
+   automatically ejects.
+
+9) For each image file you want to put on floppy disk, repeat steps
+   4-8. When you are finished, click the Quit button.  (You also can
+   select Quit from the File menu or press Command-Q.)
+
+
+Hints and Help
+--------------
+- To launch Apple DiskCopy 4.2 and load the image file into memory at
+  the same time, double-click the image file icon.
+
+- PC using the following C program (BorlandC):
+
+/* NOTE: this program doesn't have any safety precautions for */
+/*       overwriting disks */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <dos.h>
+
+/* #define DRIVE 0 /* A */
+#define DRIVE 1 /* B */
+
+char buffer[36*512];
+
+int main(int argc, char *argv[])
+{
+  FILE *file;
+  int i;
+
+  if(argc!=2) {
+    fprintf(stderr, "usage: hd3write imagefile\n");
+    exit(1);
+  }
+
+  if((file=fopen(argv[1],"rb"))==NULL) {
+    perror(argv[1]);
+    exit(1);
+  }
+  if(fread(buffer, 1, 84, file)!=84) {	/* skip header */
+    perror("fread");
+    exit(1);
+  }
+
+  for(i=0;i<80;i++) {
+    if(fread(buffer, 1, 512*36, file)!=512*36) {
+      perror("fread");
+      exit(1);
+    }
+    if(abswrite(DRIVE, 36, 36*i, buffer)) {
+      perror("abswrite");
+      exit(1);
+    }
+  }
+  fclose(file);
+  printf("Disk written successfully...\n");
+  return 0;
+}
+
+- unix using dd. skip the first 84 bytes and write the file directly to the
+disks.
+
+Due to the copyright restriction of Apple, it is not allowed to redistribute
+the program, neither as hqx nor as decoded file.
+
+Maybe the program is archived on some sites, but I will not mention sites,
+since this might cause legal trouble (for the site operators). Try archie.
+
+2.2.1 Sample ftp session: (using a unix ftp client)
+
+~/tmp/ % ftp ftp.support.apple.com
+Connected to ftp.support.apple.com.
+(welcome message)
+220 ftp.support.apple.com FTP server (Version wu-2.1c(1) Tue Mar 29 16:39:51 PST 1994) ready.
+Name (ftp.support.apple.com:alexlehm): ftp
+331 Guest login ok, send your complete e-mail address as password.
+Password: user@system.firm.com (use your address here)
+(another welcome message)
+230 Guest login ok, access restrictions apply.
+ftp> cd "pub/Apple SW Updates/Macintosh/Supplemental System Software"
+250 CWD command successful.
+ftp> get "QuickTime for Windows (1.1.1).hqx" qtw111.hqx
+200 PORT command successful.
+150 Opening BINARY mode data connection for QuickTime for Windows (1.1.1).hqx (2238138 bytes).
+226 Transfer complete.
+2238138 bytes received in ss.ss seconds (k.kk Kbytes/s)
+ftp> bye
+221 Goodbye.
+
+Be sure to also read the License Agreement in /pub/Apple SW Updates.
+
+
+
+2.3 unix/X11
+
+A program for playing QuickTime movies, including sound on some platforms
+under unix/X11 is called xanim, available at
+ftp://ftp.shell.portal.com/pub/podlipec/xanim*.tar.gz.
+This program is updated very frequently at this site. A maybe more stable
+older version is available from the X11R5 contrib mirrors.
+
+
+3. Macintosh file formats
+
+First of all, Macintosch files usually consist of two files, a resource fork
+and a data fork.
+
+3.1 QuickTime
+
+A QuickTime movie can be in two forms, unflattened or flattened. An
+unflattened file has part of the data necessary for displaying the movie
+stored in the data fork, which means that the file is not playable when the
+resource fork is removed (e.g. on QuickTime for Windows or when transfering
+via ftp). A flattened movie has no necessary data in the resource fork,
+which means that the file can be played when only the data fork is available.
+
+The two variations can be distinguished by the first 4 bytes in the file:
+
+Unflattened file:
+00000000: 00 00 00 00 6d 64 61 74	....mdat
+
+Flattened file:
+00000000: hh hh hh hh 6d 64 61 74	!"$%mdat
+
+(hhhhhhhh big-endian hex number slighly less that the filesize)
+
+
+QuickTime movies can also contain references to other files (in addition
+to the data in the resource fork), which are not supported by e.g. Windows.
+This means that even if the file header indicates the movie as flat, it
+might still be unusable on non-Mac systems (or even on Macs, if the files
+pointed to are missing or the movie references itself and is renamed).
+Most QT software has options to save files for non-Mac playback, which will
+put all data into one file. This is also referred to flattening.
+
+3.2 BinHex (hqx)
+
+The BinHex format encodes data and resource fork of a file in a 7bit ASCII
+format (like uuencode). The file includes a CRC, allowing transmission
+errorchecking.
+
+A hqx'ed file starts with something like
+
+(This file must be converted with BinHex 4.0)
+
+The data lines are usually 65 chars long and the first line starts with a
+colon.
+
+3.3 MacBinary
+
+MacBinary files combine data and resource fork in a single file for binary
+trasmission. Several MacBinary file can be concatenated to form a MacBinary
+stream.
+
+A MacBinary file starts with a 128 bytes header, which includes the filename,
+the creator and type of the file, file date, etc. The data fork starts at
+offset 128 and the resource fork after the data fork. Both data and resource
+fork are padded to a multiple of 128 bytes.
+
+The header starts with a zero byte, then the length of the filename (1 byte)
+and the filename. The file type and creator appear at offset 65 (0x41). The
+length of data and resource fork are at offset 83 (0x53) and 87 (0x57).
+
+Example:
+
+00000000: 00 0a 48 61 6b 75 6e 61:2e 73 69 74 00 00 00 00 |@JHakuna.sit@@@@|
+00000010: 00 00 00 00 00 00 00 00:00 00 00 00 00 00 00 00 |@@@@@@@@@@@@@@@@|
+00000020: 00 00 00 00 00 00 00 00:00 00 00 00 00 00 00 00 |@@@@@@@@@@@@@@@@|
+00000030: 00 00 00 00 00 00 00 00:00 00 00 00 00 00 00 00 |@@@@@@@@@@@@@@@@|
+00000040: 00 53 49 54 44 53 49 54:21 00 00 00 00 00 00 00 |@SITDSIT!@@@@@@@|
+00000050: 00 00 00 00 1f 14 b4 00:00 00 00 aa 2f df fa aa |@@@@_T.@@@@./...|
+00000060: 2f e0 25 00 00 00 00 00:00 00 00 00 00 00 00 00 |/.%@@@@@@@@@@@@@|
+00000070: 00 00 00 00 00 00 00 00:00 00 81 81 78 4b 00 00 |@@@@@@@@@@..xK@@|
+00000080: 53 49 54 21 00 01 00 1f:14 b4 72 4c 61 75 02 fc |SIT!@A@_T.rLauB.|
+
+Filename Hakuna.sit (10 chars), file type StuffIT Deluxe, creator StuffIT!.
+Data fork is 2036916 bytes, resource fork is empty. The data fork starts at
+offset 0x80 with the archive data.
+
+3.4 Segmented files
+
+Each part of a segmented file starts with a 100 byte header.
+The part number is at offset 3 (byte), the length of the name and the name
+at offset 4, the file type and create at offset 68, the length of resource
+and data fork at offset 86 and 90. The resource fork and data fork are stored
+after each other without padding and each part contains the 100 byte header.
+
+3.5 Stuffit
+
+A StuffIt file can either be a regular archive or be self-extracting. The
+data fork starts with magic "SIT!".
+
+A regular archive has type SIT! (StuffIT!) or SITD (StuffIT Deluxe) and
+creator SIT!. A self-extracting archive has type APPL and creator aust.
+The data forks starts with SIT!.
+
+3.6 Compact Pro
+
+A Compact Pro archive can be regular and self-extracting. A regular archive
+has type PACT and creator CPCT. A self-extracting achive has type APPL and
+creator EXTR. The data fork starts with 0x0101.
+
+A segemented Compact Pro archive, the parts start with 0x0101, 0x0102,
+etc.
+
+
+4. Decoder/Converter software
+4.1 Macintosh
+
+Macintosh decoders are available from
+ftp://sumex-aim.stanford.edu/info-mac/cmp
+ftp://mac.archive.umich.edu/mac/util/compression
+
+UnStuff, Compact Pro, FileTyper, UULite, etc.
+
+4.2 PC/DOS
+
+DOS programs for Mac files are available from
+ftp://oak.oakland.edu/pub/msdos/mac.
+
+binhex13.zip: en/decodes BinHex 4.0 (HQX) files. Extracts only data fork,
+              not useful for unflattened files.
+macb10.zip: add/remove MacBinary headers, doesn't separate data/resouce fork,
+            not useful for unflattened files.
+unpakit.zip: extracts packed (.pit) files. (Probably no longer used)
+unsit30.zip: extracts .sit archives. Can extract data and resource fork
+             separately. Doesn't support all compression types.
+unstufit.zip: extracts .sit archives. [Maybe I'm doing something wrong, but
+              this one didn't work with the sample sits I had]
+xbin23.zip: extracts HQX files. extracts data and resource fork.
+
+There is also a free unstuff program from Aladdin (the company that sells
+StuffIt), but I don't have an archive site for this.
+
+4.3 unix
+
+A collection of Mac conversion programs is called macutil, which is available
+>from ftp://sol.cs.ruu.nl/pub/UNIX/macutil2.0b3.tar.gz [fixme] or
+ftp://sumex-aim.stanford.edu/info-mac/unix/macutil-20b1.shar
+
+A precompiled binary of this program is also available in the Linux
+distribution.
+
+
+5. Exchanging QuickTime files between Mac and other platforms
+
+When creating a QuickTime movie, you can select a format suitable for
+playing on non-Mac systems, which will create a flat movie.
+If a movie is unflat, it can be fixed with qtflat (on DOS), if both data
+and resource fork are available.
+
+ftp://ftp.rahul.net/pub/hkok/msdos/viewer/qtflat11.zip
+
+A C program for this is also available
+ftp://ftp.shell.portal.com/pub/podlipec/flatten.c.Z
+
+
+If you want to distribute a QuickTime movie (e.g. via news), you should
+try to observe the following:
+
+- distribute the file in flattened form only or use MacBinary or StuffIt to
+  include the resource fork.
+- don't use StuffIt with compression methods not supported by macutil.
+  (e.g. type 0d, probably a StuffItDeluxe method)
+- if you ship the file in a non-Mac format (e.g. zip), be sure to include the
+  necessary filetype and creator so that Mac users can fix these entries.
+
+
+6. Where to get QuickTime movies
+
+First of all, news:alt.binaries.multimedia, if your site carries this group.
+
+ftp://sumex-aim.stanford.edu/info-mac/grf/qt (usually not mirrored)
+
+ftp://mac.archive.umich.edu:/mac/graphics/quicktime (also contains some
+QuickTime utilities)
+
+http://www.portal.com/~podlipec/home.html  contains a list of pointers to
+various movie sites, including some with QuickTimes.
+
+gopher://csc.ucs.uwplatt.edu/1d-1%3a1163%3aQuicktime
+
+This site contains a couple of movies, including one called 1984, which is
+rather large (>12MB), as a segmented StuffIt archive.
+
+[I have tried to get this file using a unix gopher client, but haven't been
+able to decode the file yet. If I figure out how to do this, the procedure
+will be here.]
+
+
+-- 
+Alexander Lehmann,                               |  "On the Internet,
+alex@hal.rhein-main.de  (plain, MIME, NeXT)      |   nobody knows
+alexlehm@iti.informatik.th-darmstadt.de (plain)  |   you're a dog."
+

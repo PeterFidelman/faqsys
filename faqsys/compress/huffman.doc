@@ -1,0 +1,197 @@
+Artikeln „r tagen ur "Svenska HEMDATOR hacking" Nr 3 - 1987, och „r l„ttast 
+att tolka om den „r utskriven.
+
+"                   ATT KODA MED HUFFMANKODNING
+
+Som vi vet tolkar datorn tecken och instruktioner p† bin„r form, dvs den 
+tolkar ett tecken som ett antal nollor och ettor i f”ljd.      Tecknet 'A' 
+tolkas i 8 bitars ASCII som '01000001' och tecknet 'Q' tolkas som '01010001'. 
+S† l†ngt „r ju allting v„l, datorn kommer d† att tolka sina bytes p† ett 
+entydigt s„tt.
+  Om man nu b”rjar r„kna hur ofta tecknena f”rekommer s† ser man att vissa 
+tecken finns ofta med och vissa v„ldigt s„llan. (J„mf”r t ex alfabetet, d„r a 
+och e „r vanligare „n q.) Kan man inte utnyttja detta i en ny kod, som „nd† „r 
+entydig, dvs inte kan misstolkas? Jod†, svaret „r Huffman.
+  Resultatet av en Huffmankod „r att, vanligt f”rekommande tecken, (eller 
+instruktioner) ”vers„tts till en kortare form. Det skulle ju inte g”ra 
+n†gonting om ett Q skulle vara 16 bitar l†ngt om ett A eller E var 5 bitar, vi 
+hade ju „nd† sparat en massa utrymme.
+
+EXEMPEL:
+Antag att vi vill koda ett program best†ende av instruktionssekvensen 
+I1,I2,I3,I1,I4,I1,I4,I2,I5,I6
+  Det skall vara i bin„rkod och g”ras kortast m”jligt.
+  Vi ser att vissa instruktioner f”rekommer oftare „n andra, det kan vara t ex 
+en IF-instruktion j„mf”rt med en WHILE. Vi b”rjar med att s„tta upp en tabell 
+med den vanligaste instruktionen ”verst och den minst vanliga underst.
+
+Vi f”rst†r ocks† att en instuktion som f”rekommer ofta inte f†r vara l„ngre „n 
+en som f”rekommer s„llan. Med frekvens menas ungef„r med hur stor sannolikhet 
+en instruktion f”rekommer. Man r„knar fram frekvensen f”r en instruktion genom 
+att divider antalet f”rekomster med det totala antalet. F”r I1 blir det: 
+antalet f”rekomster „r 3 och det totala antalet „r 3+2+2+1+1+1=10. Vi 
+dividerar 3 med 10 och f†r 0.3. F”lj noga med p† figur 2 nu n„r vi b”rjar 
+kodningen.
+
+  1. Vi b”rjar med att addera de tv† minst f”rekommande frekvenserna. 
+0.1+0.1=0.2. Detta kommer vi ih†g.
+  2. Vi sorterar sedan in dn nya sannolikheten i en ny tabell. 0.3 kommer 
+”verst (det „r ju st”rst), d„refter kommer den nybildade frekvensen 0.2 och i 
+fallande ordning, 0.2,0.2 och 0.1. I5 och I6 ligger nu sammanslagna under I1.
+  3. Vi drar linjer. En ut fr†n I5 och en fr†n I6. P† dessa skriver vi 0 och 
+1. Det „r viktigt att man under hela kodningen skriver 0 ”verst och 1 underst, 
+annars blir inte koden entydiug. (Man kan givetvis skriva 1 ”verst och 0 
+underst, bara man g”r det hela tiden). N„r vi gjort detta drar vi en linje upp 
+till det nya 0.2 d„rf”r att det „r ju d„r I5 och I6 h”r hemma nu. De 
+instruktioner som finns kvar l†ter vi peka p† sina egna frekvenser.
+
+  D„rf”r upprepar vi kodningen f”r den nya tabellen vi f†tt fram. Hela 
+tabellen kommer d† att se ut som den i figur 2, och vi „r klara.
+
+----------------------------------------
+|  Instruktion  |  Antal  |  Frekvens  |
+----------------------------------------
+|    I1         |   3     |   0.3      |
+|    I2         |   2     |   0.2      |
+|    I3         |   2     |   0.2      |
+|    I4         |   1     |   0.1      |
+|    I5         |   1     |   0.1      |
+|    I6         |   1     |   0.1      |
+----------------------------------------
+
+TOLKNING AV KODNINGEN
+Att tolka sin kodningstabell „r ganska enkelt. Om vi vill veta vad I1 avkodas 
+som s† f”ljer vi I1:s piloch skriver upp alla ettor och nollor vi tr„ffar p†. 
+F”r I1 blir det f”rst en 1:a (i kolumn 4) och d„refter en 0:a (i kolumn 5). 
+Detta skall nu tolkas bakl„nges. I1 skall allts† vara '01'.
+
+  Den fullst„ndiga tabellen blir:
+----------------------------------------------
+| I1 =  '01'                                 |
+| I2 =  '11'                                 |
+| I3 = '001'                                 |
+| I4 = '000'                                 |
+| I5 = '100'                                 |
+| I6 = '101'                                 |
+----------------------------------------------
+
+  Av denna tabell ser att vi att de tv† vanligaste instruktionerna „r en bit 
+kortare „n de ”vriga och vi sparar allts† plats.
+  Skulle nu detta ha varit ett program som vi har Huffman-kodat har vi sparar 
+mycket plats. Ursprungskoden inneh”ll 10 instruktioner om vardera 8 bitar 
+vilket g”r totalt 80 bitar. Denna nya koden anv„nder endast 
+3*2+2*2+3*2+1*3+1*3+1*3 vilket „r 25 bitar. Vi har allts† sparat 55 bitar.
+  Det „r inte sv†rt att inse att man kan spara ganska mycket minne genom att 
+Huffmankoda sina program. Det finns redan program som g”r detta, ex.vis. "RUN 
+PACKER" till C64.
+
+----------------------------------------------------------------------------
+|             1           2           3           4           5          6 |
+|                                                                0         |
+| I1 ------> 0.3 ------> 0.3 -\  .-> 0.3 -\  .-> 0.4 -\  .-> 0.6 --. .-> 1 |         
+|                              \ |         \ |       0 \ |       1 |-'     |
+| I2 ------> 0.2 -\  .-> 0.2 -\ \+-> 0.3 -\ \+-> 0.3 --.\+-> 0.4 --'       |
+|                  \ |         \ |       0 \ |       1 |-'                 |
+| I3 ------> 0.2 -\ \+-> 0.2 -\ \+-> 0.2 --.\+-> 0.3 --'                   |
+|                  \ |       0 \ |       1 |-'                             |
+| I4 ------> 0.1 -\ \+-> 0.2 --.\+-> 0.2 --'                               |
+|                0 \ |       1 |-'                                         |
+| I5 ------> 0.1 --.\+-> 0.1 --'                                           |
+|                1 |-'                                                     |
+| I6 ------> 0.1 --'                                                       |
+|                                                                          |
+|   Figur 2                                                                |
+|                                                                          |
+----------------------------------------------------------------------------
+
+  N„r man kodar skall man allts† komma ih†g att:
+
+  1. Ordna frekvenserna i fallande ordning.
+  2. Koda de tv† minst sannolika symbolerna. Addera frekvenserna och sortera 
+p† nytt.
+  3. Rita pilar, skriv ut 1 och 0, upprepa.
+
+T„nk p† att:
+Summan av frekvenserna alltid „r 1. Skriva 1 och 0 likadant ”verallt.
+Tolka koden 'bakl„nges' i slutet.
+  Vi tar ett exempel till. Antag att vi skall koda 'JANSMAMMA'. (Inget 
+mellanslag).
+
+Tabellen blir:
+
+------------------------------------------------------------------
+|                                                      0         |
+| A  3 ------> 1/3 ------> 1/3 -\  .-> 1/3 -\  .-> 2/3 --. .-> 1 |
+|                                \ |       0 \ |       1 |-'     |
+| M  3 ------> 1/3 ------> 1/3 -\ \+-> 1/3 --.\+-> 1/3 --'       |
+|                              0 \ |       1 |-'                 |
+| J  1 ------> 1/9 -\  .-> 2/9 --.\+-> 1/3 --'                   |
+|                  0 \ |       1 |-'                             |
+| N  1 ------> 1/9 --.\+-> 1/9 --'                               |
+|                  1 |-'                                         |
+| S  1 ------> 1/9 --'                                           |
+|                                                                |
+------------------------------------------------------------------
+
+  Den slutliga tabellen blir:
+
+----------------
+|              |
+| A =  '00'    |
+|              |
+| M =  '01'    |
+|              |
+| J =  '11'    |
+|              |
+| N = '100'    |
+|              |
+| S = '101'    |
+|              |
+----------------
+
+  Att koda l†nga sekvenser „r inte kr†ngligare, det tar bara mer tid. Kodar 
+man en hel bok eller ett helt program s† blir givetvis minnesbesparingen s† 
+mycket st”rre.
+
+         Anders B”rjesson"
+
+Enligt ett tr„d skulle kodningen se ut ungef„r s† h„r:
+
+                         |
+                       0/ \1 
+                       |   \
+                     0/ \1  \
+                     A   M   | 
+                           0/ \1
+                           |   J
+                         0/ \1
+                         N   S
+
+  Du t„nker f”rmodligen att i en .prg fil s† „r det ingen m„rkbar 
+regelbundenhet, men det h„r assembler programmet motbevisar detta.
+
+x:
+          lea       prg_fil,a0
+          lea       huff_tab,a1
+.loop:
+          move.b    (a0)+,d0
+          addq.b    #1,(a1,d0)
+          cmp.l     a0,end_fil
+          ble.s     .loop
+
+          illegal
+
+huff_tab:
+          ds.b      256
+prg_fil:
+          incbin    "*.prg"
+end_fil:
+
+  Anv„nd detta i debuggern och tryck Ctrl+R. N„r programmet stannar av illegal 
+instruktionen, s† titta nu p† huff_tab i hex kod (f”nster 3 i MonST). H„r 
+motsvarar f”rsta bytet antal 0:or, andra bytet antal 1:or, tredje bytet antal 
+2:or o.s.v. som f”rekommer i filen. Observera 0,1 och 255 hur frekvent de 
+f”rekommer.
+
+
+                                                                                   

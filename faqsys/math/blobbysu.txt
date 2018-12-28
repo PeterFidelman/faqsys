@@ -1,0 +1,132 @@
+
+>Can anyone recommend some references for "Meta-Sphere" or "Blobby Molecule"
+>algorithms that create a tesselated 3-d geometry? (as opposed to scanline
+>algorithms for direct rendering of these primitives)
+
+	The surfaces of these blobby molecules are implicitly defined.
+That is, they are defined by a single equation
+
+	f(x, y, z) = 0
+
+	I assume that you have seen Blinn's '82 paper on rendering these
+directly.  It was printed in ACM transactions on Graphics, and pointed to
+in that year's SIGGRAPH proceedings. 
+
+	In the last couple of years several people have looked into using 
+polygonal representations of implicit surfaces. Implicit surfaces
+are becoming a little more popular because they are nice for defining
+"blending surfaces". My advisor wrote his thesis on the form the implicit
+blending surface needs to be in. Data that is in the form of spatially
+arranged density data can also be viewed by picking a level set to be
+the surface of interest. Lots of data is in this form: CT scan, NMR, 
+some seismic data, etc. 
+
+	Back to your initial question: what are some references on 
+polygonalizing these things?
+
+	Blinn, J., (1982)
+	A Generalization of Algebraic Surface Drawing,
+	ACM Transactions on Graphics, Vol. 1, Number 3, pp. 235-256.
+
+	Wyvil, G.,McPheeters, C., and Wyvil, B., (1986)
+	``Data structure for  soft objects",
+	The Visual Computer,2:227-234.
+
+	Lorenson, W., and Cline, H. (1987)
+	``Marching Cubes: A High Resolution 3D Surface Construction Algorithm",
+	Computer Graphics, Volume 21, No. 4, pp. 163-169.
+
+	Duurst, M. J. (1988),
+	"Additional Reference to Marching Cubes", 
+	Computer Graphics, 
+	Volume 22, No. 2, pp. 72,73.
+
+	Bloomenthal, J., (1988) 
+	Polygonalization of Implicit Surfaces,
+	Computer Aided Geometric Design 5 (1988), pp. 341-355.
+	(also Xerox Report CSL-87-2. and in SIGGRAPH course notes (87 & 88?))
+
+	Hall, M., and Warren, J. (1988)
+	"Adaptive Tessellation of Implicitly Defined Surfaces",
+	(Submitted for publication  and Rice Technical report)
+	*copies on e-mail request*
+
+
+	As mentioned before, Blinn rendered these things directly. 
+The brothers Wyvil have done a lot of work incorporating these objects
+into their Graphicsland environment at U. Calgary. I see some
+of their students posting in this group, if you have questions 
+for them. Lorenson and Cline 
+showed a table lookup algorithm that is quite nice. It does have 
+(at least) one bug, a consequence of which is pointed out by Duurst,
+but I have used it in a number of applications with pleasing results.
+Bloomenthal presents an algorithmic approach with the added feature 
+of being able to adaptively approximate the surface. That is, where
+the surface is flat[ter], use fewer but larger polygons to approximate it.
+His algorithm is tricky to implement correctly by his own admission. 
+Joe Warren and I found a different method for adaptively polygonalizing
+the surface that we think is easier to implement. 
+
+Hope this helps. 
+
+- mark
+
+-----------------------------------------------------------
+
+From: johnston@lbl-csam.arpa (Bill Johnston [csr])
+Newsgroups: comp.graphics
+Subject: Re: Blobbly Molecules - tessellating
+Date: 16 Feb 89 19:47:29 GMT
+Organization: Lawrence Berkeley Laboratory, Berkeley CA
+
+The medical imaging folks have developed a very nice algorithm
+called ``Marching Cubes'' for tessellating complex 3D surfaces:
+  .ds [A W. Lorensen
+  .as [A ", H. Cline
+  .ds [T Marching Cubes: A High Resolution 3D Surface Construction Algorithm
+  .ds [J Computer Graphics
+  .ds [V 21
+  .ds [N 4
+  .ds [D 1987
+  .ds [O (Proceedings ACM SIGGRAPH, 1987.)
+
+This algorithm works locally, seeking to fit a surface through each
+elemental cube (voxel) (as defined by the the grid intersections) that
+intersects the surface. The result is a large number of small polygons
+that completely cover the surface f=C.
+
+For ``blobby molecules'' you might contour the electric field strength
+using Marching Cubes to tessellate the surface |E|=C. We have made an
+interesting movie of methane molecules trapped in a crystal lattice by
+just tessellating the Van der Waal's radii about the collection of
+atomic centers for methane.  We did nothing more complex than
+tessellating a contour of the field f=x**2+y**2+z**2 about every atomic
+center, and let the hidden surface processing worry about the
+intersecting shperes. This, of course, does not give quite the blobbly
+appearence of |E| = C taken over the whole molecule.
+
+Be cautioned that the algorithm as presented at SIGGRAPH 87 has an
+error that causes small holes to appear in the tessellation at some
+saddle points on the surface. I talked to Bill Lorensen at SIGGRAPH
+last year and he said that he was going to publish a correction in the
+SIGGRAPH Quarterly. I don't know if he has done that yet, or not.
+
+We have an implementation of this algorithm that we will make available
+when we distribute our video movie making system software in a few months.
+See:
+
+  .ds [A W. E. Johnston
+  .as [A ", D. E. Hall
+  .as [A ", J. Huang
+  .as [A ", M. Rible
+  .as [A ", D. Robertson
+  .ds [T Distributed Scientific Video Movie Making
+  .ds [J Proceedings of the Supercomputing Conference
+  .ds [D 1988
+  .ds [O (The Computer Society of the IEEE.)
+
+
+	Bill Johnston and David Robertson
+	Lawrence Berkeley Laboratory
+	(wejohnston@lbl.gov, ...ucbvax!lbl-csam.arpa!johnston)
+	(dwrobertson@lbl.gov, ...ucbvax!lbl-csam.arpa!davidr)

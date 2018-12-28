@@ -1,0 +1,128 @@
+---------------------------------------------------------------------------
+
+Quaternion Numbers
+
+---------------------------------------------------------------------------
+
+Definition
+
+A Quaternion number is an extension to complex numbers invented by Lord
+William Hamilton. A Quaternion number has got two extra imaginary units
+which are called j and k. We write such a number as q = a + b*i + c*j +
+d*k, or for short: (a, b, c, d). As long as c and d are equal to zero, q is
+nothing else then a complex number. These are the multiplication rules for
+i, j, k:
+
+   i*i = j*j = k*k = -1
+   i*j = k,    j*i = -k
+   j*k = i,    k*j = -i
+   k*i = j,    i*k = -j
+
+One can see these rules as if i, j, k are three orthognal unit vectors, the
+multiplication acts like a right-handed cross product of them. These rules
+does not cause any real difficulty until we look at multiplication of
+quaternions. Later on this page we see a very important fact:
+multiplication/division of quaternions is not commutative.
+
+Conjugate, Norm and Absolute value
+
+   q = (a, b, c, d)
+
+   conj(q) = (a, -b, -c, -d)
+   norm(q) = a*a + b*b + c*c + d*d
+   abs(q)  = sqrt(norm(q))
+
+Addition and subtraction
+
+   q = (a, b, c, d), p = (x, y, z, w)
+
+   q + p = (a+x, b+y, c+z, d+w)
+   q - p = (a-x, b-y, c-z, d-w)
+
+Scaling
+
+   q = (a, b, c, d)
+   t = Real value
+
+   t*q = q*t = (t*a, t*b, t*c, t*d)
+
+Multiplication
+
+   q = (a, b, c, d), p = (x, y, z, w)
+
+   q * p = (a + b*i + c*j + d*k) * (x + y*i + z*j + w*k)
+
+         =   a   * (x + y*i + z*j + w*k)
+           + b*i * (x + y*i + z*j + w*k)
+           + c*j * (x + y*i + z*j + w*k)
+           + d*k * (x + y*i + z*j + w*k)
+
+         =   a*x   + a*y*i + a*z*j + a*w*k
+           + b*x*i - b*y   + b*z*k - b*w*j
+           + c*x*j - c*y*k - c*z   + c*w*i
+           + d*x*k + d*y*j - d*z*i - d*w
+
+         = (a*x - b*y - c*z - d*w,
+            a*y + b*x + c*w - d*z,
+            a*z - b*w + c*x + d*y,
+            a*w + b*z - c*y + d*x)
+
+One can rewrite this if we define two 3-dimensional vectors:
+
+   qV = (b, c, d)      q = (a, qV)
+   pV = (y, z, w)      p = (x, pV)
+
+   q * p = (a*x - dotprod(qV, pV),
+            a*pV + x*qV + crossprod(qV, pV))
+
+Now it is easy to see that multiplication of quaternion is not commutative,
+since the cross product of the vectors is not commutative. One must take
+this in consideration while working with quaternion algebra.
+
+If we square a quaternion, the cross product is zero:
+
+   q * q = (a*a - dotprod(qV, qV), 2*a*qV)
+
+In fact, One do not have to consider the multiplication order at all when
+raising a quaternion to any positive integer power.
+
+Fast multiplication
+
+There are some schemes available that reduces the number of internal
+multiplications when doing quaternion multiplication. Here is one:
+
+   q = (a, b, c, d), p = (x, y, z, w)
+
+   tmp_00 = (d - c) * (z - w)
+   tmp_01 = (a + b) * (x + y)
+   tmp_02 = (a - b) * (z + w)
+   tmp_03 = (c + d) * (x - y)
+   tmp_04 = (d - b) * (y - z)
+   tmp_05 = (d + b) * (y + z)
+   tmp_06 = (a + c) * (x - w)
+   tmp_07 = (a - c) * (x + w)
+   tmp_08 = tmp_05 + tmp_06 + tmp_07
+   tmp_09 = 0.5 * (tmp_04 + tmp_08)
+
+   q * p = (tmp_00 + tmp_09 - tmp_05,
+            tmp_01 + tmp_09 - tmp_08,
+            tmp_02 + tmp_09 - tmp_07,
+            tmp_03 + tmp_09 - tmp_06)
+
+With this method You get 7 less multiplications, but 15 more
+additions/subtractions. Generally, this is still an improvement.
+
+Inverse and division
+
+   inv(q) = conj(q)/norm(q)
+
+   q / p = inv(p)*q  or  q*inv(p)
+
+Here it can be difficult to know which one to choose. I do not use division
+very often, but when I have to I always use q/p = +inv(p)*q. If I use it
+all the time, there seems to be no problem. I am not that good at
+explaining this, if someone knows better please send me an email.
+---------------------------------------------------------------------------
+[Image]  [Image]
+
+Last update by Henrik Engström 1994-Oct-27

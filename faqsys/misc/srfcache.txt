@@ -1,0 +1,233 @@
+Surface Caching
+
+Surface Caching is a new technique used to speed up lighting of faces in
+engines. It allows the engine to use a much-simplified texture mapping
+routine, so increasing the speed of the engine. In addition, it provides a
+second layer between the rasteriser and the texture data, meaning that
+textures of different formats or bit depths can be displayed, using the same
+single rasterisation routine.
+
+Introduction
+
+Central to all caching algorithms is time. Caching is used to speed things
+up. Caches operate using time as a basis for cache replacement. And a caches
+data will only be relevant for a given instance in time.
+
+A surface is considered to be a collection of joined, adjacent, coplanar
+polygons. A texture map is then stretched to fit across the surface. This
+texture map is then mixed and blended with a light map, giving us a surface
+texture for the surface. This map will then be applied to the surface at
+rendering time.
+
+A cache is considered to be a collection of similar data structures, each
+holding a piece of information. Each cache slot has a variable telling us
+how old its data is. The memory allocated to the cache will be reused, so
+reducing the overall memory requirements.
+
+Surfaces
+
+I use the concept of a surface for a number of reasons. Firstly, it is a
+natural adaptation of what we see in real life. We don't think of a table
+top as being a triangulated mesh, we think of it being a surface. Grouping
+together faces in this manner also produces a data structure, which is
+coherent, and that we can use as a bounding volume. If a surface fails to
+intersect the frustum, all polygons belonging to that surface can be
+discarded. Also, a single light map can be calculated and allocated to one
+surface. This brings down the volume of calculations needed, brings down the
+memory requirements, and also ensures that lighting and texturing is smooth
+across faces.
+
+Building surfaces is a simple trick. What we need to do, is to find all the
+polygons lying on a plane. We then pick a starting polygon. From this
+polygon, we walk through its vertex list, obtaining all the polygons
+connected to this vertex. If a connected polygon has no surface, then we
+flood to that polygon, set its surface to be our current, new surface, and
+continue. If, when processing is complete, we find that there are still
+polygons left, on this plane, with no surfaces, then we simply make a new
+surface, and begin with a polygon from the set. We repeat this until no
+polygons are left, globally. When this is complete, we are left with a list
+of surfaces, with each surface having a list of polygons on that surface.
+
+It is worthwhile to note that when comparing plane equations, some kind of
+epsilon or tolerance value is needed. This is because when you calculate the
+plane equations, adjacent polygons can have approximately the same normal,
+but with slight, very small variations. This needs to be compensated for, by
+use of an epsilon variable.
+
+After constructing the surface, we need to find its extents. This is simply
+a parallel projection down to 2D, by find the most dominant axis of the
+normal, and discarding the corresponding vector component from the vertices.
+For example, if the Y component was most dominant, we would discard it,
+giving us X and Z for our 2D X and Y. We then stretch a 2D bounding box to
+fit the dataset. Because we are working in a 3D world, we then need to
+adjust this box to fit the plane of the surface. This is easy to do:
+
+If X is the most dominant axis:
+Point2D.x = Point3D.y
+Point2D.y = Point3D.z
+
+Ax + By + Cz + D = 0
+    Ax + By + Cz = -D
+         Ax + By = -D - Cz
+              Ax = -D - Cz - By
+               x = -D - Cz - By
+                   ------------
+                        A
+
+Similar equations can be found for Y and Z. Using this, we can also easily
+construct a rectangular grid of points lying on the surface. This is very
+handy for lighting...
+
+Surface Textures
+
+If we wish to apply a texture to a surface, we cannot do it in the usual
+manner of assigning (U, V) co-ordinates to vertices, then mapping in the
+texture. Instead, we have to define two texture spaces. One texture space is
+the surface texture space, defined using two vectors. The other texture
+space is used for the rasteriser, and defines the position of a vertex, or
+general point in 3D space, on the surface texture. The latter can be done
+using either texture vertices, or more economically with the 3 magic vectors
+texture mapping system.
+
+We define a surface texture to be a map, that is stretched over the 2D
+bounding box of the surface. This contains a material texture, blended with
+a lightmap. This surface texture is then rendered to the screen. Material
+textures are not rendered to the screen. The following diagram should help
+clarify this:
+
+|------------------|
+|                  |
+| Material Texture |
+|                  |     |------------------|    |-------------|
+|------------------|---->|                  |    |             |
+                         |  Surface Cacher  |--->| Span Filler |
+|------------------|---->|                  |    |             |
+|                  |     |------------------|    |-------------|
+| Surface Lightmap |
+|                  |
+|------------------|
+
+We feed in materials, and lightmaps to the cacher. The cacher spits out
+surface textures, which are then passed to the span filler, and applied to
+the screen.
+
+Generating the surface textures is simple enough, once you realise that you
+cannot easily and efficiently map in the material texture to the surface
+texture using (U, V) vertices. Instead, we define two axes: A "right" axis,
+and a "down" axis. We then use a technique similar to the "RotoZoomer"
+effect. We move across the surface texture map from top to bottom, left to
+right. Our texture co-ordinates start at some origin, perhaps (0, 0). As we
+move down, we add the values of the down axis to our current position on the
+map. As we move from left to right, we start with our current "down"
+position, and add on the left axis as we move. As we move, we pluck texels
+from the material map, and drop them onto the surface texture map. Using
+this, we can scale, offset, rotate, and tile our texture. Some pseudo-code
+should help to clarify this:
+
+Function MapTexture(Texture surface_tex, Texture material_tex,
+                    2DVector right_axis, 2DVector down_axis, 2DVector origin)
+        2DVector texpos, curtexpos
+        Integer i, j
+
+        texpos = (0, 0)
+
+        For i = 0 to surface_tex.Height
+                curtexpos = texpos
+                For j = 0 to surface_tex.Width
+                        Texel = material_tex(curtexpos)
+                        surface_tex(i, j) = Texel
+                        curtexpos += right_axis
+                End For
+                texpos += down_axis
+        End For
+End Function
+
+Illuminating The Surface
+
+As previously stated, we also have a second texture map, a lightmap, which
+stores the illumination of the surface. We now want to blend this map with
+material map, shading the surface. Again, this is simple. If we choose a
+lightmap with dimensions A x A, where A is a power of two, and we choose our
+surfaces textures to have dimensions B x B, again with B a power of two, we
+can very quickly map from surface texture co-ords, to lightmap co-ords, with
+a right-shift. We pick the lightmap texel, mix it with the surface texel,
+and write the result back to the surface texture. Typical sizes for
+lightmaps are 8 x 8, or 16 x 16. Good sizes for surface textures range
+between 32 x 32, to 128 x 128.
+
+We can also use bilinear interpolation on the lightmap to improve the
+shading quality of our image. Our calculations will also be greatly
+simplified, because we will be sampling in a fixed, constant direction. We
+can then produces precalculated weighting tables, and also minimise the
+number of reads from the lightmap, because we only need to read when the
+fractional part of the lightmap u or v index is zero. This will produce a
+smoothly shaded texture. However, it does have one flaw: Because the shape
+of the lightmap is rectangular, and because bilinear interpolation only
+interpolates linear between pixels, we will end up with a squarish lighting
+effect. This is not really a bad thing, but it reduces our ability to
+capture curved changes in light, such as specular highlights. The bilinear
+interpolation will approximate it, but not to a high level. A spline
+interpolation may help here, but will be CPU-intensive.
+
+Caching The Surfaces
+
+One piece is missing from the puzzle: The Cache. The cache itself is an
+array of slots, each slot being able to hold one surface texture. Slots are
+re-used, so that we can minimize the amount of memory consumed. We use a
+global frame counter to calculate the age of a cache slot. At start up, this
+counter is usually set to 1. As the engine runs, if a surface is visible,
+and not in the cache, we find a cache slot, light the surface, and insert it
+into the cache. We set the cache slots frame counter to the current counter.
+If a surface is visible and in the cache, we simply update its frame counter
+to be the current frame counter. If a surface is not visible, we ignore it.
+If a surface is not visible, and is in the cache, again, we ignore it: the
+cache slot will automatically age. If we last set the slots frame counter at
+frame "A", to "A", and we are now at frame "B", then there will be a
+difference in time, of "B" - "A". When this difference exceeds some
+threshold, the cache slot can then be re-used. It is important that we do
+not chuck out surface as soon as they become invisible. If we do so, we may
+end up having to relight them the next frame. Only when a surface has been
+invisible for a *period* of time can it be discarded.
+
+Finding a free cache slot is easy enough. Firstly, we scan through the
+cache, to see if we have any pure, free, unused slots. If so, we grab the
+slot, fill it, mark it, and return. If not, the situation is more complex:
+something has to give. So, we scan through the cache, and find the oldest
+surface. This surface is then replaced. The age of a surface is simply
+calculated using the current frame counter minus the slots frame counter. We
+must also be careful that we do not replace surfaces with age 0. These
+surfaces will be surfaces that have been lit *this* frame. If we replace
+those surfaces, then next frame, the surface will be re-lit, and then
+possibly replaced. This will jam the frame rate. If we can't find any usable
+slots at all, then we ignore the surface. This is no real problem. In a
+front-to-back rendering system, the first surfaces to be cached will be the
+nearest ones, and the last to be cached will be the farthest ones. As more
+and more surfaces are cached, the importance of an individual surface to an
+image decreases, because it becomes further away, and so becomes smaller on
+the screen, possibly being occluded.
+
+With all this correctly implemented and in place, you should now have a
+fully operation surface caching system. Some notes on surface caches, their
+performance, and characteristics:
+
+   * If you get discontinuities in your texturing, then you are not
+     calculating your surfaces correctly. An easy way to test this is to set
+     the lightmap for a surface to some random colour. The surfaces will
+     then show up.
+   * The 3 magic vectors texture mapping algorithm is perfectly suited to
+     this task. Using this algorithm speeds up span-buffering routines
+     greatly, because no values need to be clipped or interpolated. We also
+     only need to calculate the magic vectors once per surface. The size of
+     the span structure can also be greatly reduced. My span is 20 bytes.
+   * Invisible surfaces kill the cache. Dead. Visibility culling is of vital
+     importance to keeping a surface cache healthy. If you thrash it with
+     invisible surfaces, your frame rate will fall through the floor. Span
+     buffer algorithms are handy here, because your system can be used to
+     return visibility information.
+   * MIP-Mapping can also be integrated to the surface cacher. This gives
+     you high-quality mip-mapping and lighting very cheaply. Also,
+     MIP-Mapping will speed up rendering of small, distant surfaces. In
+     addition, because succesive maps are twice the size of their children,
+     you can make a very quick routine to enlarge a given map.
+
+     Tom Hammersley,tomh@globalnet.co.uk

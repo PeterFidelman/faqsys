@@ -1,0 +1,219 @@
+
+FRACTAL.DOC
+Lee Daniel Crocker [73407,2030]
+
+April 18, 1989
+
+This paper describes several things that are lumped together under the name
+"fractal".  It is not a treatise on any of the subjects involved, but I hope
+it answers the basic question, "What is a fractal?" for those interested.  I
+apologize to experts in the field for omitting some favorites.
+
+
+FRACTAL CURVES AND SURFACES
+
+How long is the coast of Great Britain?
+
+This is a simple question, and methods for answering it come immediately to
+mind: step a yardstick along the coast end over end, counting the number of
+flips of the yardstick needed to circle the island.  Now imagine doing the
+same thing with a 12-inch ruler.  It is obvious that this time the answer
+will be a bit larger, because the short ruler can measure more precisely the
+fine details of the coastline your yardstick skipped.  If you use a 1-inch
+ruler, your measurement will be larger still.
+
+Imagine doing this with a perfect circle.  As your ruler gets shorter, you
+inscribe within the circle polygons with more and more sides, each of which
+comes closer to the circle itself.  Although the measured length gets larger
+and larger, it converges toward a single value--the circle's circumference.
+
+Every mathematician is familiar with continuously increasing values that
+nonetheless converge to a limit.  As the ruler with which you measure the
+coast gets smaller, you might expect its measured length similarly to
+converge to a limit of its "true length".  This, in fact, never happens.
+The length of the coast increases without bound as your ruler shrinks.
+There is no such value as the "true length" of a coastline.
+
+The coastline is a fractal curve.  What makes it a fractal is that it is
+infinitely detailed as one goes deeper into its folds.  No matter how much
+you magnify it, you only see more and more detail.  This is the essence that
+unites all of the fractal types discussed here--each has infinite detail no
+matter how much it is magnified.
+
+One can easily simulate this with a computer.  Start with a straight line
+drawn across the screen.  Pick a few points along the line and push them up
+or down by a small random amount.  Now do the same for each segment of the
+line thus created; then with each sub-segment from this pass, and so on,
+until the limit of the computer's resolution is reached.  The line now will
+be jagged and convoluted in a random and intricate way, and will look very
+much like a coastline.
+
+Computer artists use similar procedures to create realistic simulations of
+natural phenomena like coastlines.  Extending the process to surfaces
+instead of lines yields a method for creating complex terrain that very
+closely resembles natural landscapes.  The most realistic computer-generated
+scenes of mountains and clouds are created with similar methods.
+
+
+ITERATED FUNCTION SYSTEMS
+
+A "function" is mathematical formula that takes input values and produces
+corresponding output values by some rigidly defined rule.  A simple example
+is the function "2 * x + 5" (The * symbol is for multiplication).  When
+given the input value 2, it produces the output value 9.  With input 3 it
+produces the output 11.
+
+What happens when you feed a function a starting input value, then continue
+to feed the resulting output value back in as the next input?  For this
+function, you get a series of numbers increasing without bound.  The value
+1 yields 7, 7 yields 19, 19 yields 43, and so on through 91, 187, 379, and
+upward.  This function is not very interesting.
+
+Things get interesting when two variables are involved.  A pair of variables
+can represent coordinates of a point on a plane.  With one such point as a
+starting value, a function of the two variables will produce another point
+as output.  This point will, in turn, produce a third, and so on.  Usually,
+this procedure will eventually fall upon a point that produces itself as
+output, thereby breaking the chain.  This point is called an "attractor".
+
+Sometimes instead of settling to a single point, the function will settle
+onto a set of points in a small area.  This area is called a "basin of
+attraction".  If the function settles into a small set of points that
+produce a loop, (e.g., point 1 yields point 2, point 2 yields point 3, point
+3 yields point 1) these points are called an "orbit".
+
+Take, for example, this set of equations:
+
+     x2 = 1 + y1 - 1.4 * (x1^2)    (The ^ symbol stands for exponentiation)
+     y2 = 0.3 * x1
+
+Put x1 and y1 in as input values and take x2 and y2 as outputs.  Then place
+these values back into the equation as its next inputs.  Here are the first
+few values starting with x1=0 and y1=0:
+
+     0,            0
+     1,            0
+    -0.4,          0.3
+     1.076,       -0.12
+    -0.7408864    -0.036
+
+These values seem random and unordered.  It is hard to imagine them settling
+down to a single point, and indeed they do not.  Neither do they settle into
+an orbit of a small number of points or into a basin.  The remarkable thing,
+though, is that they are not as random as they appear.  This is not apparent
+until you plot thousands of iterations of this function on a graphic
+display.  The points begin to take a distinct horseshoe-like shape with many
+folds.  The points all stay within this curved area, but no point is ever
+visited twice.  This is called a "strange attractor".
+
+This particular curve is called the Attractor of Henon, after the
+mathematician who discovered it.  Its horseshoe-shaped lines (actually
+collections of single points) fold back on each other many times, but never
+touch.  If you magnify any part of the curve that appears to be a simple
+line, you will discover that it is made of many separate lines, each of
+which is in turn made of other separate lines.  The more you magnify, the
+more detail you see--this curve is a fractal.
+
+
+SETS IN THE COMPLEX PLANE
+
+This is a special case of iterated functions of two variables.  I discuss it
+separately because the results are so startlingly different and because the
+most popular type of fractal graphic--the Mandelbrot Set--is here.
+
+Complex numbers were created to fill a few voids in algebra that real
+numbers couldn't handle.  A complex number consists of two values called its
+"real part" and its "imaginary part".  It can therefore represent a point on
+a plane called the "complex plane".  Complex numbers have special rules for
+addition, multiplication, and other functions similar to the methods for 
+ordinary real numbers.  In fact, if the imaginary part of a complex number
+is 0, it can be treated as an ordinary real number.  For example, the
+complex number [2,0] multiplied by [3,0] produces the product [6,0].  [2,1]
+multiplied by [3,2], however, produces the product [4,7].
+
+If you perform a function on each point in some section of the complex plane,
+you can place each of these points into a certain set based on the result of
+the function for that point.  By assigning a color to every point in a given
+set, you create some wonderfully intricate designs, which--as I am sure you
+expected by now--get more and more detailed as you zoom in.
+
+The most famous of these is the Mandelbrot Set.  For each complex point
+[x0,y0], set [x1,y1] = [x0,y0].  Calculate [x2,y2] = [x1,y1]^2 + [x0,y0],
+then feed the resulting [x2,y2] back into the formula as [x1,y1].  For
+example, starting with the point [2,3], the next point is [2,3]^2 + [2,3] =
+[-3,15].  The next point is [-3,15]^2 + [2,3] = [-214,-87].  This particular
+point continues to get farther and farther from [0,0], but points nearer to
+[0,0] tend to stay close by.
+
+Now count the number of iterations of the formula it takes to produce a
+point outside a certain boundary, usually [-4,-4] to [4,4].  Some points
+never escape this boundary, so you must specify an iteration limit at which
+to give up.  The points that never escape are said to be in the Mandelbrot
+Set proper.
+
+The other points bordering the set can be colored based on the number of
+iterations it took each of them to escape the boundary.  Subsets of the
+complex plane colored this way produce fascinating images, which are more
+and more detailed the closer you look.  This, again, is why it is a fractal.
+
+
+SELF-SIMILARITY
+
+It is common to find small parts of a fractal shape that resemble the whole.
+The Mandelbrot Set in particular contains tiny regions that closely (but not
+exactly) resemble the whole set, and those regions contain still smaller
+regions that resemble them.
+
+Many shapes in nature exhibit this property as well; the branches of a tree,
+the fronds of a fern.  Some think that in this way, a structure as complex
+as a tree can be described with very little information.  Trees, ferns, and
+all other living things store information in DNA, and its capacity for
+information is limited.  The information storage capacity of a computer is
+limited too, and computers can exploit the property of self-similarity to
+reduce the resources needed for storing such structures.
+
+It is possible, for instance, to store the basic shape of a fern along with
+a few instructions for replicating this shape at different scales in
+different positions, and to use this information to recreate a detailed
+image of the fern using less storage than traditional methods might require.
+Such iterated functions are used to represent compactly many of the shapes
+of nature.  "Pure" mathematical shapes such as circles and squares are not
+well suited to this kind of storage, but many natural shapes are.  This
+process is often seen discussed as "fractal image compression".
+
+
+FURTHER READING
+
+There are many books available on fractals and related subjects.  Here are
+some of the most popular:
+
+"Chaos: The Making of a New Science", James Gleick
+
+    A good (much better than mine) layman's introduction to the subject.
+    Not much detail for the more serious student, though.
+
+"The Fractal Geometry of Nature", Benoit Mandelbrot
+
+    The classic reference by the creator of the term "fractal" and the
+    example that bears his name.  Pretty technical, but good reading and
+    wonderful illustrations.
+
+"The Science of Fractal Images", Barnsley, et al.
+
+    The most detailed discussion of computer algorithms available for the
+    various types of fractals.  More wonderful illustrations.
+
+"The Beauty of Fractals", Peitgen and Richter
+
+    Another book filled with beautiful pictures and mathematics.  Many
+    examples of different fractals with the equations that generated them.
+
+I am sure there are many more good books on the subject.  Feel free to add
+to this list as this paper is passed around.
+
+I owe special thanks to Bert Tyler and Timothy Wegner whose program
+FRACTINT renewed my interest in this field.  FRACTINT runs on many MSDOS
+personal computers and is available from the Graphics Support Forum on
+CompuServe.  Type GO PICS from any "!" prompt while on CompuServe to gain
+access to this forum.  Call 800-848-8199 for information about CompuServe.
+

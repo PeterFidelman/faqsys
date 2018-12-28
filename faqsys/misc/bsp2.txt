@@ -1,0 +1,858 @@
+BSP Trees
+
+----------------------------------------------------------------------------
+
+Introduction
+
+BSP trees are becoming one of the most popular spatial subdivision
+algorithms, due to their flexibility, and their ability to draw a scene with
+perfect order. However, though they are becoming popular, they are complex
+and difficult to code at first, and the theory can be hard to understand for
+some people. In this page, rather than going over and over the same things
+that have been said a thousand times before, I'll instead give a brief
+overview of the theory, and concentrate on more details regarding the
+implementation. More information concerning one specific part of BSP trees
+can be found in the BSP FAQ, though it does have to be said that there are
+some unfinished parts in it. This is no criticism on the author, just a
+neutral observation. (And perhaps a hint that people should help finish the
+FAQ!).
+
+----------------------------------------------------------------------------
+
+Theory
+
+Note: this section is only intended as a refresher. If you don't know BSP
+trees, then there may be better definitions for you to learn from. This is
+to set the scene, and introduce the contents of this file.
+
+A BSP tree carves up space into sets of successive half-spaces. A half space
+is the portion of space that is either in front of a hyperplane, or behind
+it. A hyperplane is a plane, with the same dimensions as the space it is in.
+For example a 2D hyperplane is a line. A 3D hyperplane is plane. However, a
+2D hyperplane (line) cannot be used to partition 3D space into two
+half-spaces. Likewise a 3D plane cannot partition 4D space into two
+halfspaces. Halfspaces are infinite, and every polygon must lie entirely in
+only one halfspace.
+
+A BSP tree is built by making a binary tree, where each node has a plane,
+which may or may not be from the source model, and the branches point to the
+sub-nodes that either lie entirely behind that plane, or, entirely in front
+of that node. Similary, the sub-nodes of that node have their own planes,
+which contain sub-nodes and so on. The planes stored in the nodes gives us a
+space partitioning scheme, as they can be used to identify polygons or
+objects that lie in regions of space enclosed by a set of planes. These
+planes are later used for sorting the scene. A node may or may not have
+polygons stored with it; this is the key distinction between node-based and
+leaf-based BSP (more on that later).
+
+At each node, there is some form of cheap, simple bounding volume, such as a
+bounding sphere or a bounding box. This box/sphere encloses both the current
+node, and all its children. This volume is used to aid rendering and
+culling, as this gives a tree a hierarchial nature, so that subtrees can be
+discarded if their bounding volume fails to fulfill some criteria.
+
+----------------------------------------------------------------------------
+
+Code and data structures
+
+The data structure for a BSP tree is fairly simple. Below is a pseudo-code
+description, derived from the BSP tree structure I use in my own BSP engine.
+
+Structure BSPNode
+    BSPNode pointer     frontnode, backnode;
+    Vector              centre, transformed_centre;
+    List                polygon_list;
+    Plane               plane;
+    Vector              boxmin, boxmax;
+    Vector              transformed_boxmin, transformed_boxmax;
+End Structure
+
+Structure BSPTree
+    BSPNode Pointer     root
+    List                vertex_list
+End Structure
+
+These two structures enable us to represent the BSP tree in memory. Included
+in the structure is enough information to make the tree practical. Note that
+you should aim to try and make this structure as small as possible, as there
+may be a great many of them loaded into memory.
+
+Code structures for the BSP tree largely reflect their recursive nature.
+Recursive functions are very common when dealing with BSP trees, whether
+they explicity recur on the CPU stack, or, instead use a stack of BSP trees
+to handle the recursion, so avoiding possible stack overflow. Each method
+has its advantages and distadvantages, and you should experiment with both.
+However, for the purposes of this file, I'll stick to explicit recursion, as
+it makes the code easier to follow.
+
+Loading and saving a BSP tree can be done in the natural recursive manner
+for this data structure. All it takes is to simply dump the node structure,
+along with a flag, to the file, and traverse the tree in the same order.
+
+In your flags field, you would have something like:
+
+00000000000000xx - Has front sub-tree
+              |--- Has back sub-tree
+
+This flag field contains all the information you need. Then, you choose
+which order to save nodes in, either [front node, back node], or [back node,
+front node]. Choose an order and stick to it. Then when you load save, its
+simple. If a node has a front sub-node, set the bit to 1. Same for the back
+node. Then, when writing/reading, simply traverse the front or back node if
+it exists, then traverse the other if it exists. Eg:
+
+    If (node has front sub-node)
+        Set bit in flags variable
+
+    If (node has back sub-node)
+        Set bit in flags variable
+
+    Read/Write flags field
+    Read/Write node data
+
+    If node has front sub-node
+        Recur with front-node
+
+    If node has back sub-node
+        Recur with back-node
+
+Its that simple. Makes stuff a lot more elegant. Although this might seem
+hard at first, it soon comes to you. This is partly the reason I don't like
+or use the Jaluit compiler, because its output format is so weird... this
+way is so much simpler.
+
+----------------------------------------------------------------------------
+
+Building the tree
+
+Building the tree is the most expensive process, and it can quickly become
+very time- and memory-consuming, as the size of the polygon database
+increases. Building the most optimal tree is a desirable goal, but is very
+expensive for large databases. Also, for different purposes, there may be
+different optimal trees. However, there are two general "best" cases;
+Split-optimized, and Balance-optimized.
+
+To construct a Split-optimized tree, you simply have to select the plane
+that will cause the least amount of polygons to be split. This is done by
+classifying what side of the plane a polygon lies. If all of its vertices
+are in front, its in front, no split. If all are behind, its behind, no
+split. If all are on the plane, then its just added to the list, no split.
+However, if some are in front, and some are behind, then theres a split.
+However, if some are on the plane, and some are [in front / behind], then
+there is no split. That last point once caused me a lot of problems, and not
+many people spot it when writing a compiler. Consider:
+
+      /-----\
+      |     |
+    ============== <--- plane
+      |     |
+      \-----/
+
+That case needs a split. However:
+
+   ===------======
+      |    |
+      \----/
+
+Does not need to be split. Its behind the plane, though it may not seem
+so at first.
+
+The reason this distinction is so important is that often we have such
+surfaces butted against each other, and a naive compiler will attempt to
+split, possibly causing both a degeneration in the polygon, and un-needed
+increase in polygon count.
+
+Balanced trees must have roughly the same number of polygons either side of
+the plane. This is quite simple to calculate. Count the number of polygons
+in front of the plane. Count the number behind. Don't count the number on
+the plane, or those split, as they don't really need to be considered. To
+find the difference, just do abs(numback - numfront). If this is less than
+say some value, eg 5, then take the tree. Else carry on searching. You may
+wish to look for a balance of zero, which would give you a perfectly
+balanced tree.
+
+You can also combine the two criteria together. I do this by calculating a
+"score". The score is derived from the number of splits, the balance, and
+the number of the plane. I use the formula:
+
+Score = numsplit*ksplit + balance*kbalance + onplane*konplane
+
+Where
+Numsplit = number of polygons split
+Balance = abs(front - back), the balancing value
+Onplane = Number of coplanar polygons
+ksplit, kbalance, konplane = Weighting of those threee criteria.
+
+A smaller score will yield a better tree.
+
+Classification Routine
+
+You'll need a routine to classify the polygon against the plane. Though this
+seems easy enough at first, the case I pointed out above can often
+complicate things. The best routine I have found is something like:
+
+Function ClassifyPolygon(Polygon, Plane)
+    Integer front, back, on
+
+    front = back = on = 0
+
+    For i=0 to Polygon.Numvert
+        Switch(ClassifyVertex(Polygon.vertex[i], Plane))
+            Case InFront:
+                front++
+            Case Behind
+                back++
+            Case OnPlane
+                on++
+                front++
+                back++
+        End Switch
+    End For
+
+    If on == Polygon.Numvert Then
+        Return OnPlane
+    Else If front == Polygon.Numvert Then
+        Return InFront
+    Else If back == Polygon.Numvert Then
+        Return Behind
+    Else
+        Return Split
+    End IF
+End Function
+
+I've found that this routine works well for me. Now, this routine will have
+to be coded very well, because its going to be called over and over again.
+
+Bounding Boxes
+
+For BSP trees, I find personally that bounding boxes work as the best
+bounding volume, because the further you go down the tree, generally, the
+flatter the box tends to become, because you come closer and closer to a
+single plane (for node based BSP. So, a box will have the least wasted
+space. However, a sphere will be easier to code, and slightly cheaper to
+test. However, you have to trade off the cheaper test against the fact that
+the wasted space may cause a sphere to be inside the volume, with no
+polygons inside after all.
+
+Constructing the bounding box for a node and all its children is very
+simple. Firstly, construct the bounding box for the nodes polygons. Thats
+done by examining each vertex, and updating the minimum/maximum co-ordinate
+values accordingly. The two values, minimum and maximum, give you a bounding
+box for that node alone. Now, traverse either/both/neither of the subtrees,
+depending on whether they exist or not. Now, find the maximum bounding box
+out of all (1-3) boxes. Hey presto, thats your box.
+
+Splits
+
+I don't intend to go into the precise details of splitting polygons, as
+there is pseudo-code in the FAQ, and real code in my compiler. However,
+there are some things you should be aware of:
+
+   * Numerical problems. Floating point can have some accuracy problems. So,
+     to compensate, choose some value epsilon to be 1/2 the thickness of the
+     plane. Then, instead of:
+
+     If dist < 0.0
+         Behind
+     Else If dist > 0.0
+         InFront
+     Else
+         OnPlane
+     End If
+
+     Write:
+
+     If dist < -epsilon
+         Behind
+     Else If dist > epsilon
+         InFront
+     Else
+         OnPlane
+     End If
+
+   * Cracks. This is caused by one polygon being split, and a polygon that
+     shares an edge being split, is not split. This can introduce T-vertices
+     into the model, which in turn will cause shading anomalies. Some ways
+     around this are:
+       1. Use a subpixel accurate rasteriser. However this will only remove
+          the crack, it won't correct the shade/texture problems.
+       2. Insert the new vertex into both polygons that share the edge. This
+          is the better solution, as it will correct the shading problems
+          too. However, you'll have more complex geometry to deal with. If
+          you triangulate your tree, you will then add an extra triangle per
+          vertex inserted; not nice.
+     Personally I've just used option 1. However, I do have the texturing +
+     shading problems I mentioned. I've got as far as creating the edge
+     list, but not finished coding number 2 yet. Just a matter or getting
+     other things done first, before I worry about that
+
+----------------------------------------------------------------------------
+
+Rendering The Tree
+
+This is the most important bit, and, the biggest advantage that using BSP
+trees over things like octrees. Though octrees can be used for a display
+algorithm, if I remember rightly, it only works for parallel projection. BSP
+trees however provide a fast, simple method of drawing, with zero sorting
+errors, and high speed.
+
+The basic idea is that if the viewer is in one half-space, we traverse the
+trees and render polygons in one order, and, if the viewer is in the other
+half-space, then traverse in the opposite order. Pseudo code for a
+front->back traversal is:
+
+Dot = Viewer*Plane
+
+If Dot > 0.0 Then
+    If Front Node exists Then
+        Traverse Front Node
+    End If
+
+    Draw Polygons
+
+    If Back Node exists Then
+        Traverse Back Node
+    End I
+Else
+    If Back Node exists Then
+        Traverse Back Node
+    End I
+
+    Draw Polygons
+
+    If Front Node exists Then
+        Traverse Front Node
+    End If
+End If
+
+This gives us a basic frame to work with. Firstly, we can get rid of the
+polygon drawing part of the Else clause in the If statement. This operation
+performs back face culling. We can now cull large numbers of polygons in one
+go, as the average scene will consist of large numbers of planar polygons,
+such as floors, ceilings, walls etc. This is also very beneficial for
+triangle renders, as it slashes the triangle count, because a triangle-based
+modeller (like 3ds) will generally use more triangles for the same surface
+than a polygon (n-gon) based modeller would.
+
+Now, before we go any further, an important note: You need to transform the
+plane equations into camera space before finding the dot product. This is
+one important detail the various BSP sources on the 'Net failed to tell me,
+resulting in lots of strange sorting errors. Now, there are two ways of
+going about this:
+
+  1. Transform the plane equation itself. Given a point on the plane P, the
+     plane equation N, then we have: N*P = 0. Given a transformation matrix
+     M however, N*(M*P) != 0. So we have to compensate for that problem, so
+     transforming the plane equation by the inverse matrix, M^-1. So, (M^-1
+     * N)*(P * M) = 0. However this is a bit awkward, as we have to invert
+     the matrix etc...
+  2. Instead, just transform the plane normal, and a point on the plane.
+     Then, use these two points to find the distance part of the plane
+     equation, 'D'. If the plane equation is Ax + By + Cz + D = 0 then the
+     normal is given by (A, B, C). Rearranging for D gives us D = -Ax - By -
+     Cz, which is the negative dot product of the normal against the point.
+     Given the transformed normal, and the new D, you now have the plane
+     equation you need. This is the method I use.
+
+Now lets get back to optimizing this code. Now, we know that if a node is
+not in the frustum, theres no point traversing it, because we won't see its
+polygons, nor its childrens polygons. So, extend the traversal If statement
+to something like:
+
+If (Front Node Exists) And (NodeInFrustum(Front Node) Then
+    Traverse Front Node
+End If
+
+Repeat that for all the If statements, and now you're not traversing parts
+of the tree you don't need to. Now, another thing: don't do one big block
+traversal of your vertices. We have a spatial subdivison scheme, and so we
+can postpone transforming the vertices 'till we know that the vertex is in
+the frustum. Using the frame counter idea I describe in the Speed-up page,
+this can easily be done. Simply make a function that transforms all the
+vertices belonging to all the nodes in the polygon, if they haven't already
+been transformed. This is called just before the polygons are drawn. So we
+have:
+
+TransformNodeVertices
+DrawNodePolygons
+
+Where TransformNodeVertices looks something like:
+
+For every polygon in node
+    For every vertex in polygon
+        If vertex not already transformed Then
+            TransformVertex
+            If Vertex Inside Frustum Then
+                ProjectVertex
+            End If
+        End If
+    End For
+End For
+
+This alone should get you a decent frame rate. However, advanced things such
+as visibility pre-processing are not covered here; thats because I haven't
+got round to writing myself a good visibility generator yet, because I'm
+still researching the problem. However, once I do, I might write a page on
+that ... (If anyone knows anything...)
+
+----------------------------------------------------------------------------
+
+Leafy BSP
+
+Leafy BSP is different to ordinary, node-based BSP. In nodey BSP, we store
+the polygons in the nodes of the tree. However in leafy BSP, we store the
+polygons in the leaves. A leaf is defined as a node with no children. The
+idea is that the polygons we then store in the leaves are no longer always
+planar (though they could be), but form a convex hull. The polygons in this
+hull can then be painted in any order, with backface culling applied. This
+also gives us the advantage that we can choose any old plane we like, rather
+than planes from the model -- though we can still use those if we want.
+Traversal is done as usual, with the planes in the tree simply being used to
+"guide" ourself to the leaves. It sounds a nice scheme, giving us the
+following advantages:
+
+  1. Smaller tree? Presumably larger numbers of polygons would be bunched
+     together, and possibly in a more spatially coherent manner, as you
+     would choose things like tabletops and boxes, rather than big, flat,
+     planar surfaces such as floors and ceilings.
+  2. Following on from the latter point in #1, possibly better spatial
+     coherence? However, not having planar polygons means that the backface
+     culling will have to be done seperately. Though you can still cull
+     entire sets of polygons in one go, because you can store a list of
+     planes, with the associated polygons. You'd have something like:
+
+     Procedure RenderTriangle
+         If triangles plane not processed Then
+             If plane backfacing Then
+                 Mark all planar polygons backfacing
+                 Return
+             Else
+                 Mark all planar polygons front facing
+             End If
+         Else
+             If triangle marked backfacing
+                 Return
+             End If
+         End If
+
+         Usual stuff to draw the triangle ...
+     End Procedure
+
+     In fact thinking about it, that code could be used in *any* renderer,
+     whether its BSP based or not. Damn ... why didn't I think of that
+     sooner? Anyway, better spatial coherence will lead to better culling,
+     etc ...
+
+If you're interested in the source code to a BSP tree compiler to play with,
+then the source to a slightly older version of my compiler than the one I'm
+using (A man has to keep some tricks to himself) is available here. I may
+put up the source to my new Solid BSP Tree compiler sometime, but its still
+under development, so not for a while yet.
+
+----------------------------------------------------------------------------
+
+Solid BSP Trees
+
+Before I go any further, I would like to thank Sean Barrett for answering a
+number of questions I had regarding Solid BSP Trees. Without those answers I
+wouldn't have got them working so quickly.
+
+Solid BSP Trees are a slightly different version of regular BSP trees, with
+the property that they encode space into Solid/Non-solid partitions. This
+property has a number of useful applications, most notably in ray tracing /
+casting problems, such as visibility, or collision detection. They can also
+be used to form a leaf based BSP representation. Understandably they are
+desirable in any engine.
+
+Crucial Differences
+
+There are a number of areas where Solid BSP trees differ from conventional
+BSP trees. Most notably, is the fact that they store convex lumps of
+polygons in the leaves, rather than the nodes of the tree. This is the
+property that most people know of. As mentioned before, they can also encode
+space into Solid / Non-solid blocks. And, the rendering algorithm differs
+slightly.
+
+Construction
+
+Constructing a Solid BSP tree is similar to that of a normal BSP tree, but
+with a major difference: You can't use the "coincident" BSP case. So, if a
+polygon lies along the plane that is being used in the node, you cannot
+place it in a list. It has to be sent down the front list for that node.
+
+Now, there is a second difference. In traditional BSP, you selected the
+plane from the list of input polygons, and used it in the node. Here, we do
+a similar thing. However, note that polygons are not removed from
+consideration when their plane has been selected, as in regular BSP: they
+will continue to be pushed down the tree until they hit a leaf. So, your
+routine may unknowingly continuosly select the same plane over and over. You
+need to mark each plane as used as you build the tree. In addition, we will
+use *every* plane of the input polygon list. This is required, because we
+cannot calculate whether we are crossing between solid and empty space if we
+do not have a plane to mark the transition. Unfortunatly, this may also
+bring about an increase in the number of polygons, which is a problem. So
+effective plane selection becomes even more important.
+
+When we find that all planes in the given polygon input set have been used,
+we have reached a leaf. When we reach the leaf, we can work out if we have a
+solid or an empty leaf.
+
+Calculating leaf contents
+
+If a leaf has polygons, we can easily determine whether or not the leaf is
+solid or empty. We do this by using the normals of the polygons in the leaf.
+If the normals point away from the centre of the leaf (assuming
+outward-pointing normals), then the leaf is solid. If they point inwards,
+then the leaf is empty. This is easily proved using a cube. A cube could be
+a leaf in the BSP tree. The normals of the cube point outwards from the
+cube, therefore it is solid.
+
+You can construct your BSP such that any leaf with polygons is an empty
+leaf, and that any leaf without polygons is a solid BSP. This is the
+simplest way of doing it. It also seems to be the way Quake does it.
+However, you can get problems with this, if your input data model contains
+things like 2 polygons, back to back, with different planes, such as a wall,
+with a box attached to it. To handle that, you need to cut out the piece of
+polygon that is between the wall and the box.
+
+Planes of Connection
+
+This is an algorithm I've been thinking about lately. The idea is that we
+can use the leaves of a BSP to find the connecting planes, between space.
+Heres a diagram for you to consider:
+
+        | D                | E                  | F
+   S             S                    S            S
+        |                  |                    |
+                 1                    2
+  -   - |---------------------------------------| -   -         A
+        |                                       |
+        |                  |                    |
+        |                                       |
+   S    |        E         |         E          |   S
+        |                                       |
+     8  |                  |                    | 3
+        |                                       |
+  -  -  | -  -  -  -  -  - |--------------------|  -   -        B
+        |                  |        4
+        |                  |                    |
+        |                  |  5
+   S    |        U         |       S            |   S
+        |                  |
+     7  |                  |                    |
+        |                  |
+  -  -  |------------------| -  -  -  -  -  -  -  -  -          C
+
+        |        6         |                    |
+   S             S                 S                S
+        |                  |                    |
+
+In this diagram, infinite planes are marked with dashed lines (- - - -).
+Polygons are marked using solid lines (-----). Solid leaves are marked with
+an 'S'. Empty leaves are marked with an 'E'. Unknown leaves are marked with
+a 'U'. Planes are labelled with letters, polygons are labelled with numbers.
+
+If we wanted to flood some kind of information through the model, we can
+just calculate the planes of connection, and use them to propagate the
+medium throughout the model between leaves. In addition, because of the
+solidity information, we can work out where to stop flooding, and where to
+continue.
+
+Given a leaf, marked on the diagram as 'U', we want to find out which planes
+connect it to other leaves. If we then have that information, we can flood
+fille data throughout the model.
+
+        | D                | E                  | F
+   S             S                    S            S
+        |                  |                    |
+
+  -   - |---------------------------------------| -   -         A
+        |                                       |
+        |                  |                    |
+        |                                       |
+   S    |        E         |         E          |   S
+        |                                       |
+        |        1         |                    |   5
+        |                                       |
+  -  -  | -  -  -  -  -  - |--------------------|  -   -        B
+        |                  |
+        |                  |                    |
+        |                  |
+   S 4  |        U         |  2    S            |   S
+        |                  |
+        |                  |                    |
+        |                  |
+  -  -  |------------------| -  -  -  -  -  -  -  -  -          C
+                 3
+        |                  |                    |
+   S             S                 S                S
+        |                  |                    |
+
+The leaves are now marked with numbers. Leaves 1 - 4 are connected
+neighbours, leaf 5 is a rogue, put in there to show the theory. Lets build a
+table, with planes in the columns, and leaves in the rows. A '+' will mean
+that the leaf lies in the positive halfspace, a '-' will mean that the leaf
+lies in the negative halfspace:
+
+Leaf    | Plane
+        | A | B | C | D | E | F | Score
+--------+---+---+---+---+---+---+------
+   U    | + | - | + | + | + | + | N / A
+   1    | + | + | + | + | + | + | 5
+   2    | + | - | + | + | - | + | 5
+   3    | + | - | - | + | + | + | 5
+   4    | + | - | + | - | + | + | 5
+   5    | + | + | + | + | - | - | 3
+
+As you can see from the table, its neighbours will have the highest score,
+and its non-neighbours will have the lower scores. So, now we can easily
+find its neighbours. Also, its neighbours should all have the same score.
+Now, we have a problem. We need to work out what kind of solidity
+information to flood. We can find the connecting neighbours, but we can't
+select which neghbour to flood information from. And by examining the other
+leaves, no clear rule emerges.
+
+The solution is to "borrow" polygons from connecting leaves. We find
+polygons that lie on the plane of connection, and borrow these, to calculate
+the leaf type. Note that we need at least 2 polygons to calculate the leaf
+type.
+
+But how do we calculate the planes of connection? Lets repeat that last
+table, but instead of usings + and -, lets use 1 and 0 respectively:
+
+Leaf    | Plane
+        | A | B | C | D | E | F | Score
+--------+---+---+---+---+---+---+------
+   U    | 1 | 0 | 1 | 1 | 1 | 1 | N / A
+   1    | 1 | 1 | 1 | 1 | 1 | 1 | 5
+   2    | 1 | 0 | 1 | 1 | 0 | 1 | 5
+   3    | 1 | 0 | 0 | 1 | 1 | 1 | 5
+   4    | 1 | 0 | 1 | 0 | 1 | 1 | 5
+   5    | 1 | 1 | 1 | 1 | 0 | 0 | 3
+
+Can't see the connection yet? Well, lets XOR U with each bit code of 1-4:
+
+U = 101111
+1 = 111111
+2 = 101101
+3 = 100111
+4 = 101011
+
+U XOR 1 = 010000
+U XOR 2 = 000010
+U XOR 3 = 001000
+U XOR 4 = 000100
+
+Re-arranging back into columns for each plane ...
+
+Code | Plane
+     | A | B | C | D | E | F
+-----+---+---+---+---+---+---
+  1  | 0 | 1 | 0 | 0 | 0 | 0
+  2  | 0 | 0 | 0 | 0 | 1 | 0
+  3  | 0 | 0 | 1 | 0 | 0 | 0
+  4  | 0 | 0 | 0 | 1 | 0 | 0
+-----+---+---+---+---+---+---
+ OR  | 0 | 1 | 1 | 1 | 1 | 0
+
+Any plane that is a plane of connection has a 1. Not bad eh? It must be said
+that I haven't tested this theory extensively, nor have I implemented it yet
+(hell I only just worked it out), but it seems reasonable. It is a little
+complex (understatement!), so it will need some efficient coding behind it.
+Perhaps the biggest problem is that it will need a N * M table, where N is
+the number of leaves, and M is the number of planes. However that shouldn't
+be too much of a problem. Still a clever algorithm I think.
+
+Construction Summary
+
+In summary, the Solid BSP construction process is as follows:
+
+   * Build a list of all planes, and polygons in model
+   * For each BSP node:
+        o Select best unused plane from list
+             + If no planes left, construct leaf
+        o Partition polygons into two lists. If polygon lies on plane, place
+          polygon into front list
+        o Recur with two new lists
+   * Calculate leaf contents
+
+Collision Detection and Ray Stabbing
+
+As I mentioned earlier, the solid BSP tree lends itself well to performing
+tasks like ray stabbing and collision detection. Both algorithms are very
+similar.
+
+Collision Detection
+
+Working out if a given line intersects with a solid piece of space is a
+necessary technique for a lot of applications, for example Computer Games.
+Given a line, defined by two points, at t (time) = 0, and t = 1, ie the
+start and end points of our motion, we want to work out whether that line
+runs into a solid object, and if so, clip it to the intersection.
+
+Using our solidity information, we can easily check this. What we do is as
+follows. First, we classify both endpoints about the root plane. If they are
+both in front of the root plane, we go to the front sub-child, and continue.
+If they are both behind, we go to the back child, and continue. However, if
+they are on opposite sides, we have a potential intersection with a solid.
+So, we find the intersection point, and two other points, either side of the
+plane, to some small offset:
+
+                   x
+
+        -----------i------------
+
+                   x
+
+Where 'i' is the intersection, and 'x' are our two points. We will use one
+of these 2 points as the new endpoint. We then must work out what side of
+the plane the start point lies on. This is easy enough to work out if the
+start point does not lie on the plane. If it does lie on the plane, you need
+to use the backpoint. If the start point of the line lies in the front
+half-space of the plane, then we will adjust our end position to lie in the
+positive half-space of the plane. If the start point lies behind the plane,
+we adjust our end position to lie in the negative halfspace.
+
+What we do is recur with the line segments (start, intersection) and
+(intersection, end). If we find that either segment ends up in a solid leaf,
+then we set the end point to be the intersection, slightly offset into
+either the positive or negative halfspace. If both points are coincidant to
+the plane, we recur down both children. To offset into a half space, we just
+add some scalar multiplied by the normal of the plane.
+
+As thats not very easy to understand, perhaps some code is needed to
+demonstrate it. The following should help clarify things:
+
+Function ClipNode(VECTOR point start, VECTOR pointer end, BSPNODE pointer node)
+        While Node.Type == BSP_NODE
+                Dist1 = DotProduct(node.plane, start)
+                Dist2 = DotProduct(node.plane, end)
+
+                If both in front of plane
+                        node = node.front
+                Else If both behind plane
+                        node = node.back
+                Else
+                        Vector delta, mid, split, split2
+
+                        delta = end - start
+
+                        mid = Intersection(node.plane, start, end)
+                        split = mid + 5.0 * node.plane.normal
+                        split2 = mid - 5.0 * node.plane.normal
+
+                        If start in front of plane
+                                retcode = FALSE
+
+                                If ClipNode(start, mid, node.front)
+                                        end = split
+                                        retcode = TRUE
+                                End If
+
+                                If ClipNode(mid, end, node.back)
+                                        end = split
+                                        retcode = TRUE
+                                End If
+
+                                return retcode
+                        Else If start behind plane
+                                retcode = FALSE
+
+                                If ClipNode(start, mid, node.back)
+                                        end = split2
+                                        retcode = TRUE
+                                End If
+
+                                If ClipNode(mid, end, node.front)
+                                        end = split2
+                                        retcode = TRUE
+                                End If
+
+                                return retcode
+                        Else if coincident
+                                retcode = FALSE
+
+                                If ClipNode(start, end, node.front)
+                                        end = split
+                                        retcode = TRUE
+                                End If
+
+                                If ClipNode(start, end, node.back)
+                                        end = split2
+                                        retcode = TRUE
+                                End If
+
+                                return retcode
+                        End If
+                End If
+        End While
+
+        If node.type == SOLID_LEAF
+                return TRUE
+        Else
+                return FALSE
+End Function
+
+What we're doing is pushing a line down the BSP, to see where it ends up.
+Where we find that a line will end up in 2 different leaves, we break it,
+and push down the back segment, to see where that ends up. Note that we only
+push down the back segment, because we're only interested in testing if the
+end point needs clipping: we don't generally need to clip the start point,
+as the start point will generally be in a correct position. We also use a
+point which is slightly offset from the plane as the start of the new back
+segment, because sometimes the player can become locked inside of an empty
+leaf, doing this stops that.
+
+Ray Stabbing
+
+Ray stabbing works on a similar, but simplified manner. In ray stabbing, we
+only want to know if a line is occluded or not. To do so, we use the above
+algorithm, but modify it, such that we recur with both parts of the split
+line, testing them both for occlusion:
+
+Function RayOccluded(VECTOR point start, VECTOR pointer end, BSPNODE pointer node)
+        While Node.Type == BSP_NODE
+                Dist1 = DotProduct(node.plane, start)
+                Dist2 = DotProduct(node.plane, end)
+
+                If both in front of plane
+                        node = node.front
+                Else If both behind plane
+                        node = node.back
+                Else
+                        Vector mid
+
+                        mid = Intersection(node.plane, start, end)
+
+                        If dist1 > 0.0
+                                If RayOccluded(start, mid, node.front)
+                                        return TRUE
+
+                                If RayOccluded(mid, end, node.back)
+                                        return TRUE
+
+                                return FALSE
+                        Else
+                                If RayOccluded(start, mid, node.back)
+                                        return TRUE
+
+                                If RayOccluded(mid, end, node.front)
+                                        return TRUE
+
+                                return FALSE
+                        End If
+                End If
+        End While
+
+        If node.type == SOLID_LEAF
+                return TRUE
+        Else
+                return FALSE
+End Function
+
+This ray-stabbing code is very handy for making things like lightmaps. Using
+this, its very easy (and pretty quick) to stab a ray from a point on a
+surface, to a light source.
+
+----------------------------------------------------------------------------
+Tom Hammersley, tomh@globalnet.co.uk

@@ -1,0 +1,154 @@
+Dan's Raytracing Notes, #1
+
+This is the first in a series of a tutorial on ray tracing in an attempt to
+get traffic and interest in the subject flowing in the 3d programming echo.
+It is written for those with high-school level math. I'll probably include
+easier ways to do it in the future using linear algebra, but there are a
+lot of people out there like I was when I first started ray tracing who
+don't understand any of that stuff.
+
+Basic concepts: Ray tracing is where you build a virtual world out of
+"primitives", objects that can be easily represented mathematically, and
+find out what would be visible to an eye in that space by drawing rays out
+from the eye to see what they hit. It is also possible to go the other way,
+drawing rays from light sources back to the eye, but this has (so far) been
+impractical in practice, although it theoretically should generate better
+images.
+
+To draw the result of all of those rays, you figure that the eye is some
+distance in front of a screen, and that a ray goes through every pixel
+(dot) on the screen. You find out what objects that ray hits first, and
+color the dot the color of that object.
+
+To represent a ray, we've got an origin for it (the eye position), and a
+direction. For the notation that follows, I'll show that as "ray.origin"
+for the origin and "ray.direction" for the direction.
+
+For clarity, what we'll do is place the observer at (0,0,0), looking at a
+virtual screen along the Z axis. The distance of the screen from the
+observer is analagous to the lens length on a camera; if you have a lens
+length too short (like a wide-angle lens), you'll get "fisheye" looking
+images like you see from a wide angle lens, if the lens length is too long
+(like a zoom lens), you'll see no depth.
+
+The extreme of a lens too long is a 2d "orthographic" projection; all
+possible rays must be parallel, so the Z axis is thrown away.
+
+Anyway, for our first image, we'll take a sphere. Those of you who remember
+back to algebra remember that a circle was represented as:
+
+X^2 + Y^2 = radius^2
+
+Or, that all of the points on a circle were such that when plotted on a
+Cartesian plane the square of the X coordinate plus the square of the Y
+coordinate equaled the radius squared. Nothing new here thus far, and, as a
+matter of fact, you could implement a ray tracer in two dimensions like
+this:
+
+First off, we need to substitute something for the X and Y terms. Since we
+know we want to find how far from the ray origin the ray intersects the
+sphere, we need a distance term that we can solve for. For starters, we'll
+put the center of the sphere at the origin and put the ray elsewhere,
+simplifying the math a little bit:
+
+X = ray.origin.x + distance * ray.direction.x
+Y = ray.origin.y + distance * ray.origin.y
+
+radius^2 is something that the world designer gives us, but we know it's a
+constant, so now it's a matter of solving for the distance. From grade
+school, multiply everything out and make it completely incomprehensible:
+
+radius^2 =
+   ray.origin.x * ray.origin.x +
+   2 * ray.origin.x  * distance * ray.direction.x +
+   distance * ray.direction.x * distance * ray.direction.x +
+   ray.origin.y * ray.origin.y +
+   2 * ray.origin.y  * distance * ray.direction.y +
+   distance * ray.direction.y * distance * ray.direction.y
+
+Now, solve one side to zero and factor out all of the distances and it
+looks remarkably like something solvable using the quadratic equation:
+
+0 =
+   (ray.direction.x^2 + ray.direction.y^2) * distance^2 +
+   2 * (ray.origin.y * ray.direction.y *
+      ray.origin.x * ray.direction.x) * distance +
+   ray.origin.x * ray.origin.x +
+   ray.origin.y * ray.origin.y -
+   radius^2
+
+That is, there's a generic equation that gives us two answers for any
+equation that looks like:
+
+A * D^2 + B * D + C = 0
+
+Since we know the ray direction, the ray origin and the radius, those are
+all constants, so plugging those constants into this equation (If you need
+a reference, any algebra text should do):
+
+     - B + or - square root(B - 4 * A * C)
+D =    -----------------------------------
+                    2 * A
+
+Where:
+
+A = (ray.direction.x^2 + ray.direction.y^2)
+
+B = (ray.origin.y * ray.direction.y *
+      ray.origin.x * ray.direction.x)
+
+C = ray.origin.x * ray.origin.x +
+   ray.origin.y * ray.origin.y -
+   radius^2
+
+If A is zero, then the ray had no direction, so the equation won't solve
+correctly. If the term in the square root, "(B - 4 * A * C)", is negative,
+then there is no solution to the equation in real numbers and the ray never
+intersects the sphere. If everything works out hunky-dory, however, the ray
+intersects the sphere at one of the two points (see that "+ or -", do it
+both ways and that gives you both points).
+
+The equation for a sphere (rather than a circle) is:
+
+X^2 + Y^2 + Z^2 = radius^2
+
+Your homework for the next installment is to expand this puppy out to three
+dimensions, and write a program that puts the ray origin at (0,0,-400), a
+screen from (-160,-100,0) to (160,100,0), and a sphere at 0,0 with radius
+50, like so:
+
+lens_length = 400
+radius = 50
+
+FOR X = -160 TO 160
+   FOR Y = -100 TO 100
+      ray.origin.x = 0
+      ray.origin.y = 0
+      ray.origin.z = -lens_length
+
+      ray.direction.x = X
+      ray.direction.y = Y
+      ray.direction.z = lens_length
+
+      IF solve for the circle equation had a real answer THEN
+         PLOT X + 160, Y + 100 COLOR not black
+      ELSE
+         PLOT X + 160, Y + 100 COLOR black
+      ENDIF
+   END FOR
+END FOR
+
+This should fit on a 320 by 200 screen (okay, it's one over, so sue me),
+and when done properly will give you a filled circle half the height of the
+active screen centered in the screen.
+
+If you get really exotic, you might want to try moving the sphere around by
+giving it an origin and subtracting the origin from the initial ray origin
+before you check for an intersection.
+
+If I get any response from this, next time we'll see about adding a few
+more objects, and then going for shading and reflection.
+
+---------------------------------------------------------------------------
+This is part of the Graphics Without Greek collection in the home pages of
+Dan Lyke, reachable at danlyke@chattanooga.net

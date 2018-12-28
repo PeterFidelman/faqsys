@@ -1,0 +1,50 @@
+3DEnvMap algorithm
+
+First of all, I must warn you that this is not a thorough explanation. It
+just illustrates the basic idea behind 3DEnvMap's algorithm. The reader
+should be acquainted with a lot of 3D theory before reading this. To be
+exact, being able to code a 3D texture mapper is required. If you can't,
+don't ask me how. Read from the good books that are available, check out
+good Internet sites, meet other programmers in IRC, etc.
+
+To be honest, this algorithm's description came from IRC. I do not know the
+original inventor (although I'd really like to shake his hand). For those
+of you that haven't seen 3DEnvMap (shame - please do) this algorithm
+implements gouraud/phong shaded environment mapping in real time.
+
+   In plain texture mapping, you know that points A,B,C and D (that form a
+   polygon) have a one to one correspondence with texture map coordinates.
+For instance, point A after the transformation has a screen coordinate of
+(x,y) and a texture coordinate (tx,ty). Knowing the screen and the texture
+coordinates for all the points of a polygon, you interpolate the texture
+coordinates while filling it, thus producing a texture mapped image. To do
+environment mapping in approximately the same speed, you need a special
+texture map, and a fast way to find texture coordinates.
+
+The special texture map is made like this: Using a renderer, produce a ray
+traced image of a sphere reflecting everything around it. Use one of the
+nice maps that came with the renderer as the environemnt, or make one of
+your own. In 3DEnvMap, I use a map of a foggish - plasma'ed blue
+environment with one light source. After that, fill the rest of the map
+with black. This way you have an image consisting of a ball surrounded by
+total blackness. The ball is reflecting an environment, though (not the
+blackness).
+
+And now, here comes the idea: For each point in the polygon, compute the
+normal (usually as an average of the neighbouring polygons's normals), and
+use two of the three normal coordinates as an index into the special map
+prepared earlier. This is it! If you don't understand the previous phrase,
+read it again and again and believe it!
+
+For example, in the above image, the normal m on point B is computed as an
+average of the normals a,b and c. Say that this normal has normalized
+coordinates (mx, my, mz). To environment map, use two of these coordinates
+- I use (mx,my) - as texture coordinates in the special map!
+
+Now go try it. Remember, don't ask me anything else, or I'll be angry...
+Actually I 'm just too busy.
+---------------------------------------------------------------------------
+
+Email: ttsiod@softlab.ntua.gr
+
+Back to HomePage

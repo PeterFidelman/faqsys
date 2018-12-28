@@ -1,0 +1,200 @@
+Newsgroups: alt.fractals
+Path: unixg.ubc.ca!ubc-cs!news-server.csri.toronto.edu!utgpu!cs.utexas.edu!usc!rpi!usenet.coe.montana.edu!news.u.washington.edu!milton.u.washington.edu!jesjones
+From: jesjones@milton.u.washington.edu (Jesse Jones)
+Subject: Transforming Fractal Image
+Message-ID: <1992May3.161234.21102@u.washington.edu>
+Summary: Discusses eight different ways to transform a fractal image
+Keywords: Mandella Transform Convolution Evert Delta etc.
+Sender: news@u.washington.edu (USENET News System)
+Organization: University of Washington, Seattle
+Date: Sun, 3 May 1992 16:12:34 GMT
+Lines: 188
+ 
+ 
+                     Fractal Image Transforms 2.0
+                            by Jesse Jones
+ 
+ 
+ABOUT THIS FILE
+ 
+   This file discusses eight different ways to transform fractal images. For
+example the Sobel transform converts a fractal image into a fascinating pseudo 
+3D image. These transforms have all been implemented in a Mac program called
+Mandella.
+ 
+   The transforms all operate on an array containing the dwell values for the
+fractal. The transformed image is then displayed in a new window. Two of these
+transforms result in a full color image. The transforms I'll discuss are:
+convolution, Blur, Delta, Bands, Evert, Log, Full Color, and Color Sobel.
+Mandella also provides a 3D transform which I've described in a seperate
+article.
+ 
+ 
+CONVOLUTION
+ 
+   Convolution is a common image processing technique. In this method an array 
+is superimposed on a pixel and its neighbors. Each neighbor and the pixel 
+itself are multiplied by its entry in the array and then summed together to get
+a new value for the pixel. As an example the 3x3 array 
+      -1    -1    -1
+      -1     8    -1
+      -1    -1    -1
+will act as an edge detector: pixels that have neighbors with different count 
+values will be hilited. Pixels whose neighbors all equal its count value will
+be assigned a zero count value. These arrays are called kernels.
+ 
+   There are a few sticky points when using convolution. Namely how should
+negative count values be treated and what happens at the edges of the image?
+Mandella forces the new count values to be in the range 0..hiCount. To avoid
+the edge problem Mandella resizes the new window so that it is smaller then
+the original window. A 3x3 kernel results in a window that is two pixels
+smaller in the x and y directions. A 5x5 kernel results in a new window six
+pixels smaller.
+ 
+   Mandella comes with eight predefined kernels. An editor is built-in so that
+the user can change, delete, or add kernels. The kernels included are:
+ 
+Edges:
+   -1   -1   -1
+   -1    8   -1
+   -1   -1   -1
+   
+GradNW:
+   -2 -1  0
+   -1  0 +1
+    0 +1 +2
+ 
+GradW:
+    0 -1 -1  0  1  1  0
+   -1 -2 -2  0  2  2  1
+   -1 -2 -3  0  3  2  1
+   -1 -2 -3  0  3  2  1
+   -1 -2 -3  0  3  2  1
+   -1 -2 -2  0  2  2  1
+    0 -1 -1  0  1  1  0
+ 
+Hat:
+   0   0  -1   0   0
+   0  -1  -2  -1   0
+  -1  -2  17  -2  -1      
+   0  -1  -2  -1   0
+   0   0  -1   0   0
+ 
+Laplace:
+   -1 -1 -1 -1 -1
+   -1 -1 -1 -1 -1
+   -1 -1 25 -1 -1            
+   -1 -1 -1 -1 -1
+   -1 -1 -1 -1 -1
+ 
+Sharpen:
+   -1   -1   -1            Sharpen is pretty neat.
+   -1    9   -1
+   -1   -1   -1
+   
+Sobel:
+   -1   -2   -1            But Sobel is great. And yes, the two in the bottom
+    0    0    0            right corner is really a two.
+    1    2    2            
+ 
+BLUR
+ 
+   Blur is related to convolution. A kernel that consists of all ones is used.
+The resulting number is then divided by the size of the kernel. Mandella uses
+a 3x3 kernel so it divides the results by nine.
+ 
+DELTA
+ 
+   In this method a pixel is colored according to how many of its neighbors
+have count values different from the pixel. Since there are eight neighbors
+plus the center pixel this method only displays 9 colors. But with the right
+color selection it produces excellent results.
+ 
+BANDS
+ 
+   Here the modulus function is used to restrict the image to a user defined
+number of colors. The algorithm looks like this: 
+   offset := NoColors DIV bands;
+   index := count MOD bands;
+   color := FirstColor + index*offset;
+ 
+EVERT
+ 
+   This transform everts a circle. In other words it maps every point inside 
+the circle outside. Every point outside the circle is mapped inside. The
+equation w = 1/z (where w and z are complex) will evert the unit circle. To
+evert an arbitrary circle the equation w = R^2/(z - a) + a can be used. R is 
+the radius of the circle and a is its location. 
+   For best results the eversion should be done in reverse: if w represents a 
+point in the transformed image and z a point in the original image. Then for 
+every w find the corresponding pixel in the original image: z = R^2/(w - a) + 
+a. It is also neccesary to test z for large values. As w goes to a z will go to
+infinity.
+ 
+LOG
+ 
+   In this method we use Ln and the hiCount to smoothly shade the image. To 
+spice the image up we also use the pixels distance from the origin. This adds
+an interesting tiling effect. The algorithm looks like this: 
+      index := NoColors*Ln(count)/Ln(hiCount);
+      dist := (h*h + v*v) and 15;      (* just use lower 4 bits *)
+      index := index + dist;
+      
+FULL COLOR
+ 
+   This method provided an easy way for me to take advantage of the true-color 
+abilities of 32-Bit QuickDraw. I simply construct an expanded palette with 20
+times the number of colors by interpolating between the old colors. Then the
+transform maps counts into palette entries and outputs the color at that entry.
+The CountToEntry procedure is identical to the one used when drawing in 256
+colors. This winds up looking very nice on Macs with true-color video boards.
+      
+COLOR SOBEL
+ 
+   The Sobel transform is basicly a fancy edge detector. One of the convolution
+kernels is a simplified form of the real thing. The full Sobel transform uses
+two convolution kernels to produce a vector field. I again create a true-color
+image using the direction for the hue, the stength for the value, and the
+saturation fixed at 50000. The direction is ArcTan(Y/X) the strength is X*X +
+Y*Y. X and Y are derived from the below convolution kernels:
+ 
+            -1       0       1
+      X =   -2       0       2
+            -1       0       1
+            
+             1       2       1                  
+      Y =    0       0       0            
+            -1      -2      -1                
+ 
+ 
+REFRENCES
+ 
+   A good introduction to image processing and convolution is "Digital Image 
+Processing" by William Green ISBN 0-442-23052-4. Another source is 
+"Introduction to Image Processing" by Benjamin Dawson, March 1987 BYTE. A good
+text on complex math is "Complex Variables for Mathematics and Engineering" by 
+John Mathews ISBN 0-697-06764-5.
+ 
+ 
+CHANGE HISTORY
+ 
+Version 2.0
+   1) Changed formatting.
+   2) Added Full Color, Color Sobel, and Blur transforms.
+   3) Changed discussion of convolution.
+   4) Added several new convolution kernels.
+   5) Added references section.
+ 
+Version 1.1
+   1) Added Evert transform.
+   
+Version 1.0
+   1) First version uploaded (to CompuServe).
+   
+   
+ADDRESS
+ 
+   Jesse Jones          
+   Usenet: jesjones@milton.u.washington.edu
+   CServe: 73627,152
+ 

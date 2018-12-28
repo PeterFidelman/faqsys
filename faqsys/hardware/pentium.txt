@@ -1,0 +1,684 @@
+   (C)  Copyright    Christian Ludloff & c't 
+   (M)  07/1994      Ludwig-K hn-Straˆe 15 
+   (P)  01.03.1995   D-09123 CHEMNITZ, Germany 
+   (V)  2.5.2        voice  +49-(0)371-242091 
+   (?)  PENTIUM.LST  fax    +49-(0)371-242091 
+                     eMail  cl@box.in-chemnitz.de 
+                     eMail  cl@vgasoft.com (5/95) 
+                     Fido   2:2426/2240.14 
+ 
+   This file is mine. And remember: What's mine is mine! 
+ 
+ Please, send updates or corrections directly to me and do not modify this file 
+ yourself. I will mention your name at the end of the file when adding your new 
+ knowledge. That's the only way to fight against xxx versions.       Thank you! 
+ 
+ Sending me a fax is the fastest way for communication! If you call me, please, 
+ speak german or english and ask for Christian first!                Thank you! 
+ 
+ Don't worry about my written English  filled with errors. I only speak German, 
+ a little bit English and so Russian. Sorry!                         Thank you! 
+ 
+ ============================================================================== 
+ 
+ The new flags in the EFLAGS register 
+ ==================================== 
+ 
+ bit     description 
+ 
+ 21      CPUID instruction support flag 
+           If you can  use this bit (set/reset), then your CPU supports the new 
+           CPUID instruction. So you must not install a handler for the invalid 
+           opcode exception before you execute this new processor instruction. 
+ 20      VIP - Virtual Interrupt Pending flag 
+ 19      VIF - Virtual Interrupt Flag 
+           These two bits are used by the virtual interrupt feature of the V86- 
+           enhanced CPUs from Intel. You can use the CPUID instruction to check 
+           Your processor for the support of this feature. 
+           A description would not be useful for normal programmers and also it 
+           would blow up this file very much - sorry for my 'silence' about it! 
+ 
+ 
+ 
+ The new Control Register CR4 
+ ============================ 
+ 
+ This register contains some flag bits  to enable or disable  the new features. 
+ You will find it only on iPentium processors  and on some newer Intel CPUs. To 
+ find out, whether your CPU  contains the CR4 or not, you should  use the CPUID 
+ instruction (feature flags).  If your processor supports  the enhanced virtual 
+ mode, then it will support at least bit 0 and 1 of CR4 (as the newer i486 do). 
+ Don't try to set bits, which are not supported by your CR4 register! 
+ 
+ bit     description 
+ ------------------------------------------------------------------------------ 
+ 31..7   reserved 
+ 6       MCE - enable machine check exception (new; exception #12h) 
+           1=enable the machine check exception 
+           0=disable the machine check exception (like a i486) 
+ 5       reserved 
+ 4       PSE - enable page size extension 
+           1=enable the 4MB pages 
+           0=disable the 4MB pages (like a i486) 
+ 3       DE - enable debugging extension 
+           1=enable the I/O breakpoints (see DR7.R/W) and access to new DR4/DR5 
+           0=disable the I/O breakpoints (like a i486) 
+ 2       TSD - enable read time stamp counter instruction 
+           1=enable RDTSC instruction for CPL=0 only 
+           0=enable RDTSC instruction for all CPLs 
+ 1       PVI - enable protected mode virtual interrupts 
+           1=enable virtual interrupts in protected mode 
+           0=disable virtual interrupts in protected mode (like a i386) 
+ 0       VME - enable virtual mode virtual interrupts 
+           1=enable virtual interrupts in virtual mode 
+           0=disable virtual interrupts in virtual mode (like a i386) 
+ 
+ 
+ 
+ The new DR4 Debug Mode Control Register 
+ ======================================= 
+ 
+ On CPUs before the iPentium the DR4 and DR5 register had the same value as the 
+ DR6 and DR7 registers. On the iPentium the DR4 is the Debug Mode Control Regi- 
+ ster. It is used to switch four pins to two external pins. The default mode is 
+ monitoring the performance counters after a reset.  You have to set CR4.DE be- 
+ fore you can use the new DR4 and DR5 registers. 
+ 
+ bit     description 
+ ------------------------------------------------------------------------------ 
+ 31..7   reserved 
+ 2       PB1 (performance monitoring or breakpoint monitoring, see MSR #11h.25) 
+           1=pin PM1/BP1 monitors breakpoint #1 matches 
+           0=pin PM1/BP1 monitors performance monitoring counter #1 
+ 1       PB0 (performance monitoring or breakpoint monitoring, see MSR #11h.9) 
+           1=pin PM0/BP0 monitors breakpoint #0 matches 
+           0=pin PM0/BP0 monitors performance monitoring counter #0 
+ 0       reserved 
+ 
+ 
+ 
+ The new R/W-bits in the Debug Register DR7 
+ ========================================== 
+ 
+ R/W=1-0 - set a breakpoint for I/O accesses 
+ (new; but if CR4.DE=0, then reserved like on i386) 
+ 
+ 
+ 
+ The new implemented model specific registers MSR #00h-13h 
+ ========================================================= 
+ 
+ Only the iPentium processor contains these new registers. They are 64 bit wide 
+ and you must use EDX:EAX to handle them.  You will find some MSRs on the newer 
+ IBM 386/486SLC processors too. 
+ Here Intel  implemented the  Machine Check Exception Registers,  the new added 
+ Test Registers (old TR0-7 don't exist any longer!), the Time Stamp Counter and 
+ the two Performance Monitoring Counters #0 and #1 with the Counter Control and 
+ Event Selection Register. 
+ 
+ MSR     description 
+ ------------------------------------------------------------------------------ 
+ 00h     MCA - machine check exception address register (read only) 
+           This register contains the physical address  after a data parity er- 
+           ror occured on the CPU bus.  This may end up in a  machine check ex- 
+           ception (#12h), when you enable it via CR4.MCE. 
+         bit63..0  ADDRESS (64 bit wide) 
+ ------------------------------------------------------------------------------ 
+ 01h     MCT - machine check exception type register (read only) 
+           Describes the type of the bus cycle if a machine check exception oc- 
+           cured on your processor's bus. 
+         bit63..6  reserved 
+         bit5      THERR       (1=thermal error,     0=no thermal error   ) 
+                     On the future iPentium overdrive processor  Intel will add 
+                     the 'FanFail' pin. This pin isn't a real pin, but it's the 
+                     direct connection from the processor core to the overdrive 
+                     cooling fan at the package. If the cooling fan don't works 
+                     correct, then it can tell the processor about that via the 
+                     new pin. Any software can get the fan state from this bit, 
+                     because it will be 'connected' directly to the new pin and 
+                     the CPU will slow down automatically to save power. 
+         bit4      LOCK-state  (1=LOCK active,       0=LOCK inactive      ) 
+         bit3      M/IO-state  (1=memory access,     0=I/O access         ) 
+         bit2      D/C-state   (1=data access,       0=code access        ) 
+         bit1      W/R-state   (1=write,             0=read               ) 
+         bit0      CHK-state   (1=MSR #00/01h valid, 0=MSR #00/01h invalid) 
+ ------------------------------------------------------------------------------ 
+ 02h     TR1 - parity reversal test register ('write only') 
+         bit63..14 reserved 
+         bit13     MC   microcode (reverse parity on read) 
+         bit12     DTD  data TLB data 
+         bit11     DTT  data TLB tag 
+         bit10     DD   data cache data (use byte writes for individual access) 
+         bit9      DT   data cache tag 
+         bit8      ITD  code TLB data 
+         bit7      ITT  code TLB tag 
+         bit6      ID3  code cache data odd bits (255,253..131,129) 
+         bit5      ID2  code cache data even bits (254,252..130,128) 
+         bit4      ID1  code cache data odd bits (127,125..3,1) 
+         bit3      ID0  code cache data even bits (126,124..2,0) 
+         bit2      IT   code (instruction) cache tag 
+         bit1      NS   no shutdown 
+                          1=assert IERR# only on parity error 
+                          0=assert IERR# and shutdown on parity error 
+         bit0      PES  parity error summary (read&write, set on any par. err.) 
+           Writing a one  into bits12..2  reverses the sense of  the parity ge- 
+           neration for any write  into the corresponding array (for normal and 
+           for testability accesses).  For the microcode bad parity may be for- 
+           ced on a read by setting TR1.MC to one. 
+ ------------------------------------------------------------------------------ 
+ 03h     reserved and not implemented by Intel (don't try to read it) 
+ ------------------------------------------------------------------------------ 
+ 04h     TR2 - instruction cache end bit test register (read and write) 
+         bit63..4  reserved 
+         bit3..0   END BITS 
+                     These bits indicate  instruction boundaries.  If the given 
+                     byte is the last byte in an instruction, the corresponding 
+                     end bit is set to one.  This mechanism  aids the decode of 
+                     two variable length  instructions  per clock  by providing 
+                     information on where the boundary between instructions is. 
+ ------------------------------------------------------------------------------ 
+ 05h     TR3 - cache data test register (read and write) 
+         bit63..32 reserved 
+         bit31..0  DATA 
+                     This is  where the data is held on its way into  or out of 
+                     the internal L1-cache. 
+ ------------------------------------------------------------------------------ 
+ 06h     TR4 - cache tag test register (read and write) 
+         bit63..32 reserved 
+         bit31..8  TAG 
+         bit7..3   reserved 
+         bit2      LRU 
+                     1=points to way #1          0=points to way #0 
+         bit1..0   VALID 
+                   if TR5.CD=0 (code cache) 
+                     x-1=cache line valid        x-0=cache line invalid 
+                   if TR5.CD=1 (data cache) 
+                     1-1=cache line in M state   1-0=cache line in E state 
+                     0-1=cache line in S state   0-0=cache line in I state 
+ ------------------------------------------------------------------------------ 
+ 07h     TR5 - cache control test register ('write only') 
+         bit63..15 reserved 
+         bit14     WB - selects writeback or writethrough 
+                     1=writeback (for that particular line; data cache only) 
+                     0=writethrough (for that particular line; both caches) 
+         bit13     CD - selects code or data cache 
+                     1=data cache                0=code cache 
+         bit12     ENTRY - selects one of the two ways in the cache 
+                     1=way #1                    0=way #0 
+         bit11..5  SET 
+                     0..127h - select one of the 128 sets 
+         bit4..2   BUFFER 
+                     0..7h - select one of the 8 portions of a cache line to be 
+                             visible through TR3 
+         bit1..0   CONTROL - select the operation 
+                     1-1=flush                   1-0=testability read 
+                     0-1=testability write       0-0=normal operation 
+ ------------------------------------------------------------------------------ 
+ 08h     TR6 - TLB command test register (read and write) 
+         bit63..32 reserved 
+         bit31..12 LINEAR ADDRESS 
+         bit11     V - valid state (valid or invalid TLB entry) 
+                     1=valid TLB-entry           0=invalid TLB-entry 
+         bit10     D - dirty state (write access made to page; data TLB only) 
+                     1=write access was made     0=write access was not made 
+         bit9      U - user state (privilege level access allowed) 
+                     1=CPL=0                     0=CPL=0..3 
+         bit8      W - writeable state (writes allowed; data TLB only) 
+                     1=allows writes             0=no writes, read only 
+         bit7..3   reserved 
+         bit2      PS - selects the page size (data TLB only) 
+                     1=4MB pages                 0=4KB pages 
+         bit1      CD - selects code or data TLB 
+                     1=data TLB                  0=code TLB 
+         bit0      OP - selects the operation 
+                     1=TLB read                  0=TLB write 
+ ------------------------------------------------------------------------------ 
+ 09h     TR7 - TLB data test register (read and write) 
+         bit63..32 reserved 
+         bit31..12 PHYSICAL ADDRESS 
+         bit11     PCD - page level cache disable bit (paging attribute PCD) 
+         bit10     PWT - page level write through bit (paging attribute PWT) 
+         bit9      L2 \ 
+         bit8      L1  > three LRU bits (entry to be replaced) 
+         bit7      L0 / 
+         bit6..5   reserved 
+         bit4      H - hit indicator (set to 1 during testability writes) 
+                     1=input linear address matches a valid entry 
+                     0=input linear address don't matches a valid entry 
+         bit3..2   ENTRY - select one of the four ways 
+                     testability write -> way to write 
+                     testability read  -> way that resulted in a read hit 
+         bit1..0   reserved 
+ ------------------------------------------------------------------------------ 
+ 0Ah     reserved and not implemented by Intel (don't try to read it) 
+ ------------------------------------------------------------------------------ 
+ 0Bh     TR9 - BTB tag test register (read and write) 
+         bit63..32 reserved 
+         bit31..6  TAG ADDRESS 
+         bit5..2   reserved 
+         bit1..0   HISTORY 
+ ------------------------------------------------------------------------------ 
+ 0Ch     TR10 - BTB target test register (read and write) 
+         bit63..32 reserved 
+         bit31..0  TARGET ADDRESS 
+ ------------------------------------------------------------------------------ 
+ 0Dh     TR11 - BTB control test register (read and write) 
+         bit63..12 reserved 
+         bit11..6  SET 
+                     0..63h - select one of the 64 sets to access 
+         bit5..4   reserved 
+         bit3..2   ENTRY - select a way 
+                     0..3h - select one of the four ways within the set 
+         bit1..0   CONTROL - select the operation 
+                     1-1=flush                   1-0=testability read 
+                     0-1=testability write       0-0=normal operation 
+ ------------------------------------------------------------------------------ 
+ 0Eh     TR12 - new feature control register ('write only') 
+         bit63..10 ?    reserved 
+         bit9      ITR  interrupt priority 
+                          1=enable I/O instruction restart feature  for the SMM 
+                            and change the interrupt priority 
+                          0=disable I/O instruction restart feature for the SMM 
+                            and use the standard interrupt priority 
+                        See Pentium Family User's Manual  volume #1 (data book) 
+                        table 19-2 for some details.  This should  be supported 
+                        only on the 90 or the 100 MHz models with the new added 
+                        I/O instruction restart feature for the SMM (system ma- 
+                        nagement mode). 
+         bit8      fTR  fast tracing (see TR12.TR too) 
+                          1=CPU generates fast branch-trace-message bus-cycles 
+                          0=CPU don't generates fast branch-trace-message bus- 
+                            cycles 
+                        The fast tracing feature should exist only on such Pen- 
+                        tium processors working with different ex- and internal 
+                        speeds (like the 90 and 100 MHz model). So the new fast 
+                        messages produce only the second bus-cycle. 
+         bit7..6   ?    unknown (but used!) 
+         bit5..4   ?    unknown 
+         bit3      CI   cache inhibit 
+                          1=internal L1-cache disabled (L2-cache unchanged) 
+                          0=internal L1-cache enabled (L2-cache unchanged) 
+         bit2      SE   single pipe execution 
+                          1=v-pipeline disabled and not used 
+                          0=both pipelines enabled and used 
+         bit1      TR   tracing 
+                          1=CPU generates branch-trace-message bus-cycles for 
+                            the external execution control 
+                          0=CPU don't generates the branch-trace-message bus- 
+                            cycles 
+         bit0      NBP  no branch prediction 
+                          1=BTB not used (then a move to CR3 disables BTB use!) 
+                          0=BTB used to predict branches 
+ ------------------------------------------------------------------------------ 
+ 0Fh     reserved and not implemented by Intel (don't try to read it) 
+ ------------------------------------------------------------------------------ 
+ 10h     time stamp counter (read and write) 
+           This counter counts the internal CPU clock cycles since the last re- 
+           set. It has a capacity  of about 5850 years  when you have a 100 MHz 
+           processor. You can read the value via the RDTSC / RDMSR instruction. 
+         bit63..0  time stamp counter value (64 bit wide, read/write) 
+ ------------------------------------------------------------------------------ 
+ 11h     counter event selection and control register (read and write) 
+           This register controls the two internal counters #0 and #1. They can 
+           be programmed to count about 40 different events. 
+         bit63..32 reserved (for two more counters in future models?) 
+         bit31..26 reserved 
+         bit25     external pin PM1 selection 
+                     1=pin shows counter overflows 
+                     0=pin shows counter increments 
+         bit24     counter type for counter #1 
+                     1=count clock cycles only 
+                     0=count events 
+         bit23     enable counting in CPL=3 for counter #1 
+                     1=enable counting when CPL=3 ('count user software') 
+                     0=disable counting when CPL=3 
+         bit22     enable couning in CPL=2..0 for counter #1 
+                     1=enable counting when CPL=2..0 ('count system overhead') 
+                     0=disable counting when CPL=2..0 
+         bit21..16 event type to count with counter #1 (see list below!) 
+         bit15..10 reserved 
+         bit 9     external pin PM0 selection 
+                     1=pin shows counter overflows 
+                     0=pin shows counter increments 
+         bit8      counter type for counter #0 
+                     1=count clock cycles only 
+                     0=count events 
+         bit7      enable counting in CPL=3 for counter #0 
+                     1=enable counting when CPL=3 ('count user software') 
+                     0=disable counting when CPL=3 
+         bit6      enable counting in CPL=2..0 for counter #0 
+                     1=enable counting when CPL=2..0 ('count system overhead') 
+                     0=disable counting when CPL=2..0 
+         bit5..0   event type to count with counter #0 (see list below!) 
+ ------------------------------------------------------------------------------ 
+ 12h     counter #0 (read and write) 
+         bit63..40 reserved 
+         bit39..0  counter #0 value (40 bit wide) 
+ ------------------------------------------------------------------------------ 
+ 13h     counter #1 (read and write) 
+         bit63..40 reserved 
+         bit39..0  counter #1 value (40 bit wide) 
+ ------------------------------------------------------------------------------ 
+ >13h    reserved and not implemented by Intel (don't try to read them) 
+ ============================================================================== 
+ 1000h   processor operation register (IBM 386/486SLC only) 
+         bit63..19 reserved 
+         bit18     low power PLA mode (IBM 486SLC only?) 
+                     1=power down additional dynamic parts during halt-state 
+                     0=don't power down these parts during low-power halt-state 
+         bit17     factory read testing (IBM 486SLC only?) 
+                     1=force all reads from ext. memory, even if cache is on 
+                     0=don't force all reads from external memory 
+         bit16     factory internal cache parity testing (IBM 486SLC only?) 
+                     1=use odd parity (generates a cache parity error) 
+                     0=use even parity (normal operation) 
+         bit15     enable cacheability of floating point operand reads 
+                     1=boosts performance, if an external Cyrix FPU is used 
+                     0=normal operation (if an external Intel FPU is used!!!) 
+         bit14     switch the ERROR input line... 
+                     1=...to a hidden memory address strobe output line 
+                       You can set this bit only at the first WRMSR after a CPU 
+                       reset. Further attempts at changing the bit are ignored! 
+                     0=...to the ERROR input pin to Intel compatible ERROR 
+         bit13     low power halt mode (HLT instruction: stops internal clock) 
+                     1=enable low power halt mode 
+                     0=disable low power halt mode 
+         bit12     wait for READY after output 
+                     1=the processor waits until READY is active after all out- 
+                       put instructions, before executing the next instruction 
+                     0=don't wait for READY 
+         bit11     cache reload status (set, when internal cache reload occurs) 
+         bit10     internal L1-cache enable set source 
+                     1=use MSR #1001h for the limits set 
+                       You can set this bit only at the first WRMSR after a CPU 
+                       reset. Further attempts at changing the bit are ignored! 
+                     0=use external hardware line input 
+         bit9      disable cache lock mode 
+                     1=allows the CPU to recognize the locked read-modify-write 
+                       cycle, but does not cache the line 
+                     0=normal operation 
+         bit8      reserved for unknown function or unused 
+         bit7      enable internal L1-cache 
+                     1=enable internal L1-cache 
+                     0=disable internal L1-cache 
+         bit6      disable caching for E0000h to E0FFFh (4K) 
+                     1=disable caching (if Double Byte Character Support used) 
+                     0=enable caching (if DBCS not used on japanes systems) 
+         bit5      enable power interrupt PWI 
+                     1=enable power interrupt PWI 
+                     0=disable power interrupt PWI 
+         bit4      enable flush snooping 
+                     1=enable flush snooping (can be used, if bit3=0) 
+                     0=disable flush snooping 
+         bit3      enable snoop input 
+                     1=enable snoop input 
+                     0=disable snoop input 
+         bit2      enable A20 mask 
+                     1=line A20 disabled, unless paging is active (see CR0.PG) 
+                     0=external control or entire address range is accessable 
+         bit1      enable cache parity 
+                     1=if a parity error occurs,  then the internal L1-cache is 
+                       flushed, disabled (bit7=0), the flag is set (bit0=1) and 
+                       cache parity is disabled (bit1=0); NMI handler is called 
+                     0=disable cache parity 
+         bit0      parity error occured 
+                     1=parity error occured (even, if bit1=1 -> no action) 
+                     0=no parity error occured (set bit0=0 to clear this flag) 
+ ------------------------------------------------------------------------------ 
+ 1001h   cache region control register (IBM 386/486SLC only) 
+         bit63-40  reserved 
+         bit39-32  extended memory cache limit 
+                     number of 64K blocks starting at the 1M boundary, that can 
+                     be cached (so 0Fh means 15MB are cacheable...) 
+         bit31-16  read only cache blocks 
+                     each bit represents a 64K region in the 1st MB, that has a 
+                     ROM memory (bit31=1 -> ROM at F000h...), a write into area 
+                     marked as ROM will not be updated in cache memory 
+         bit15-0   first 1MB cacheable 
+                     each bit represents a 64K region in the first MB, that can 
+                     be cached (bit15=1 -> cache F000h ... bit0=1 -> cache 0h) 
+ ------------------------------------------------------------------------------ 
+ 1002h   processor operation register 2 (IBM 486SLC2 only) 
+         bit63-30  reserved 
+         bit29     enable external dynamic frequency shift 
+                     1=enable external dynamic frequency shift 
+                     0=disable external dynamic frequency shift 
+         bit28     dynamic frequency shift ready 
+                     1=CPU is ready for the shift (requested by hardware or by 
+                       setting bit27=1) -> clock can be changed 
+                     0=CPU is not ready for the shift 
+         bit27     dynamic frequency shift request 
+                     1=request the CPU to prepare for a clock input frq. change 
+                     0=normal operation 
+         bit26-24  clock mode 
+                     000=divide incoming clock by 2 (same as i386SX) 
+                     011=use the incoming clock; make no divide; used for doub- 
+                         ling the internal CPU speed 
+         bit23-0   reserved 
+ ------------------------------------------------------------------------------ 
+ 
+ Some MSRs should exist on every >386 CPU. They are used by the vendor during a 
+ test at the factory. I wish You a happy searching. But if You find one, You're 
+ not able to use it, before You know it's structure. Send me the no., please! 
+ 
+ 
+ The events for the two counters #0 and #1 
+ ========================================= 
+ 
+ bits    no   description                                 counts events/clocks? 
+ ------------------------------------------------------------------------------ 
+ 000000  00h  data reads                                             x 
+ 000001  01h  data writes                                            x 
+ 000010  02h  data TLB misses                                        x 
+ 000011  03h  data read misses                                       x 
+ 000100  04h  data write misses                                      x 
+ 000101  05h  writes (hits) to M or E state lines                    x 
+ 000110  06h  data cache lines written back                          x 
+ 000111  07h  external snoops                                        x 
+ 001000  08h  data cache snoop hits                                  x 
+ 001001  09h  memory accesses in both pipes                          x 
+ 001010  0Ah  bank conflicts                                         x 
+ 001011  0Bh  misaligned data memory references                      x 
+ 001100  0Ch  code reads                                             x 
+ 001101  0Dh  code TLB misses                                        x 
+ 001110  0Eh  code cache misses                                      x 
+ 001111  0Fh  any segment register loaded                            x 
+ 010000  10h  segment descriptor cache accesses                      x 
+ 010001  11h  segment descriptor cache hits                          x 
+ 010010  12h  branches                                               x 
+ 010011  13h  BTB hits                                               x 
+ 010100  14h  taken branches or BTB hits                             x 
+ 010101  15h  pipeline flushes                                       x 
+ 010110  16h  instructions executed in both pipes                    x 
+ 010111  17h  instructions executed in the v-pipe                    x 
+ 011000  18h  clocks while bus cycle in progress (bus utilization)        x 
+ 011001  19h  pipe stalled by full write buffers (writes backup)          x 
+ 011010  1Ah  pipe stalled by waiting for data memory reads               x 
+ 011011  1Bh  pipe stalled by writes to M or E lines                      x 
+ 011100  1Ch  locked bus cycles                                      x 
+ 011101  1Dh  I/O read or write cycles                               x 
+ 011110  1Eh  non-cacheable memory references                        x 
+ 011111  1Fh  pipeline stalled by address generation interlock            x 
+ 100000  20h  unknown, but counts 
+ 100001  21h  unknown, but counts 
+ 100010  22h  floating-point operations                              x 
+ 100011  23h  breakpoint matches on DR0 register                     x 
+ 100100  24h  breakpoint matches on DR1 register                     x 
+ 100101  25h  breakpoint matches on DR2 register                     x 
+ 100110  26h  breakpoint matches on DR3 register                     x 
+ 100111  27h  hardware interrupts                                    x 
+ 101000  28h  data reads or data writes                              x 
+ 101001  29h  data read misses or data write misses                  x 
+    2Ah..3Fh  reserved and unused (no counting) 
+ 
+ 
+ 
+ The new instructions 
+ ==================== 
+ 
+ i486:    The newer processors with "&" printed on the package will support the 
+          CPUID-flag in EFLAGS, the CPUID instruction, the CR4 register bits1/0 
+          and instructions for access to the CR4 register, the enhanced virtual 
+          mode, the system management mode SMM and the RSM instruction. The new 
+          i486DX2WB processor supports the 4MB-pages too. If this CPU runs with 
+          writeback mode, then the CPUID value is '0470'. If it is running with 
+          writethrough mode, then You receive the value '0436'.  The real mask- 
+          revision (stepping) You will get only after the processor reset! 
+ Pentium: The iPentium processors support all the news listed above and the new 
+          instructions listed below. 
+ 
+ name    opcodes   description 
+ ------------------------------------------------------------------------------ 
+ CPUID   0F A2     CPU identification 
+                   in:   EAX=0         get max. identification level and vendor 
+                   out:  EAX=1         max. identification level is 1 now 
+                         EBX-ECX-EDX   vendor identification 
+                           'GenuineIntel' - Intel i486 or iPentium processor 
+                           'UMC UMC UMC ' - UMC U5S or U5D processor 
+                   in:   EAX=1         get chip type and the supported features 
+                   out:  EAX=0:TFMS    CPU type (type, family, model, stepping) 
+                           type        The type is encoded in the bits13/12. 
+                                       00=1st dual iPentium CPU (90 or 100 MHz) 
+                                       01=future iPentium overdrive CPU 
+                                       10=2nd dual iPentium CPU (90 or 100 MHz) 
+                                       11=reserved 
+                           family      4=i486, 5=iPentium, 6=iP6? 
+                           model       i486:     1=DX, 2=SX, 3=DX2, 
+                                                 5=SX2, 7=DX2WB, 8=DX4 
+                                       UMC:      1=U5D, 2=U5S 
+                                       iPentium: 1=5V-60/66MHz, 2=3V-90/100MHz 
+                           stepping    1=A-mask, 2=B-mask, 3=C-mask... 
+                           comment     iPentium without fDIVbug since D-mask or 
+                                       code 'SX9xx' printed on the package! 
+                         EDX=flags     supported features 
+                           bit31..9    reserved (=0) 
+                           bit8=1      CMPXCHG8B instruction supported 
+                           bit7=1      machine check exception supported 
+                           bit6=0      reserved and unused 
+                           bit5=1      iPentium-style MSRs supported 
+                           bit4=1      time stamp counter TSC supported 
+                           bit3=1      page size extensions supported 
+                           bit2=1      I/O breakpoints supported 
+                           bit1=1      enhanced virtual 8086 mode supported 
+                           bit0=1      CPU contains a floating-point unit (FPU) 
+                   info: can be used in all CPLs, serializes the pipelines 
+ ------------------------------------------------------------------------------ 
+ RDMSR   0F 32     read a model specific register value 
+                   in:   ECX      number of the MSR (0..13h on the iPentium) 
+                   out:  EDX:EAX  value of the MSR (64 bit wide) 
+                   info: instruction should be useable in all CPLs 
+ ------------------------------------------------------------------------------ 
+ WRMSR   0F 30     write a value to a model specific register 
+                   in:   ECX      number of the MSR (0..13h on the iPentium) 
+                         EDX:EAX  value (64 bit wide) 
+                   info: instruction can only be used when CPL=0 
+ ------------------------------------------------------------------------------ 
+ RDTSC   0F 31     read time stamp counter value 
+                   out:  EDX:EAX  time stamp counter value (64 bit wide) 
+                   info: instruction can be disabled for CPL=1..3 via CR4.TSD 
+ ------------------------------------------------------------------------------ 
+ CMPXCH8B      0F C7      compare & exchange 64 bits, similar to CMPXCHG 
+ RSM           0F AA      resume from system management mode (only in SMM!) 
+ MOV EAX,CR4   0F 20 E0   read the CR4 register value 
+ MOV CR4,EAX   0F 22 E0   write a value to the CR4 register 
+ 
+ The MOV EAX,TRx and MOV TRx,EAX instructions are not longer supported! 
+ 
+ 
+ 
+ The RESET-EDX-CPUID-method 
+ ========================== 
+ 
+ All the >i386 processors will show their CPUID value after the processor reset 
+ in the EDX register. Sometimes the value is stored in the high part (so on the 
+ older i486 models and the AMD clones or so - those CPUs don't support the real 
+ CPUID instruction) and sometimes it is stored in the low part (mostly on newer 
+ i486 and the iPentium) - but I'm not 100% sure about the system. 
+ You can get access to the EDX-after-reset-value via generating a processor re- 
+ set using the triple-fault-method or the keyboard-controller-reset-method. The 
+ reset test will only be useable when running under real mode! 
+ On the iPentium processor there are two different resets: the standard and the 
+ fast reset (only 2 clock cycles, without erasing caches...). I always received 
+ a hang-up on the iPentium-60 I checked my reset-software on. But why? 
+ 
+ Please, remember, that this reset test will not work with all BIOS versions!!! 
+ 
+ values after a processor reset 
+ ------------------------------------------------------------------------------ 
+ EAX  processor is okay, if zero (if not, then contact me and the vendor) 
+ EDX  value like the CPUID instruction xFMS value (in the EDX low or high part) 
+   family     23=i386SX, 03=i386DX, 43=i386SL? (uses the x & the F!) 
+              04=i486, 05=iPentium, 06=iP6? 
+   model      0=older CPU with no model (but maybe the M & the S for stepping!) 
+              i486:     1=DX, 2=SX, 3=DX2, 5=SX2, 7=DX2WB, 8=DX4 
+              iPentium: 1=5V-60/66 MHz, 2=3V-90/100 MHz 
+   stepping   1=A-mask, 2=B-mask, 3=C-mask... 
+ 
+ 
+ 
+ Used 'short-cuts' 
+ ================= 
+ 
+ i386    Intel 80386 processor (i386SX, i386DX) 
+ i486    Intel 80486 processor (i486SX, i486SX2, i486DX, i486DX2(WB), i486DX4) 
+ 
+ CPL     actual Code Privilege Level (0..2=system, 3=user) 
+         When running under real mode you are at CPL=0. If you use a memory ma- 
+         nager like EMM386, WIN/3, QEMM or 386MAX,  then the manager is running 
+         at CPL=0 and your DOS-session/-box runs with CPL=3. 
+ 
+ CRx     Control Register x 
+ DRx     Debug Register x 
+ TRx     Test Register x 
+ 
+ MSR     Model Specific Register (64 bit wide) 
+ TSC     Time Stamp Counter (64 bit wide) 
+ 
+ TLB     Translation Lookaside Buffer (>i486) 
+ BTB     Branch Target Buffer (>iPentium) 
+ 
+ 
+ 
+ Used sources 
+ ============ 
+ 
+ Pentium Family User's Manual vol.#1, Intel 1994, ISBN 1-55512-225-6 
+ Pentium Family User's Manual vol.#2, Intel 1994, ISBN 1-55512-226-4 
+ Pentium Family User's Manual vol.#3, Intel 1994, ISBN 1-55512-227-2 
+ Optimizations for Intel's 32-Bit Processors, Intel, order number 2411799-001 
+ ------------------------------------------------------------------------------ 
+ Hans-Peter Messmer, Pentium, Addison-Wesley 1994, ISBN 3-89319-630-7 
+ Hans-Peter Messmer, PC-Hardwarebuch, Addison-Wesley 1995, ISBN 3-89319-710-9 
+ Ross P. Nelson, 80386/486, Microsoft Press, ISBN 3-86063-200-0 
+ A. Schulman, Undocumented DOS 2nd ed., Addison-Wesley 1994, ISBN 0-201-63287-X 
+ Frank van Gilluwe, Undocumented PC, Addison-Wesley 1994, ISBN 0-201-62277-7 
+ ------------------------------------------------------------------------------ 
+ Mike Schmit, Optimizing Pentium Code, Dr. Dobbs Journal 1/94 p.40 
+ Terje Mathisen, Pentium Secrets, BYTE 7/94 p.191 
+ Georg Schnurer, Noch'n Gedicht, c't 9/94 p.27             - about the UMC U5S 
+ Christian Ludloff, Zwischen den Zeilen, c't 11/94 p.266   - about the iPentium 
+ Andreas Stiller, Schwindel entlarvt, c't 12/94 p.62       - some CPUID models 
+ Christian Ludloff, Wundersame Wandlung, c't 02/95 p.242   - about the iPentium 
+ Andreas Stiller, Intels Antwort, c't 03/95 p.66           - some CPUID models 
+ ------------------------------------------------------------------------------ 
+ software       package                           thanks for 
+ INFO.EXE       SimCity2000 game                  CPUID 
+ MFT.EXE        QEMM v7.04 memory manager         CPUID, Performance Monitoring 
+ QEMM.SYS       QEMM v7.04 memory manager         CR4use, eV86, enabled WRMSR 
+ TASM 3.2       Borland Pascal 7.0 Professional   debugging 
+ TP 7.0         Borland Pascal 7.0 Professional   making 'DB 66h' 32bit code 
+ ------------------------------------------------------------------------------ 
+ Thanks to c't magazine author Peter Siering for my 1st article in 11/94. 
+ Thanks to c't magazine author Andreas Stiller for testing all CPUID 'models'. 
+ Thanks to c't magazine author Georg Schnurer for testing and his knowledge. 
+ Thanks to Thomas M nkemeier and his VGA-COPY/386 with my knowledge added in. 
+ Thanks to Harald Feldmann from the Netherlands for knowledge/letters/faxes. 
+ Thanks to Ralf Brown for adding some knowledge to his DOS-INT-database. 
+ Thanks to Peter Fr hauf, the CBF-iPentium-60 and all the testers. 
+ ------------------------------------------------------------------------------ 
+ Trademarks are the property of their respective owners. The file may be copied 
+ and distributed freely as long  as it is distributed in its entirety and it is 
+ not distributed for profit. I don't guarantee anything.           End of file! 
+ ------------------------------------------------------------------------------ 
+## CrossPoint v3.02 ## 
+ 

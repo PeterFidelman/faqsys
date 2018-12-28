@@ -1,0 +1,286 @@
+                  -----===== POLYGON CLIPPING ====----
+
+                                by:      Adrian Brown
+                                version: 1.0
+                                date:    17th September 1996
+
+******************************************************************************
+  This paper is designed to take you through the step of 2 polygon clipping
+techniques.  The first is the frequently used scanline by scanline technique
+while the second is arithmetic clipping.  This involves clipping the polygon
+before you actuall go to draw it, Adding new vertices where required to
+produce a new polygon which has coordinates that are all on the screen.
+******************************************************************************
+** DISCLAIMER
+
+I assume no responsibility whatsoever for any effect that this file, the
+information contained therein or the use thereof has.  No warranty is
+provided nor implied with this information.
+
+******************************************************************************
+** Contents
+
+1)  What is clipping?
+    a) 2D Sprite based clipping.
+    b) Edge scanning a polygon.
+2)  Scanline by scanline clipping.
+    a) Clipping to the Top and Bottom.
+    b) Clipping to the Left and Right.
+3)  Arithmetic clipping.
+
+******************************************************************************
+** 2) What is clipping?
+
+a) 2D Sprite based clipping.
+----------------------------
+
+  Clipping is a way of making sure that anything you draw to a fixed size
+screen stays within the boundaries of that screen.  In a simple 2d sprite
+based system a clipping routine would have looked something like this.
+
+/* SAMPLE CODE FOR BASIC 2D SPRITE CLIP
+  this is only example code. I do not promise that it will compile or work.*/
+
+    if (Sprite.X > SCREEN_WIDTH нн (Sprite.X + Sprite.W) < 0 нн
+        Sprite.Y > SCREEN_HEIGHT нн (Sprite.Y + Sprite.H) < 0)
+    {
+        // Sprite is fully off screen.  No need to draw.
+        return;
+    }
+
+    if (Sprite.X < 0)
+    {
+        // Sprite needs Clipping on left of screen
+        Sprite.GfxX += -Sprite.X;
+        Sprite.W += Sprite.X;
+        Sprite.X = 0;
+    }
+
+    if ((Sprite.X + Sprite.W) > SCREEN_WIDTH)
+    {
+        // Sprite need Clipping on right of screen
+        Sprite.W -= (Sprite.X + Sprite.W) - SCREEN_WIDTH;
+    }
+
+    if (Sprite.Y < 0)
+    {
+        // Sprite needs Clipping on top of screen
+        Sprite.GfxY += -Sprite.Y;
+        Sprite.H += Sprite.Y;
+        Sprite.Y = 0;
+    }
+
+    if ((Sprite.Y + Sprite.H) > SCREEN_HEIGHT)
+    {
+        // Sprite need Clipping on bottom of screen
+        Sprite.H -= (Sprite.Y + Sprite.H) - SCREEN_HEIGHT;
+    }
+
+* END OF EXAMPLE CODE *
+
+  This first of all checks to see if the sprite is even on screen.  It then
+proceeds to check each side of the sprite with the sides of the screen.  If
+any edges need clipping in moves the appropriate X/W or W/H values.  It also
+moves the start graphic locations to match.
+
+  The principles behind this simple 2d sprite based clipping are the same when
+it comes to clipping polygons.  You are still trying to fit an object into a
+screen size.  I am going to cover 2 methods I have used to clip polygons,
+both of them clip the 2d polygon.  This means if you are using it in a 3d
+based environment you must convert the polygon x,y,z coordinates into screen
+x,y coordinates before you can use these methods.  I also assume that you
+use an edge scanning polygon technique to draw your polygons.
+
+b) Edge scanning a polygon.
+---------------------------
+
+  Edge scanning polygon draw routines use a method of tracing down each edge
+of a polygon.  The X coordinate of the line is stored in a table at the
+corresponding Y coordinate. e.g. if a point on the edge of a polygon was at
+X = 10, Y = 101 then at entry 101 in the edge table you would store the value
+10.
+
+  For more information about Edge scanning polygon draw routines please
+refer to the works of Chris Egerter in his tutorials 1,2 and 3.  These can
+be found at many ftp sites including x2ftp.oulu.fi/pub/msdos/programming/wgt.
+
+******************************************************************************
+** 2) Scanline by Scanline clipping.
+
+a) Clipping the top and bottom.
+-------------------------------
+
+  Clipping the top and bottom of a polygon is done in the line draw routine.
+Before you start to draw your line you check to see if the Y start coordinate
+of the line is less than 0.  If it is then you must move the starting X
+coordinate to the point where Y = 0.  This is generally done using the
+gradient of the line.
+
+                      X1, Y1
+                       /н
+                     /  н
+                   /    н
+        ---------/------н------------- line Y = 0
+               /        н
+             /          н           gradient of line X1,Y1 - X2,Y2 =
+           /            н                  (Y2 - Y1) / (X2 - X1)
+         /______________н
+      X2, Y2
+
+  Using the gradient of the line we can say where any particular coordinate
+is based upon the other.  In the case of clipping we want to know what the X
+will be when Y = 0.  Lets run this through an example:-
+
+                      100, -50
+                       /н
+                     /  н d
+                   /    н 
+        ---------/------н------------- line Y = 0
+               /    c   н b
+             /          н
+           /            н
+         /______________н
+      0, 50     a
+
+where:-
+a = X2 - X1 = -100
+b = Y2 - Y1 = 100
+c = Wanted value.
+d = portion of line above Y = 0 (-Y1) = 50
+
+  The gradient for this line would be  b / a
+                                   = 100 / -100
+                                   = -1
+  Math's states that since the gradient of a triangle is the same no matter
+where you take the values from b/a will equal d/c.  We can use this
+information by rearranging it to give us the unknown value.
+
+       b   d            b                                           d x a
+       - = -      ->    - x c = d    ->    b x c = d x a   ->   c = -----
+       a   c            a                                             b
+
+  Plug in the values we know to the formula at the end and you get:-
+
+      50 x -100
+      ---------   =   -50
+         100
+
+  You simply add the value you get from this formula to X1 and you get the
+value for X1 where Y1 = 0.
+
+  The same principles can be used to clip any lines which go off the bottom
+of the screen.
+
+b) Clipping the left and right.
+-------------------------------
+
+  Clipping to the left and right edges of the screen is very easy in scanline
+by scanline clipping.  When you read the values from your edge table you
+check to see if the starting value is off the left hand edge.  If it is you
+set the value to be the left hand edge.  If the finishing edge is off the
+right hand side of screen you can set the finishing edge to be the right hand
+side of screen.
+
+  The inner loop for a draw routine using this technique would look something
+like this:-
+
+/* SAMPLE CODE FOR AN INNER LOOP
+  this is only example code. I do not promise that it will compile or work.*/
+
+  // Get the edges to draw between.                      
+  X1 = EdgeTable[Y][0];
+  X2 = EdgeTable[Y][1];
+
+  // Check for clipping.
+  if (X1 < 0)
+  {
+    X1 = 0;
+  }
+
+  if (X2 > SCREEN_WIDTH)
+  {
+    X2 = SCREEN_WIDTH
+  }
+
+  for(;X1 < X2; X1++)
+  {
+    *(Dest + X1) = PixelValue;
+  }
+
+* END OF EXAMPLE CODE *
+
+  The next style of clipping is much harder to implement but I found that it
+is much faster, especially on larger polygons.
+
+******************************************************************************
+** 3) Arithmetic Clipping
+
+  Arithmetic clipping involves removing the parts of the polygon which are off
+the screen and adding vertices to create a new polygon.  This new polygon is
+the same shape as the old apart from there are no edges off the edges of the
+screen.
+
+  The principles are very simple, but I have found that the clipping must be
+done in a certain order.  This is the Top then Bottom then Left and final
+Right hand edges.  If you do not follow this order some very strange shapes
+will appear in place of your polygon.
+
+  Lets take a normal polygon:-
+
+                              X1,Y1
+                               /\
+                             /    \
+           ________________/________\____________________
+           н       X4,Y4 /            \ X2,Y2           н
+           н             \            /                 н
+           н               \        /                   н
+           н                 \    /                     н
+           н                   \/                       н
+           н                 X3,Y3                      н
+
+  Now to clip this arithmetically we would first clip the lines that are off
+the top of screen.  There are two which meet this description.  X1,Y1 - X4,Y4
+and X1,Y1 - X2,Y2.  When we clip these lines we will produce an extra vertex
+and an extra line.  This is because at the moment the two lines both share the
+vertex X1,Y1, but when they are clipped we will need vertices where the two
+lines cross the top of screen.  These two points will not be the same and so
+we have to insert a new vertex.
+
+           _______________a__________b___________________
+           н       X4,Y4 /            \ X2,Y2           н
+           н             \            /                 н
+           н               \        /                   н
+           н                 \    /                     н
+           н                   \/                       н
+           н                 X3,Y3                      н
+
+  The new polygon has 5 lines, not 4.
+line 1  = a - b
+line 2  = b - X2,Y2
+line 3  = X2,Y2 - X3,Y3
+line 4  = X3,Y3 - X4,Y4
+line 5  = X4,Y4 - a
+
+  The coordinates of the new points can be calculated in the same way as we
+done for the top/bottom clipping above.  We go through all the lines checking
+and clipping to the top and bottom of screen and then we use exactly the same
+principles for clipping to the left and right edges of screen.  When you clip
+to L/R edges you must use the new points gained in the T/B clipping.
+
+******************************************************************************
+** 4) Closing words
+
+  These methods can be used when drawing texture mapped polygons with very
+little alteration.  The only thing that needs to be added to the clipping
+routines are a few lines to move the texture coordinates by the same amount
+as the screen coordinates.  Likewise with Gouraud shaded polygons.
+
+  If you are feeling brave you can even use the same techniques to clip
+polygons to other planes an hence have one object be cut by another.  This
+does require clipping in 3d space but this is all very similar to the 2d
+clipping mentioned above.
+
+******************************************************************************
+  If you want to drop me a line an ask anything about the clipping routines
+above, or anything else for that matter, send an email to the above address.
+******************************************************************************

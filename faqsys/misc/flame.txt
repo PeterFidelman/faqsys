@@ -1,0 +1,350 @@
+
+    ------------------------------------------------------------------------
+
+
+Flame Code
+
+From: trowbri@triton.unm.edu (jason trowbridge)
+Date: 11 Apr 1995 04:15:54 GMT
+Organization: University of New Mexico, Albuquerque
+Newsgroups: comp.graphics.algorithms
+    ------------------------------------------------------------------------
+
+
+        Here's the source code that's been requested by some people.
+It's in Turbo Pascal 7.0, so you must have TP version 6.0 or greater in
+order to compile it.  The code is fairly-well commented, so no one should
+have trouble figgling out what it's doing.  You may use this code for
+learning experiences.  It is not optimized, nor is it even decently
+written.  It is a first draft, so no complaints about the ugliness of the
+code!
+        This is a quickie demo that figgles out a fairly realistic fire.
+It uses a 192 color palette, going from black to dark gray to red to
+yellow to white.  The dark gray gives the fire a neat smoke effect.  Some
+people told me that it makes it look a little 3D.  :>
+        It does use a sin-wave based sway.
+
+Known Bugs in this version of the source code:
+
+  Sin wave can be slightly off, leading to eventual shifting.
+  Reseting the flame will eventually crash the program, as it reallocates
+the memory without deallocating the old memory.  I've fixed this before,
+but can't find where I put the code....  :0
+
+Here's some keys to press while the demos are running.
+
+'A'  -  Shift the bottom one pixel to the left.
+'S'  -  Shift the bottom one pixel to the right.
+'T'  -  Reset the raging inferno flame.
+'R'  -  Press it and see!  ;)
+'Q', <ESC>, <Return>   -  Quit
+
+---Here's the code!---
+Program CalcFire;
+
+Uses Crt;
+
+(*{$DEFINE BottomFlick}*){  <-Does the bottom flicker & vary?               }
+{$DEFINE SmallFlame}     {  <-Use 1x1 pixels per entry in fire array.       }
+{$DEFINE TorchFlame}     {  <-Define a torch-like bottom?                   }
+{$DEFINE Sway}           {  <-Is there are sway?                            }
+(*{$DEFINE BigFlame}*)   {  <-Use 4x4 pixels per entry.                     }
+{$DEFINE FlameFlick}     {  <-Does the flame flicker & vary?                }
+{$UNDEF DoDelay}         {  <-Do a delay?                                   }
+
+{  Pixel sizes can be determained as follows:                               }
+{  SmallFlame Defined                    <- 1x1 pixel per unit of flame.    }
+{  SmallFlame & BigFlame Not Defined     <- 2x2 pixels per unit of flame.   }
+{  BigFlame Defined                      <- 4x4 pixels per unit of flame.   }
+{                                                                           }
+{  Do not define both SmallFlame & BigFlame at the same time!  Otherwise,   }
+{  the program will not compile!                                            }
+
+Const
+  MaxX       = 51;       {  Columns displayed is MaxX-1.                    }
+  BottomRand = 10;       {  Random range added to bottom line.              }
+  LineRand   = 9;        {  Random range subtracted from bottom line.       }
+  LineDec    = 4;        {  Range (or constant) that flame is decremented.  }
+  LastLine   = 109;      {  Lines displayed is LastLine+1.                  }
+  DelayTime  = 0;        {  Delay between each frame time.                  }
+  TorchInc   = 8;        {  Affects size of torch base.                     }
+  SwayMag    = 2;        {  Magnitude of sway.                              }
+  SwayFrq    = 25;       {  Frame frequency for one complete cycle of sway. }
+  {$IFDEF BigFlame}
+    VideoOff   = (49-LastLine)*640+81-(MaxX);  { Video buffer calculation. }
+  {$ENDIF}
+  {$IFDEF SmallFlame}
+    VideoOff   = ((199-LastLine)*160)+((321-MaxX) div 2);
+  {$ELSE}
+    {$IFNDEF BigFlame}
+    VideoOff   = ((99-LastLine)*320)+161-(MaxX);
+    {$ENDIF}
+  {$ENDIF}
+
+Type
+  FireRay = Array[0..LastLine,0..MaxX] of Byte;  { Fire Array }
+
+Var
+  Fire        : ^FireRay;
+  SwayFlame   : Array[0..SwayFrq] of ShortInt;
+  SwayTime    : Byte;
+
+Procedure ShowFire;
+{  Just copies the fire array to the screen.  }
+var
+  i    : Integer;
+  x, y : Integer;
+  Buf  : Array[2..(MaxX*4)-1] of Byte;
+  VOff : Word;
+begin
+  VOff := VideoOff;
+  {$IFDEF SmallFlame}
+  For i := 0 to LastLine do
+    begin
+      Move( Fire^[i][1], Mem[$A000:VOff], MaxX-1 );
+      Inc( VOff, 320 );
+    end;
+  {$ENDIF}
+  {$IFDEF BigFlame}
+  For y := 0 to LastLine do
+    begin
+      For x := 1 to Pred(MaxX) do
+        FillChar( Buf[x shl 2], 4, Fire^[y][x] );
+      Move( Buf[4], Mem[$A000:VOff], Sizeof(Buf)-4 );
+      Inc( VOff, 320 );
+      Move( Buf[4], Mem[$A000:VOff], Sizeof(Buf)-4 );
+      Inc( VOff, 320 );
+      Move( Buf[4], Mem[$A000:VOff], Sizeof(Buf)-4 );
+      Inc( VOff, 320 );
+      Move( Buf[4], Mem[$A000:VOff], Sizeof(Buf)-4 );
+      Inc( VOff, 320 );
+    end;
+  {$ELSE}
+  {$IFNDEF SmallFlame}
+  For y := 0 to LastLine do
+    begin
+      For x := 1 to Pred(MaxX) do
+        FillChar( Buf[x shl 1], 2, Fire^[y][x] );
+      Move( Buf[2], Mem[$A000:VOff], (MaxX-1) shl 1);
+      Inc( VOff, 320 );
+      Move( Buf[2], Mem[$A000:VOff], (MaxX-1) shl 1);
+      Inc( VOff, 320 );
+    end;
+  {$ENDIF}
+  {$ENDIF}
+end;
+
+Procedure DoFire;
+{  Calculates the next value for the fire array.  }
+var
+  x, y   : Integer;
+  Buffer : Array[0..SwayMag] of Byte;
+  Sway   : Byte;
+begin
+  For y := 1 to Pred(LastLine) do
+    For x := 1 to Pred(MaxX) do
+      begin
+        Fire^[y][x] := ((Word(Fire^[y+1][x])+Word(Fire^[y+2][x])+
+                        Word(Fire^[y+1][x-1])+Word(Fire^[y+1][x+1])) shr 2);
+        {$IFDEF FlameFlick}
+        If Fire^[y][x] > LineDec then
+          Dec( Fire^[y][x], Random(LineDec) ) else
+        If Fire^[y][x] > 0 then
+          Dec( Fire^[y][x] );
+        {$ELSE}
+        If Fire^[y][x] > LineDec then
+          Dec( Fire^[y][x], LineDec ) else
+        If Fire^[y][x] > 0 then
+          Dec( Fire^[y][x] );
+        {$ENDIF}
+      end;
+  For x := 1 to Pred(MaxX) do
+    begin
+      Fire^[y][x] := (((Word(Fire^[y+1][x]) shl 1)+
+                      Word(Fire^[y+1][x-1])+Word(Fire^[y+1][x+1])) shr 2);
+      {$IFDEF FlameFlick}
+      If Fire^[y][x] > LineDec then
+        Dec( Fire^[y][x], Random(LineDec) ) else
+      If Fire^[y][x] > 0 then
+        Dec( Fire^[y][x] );
+      {$ELSE}
+      If Fire^[y][x] > LineDec then
+        Dec( Fire^[y][x], LineDec ) else
+      If Fire^[y][x] > 0 then
+        Dec( Fire^[y][x] );
+      {$ENDIF}
+    end;
+  {$IFDEF BottomFlick}
+  For x := 1 to Pred(MaxX) do
+    begin
+      Fire^[LastLine][x] := (Word(Fire^[LastLine][x])+
+                             Word(Fire^[LastLine-1][x])+
+                              Word(Fire^[LastLine][x-1])+
+                              Word(Fire^[LastLine][x+1])) shr 2;
+      Inc( Fire^[LastLine][x], Random(BottomRand) );
+      Dec( Fire^[LastLine][x], Random(LineRand) );
+      If Fire^[LastLine][x] > (255-LineRand) then
+        Fire^[LastLine][x] := 0 else
+      If Fire^[LastLine][x] > 191 then
+        Fire^[LastLine][x] := 191;
+    end;
+  {$ENDIF}
+  {$IFDEF Sway}
+  Inc(SwayTime);
+  If SwayTime > SwayFrq then
+    SwayTime := 0;
+  Sway := Abs(SwayFlame[SwayTime]);
+  If SwayFlame[SwayTime] > 0 then
+    begin
+      Move( Fire^[LastLine][MaxX-Sway], Buffer[0], Sway );
+      Move( Fire^[LastLine][0], Fire^[LastLine][Sway], MaxX-Sway );
+      Move( Buffer[0], Fire^[LastLine][0], Sway );
+    end else
+    begin
+      Move( Fire^[LastLine][0], Buffer[0], Sway );
+      Move( Fire^[LastLine][Sway], Fire^[LastLine][0], MaxX-Sway );
+      Move( Buffer[0], Fire^[LastLine][MaxX-Sway], Sway );
+    end;
+  {$ENDIF}
+end;
+
+Procedure SetRGBPalette( i, r, g, b : Byte );  Assembler;
+{  Sets palette entry i to (r,g,b)  }
+Asm
+  mov Dx, 3C8h
+  mov Al, [i]
+  out Dx, Al
+  inc Dx
+  mov Al, [r]
+  out Dx, Al
+  mov Al, [g]
+  out Dx, Al
+  mov Al, [b]
+  out Dx, Al
+end;
+
+Procedure Init;
+{  Sets up initial palette & fire array.  }
+var
+  i, j : Integer;
+begin
+  Randomize;
+  New( Fire );
+  FillChar( Fire^, Sizeof(Fire^), 0 );
+  asm
+    mov ax, 0013h
+    int 10h
+  end;
+  For i := 0 to 15 do
+    SetRgbPalette( i, i, i, i );
+  For i := 16 to 31 do
+    SetRgbPalette( i, i, 32-i, 32-i );
+  For i := 32 to 63 do
+    SetRgbPalette( i, i, 0, 0 );
+  For i := 64 to 127 do
+    SetRgbPalette( i, 63, i-64, 0);
+  For i := 128 to 191 do
+    SetRgbPalette( i, 63, 63, i-128 );
+  {$IFDEF TorchFlame}
+  FillChar( Fire^[LastLine], Sizeof(Fire^[LastLine]), 0 );
+  i := (MaxX div 2) - (191 div TorchInc);
+  For j := 0 to (191 div TorchInc) do
+    begin
+      If (i>=0) AND (i<=MaxX) then
+        Fire^[LastLine][i] := j*TorchInc;
+      Inc(i);
+    end;
+  For j := Pred(191 div TorchInc) downto 0 do
+    begin
+      If (i>=0) AND (i<=MaxX) then
+        Fire^[LastLine][i] := j*TorchInc;
+      Inc(i);
+    end;
+  {$ELSE}
+  FillChar( Fire^[LastLine], Sizeof(Fire^[LastLine]), 191 );
+  Fire^[LastLine][0] := 191;
+  For i := 1 to MaxX do
+    begin
+      Fire^[LastLine][i] := Fire^[LastLine][i-1]+Random(BottomRand shl 1)-BottomRand;
+      If Fire^[LastLine][i] > (255-BottomRand) then
+        Fire^[LastLine][i] := 0 else
+      If Fire^[LastLine][i] > 191 then
+        Fire^[LastLine][i] := 191;
+    end;
+  Fire^[LastLine][MaxX] := 191;
+  {$ENDIF}
+end;
+
+Procedure Init2;
+{  Sets up the fade into the fire array.  }
+var
+  x, y : Integer;
+begin
+  For y := 0 to LastLine do
+    For x := 0 to MaxX do
+      Fire^[y][x] := 191-Random(BottomRand);
+end;
+
+Procedure MainLoop;
+var
+  Quit : Boolean;
+  Temp : Byte;
+begin
+  Quit := FALSE;
+  Repeat
+    DoFire;
+    If KeyPressed then
+      Case UpCase(ReadKey) of
+        'R' : Init2;   {  Reset the fade array.          }
+        'T' : Init;    {  Reset the fire array.          }
+        'A' : Begin    {  Moves the bottom line left.    }
+                Temp := Fire^[LastLine][0];
+                Move( Fire^[LastLine][1], Fire^[LastLine][0], MaxX );
+                Fire^[LastLine][MaxX] := Temp;
+              End;
+        'S' : Begin    {  Moves the bottom line right.   }
+                Temp := Fire^[LastLine][MaxX];
+                Move( Fire^[LastLine][0], Fire^[LastLine][1], MaxX );
+                Fire^[LastLine][0] := Temp;
+              End;
+        'Q', #27, #13 : Quit := TRUE;  {  Quits.  }
+      end;
+    {$IFDEF DoDelay}
+    Delay( DelayTime );
+    {$ENDIF}
+    ShowFire;
+  Until Quit;
+end;
+
+Procedure MakeSwayTable;
+{  Creates the sway table for the flame.  }
+var
+  TTable : Array[0..SwayFrq] of ShortInt;
+  i      : Integer;
+  r      : Real;
+begin
+  For i := 0 to SwayFrq do
+    TTable[i] := Trunc(Sin(2*Pi*i/Succ(SwayFrq))*SwayMag);
+  SwayFlame[0] := TTable[0] - TTable[SwayFrq];
+  For i := 1 to SwayFrq do
+    SwayFlame[i] := TTable[i] - TTable[i-1];
+end;
+
+Begin
+  Init;
+  {$IFNDEF DoFlame}
+  Init2;
+  {$ENDIF}
+  MakeSwayTable;
+  MainLoop;
+  Dispose( Fire );
+  asm
+    mov ax, 0003h
+    int 10h
+  end;
+End.
+
+
+    ------------------------------------------------------------------------
+
+

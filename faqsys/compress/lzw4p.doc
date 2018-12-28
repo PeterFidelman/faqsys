@@ -1,0 +1,960 @@
+
+
+                          LZW Data Compression Library
+
+                                For Turbo Pascal
+
+
+                                    (LZW4P)
+
+
+
+                                 USERS MANUAL
+
+
+
+
+
+                                   Version 1.4
+
+                                  June 1, 1994
+
+
+
+
+                        This software is provided as-is.
+                 There are no warranties, expressed or implied.
+
+
+
+
+                              Copyright (C) 1994
+                              All rights reserved
+
+
+
+                              MarshallSoft Computing, Inc.
+                              Post Office Box 4543
+                              Huntsville AL 35815
+
+                              205-881-4630  Voice / FAX
+                              205-880-9748  Support BBS
+
+
+                                       _______
+                                  ____|__     |                (R)
+                               --|       |    |-------------------
+                                 |   ____|__  |  Association of
+                                 |  |       |_|  Shareware
+                                 |__|   o   |    Professionals
+                               -----|   |   |---------------------
+                                    |___|___|    MEMBER
+
+
+
+
+
+
+
+
+        LZW4P Users Manual                                     Page 1
+                              C O N T E N T S
+
+
+
+
+
+         Chapter                                                   Page
+
+         1.0 Introduction..............................................3
+             1.1 Distribution Files....................................3
+             1.2 Compiling the Library.................................4
+             1.3 User Support..........................................4
+             1.4 ASP Ombudsman.........................................5
+             1.5 Installation..........................................5
+         2.0 The LZW Algorithm.........................................6
+             2.1 LZW Compression.......................................6
+             2.2 LZW Expansion.........................................7
+             2.3 LZW Implementation....................................7
+         3.0 Example Programs..........................................8
+             3.1 COMPRESS..............................................8
+             3.2 EXPAND................................................8
+             3.3 TEST_LZW..............................................9
+             3.4 MK_ARC................................................9
+             3.5 UN_ARC................................................9
+             3.6 SEE_ARC...............................................9
+             3.7 EX_ARC................................................9
+         4.0 Reader & Writer Functions................................10
+         5.0 Library Functions........................................11
+             5.1 InitLZW..............................................11
+             5.2 TermLZW..............................................11
+             5.3 Compress.............................................12
+             5.4 Expand...............................................12
+         6.0 Error Codes..............................................13
+             6.1 EXPANSION_ERROR......................................13
+             6.2 CANNOT_ALLOCATE......................................13
+             6.3 INTERNAL_ERROR.......................................13
+             6.4 NOT_READY............................................13
+             6.5 BAD_BITCODE..........................................13
+         7.0 Legal Issues.............................................14
+             7.1 Registration.........................................14
+             7.2 Referral Plan........................................14
+             7.3 License..............................................15
+             7.4 Warranty.............................................15
+         8.0 Revision History.........................................16
+         9.0 Other MarshallSoft Computing Products for Pascal.........16
+             9.1 The Personal Communications Library for Pascal.......16
+
+
+
+
+
+
+
+
+
+
+
+
+
+        LZW4P Users Manual                                     Page 2
+         1.0 Introduction
+
+
+         LZW4P  consists  of a variable code size implementation of the LZW
+         (Lempel-Ziv-Welch) algorithm  for  compressing  and  decompressing
+         data.   LZW does particularly well on text files, achieving better
+         than a 50 % compression ratio for many files.
+
+         The  LZW  algorithm  is  considered  to be one of the best general
+         purpose algorithms available today.  The  new  high  speed  modems
+         that  employ  on-the-fly  data  compression (such as MNP 5.0 & the
+         V.42 bis international standard) use the LZW  algorithm,  as  well
+         as such well known utility programs such as PKZIP.
+
+         The  LZW4P  library  is  designed  to be used in a wide variety of
+         situations. Some of the possible uses include:
+
+         1) Compression and expanding files on disk.
+         2) Compressing files "on the fly" before  sending  over  a  modem,
+            and then expanding on the receiving end.
+         3) Compression of data files used by your application program such
+            as help files, graphics screens, etc. The compressed data files
+            are then expanded as they are loaded by the application.
+
+
+         1.1 Distribution Files
+
+         The distribution files are as follows:
+
+
+          1) LZW4P.DOC    -- This documentation file.
+          2) LZW4P.INV    -- Invoice file.
+          3) COMPRESS.PAS -- Data compression example program.
+          4) EXPAND.PAS   -- Data expansion example program.
+          5) LZW4P.PAS    -- Library unit interface.
+          6) TEST_LZW.PAS -- LZW test driver program.
+          7) RW_IO.PAS    -- Reader/Writer I/O source file.
+          8) DIR_IO.PAS   -- Directory I/O source file.
+          9) LZW_ERR.PAS  -- Displays text error messages.
+         10) MEMORY.PAS   -- Memory allocation functions.
+         11) HEX_IO.PAS   -- Procedure to read & write hexidecimal.
+         12) LZW4PLIB.OBJ -- Library object file.
+         13) MK_ARC.PAS   -- File archiving program.
+         14) UN_ARC.PAS   -- File un-archiving program.
+         15) EX_ARC.PAS   -- File extraction program.
+         16) SEE_ARC.PAS  -- File viewing program.
+
+
+         Registered users also receive:
+
+          1) LZW4PLIB.ASM -- Library source file.
+          2) MAKETPU.BAT  -- Makes library object from source.
+
+
+
+
+
+
+
+        LZW4P Users Manual                                     Page 3
+         1.2 Compiling the Library
+
+         The first thing you should do is to create the Turbo Pascal TPU by
+         compiling the file LZW4P as follows:
+
+               TPC LZW4P
+
+         The  registered  user  can  also recompile the source code (source
+         code is provided in the registered version only) for  the  library
+         as follows:
+
+               MAKETPU
+
+         or
+
+               MASM LZW4PLIB.ASM,LZW4PLIB.OBJ /DPASCAL_MODEL;
+               TPC LZW4P
+
+
+         1.3 User Support
+
+         We  want you to be successful in developing your application using
+         our libraries! We depend on our customers to let us know what they
+         need in a library.  This means we are committed to  providing  the
+         best  libraries  that  we  can.   If  you  have any suggestions or
+         comments, please write to us or give us a call.
+
+         If  you  are having a problem using LZW4P or any of our libraries,
+         call (205) 881-4630 between 2:30 PM and 9:30 PM CST Monday through
+         Friday.  You can call at other times and leave a message, and call
+         back later during our regular business hours for a reply. You  can
+         also FAX us at this same number at any time.
+
+         You  may  also  call  our  24  hour  BBS at any time. The BBS will
+         contain the latest shareware version of LZW4P, messages, and other
+         related files. All files are in  standard  ZIP  format.   You  can
+         leave a message on the BBS, and we will usually have a reply ready
+         for  you  within  24  hours.   The  dedicated  telephone number is
+         205-880-9748.  Set your modem for 1200 to 9600 baud, 8 data  bits,
+         no parity, one stop bit.
+
+         The  MarshallSoft  Computing,  Inc.   newsletter  "Comm  Talk"  is
+         published quarterly.  It discusses various communications problems
+         and solutions using PCL (the communications library)  as  well  as
+         related  information  such as data compression issues.  Registered
+         users receive a one year  complimentary  subscription  when  first
+         registering  and  for  each update purchased.  Additional one year
+         subscriptions are $15 plus $5 for overseas  postage  (postpaid  in
+         US).
+
+
+
+
+
+
+
+
+
+
+        LZW4P Users Manual                                     Page 4
+         1.4 ASP Ombudsman
+
+
+         MarshallSoft  Computing,  Inc.  is  a member of the Association of
+         Shareware Professionals (ASP).  ASP wants to make  sure  that  the
+         shareware principle works for you.  If you are unable to resolve a
+         shareware-related  problem  with  an  ASP member by contacting the
+         member directly, ASP may be able to help. The  ASP  Ombudsman  can
+         help you resolve a dispute or problem with an ASP member, but does
+         not provide technical support for members' products.  Please write
+         to  the  ASP  Ombudsman  at  545  Grover  Road,  Muskegon,  MI USA
+         49442-9427, Fax 616-788-2765, or send  a  CompuServe  message  via
+         CompuServe Mail to ASP Ombudsman 70007,3536.
+
+
+         1.5 Installation
+
+
+         (1) Make a backup  copy  of  your  distribution  disk.   Put  your
+         original distribution disk in a safe place.
+
+         (2)  Create  a  work  directory  on  your work disk (normally your
+         harddisk). For example, to create a work directory named LZW4P, we
+         first log onto the work disk and then type:
+
+                               MKDIR LZW4P
+
+         (3)  Copy  all the files from your backup copy of the distribution
+         disk to your work directory.  For example, to  copy  from  the  A:
+         drive to your work directory, we type:
+
+                              CD LZW4P
+                              COPY A:*.*
+
+         (4) The library unit LZW4P.TPU is compiled with Turbo Pascal  6.0.
+         If  you  are  using  another  version  (4.0  or above), you should
+         recompile the library unit as follows:
+
+               TPC LZW4P
+
+         (5)  Compile  COMPRESS.PAS,  EXPAND.PAS,   TEST_LZW.PAS,   MK_ARC,
+         EX_ARC, and UN_ARC.  For example, to make TEST_LZW.EXE:
+
+               TPC TEST_LZW
+
+         You  may  want  to run TEST_LZW on some of your files as a test of
+         the library functions.
+
+
+
+
+
+
+
+
+
+
+
+
+        LZW4P Users Manual                                     Page 5
+         2.0 The LZW Algorithm
+
+
+         The following discussion of the LZW algorithm is meant to  provide
+         a  high  level  overview  of  LZW.  For those interested in a more
+         detailed explanation, several good books  are  available  on  data
+         compression.
+
+         The original research papers on what is now called LZW compression
+         are:
+
+             J. ZIV and A. Lempel,
+             "A Universal Algorithm for Sequential Data Compression",
+             IEEE Transactions on Information Theory, May 1977.
+
+             Terry Welch,
+             "A Technique for High-Performance Data Compression",
+              Computer, June 1984.
+
+         The  code  in  this  library  is  based on these original research
+         papers.
+
+
+         2.1 LZW Compression
+
+
+         The  LZW  compressor  reads  8-bit  bytes  from  a data source and
+         outputs N-bit codes each of which identifies a previously  defined
+         string.   The  value  of  N starts at 9. Thus, codes 0 through 255
+         ($ff) correspond with the standard character set, while codes  256
+         ($100)  through  511  ($1ff)  correspond  to a byte-byte pair or a
+         code-byte pair in the code table. After code 511 is output, 10 bit
+         codes are used. This is repeated until the maximum number of  bits
+         per code is reached. LZW4P can use a maximum of 12, 13, or 14 bits
+         per code. The recommended value is 14.
+
+         The LZW compressor builds a code table as it compresses data.  The
+         code table consists of previously encountered strings.
+
+         The basic LZW compression algorithm is as follows:
+
+             STRING = get first input byte
+             while there is more input data
+               {BYTE = get next input byte
+                if STRING+BYTE is in code table
+                   STRING=STRING+BYTE
+                else
+                  {output code for STRING
+                   add STRING+BYTE to code table
+                   STRING = BYTE
+                  }
+              }
+             output the code for STRING
+
+
+
+
+
+
+        LZW4P Users Manual                                     Page 6
+         2.2 LZW Expansion
+
+
+         The LZW expansion routine reads the N-bit codes previously created
+         by  the  LZW  compressor  and  reconstructs  the  code  table  (as
+         previously constructed by the compressor) as it is outputing 8-bit
+         bytes.   A  code corresponds to a single byte (the first 256 codes
+         from $00 through $ff), or a byte-byte pair in the code table, or a
+         code-byte pair in the code table. In the later case, the code part
+         of the code-byte pair refers to another defined code pair  in  the
+         table.   As  each code is read in, it is located in the code table
+         and the corresponding 8-bit bytes are  output.   This  means  that
+         codes must be defined before they are needed for expansion. Unlike
+         older  dictionary  based  compression schemes, the code dictionary
+         produced by the compressor routine does not have to be provided to
+         the expansion routine.
+
+         The basic LZW de-compression algorithm is as follows:
+
+             OLDCODE = input first code
+             output OLDCODE
+             while there is more input data
+               {NEWCODE = get next input code
+                STRING = translation of NEWCODE
+                output STRING
+                BYTE = 1st byte of STRING
+                add OLDCODE+BYTE to the code table
+                OLDCODE = NEWCODE
+               }
+
+         2.3 Implementation
+
+
+         The LZW4P library is written in assembly language.  Any  Microsoft
+         or  compatible assembler will assemble it. The decision to program
+         LZW4P in assembler was made in order to get the  absolute  maximum
+         performance  possible.   Although Turbo Pascal is very good, it is
+         still bigger and slower than hand optimized assembler.
+
+         Using  a  maximum  of 12 bits per code (see the InitLZW function),
+         25105 bytes are allocated for table space.  This  value  jumps  to
+         45145 bytes when using 13 bits and 90205 bytes when using 14 bits.
+         The best compression is given using 14 bits per code.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        LZW4P Users Manual                                     Page 7
+         3.0 Example Programs
+
+
+         Six example programs are provided.  Each example program should be
+         compiled  and  tested.   These  example  programs  are  meant   to
+         demonstrate  various ways in which the LZW compression library can
+         be used.
+
+
+         3.1 COMPRESS
+
+
+         The  program  COMPRESS  is  provided  as  both  a  standalone  LZW
+         compression  program,  and  as  an example of how to use the LZW4P
+         library to compress a file. In order to run COMPRESS, type
+
+             COMPRESS <infile> <outfile>
+
+         For example, to compress LZW4P.DOC to LZW4P.LZW, type
+
+             COMPRESS LZW4P.DOC LZW4P.LZW
+
+
+         3.2 EXPAND
+
+
+         The   program   EXPAND  is  provided  as  both  a  standalone  LZW
+         de-compression program, and as an example of how to use the  LZW4P
+         library to de-compress a file. In order to run EXPAND, type
+
+             EXPAND <infile> <outfile>
+
+         For example, to de-compress LZW4P.LZW to LZW4P.DOC, type
+
+             COMPRESS LZW4P.LZW LZW4P.DOC
+
+         Of course, you can only decompress a file that has been compressed
+         with COMPRESS.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        LZW4P Users Manual                                     Page 8
+         3.3 TEST_LZW
+
+
+         The  program  TEST_LZW is used to compress, expand, and verify one
+         or more files. It's purpose is for you to test the  LZW4P  library
+         on  your  own files.  Your files are never modified.  However, you
+         can NOT specify a file named "XXX.XXX" or  "YYY.YYY"  since  these
+         files  are  work  files  used by COMPRESS and EXPAND.  Compression
+         ratios ( compressed_size / original_size ) are  printed  for  each
+         file  compressed.   For  example,  to test all files ending with a
+         *.PAS extension:
+
+             TEST_LZW *.PAS
+
+         After compiling TEST_LZW, run it  against  a  large  directory  of
+         files as a test of the library.
+
+
+         3.4 MK_ARC
+
+
+         The program MK_ARC is used to create an archive file. For example,
+         to create an archive named  PASCAL.ARF  consisting  of  all  files
+         ending with the extension '.PAS', type:
+
+             MK_ARC *.PAS PASCAL.ARF
+
+
+         3.5 UN_ARC
+
+
+         The  program  UN_ARC  is  used to un-archive the files archived by
+         MK_ARC. For example, to un-archive PASCAL.ARF, type:
+
+             UN_ARC PASCAL.ARF
+
+         Note  that  the  UN_ARC  program  can be modified to provide for a
+         customized product installation program.
+
+
+         3.6 SEE_ARC
+
+
+         The program SEE_ARC is used to list the files in any archive  file
+         created with MK_ARC. For example, to see the files in PASCAL.ARF:
+
+             SEE_ARC PASCAL.ARF
+
+
+         3.7 EX_ARC
+
+
+         The  program  EX_ARC  is  used  to  extract a single file from the
+         archive file. For example, to extract  DEMO.PAS  from  PASCAL.ARF,
+         type:
+
+             EX_ARC DEMO.PAS PASCAL.ARF
+
+
+        LZW4P Users Manual                                     Page 9
+         4.0 Reader & Writer Functions
+
+
+         Both  the  compression and expansion routines in the LZW4P library
+         use Reader and Writer functions supplied by  the  library  caller.
+         The  user  may replace the supplied Reader and Writer functions as
+         long as the following guidelines are followed.
+
+         The Reader function always returns the next input  byte  from  the
+         input  stream.  The Reader function is not limited to reading from
+         disk.  It may read from any data source as long as it returns a -1
+         when there is no more data to be read.
+
+         Similiarly, the Writer function writes the next output byte to the
+         output stream. The writer function may write to any data sink.
+
+         The Reader and Writer functions are provided as a  means  to  give
+         the caller complete control over the source and destination of the
+         data stream during compression and expansion. For example, instead
+         of  disk I/O, the Reader and Writer functions could be reading and
+         writing to a serial port.
+
+         The Pascal procedures BlockRead and BlockWrite are used to  buffer
+         disk  I/O  for  the  Reader  and  Writer functions. The Reader and
+         Writer functions are defined as follows:
+
+             type String12 = String[12];
+
+             function ReaderOpen(Filename : String12) : Integer;
+             function Reader : Integer;
+             function ReaderClose : Integer;
+             function ReaderCount : LongInt;
+
+             function WriterOpen(Filename : String12) : Integer;
+             function Writer(TheByte : Byte) : Integer;
+             function WriterClose : Integer;
+
+         Note that the Reader returns a -1 for an end  of  data  condition.
+         Data is returned as an integer with the high byte set to 0.  Thus,
+         the  only  integers  can  can  be  returned  by  the Reader are -1
+         ($ffff) and 0 ($0000) to 255 ($00ff).
+
+         If  you  remove  data from a character buffer, be sure to zero out
+         the high order byte (AND with $00ff) unless you are  returning  a
+         -1  (EOF).
+
+         See RW_IO.PAS for the Reader / Writer code.
+
+
+
+
+
+
+
+
+
+
+
+
+        LZW4P Users Manual                                     Page 10
+         5.0 Library Functions
+
+
+         5.1 InitLZW
+
+
+         Function:     Initialize library
+
+         Prototype:    function InitLZW(AllocP : Pointer;
+                                       BitCode : Integer) : Integer;
+
+         Description:  The  InitLZW  function  is  used to initialize the
+                       library. The first argument is the function name of
+                       a user supplied memory allocation function.
+
+                       The  second argument <BitCode> is the maximum number
+                       of bits used per code in  the  compression  process.
+                       Legal  values  are  12,  13,  and  14 (the preferred
+                       value). Smaller values will use less memory but  not
+                       compress as tightly.
+
+                       See the MEMORY.PAS function.
+
+
+         Returns:      -2 : (CANNOT_ALLOCATE) -- if unable to allocate.
+                       -5 : (BAD_BITCODE) -- BitCode not 12, 13, or 14.
+                        0 : (AOK) -- no error.
+
+         Example:      (* initialize LZW4P *)
+                       var AllocMemoryP : Pointer;
+                       ...
+                       AllocMemoryP := @AllocMemory;
+                       Code := InitLZW(AllocMemoryP,14);
+
+
+         5.2 TermLZW
+
+
+         Function:     Terminate library
+
+         Prototype:    function TermLZW(FreeP : Pointer) : Integer;
+
+
+         Description:  The  TermLZW  function  is  used  to  terminate  the
+                       library after all processing is  done.   The  single
+                       argument  is  the  function  name of a user supplied
+                       memory de-allocation function.  This is primarily  a
+                       way   to   free memory allocated by InitLZW. See the
+                       MEMORY.PAS function.
+
+         Returns:      0 : (AOK) -- no error.
+
+         Example:      (* terminate LZW4P *)
+                       var FreeMemoryP : Pointer;
+                       ...
+                       FreeMemoryP := @FreeMemory;
+                       Code := TermLZW(FreeMemoryP);
+
+
+        LZW4P Users Manual                                     Page 11
+         5.3 Compress
+
+
+         Function:     Compresses a data set.
+
+         Prototype:    function Compress(ReaderP,WriterP:Pointer) :Integer;
+
+         Description:  The  Compress  function  is used to compress  a data
+                       set.  The Reader function always  returns  the  next
+                       input  byte.  The  Writer function consumes the next
+                       output byte. Refer to the section  on  Reader/Writer
+                       I/O.
+
+         Returns:      -4 : (NOT_READY) -- Didn't call InitLZW first.
+                        0 : (AOK) -- No error.
+
+         Example:      (* compress a file *)
+                       Var ReaderP : Pointer;
+                           WriterP : Pointer;
+                       ...
+                       ReaderP := @Reader;
+                       WriterP := @Writer;
+                       Code := Compress(ReaderP,WriterP);
+
+
+         5.4 Expand
+
+
+         Function:     Expands a file.
+
+         Prototype:    function Expand(ReaderP,WriterP:Pointer) :Integer;
+
+         Description:  The  Expand  function is used to de-compress  a file
+                       previously compressed with  the  Compress  function.
+                       The  Reader  function  always returns the next input
+                       byte.  The Writer function consumes the next  output
+                       byte.  Refer  to  the  section on Reader/Writer I/O.
+
+         Returns:      -1 : (EXPANSION_ERROR)  -- File not compressed by
+                             the compress function.
+                        0 : (AOK) -- No error.
+
+         Example:      (*  de-compress a file *)
+                       Var ReaderP : Pointer;
+                           WriterP : Pointer;
+                       ...
+                       ReaderP := @Reader;
+                       WriterP := @Writer;
+                       Code := Expand(ReaderP,WriterP);
+
+
+
+
+
+
+
+
+
+
+        LZW4P Users Manual                                     Page 12
+         6.0 Error Codes
+
+
+         Be  sure and check the return codes from each LZW4P function call.
+         There are only 4 error codes returned by the LZW4P  library  other
+         than  0  (no  error). All error codes are negative numbers.  Their
+         numerical values are in the LZW4P.PAS file.
+
+         Each error code is returned by a library function as follows:
+
+         ****************************************************************
+         *    Error Name    *  IntLZW  *  TermLZW * Compress *  Expand  *
+         ****************************************************************
+         * EXPANSION_ERROR  *    No    *    No    *    No    *    Yes   *
+         * CANNOT_ALLOCATE  *    Yes   *    No    *    No    *    No    *
+         * INTERNAL_ERROR   *    Yes   *    No    *    No    *    No    *
+         * NOT_READY        *    No    *    No    *    Yes   *    Yes   *
+         * BAD_BITCODE      *    Yes   *    No    *    No    *    No    *
+         ****************************************************************
+
+
+         6.1 EXPANSION_ERROR
+
+         An  EXPANSION_ERROR  error  is returned only by the Expand library
+         function. It is caused by attempting to expand a file that was not
+         compressed by the Compress function.  Note, however,  that  Expand
+         may  expand  a  file  that  was not compressed by Compress without
+         returning an EXPANSION error.
+
+         6.2 CANNOT_ALLOCATE
+
+         A CANNOT_ALLOCATE error is returned only by  the  InitLZW  library
+         function.   It is caused when the Alloc function passed to InitLZW
+         returns  a  NULL  pointer,  indicating  that  it  cannot  allocate
+         sufficient memory.
+
+         6.3 INTERNAL_ERROR
+
+         An  INTERNAL_ERROR  error  is returned only by the InitLZW library
+         function and only in the  shareware  version.   It  is  caused  by
+         modification  of  the  Shareware screen. You should never get this
+         error.
+
+         6.4 NOT_READY
+
+         A NOT_READY error is returned by the Compress and  Expand  library
+         functions.  It  is  caused  by  calling Compress or Expand without
+         first calling InitLZW.
+
+         6.5 BAD_BITCODE
+
+         A  BAD_BITCODE  error  is  returned  from InitLZW when specifing a
+         BitCode of other than 12, 13, or 14.
+
+
+
+
+
+
+        LZW4P Users Manual                                     Page 13
+         7.0 Legal Issues
+
+
+         7.1 Registration
+
+
+         If you wish to register the LZW4P Library, please send $45 plus $3
+         S&H ($6 outside of North America) to:
+
+                  MarshallSoft Computing, Inc.
+                  Post Office Box  4543
+                  Huntsville AL 35815
+
+         We accept  American  Express  (account  number,  expiration  date,
+         exact  name  on  your  card,  and  complete  AmEx  billing address
+         required), checks in US dollars  drawn  on  a  US  bank,  purchase
+         orders  (POs)  from  recognized  US schools and companies listed in
+         Dun &  Bradstreet,  and  COD  (street  address  and  phone  number
+         required)  within  the USA (plus a $3 COD charge).  Print the file
+         PCL4C.INV if an invoice  is  needed.
+
+         You  can  also  order LZW4P from The Public Software Library (PSL)
+         with your MC, Visa, AmEx, or Discover card by calling 800-242-4PSL
+         (from overseas: 713-524-6394) or by  FAX  at  713-524-6398  or  by
+         CompuServe  at  [71355,470].  THESE NUMBERS ARE FOR ORDERING ONLY.
+         The product number for LZW4P is 10911.
+
+         If  you  wish  to  update from an older version of LZW4P, send $15
+         plus  $3  S&H  ($6 outside  of  North  America).  Updates  must be
+         ordered directly from MarshallSoft Computing.
+
+         The registered package includes:
+
+         o  LZW4P library w/o shareware screen.
+         o  Assembler source code for the library.
+         o  Laser printed Users Manual.
+         o  Telephone / FAX / BBS  support for one year.
+
+         Print  the  file LZW4P.INV if an invoice is needed. The registered
+         user will receive the latest version of LZW4P shipped by  two  day
+         priority  mail  (packet  airmail  overseas).   A 5.25" diskette is
+         provided unless a 3.5" diskette is requested.
+
+
+         6.2 Referral Program
+
+
+         The registered user will receive  a  $5  certificate  towards  any
+         MarshallSoft   Computing  product  by  referring  a  new  customer
+         (someone who has never  registered  with  us)  paying  full  price
+         ($45). The new customer must identify you at the time the order is
+         placed.   You  will  be mailed a certificate worth $5 when the new
+         registration is paid.
+
+
+
+
+
+
+        LZW4P Users Manual                                     Page 14
+         7.2 License
+
+
+         MarshallSoft  Computing,  Inc. grants the registered user of LZW4P
+         the right to use  the  LZW4P  library  (in  object  form)  in  the
+         development   of  any  software  product  without  any  royalties.
+         However,  the  source  code  for  the  library  (LZW4PLIB.ASM)  is
+         copyrighted  by  MarshallSoft  Computing,  Inc.,  and  may  not be
+         released in whole or in part.
+
+
+         7.3 Warranty
+
+
+         MARSHALLSOFT COMPUTING, INC. DISCLAIMS ALL WARRANTIES RELATING  TO
+         THIS  SOFTWARE,  WHETHER  EXPRESSED  OR IMPLIED, INCLUDING BUT NOT
+         LIMITED TO ANY IMPLIED WARRANTIES OF MERCHANTABILITY  AND  FITNESS
+         FOR  A  PARTICULAR  PURPOSE, AND ALL SUCH WARRANTIES ARE EXPRESSLY
+         AND SPECIFICALLY DISCLAIMED. NEITHER MARSHALLSOFT COMPUTING,  INC.
+         NOR ANYONE ELSE WHO HAS BEEN INVOLVED IN THE CREATION, PRODUCTION,
+         OR  DELIVERY  OF  THIS  SOFTWARE SHALL BE LIABLE FOR ANY INDIRECT,
+
+         CONSEQUENTIAL, OR INCIDENTAL DAMAGES ARISING OUT  OF  THE  USE  OR
+         INABILITY  TO  USE  SUCH  SOFTWARE EVEN IF MARSHALLSOFT COMPUTING,
+         INC.  HAS BEEN ADVISED OF  THE  POSSIBILITY  OF  SUCH  DAMAGES  OR
+         CLAIMS. IN NO EVENT SHALL MARSHALLSOFT COMPUTING, INC.'S LIABILITY
+         FOR ANY SUCH DAMAGES EVER EXCEED THE PRICE PAID FOR THE LICENSE TO
+         USE  THE SOFTWARE, REGARDLESS OF THE FORM OF THE CLAIM. THE PERSON
+         USING  THE  SOFTWARE  BEARS  ALL  RISK  AS  TO  THE  QUALITY   AND
+         PERFORMANCE OF THE SOFTWARE.
+
+         Some  states  do not allow the exclusion of the limit of liability
+         for consequential or incidental damages, so the  above  limitation
+         may not apply to you.
+
+         This  agreement  shall  be  governed  by  the laws of the State of
+         Alabama and shall inure to the benefit of Marshallsoft  Computing,
+         Inc.   and  any successors, administrators, heirs and assigns. Any
+         action or proceeding brought by either  party  against  the  other
+         arising  out of or related to this agreement shall be brought only
+         in a STATE or FEDERAL COURT of competent jurisdiction  located  in
+         Madison County, Alabama. The parties hereby consent to in personam
+         jurisdiction of said courts.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        LZW4P Users Manual                                     Page 15
+         8.0 Revision History
+
+
+         Version 1.0 -- October 8, 1992
+
+         o  Original release (C only).
+
+         Version 1.1 -- November 11, 1992  (C only)
+
+         o  Added MK_ARC example program.
+         o  Added UN_ARC example program.
+
+         Version 1.2 -- March 1, 1993  (1st release of PASCAL version)
+
+         o  SEE_ARC example program added.
+         o  Minor speed improvements.
+
+         Version 1.3 -- Sept 10, 1993
+
+         o  Added BitCode parameter to InitLZW.
+
+         Version 1.4 -- June 1, 1994
+
+         o Added EX_ARC example program.
+
+
+         9.0 Other MarshallSoft Computing Products for Pascal
+
+
+         Shareware versions of  all  MarshallSoft  Computing  products  are
+         available on our user support BBS 205-880-9748.
+
+         9.1 The Personal Communications Library for Pascal
+
+
+         The Personal Communications Library for the Pascal (PCL4P)  is  an
+         asynchronous   communications  library  designed  for  experienced
+         software developers programming in Turbo Pascal. The PCL features:
+
+         o 33 communications and support functions.
+         o Support for the high performance INS16550 UART.
+         o Supports hardware (RTS/CTS) flow control.
+         o Interrupt driven tranmitter (optionally) & receiver.
+         o Supports 300 baud to 115,200 baud.
+         o Supports COM1 through COM16.
+         o Adjustable receive queues from 8 bytes to 32 KB.
+         o Control-BREAK error exit.
+         o 17 communications error conditions trapped.
+         o Supports the (dumb) DigiBoard PC/4 and PC/8.
+         o Supports the (dumb) BOCA boards BB1004, BB1008, and BB2016.
+         o Allows 4 to 16 ports to run concurrently.
+         o Complete modem control & status.
+         o Written in assembly language for small size & high speed.
+         o Terminal program featuring XMODEM, YMODEM, & YMODEM-G.
+
+         The   Personal   Communications  Library  for  Pascal  (PCL4P)  is
+         available for $65 plus  $3  S&H  ($6  S&H  overseas).
+
+
+        LZW4P Users Manual                                     Page 16

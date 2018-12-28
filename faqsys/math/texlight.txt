@@ -1,0 +1,237 @@
+                         Lighting Your Texture Maps
+
+Introduction
+
+So, you've got your engine running, you have texture mapping, and some kind
+of shading in place, it runs fast, its smooth, but you feel somethings
+missing. You need to shade your texture maps. But you haven't got a clue how
+to do it! Well, I shall now explain the simple process of adding shading or
+transparency to your textures, in 256 colour mode.
+
+16*16 Linear Palette
+
+The easiest way to make primitive shading is to change your palette.
+Firstly, you will only be able to have 256 / n shades, where n is the number
+of colours you will be using. Secondly, the image quality is very poor. But,
+I'll explain it anyway, and you should at least implement it, if at least
+just to sharpen your coding skills. You'll find it leads on well to the
+better method...
+
+Ok, the idea here is that instead of having just one big lump of 256
+colours, you organise the colours into a table. Say a 16*16 table. Going
+down the rows you have increasing shade, and going across the table you have
+colours. Building this table is easy. You start at black for the first row,
+for every colour. Then, you fade up to the correct RGB in each successive
+row. So for colour 1:
+
+R, G, B = RGB values for the colour
+DeltaR, DeltaG, DeltaB = Amount to step at each row
+DeltaR = (R << 8) / numshades
+DeltaG = (B << 8) / numshades
+DeltaB = (B << 8) / numshades
+CurR, CurG, CurB = current red, green, blue
+CurR = CurG = CurB = 0
+
+for row = 0 to numshades - 1
+        for colour = 0 to numcolours - 1
+                palette[row*16+colour].red = CurR[colour] >> 8
+                palette[row*16+colour].green = CurG[colour] >> 8
+                palette[row*16+colour].blue = CurB[colour] >> 8
+
+                CurR[colour] += DeltaR[colour]
+                CurG[colour] += DeltaG[colour]
+                CurB[colour] += DeltaB[colour]
+        end
+end
+
+This is only pseudo-code. Coding this up is a 15-min maximum job. OK, now
+you've got that going, you need to light your textures. Again, this is easy.
+Simply do:
+
+PutPixel(x, y, shade*16+texture[v][u])
+
+Simple! Hold on to this idea of using a lookup table to get your colour, its
+a very important concept.
+
+Using A Seperate Look-up Table
+
+In the previous section, the lookup table was your palette. Now, we will
+create a seperate lookup table, which will let us do better shading, and
+improve the versatility of our code.
+
+Allocate a 256*256 block of memory. If you're still in real-mode, and can't
+allocate this much memory, stop for a minute, and ask yourself what the hell
+you're playing at? You're using a computer that has somewhere between 4 and
+32 megs of RAM installed, and you're constricting yourself to 1 meg? Get
+yourself a new compiler! If you're a C/C++ man, get DJGPP or Watcom C++. If
+Pascal is your thing, go for TMT Pascal, or perhaps GNU Pascal under Linux.
+Finally, if you're a masochist, and use 100% assembly, get yourself DOS32,
+or Trans PMODE extender. Personally I prefer DOS32 and Watcom.
+
+Okay, that block of memory is going to be used for a lookup table. As
+before, you're going to increasing shade with increasing row, and colour
+running across the columns:
+
+          Colour -->
+        +----------------------+
+Shade 0 |                      |
+      1 |                      |
+     ... ~~~~~~~~~~~~~~~~~~~~~~
+
+    256 |                      |
+        +----------------------+
+
+That really should have been a .gif picture, but what the hell, you can see
+what I mean. Now you'll need to fill that table. And this is the tricky,
+time consuming bit.
+
+Finding The Colour Of Best Fit
+
+We only have a finite number of colours in our palette. And to fully shade
+the texture, we would need 256*256 colours. So, we need to find the best
+fitting colour for a given shade. The way this is done is pretty simple. You
+need to find the 'distance' between the target colour, and the colour in the
+palette. This gives you a measure of how close the colour is to the desired
+colour. Then return the colour with the minimum distance. Distance is found
+by :
+
+Dist = sqrt((TargetR - R) ^ 2 + (TargetG - G) ^ 2 + (TargetB - B) ^ 2)
+
+Set your best-fit distance variable to some high, impossible number, say a
+million. Loop for every colour, and if dist < best-dist, then set best-dist
+to dist, and best-colour to current-colour. If distance is 0, then just
+return the colour; you can't do better than a perfect fit. Otherwise, at the
+end of the loop, just return your best fitting colour. Your code should look
+something like :
+
+int BestColour(float r, float g, float b, char *palette)
+{
+        int             n;
+        int             bestcol = 0;
+        int             bestdist = 256000;
+        float           dist, rdist, gdist, bdist;
+        float           red, green, blue;
+
+        for(n=0; n<256; n++) {
+                red   = (float) palette[0];
+                green = (float) palette[1];
+                blue  = (float) palette[2];
+                rdist = red   - r;
+                gdist = green - g;
+                bdist = blue  - b;
+                dist = sqrt(rdist * rdist +
+                            gdist * gdist +
+                            bdist * bdist);
+
+                if(dist <= bestdist) {
+                        bestdist = dist;
+                        bestcol = n;
+                }
+                if(dist == 0)
+                        return n;
+                palette += 3;
+        }
+
+        return bestcol;
+}
+
+Its also a good idea to weight the rgb distances differently. Your eyes are
+generally more sensitive to the green band of colour, then red, then blue.
+So weight them perhaps:
+
+0.30*Red
+0.59*Green
+0.11*Blue
+
+This usually improves quality a bit. Also, you can avoid the sqrt() function
+call, by just comparing the squared distance. I'm not sure if this works
+perfectly as a replacement, but it seems fine to me. Please note that this
+is a pre-process, NOT to be done at rendertime (unless palette changes)
+
+Calculating The Colour For A Given Shade
+
+Calculating what colour to search for is simple enough. You can use any
+formulae you like for this, a phong lighting model, a transparency, a depth
+cue formula. The point is you need to calculate RGB for a given colour, and
+a given 'shade'.
+
+Phong Lighting Model
+
+The formula for this is:
+
+Ambient + Diffuse + Specular
+
+Which becomes:
+Ia*ka*Oa + I*(Od*kd*(N.L) + Os*ks*(R.V)^n)
+
+Ia is intensity of ambient
+Ka is ambient co-ef
+Oa is ambient colour. These are constant, set to whatever you like
+I is intensity of light. Say 1.0
+Od is colour for diffuse, replace with colour[n]
+Kd is diffuse co-efficient. About 0.95 - 1.0 is good
+(N.L) is angle of incidence, replace shade[n]
+Os is specular colour, say 255
+Ks is specular co-ef, say 0.75
+(R.V) is angle of reflection. Replace with spec[n]
+N is the shinyness. A value of around 20 looks fine.
+
+You'll need to calculate this for R G and B seperately. Make the N.L and
+(R.V)^n terms into lookup tables. Then search for the value in the palette,
+and you're done.
+
+Depth cueing
+
+A simple approximation can be done with
+
+k*Colour
+
+Where k is shade/256. Its also a good idea to make the colour fade to white,
+instead of black, which gives the illusion of fogging.
+
+Transparecy
+
+Transparecy is slightly different. Instead of shade, you will have
+background-colour, and colour will be replaced with foreground colour.
+Formulae for this:
+
+background * transparency*foreground + (1.0 - transparency)*background
+
+Repeated for RGB. Its also worth considering the shape of the surface. For
+example, a sphere could be more transparent at the centre, becoming less
+transparent to the edges. Or you could fade transparencies. This will take
+quite a bit of memory though.
+----------------------------------------------------------------------------
+
+Putting It All Together
+
+Now you need to put all this together. Your code might look something like:
+
+Precalculate as much as possible
+
+For every shade
+        For every colour
+                Determine target colour
+                Colour = BestFit(target colour)
+                Store Colour
+        End
+End
+
+Its a good idea to pre-calculate this, and store it to a file, because it
+can take quite a while to run through.
+
+Also, consider the alignment of such tables, and your texture maps. If they
+are aligned to 64k boundaries, we can improve our routine greatly. We can
+use the upper 16 bits of the address as the address, and the lower 16 bits
+as the index:
+
+        mov     ebx, [pointer]
+        mov     bl, [u]
+        mov     bh, [v]
+
+Loading values into BH has the effect of an automatic multiplication by 256.
+Remember to insert 3 instructions between loading BL/BH, and actually using
+them - or you will cause an AGI.
+
+                    Tom Hammersley, tomh@globalnet.co.uk
+                                  [Image]

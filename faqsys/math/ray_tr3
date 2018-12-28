@@ -1,0 +1,1716 @@
+From ph@pixar.UUCP Sat Jul 11 20:17:51 1987
+Subject: ray tracer source
+Date: 12 Jul 87 00:17:51 GMT
+
+The following is C source to a ray tracer written by Masataka Ohta of Japan
+which he mailed me in connection with my minimal ray tracer contest.
+It was too good (and hence too long) to be a contender in that contest, but
+he asked me to post it to the net.
+Masataka also wrote the ray tracer used in SEIBU/SEDIC's "Mandala" and
+"Maitreya" animations, which were shown at SIGGRAPH a few years back.
+
+..Paul Heckbert
+
+ps: I made minor enhancements to his code to set resolution at run-time.
+
+==========================================
+
+# to unpack, cut here and run the following shell archive through sh
+# contents: README Makefile ray.h alloc.c bg.c dindex.c initdir.c
+# input.c intersect.c main.c scan.c shade.c shape.c trace.c test.v
+# random.c
+#
+sed 's/^X//' <<'EOF26628' >README
+XThis is a public domain ray tracing program with the following features:
+X    * shadows
+X    * specular reflection
+X    * transparency with refraction
+X    * antialiasing
+X    * high speed
+X
+XIt computes ray-object intersections very fast by exploiting ray coherence.
+XFor many scenes, the program can compute ray-object intersections
+Xin constant time, regardless of the number of objects.
+X
+XThe technique is described in the paper "Ray Coherence Theorem
+Xand Constant Time Ray Tracing Algorithm",
+X"Computer Graphics 1987, Proceedings of CG International '87"
+XSpringer-Verlag, pp. 303-314.
+X
+XAny suggestions or beautiful pictures generated
+Xusing this program are welcome.
+X
+X...Masataka Ohta
+X
+X...Computer Center, Tokyo Institute of Technology,
+X...2-12-1, O-okayama, Meguro-ku, Tokyo 152, JAPAN
+X
+X...mohta%titcce.cc.titech.junet@relay.cs.net
+X
+X==========================================================
+X
+XTo test the program:
+X
+X."make test.pic" will produce a beautiful(?) image of nine spheres.
+X
+X."make test1000.pic" will produce an image of 1,000 spheres.
+X
+X
+XUsage: ray [options] <scene file> <picture file>
+X
+XOptions:
+X
+X.-a:
+X..do anti-aliasing
+X
+X.-r res
+X..set resolution to res (default 128)
+X
+X.-t:
+X..output timing information
+X
+X.-s:
+X..use classical slow algorithm
+X.
+X.-o:
+X..disable object ordering optimization
+X
+X.-d:
+X..debug
+X
+X.-b:
+X..no shading
+X
+X.
+XFile format: 
+X.
+X.scene file: (an ascii file, see test.v or "make test1000.v" for example)
+X..f <field of view>
+X..l <x coordinate of the first light source>
+X..  <y coordinate of the first light source>
+X..  <z coordinate of the first light source>
+X..l <x coordinate of the second light source>
+X..  <y coordinate of the second light source>
+X..  <z coordinate of the second light source>
+X...
+X...
+X...
+X..o <shape number (integer) of the first object>
+X..  <shade number (integer) of the first object>
+X..  <first shape parameter of the first object>
+X..   .
+X..   .
+X..   .
+X..  <first shade parameter of the first object>
+X..   .
+X..   .
+X..   .
+X..o <shape number (integer) of the second object>
+X..  <shade number (integer) of the second object>
+X...
+X...
+X...
+X..e
+X
+X.picture file: (a binary file, make test.pic for an example)
+X..<long int xres>
+X..<long int yres>
+X..<pixel array of yres*xres*3 bytes>
+X.pixel array has the form:
+X..struct {unsigned char r, g, b;} array[yres][xres];
+X.screen space y=0 is at the top
+X
+XCurrently supported light source types: (should be programmable)
+X
+X.point light source with constant intensity of (1,1,1)
+X.regardless to the distance to the light source
+X
+XCurrently supported shapes: (may be changed by modifying shape.c)
+X
+X.number:...0
+X.shape:...sphere
+X.number of parameters:.4
+X..first parameter:.x coordinate value of the center
+X..second parameter:.y coordinate value of the center
+X..third parameter:.z coordinate value of the center
+X..forth parameter:.radius
+X
+XCurrently supported shades: (may be changed by modifying shade.c)
+X
+X.number:...0
+X.shade:...lambert with shadows
+X.number of parameters:.6
+X..first to third parameters:.RGB value of ambient
+X..4th to 6th parameters:..RGB value of diffuse
+X
+X.number:...1
+X.shade:...phong type specular with shadows
+X.number of parameters:.10
+X..first to third parameters:.RGB value of ambient
+X..4th to 6th parameters:..RGB value of diffuse
+X..7th to 9th parameters:..RGB value of specular
+X..10th parameter:...specular width factor
+X
+X.number:...2
+X.shade:...mirror (i.e. reflective ) with phong
+X....type specular with shadows
+X.number of parameters:.13
+X..first to third parameters:.RGB value of ambient
+X..4th to 6th parameters:..RGB value of diffuse
+X..7th to 9th parameters:..RGB value of specular
+X..10th parameter:...specular width factor
+X..11th to 13th parameters:.RGB ratio of reflection
+X
+X.number:...3
+X.shade:...glass (i.e. reflective and refractive)
+X....with phong type specular with shadows
+X.number of parameters:.17
+X..first to third parameters:.RGB value of ambient
+X..4th to 6th parameters:..RGB value of diffuse
+X..7th to 9th parameters:..RGB value of specular
+X..10th parameter:...specular width factor
+X..11th to 13th parameters:.RGB ratio of reflection
+X..14th to 16th parameters:.RGB ratio of refraction
+X..17th parameter:...refractive index
+X
+XViewing parameters:
+X
+X.eye:...fixed at (0,0,0)
+X.eye direction:..fixed to (0,0,1)
+X.field of view:..variable from 0 to 180 degree (with 'f' option)
+X
+XResolution:
+X
+X.set with 'r' option, defaults to 128
+X.picture is always square
+X
+XLimitations:
+X
+X.coordinate transformation should be supported
+X
+X.light source type should be programmable
+X
+X.more complex shapes should be supported
+X
+X.more sophisticated syntax should be used (eg. comments, symbolic names)
+X
+X.dynamic loading of light source, shape and shade functions
+X.should be possible
+EOF26628
+sed 's/^X//' <<'EOF26629' >Makefile
+XSRC=alloc.c bg.c dindex.c initdir.c input.c intersect.c main.c\
+X.scan.c shade.c shape.c trace.c
+X
+XOBJ=alloc.o bg.o dindex.o initdir.o input.o intersect.o main.o\
+X.scan.o shade.o shape.o trace.o
+X
+XHDR=ray.h
+X
+XCFLAGS=-O
+X
+Xray:.$(OBJ)
+X.cc $(CFLAGS) $(OBJ) -o ray -lm
+X
+Xray.lint:.$(HDR) $(SRC)
+X.lint -b $(SRC) -lm >ray.lint
+X
+X$(OBJ):.ray.h
+X
+Xprint:
+X.print Makefile $(HDR) $(SRC)
+X
+Xray.shar: README Makefile $(HDR) $(SRC) test.v random.c
+X.shar README Makefile $(HDR) $(SRC) test.v random.c >ray.shar
+X
+Xclean:
+X.rm -f $(OBJ) ray random test.pic test1000.v test1000.pic lint
+X
+Xrandom: random.c
+X.cc -O random.c -o random -lm
+X
+Xtest.pic: ray
+X.ray test.v test.pic
+X
+Xtest1000.v: random
+X.echo f 90 >test1000.v
+X.echo l 1 1 -3 >>test1000.v
+X.echo l -4 0 -1 >>test1000.v
+X.random 1000 0.07 >>test1000.v
+X.echo e >>test1000.v
+X
+Xtest1000.pic: ray test1000.v
+X.ray test1000.v test1000.pic
+EOF26629
+sed 's/^X//' <<'EOF26630' >ray.h
+X#define.MAXOBJECTS.1010
+X#define.MAXLEVEL.4
+X
+X#define.MINT.1e-6
+X
+Xstruct point {double x,y,z;};
+X
+Xstruct vector {double x,y,z;};
+X
+Xstruct circle {
+X.struct vector o;
+X.double c,s;
+X};
+X
+Xstruct ray {
+X.int obj;../* origin index */
+X.struct point a;../* origin coordinate */
+X.struct vector l;./* direction */
+X};
+X
+Xstruct color {double r,g,b};
+X
+Xstruct intersect {
+X.int obj;
+X.double t;
+X.struct vector n;
+X} intersect();
+X
+Xstruct object {
+X.int flags;
+X.struct point center;
+X.double radius;
+X.struct intersect (*shape)();
+X.double *spparams;
+X.struct color (*shade)();
+X.double *sdparams;
+X}
+X.objects[MAXOBJECTS];
+X
+X#define.EYE..1../* object is eye */
+X#define.LIGHT..2../* object is light source */
+X#define.REFLECT..4../* object is reflective */
+X#define.REFRACT..8../* object is refractive */
+X#define.RAYORIGIN.(EYE|LIGHT|REFLECT|REFRACT)
+X#define.SELF..16../* rays from an object may */
+X...../* intersect the object again */
+X
+Xint res;
+Xint maxobj,lights;
+X
+Xstruct objlist2 {
+X.int obj;
+X.struct objlist *next;
+X};
+X
+Xstruct objlist {
+X.int obj;
+X.struct objlist *next;
+X.float t;
+X}
+X.***candidates;
+X
+Xstruct dirlist {
+X.int dir;
+X.struct dirlist *next;
+X};
+X
+Xstruct vector nilvect,normalize(),reflect(),refract();
+Xstruct color trace(),bgcolor();
+X
+Xint fflag,dflag,aflag,tflag,sflag,oflag;
+X
+Xint alsize;
+X
+X/* This should be modified to be word alignment of alloc macro
+X *.0x1.for 2 byte alignment
+X *.0x3.for 4 byte alignment
+X */
+X#define.ALMASK.0x1
+X
+Xchar *myalloc(),*freep,*endp;
+Xchar *malloc();
+X
+X#define alloc(type).((alsize=(sizeof(type)+ALMASK)&~ALMASK),\
+X... (type *) (endp>freep+alsize\
+X.... ?(freep+=alsize)-alsize\
+X.... :myalloc(alsize)))
+X
+X#define nalloc(type,n).((alsize=(sizeof(type)*(n)+ALMASK)&~ALMASK),\
+X... (type *) (endp>freep+alsize\
+X.... ?(freep+=alsize)-alsize\
+X.... :myalloc(alsize)))
+X
+Xint raycount,shadowcount;
+X
+Xint NRECTS,DIRECTIONS;
+X
+Xstruct shapetab {
+X.void (*shapeinitfunc)();
+X.struct intersect (*shapefunc)();
+X.int nparams;
+X}
+X.*shapetab;
+X
+Xint nshapetab;
+X
+Xstruct shadetab {
+X.void (*shadeinitfunc)();
+X.struct color (*shadefunc)();
+X.int nparams;
+X}
+X.*shadetab;
+X
+Xint nshadetab;
+X
+Xdouble fovf;
+EOF26630
+sed 's/^X//' <<'EOF26631' >alloc.c
+X#include "ray.h"
+X
+Xchar *freep=(char *)0,*endp=(char *)0,*malloc();
+X
+X#define ALLOCUNIT 16384
+X
+Xchar *myalloc(s)
+Xint s;
+X{int size;
+Xchar *a;
+X.if(s>ALLOCUNIT)
+X..size=s;
+X.else
+X..size=ALLOCUNIT;
+X.a=malloc((unsigned)size);
+X.if(a==0)
+X.{.perror("malloc");
+X..exit(1);
+X.}
+X.freep=a+s;
+X.endp=a+size;
+X.return a;
+X}
+EOF26631
+sed 's/^X//' <<'EOF26632' >bg.c
+X#include "ray.h"
+X
+X/*ARGSUSED*/
+Xstruct color bgcolor(r)
+Xstruct ray r;
+X{struct color c;
+X.if(r.l.y>0)
+X..c.r=c.g=c.b=0.2;
+X.else
+X..c.r=c.g=c.b=0.2-0.8*r.l.y;
+X.return c;
+X}
+EOF26632
+sed 's/^X//' <<'EOF26633' >dindex.c
+X#include "ray.h"
+X
+Xdindex(v)
+Xstruct vector v;
+X{double x,y,z,ax,ay,az;
+X.x=v.x;
+X.y=v.y;
+X.z=v.z;
+X.ax=(x>0)?x:-x;
+X.ay=(y>0)?y:-y;
+X.az=(z>0)?z:-z;
+X.if(ax>=ay&&ax>=az)
+X..if(x>0)
+X...return index2(y,z,ax);
+X..else
+X...return index2(y,z,ax)+(NRECTS*NRECTS);
+X.else if(ay>=ax&&ay>=az)
+X..if(y>0)
+X...return index2(z,x,ay)+(2*NRECTS*NRECTS);
+X..else
+X...return index2(z,x,ay)+(3*NRECTS*NRECTS);
+X.else
+X..if(z>0)
+X...return index2(x,y,az)+(4*NRECTS*NRECTS);
+X..else
+X...return index2(x,y,az)+(5*NRECTS*NRECTS);
+X}
+X
+Xindex2(x,y,r)
+Xdouble r,x,y;
+X{register int m,n;
+X.m=(r+x)/(r*2)*NRECTS;
+X.if(m==NRECTS)
+X..m=NRECTS-1;
+X.n=(r+y)/(r*2)*NRECTS;
+X.if(n==NRECTS)
+X..n=NRECTS-1;
+X.return n*NRECTS+m;
+X}
+EOF26633
+sed 's/^X//' <<'EOF26634' >initdir.c
+X#include <math.h>
+X#include <stdio.h>
+X
+X#include "ray.h"
+X
+Xstruct circle *dvl;
+X
+Xstruct dirlist **neighbor;
+X
+Xint *markdir;
+X
+Xinitdir()
+X{register int o0,o1,d;
+Xregister double l;
+Xstruct point c0,c1;
+Xregister double r0,r1;
+Xstruct circle cir;
+Xregister struct objlist *ol;
+Xint origins;
+X.origins=0;
+X.for(o0=0;o0<maxobj;o0++)
+X.{.if((objects[o0].flags&RAYORIGIN))
+X...origins++;
+X.}
+X.NRECTS=40;
+X.if(NRECTS*sqrt((double)origins)>100)
+X.{.if(origins)
+X...NRECTS=100/sqrt((double)origins);
+X..else
+X...NRECTS=100;
+X.}
+X.if(NRECTS<4)
+X..NRECTS=4;
+X.DIRECTIONS=6*NRECTS*NRECTS;
+X.dvl=nalloc(struct circle,DIRECTIONS);
+X.neighbor=nalloc(struct dirlist *,DIRECTIONS);
+X.markdir=nalloc(int,DIRECTIONS);
+X.candidates=nalloc(struct objlist **,maxobj);
+X.for(o0=0;o0<maxobj;o0++)
+X.{.if(!(objects[o0].flags&RAYORIGIN))
+X...continue;;
+X..candidates[o0]=nalloc(struct objlist *,DIRECTIONS);
+X.}
+X.initdvl();
+X.initneighbor();
+X.for(d=0;d<DIRECTIONS;d++)
+X..markdir[d]=0;
+X.for(o0=0;o0<maxobj;o0++)
+X.{.if(!(objects[o0].flags&RAYORIGIN))
+X...continue;;
+X..for(d=0;d<DIRECTIONS;d++)
+X...candidates[o0][d]=(struct objlist *)0;
+X..for(o1=lights+1;o1<maxobj;o1++)
+X..{.if(o0==o1)
+X....continue;
+X...if(dflag)
+X....fprintf(stderr,"object %d to %d\n",o0,o1);
+X...c0=objects[o0].center;
+X...r0=objects[o0].radius;
+X...c1=objects[o1].center;
+X...r1=objects[o1].radius;
+X...cir.o.x=c1.x-c0.x;
+X...cir.o.y=c1.y-c0.y;
+X...cir.o.z=c1.z-c0.z;
+X...l=sqrt(cir.o.x*cir.o.x+cir.o.y*cir.o.y+cir.o.z*cir.o.z);
+X...cir.o.x/=l;
+X...cir.o.y/=l;
+X...cir.o.z/=l;
+X...if(r0+r1>=l)
+X...{.for(d=0;d<DIRECTIONS;d++)
+X....{.if(oflag)
+X......ol=alloc(struct objlist);
+X.....else
+X......ol=(struct objlist *)
+X.......alloc(struct objlist2);
+X.....ol->obj=o1;
+X.....ol->next=candidates[o0][d];
+X.....if(oflag)
+X......ol->t=0;
+X.....candidates[o0][d]=ol;
+X....}
+X...}
+X...else
+X...{.cir.s=(r0+r1)/l;
+X....cir.c=sqrt(1-cir.s*cir.s);
+X....d=dindex(cir.o);
+X....if(oflag)
+X.....ttraverse(d,&cir,o1,
+X......candidates[o0],l-r0-r1);
+X....else
+X.....traverse(d,&cir,o1,candidates[o0]);
+X....tclear(d);
+X...}
+X..}
+X..if(oflag)
+X...for(d=0;d<DIRECTIONS;d++)
+X....sortlist(candidates[o0][d]);
+X.}
+X.if(tflag)
+X.{int c;
+X..c=0;
+X..for(d=0;d<DIRECTIONS;d++)
+X...for(ol=candidates[0][d];ol;ol=ol->next)
+X....c++;
+X..fprintf(stderr,"Image complexity %g\n",((double)c)/DIRECTIONS);
+X..for(o0=1;o0<lights+1;o0++)
+X..{.c=0;
+X...for(d=0;d<DIRECTIONS;d++)
+X....for(ol=candidates[o0][d];ol;ol=ol->next)
+X.....c++;
+X...fprintf(stderr,"Shadow complexity for light %d %g\n",
+X....o0,((double)c)/DIRECTIONS);
+X..}
+X.}
+X}
+X
+Xtraverse(d,cir,o,ol)
+Xregister int d;
+Xregister struct circle *cir;
+Xregister int o;
+Xregister struct objlist **ol;
+X{register struct dirlist *dl;
+Xregister struct objlist *ol2;
+X.markdir[d]=1;
+X.if(!overlap(&dvl[d],cir))
+X..return;
+X.ol2=(struct objlist *)alloc(struct objlist2);
+X.ol2->obj=o;
+X.ol2->next=ol[d];
+X.ol[d]=ol2;
+X.for(dl=neighbor[d];dl;dl=dl->next)
+X..if(!markdir[dl->dir])
+X...traverse(dl->dir,cir,o,ol);
+X}
+X
+Xttraverse(d,cir,o,ol,t)
+Xregister int d;
+Xregister struct circle *cir;
+Xregister int o;
+Xregister struct objlist **ol;
+Xregister double t;
+X{register struct dirlist *dl;
+Xregister struct objlist *ol2;
+X.markdir[d]=1;
+X.if(!overlap(&dvl[d],cir))
+X..return;
+X.ol2=alloc(struct objlist);
+X.ol2->obj=o;
+X.ol2->next=ol[d];
+X.ol2->t=t;
+X.ol[d]=ol2;
+X.for(dl=neighbor[d];dl;dl=dl->next)
+X..if(!markdir[dl->dir])
+X...ttraverse(dl->dir,cir,o,ol,t);
+X}
+X
+Xtclear(d)
+Xregister int d;
+X{register struct dirlist *dl;
+X.markdir[d]=0;
+X.for(dl=neighbor[d];dl;dl=dl->next)
+X..if(markdir[dl->dir])
+X...tclear(dl->dir);
+X}
+X
+Xoverlap(cir0,cir1)
+Xregister struct circle *cir0,*cir1;
+X{.return
+X..cir0->o.x*cir1->o.x+cir0->o.y*cir1->o.y+cir0->o.z*cir1->o.z
+X..>
+X..cir0->c*cir1->c-cir0->s*cir1->s;
+X}
+X
+Xstruct circle initdvl2(x,y,z,dx0,dy0,dz0,dx1,dy1,dz1)
+Xdouble x,y,z,dx0,dy0,dz0,dx1,dy1,dz1;
+X{int i;
+Xdouble l,c,minc;
+Xstruct vector v[4];
+Xstruct circle cir;
+X.for(i=0;i<4;i++)
+X.{.v[i].x=x;
+X..v[i].y=y;
+X..v[i].z=z;
+X.}
+X.v[1].x+=dx0;
+X.v[1].y+=dy0;
+X.v[1].z+=dz0;
+X.v[2].x+=dx0+dx1;
+X.v[2].y+=dy0+dy1;
+X.v[2].z+=dz0+dz1;
+X.v[3].x+=dx1;
+X.v[3].y+=dy1;
+X.v[3].z+=dz1;
+X.cir.o.x=cir.o.y=cir.o.z=0;
+X.for(i=0;i<4;i++)
+X.{.cir.o.x+=v[i].x/4;
+X..cir.o.y+=v[i].y/4;
+X..cir.o.z+=v[i].z/4;
+X..l=1/sqrt(v[i].x*v[i].x+v[i].y*v[i].y+v[i].z*v[i].z);
+X..v[i].x*=l;
+X..v[i].y*=l;
+X..v[i].z*=l;
+X.}
+X.l=1/sqrt(cir.o.x*cir.o.x+cir.o.y*cir.o.y+cir.o.z*cir.o.z);
+X.cir.o.x*=l;
+X.cir.o.y*=l;
+X.cir.o.z*=l;
+X.minc=1;
+X.for(i=0;i<4;i++)
+X.{.c=cir.o.x*v[i].x+cir.o.y*v[i].y+cir.o.z*v[i].z;
+X..if(c<minc)
+X...minc=c;
+X.}
+X.cir.c=minc*0.999999;
+X.cir.s=sqrt(1-cir.c*cir.c);
+X.return cir;
+X}
+X
+Xinitdvl()
+X{int i,j,d;
+Xdouble x,y,z,dl;
+X.dl=2.0/NRECTS;
+X.d=0;
+X.x=1;
+X.z= -1;
+X.for(i=0;i<NRECTS;i++)
+X.{.y= -1;
+X..for(j=0;j<NRECTS;j++)
+X..{.dvl[d++]=initdvl2(x,y,z,0.0,0.0,dl,0.0,dl,0.0);
+X...y+=dl;
+X..}
+X..z+=dl;
+X.}
+X.x= -1;
+X.z= -1;
+X.for(i=0;i<NRECTS;i++)
+X.{.y= -1;
+X..for(j=0;j<NRECTS;j++)
+X..{.dvl[d++]=initdvl2(x,y,z,0.0,dl,0.0,0.0,0.0,dl);
+X...y+=dl;
+X..}
+X..z+=dl;
+X.}
+X.y=1;
+X.x= -1;
+X.for(i=0;i<NRECTS;i++)
+X.{.z= -1;
+X..for(j=0;j<NRECTS;j++)
+X..{.dvl[d++]=initdvl2(x,y,z,dl,0.0,0.0,0.0,0.0,dl);
+X...z+=dl;
+X..}
+X..x+=dl;
+X.}
+X.y= -1;
+X.x= -1;
+X.for(i=0;i<NRECTS;i++)
+X.{.z= -1;
+X..for(j=0;j<NRECTS;j++)
+X..{.dvl[d++]=initdvl2(x,y,z,0.0,0.0,dl,dl,0.0,0.0);
+X...z+=dl;
+X..}
+X..x+=dl;
+X.}
+X.z=1;
+X.y= -1;
+X.for(i=0;i<NRECTS;i++)
+X.{.x= -1;
+X..for(j=0;j<NRECTS;j++)
+X..{.dvl[d++]=initdvl2(x,y,z,0.0,dl,0.0,dl,0.0,0.0);
+X...x+=dl;
+X..}
+X..y+=dl;
+X.}
+X.z= -1;
+X.y= -1;
+X.for(i=0;i<NRECTS;i++)
+X.{.x= -1;
+X..for(j=0;j<NRECTS;j++)
+X..{.dvl[d++]=initdvl2(x,y,z,dl,0.0,0.0,0.0,dl,0.0);
+X...x+=dl;
+X..}
+X..y+=dl;
+X.}
+X}
+X
+Xstruct dirlist *consdir(m,dl)
+Xint m;
+Xstruct dirlist *dl;
+X{struct dirlist *dl2;
+X.dl2=alloc(struct dirlist);
+X.dl2->dir=m;
+X.dl2->next=dl;
+X.return dl2;
+X}
+X
+Xinitneighbor()
+X{int i;
+Xdouble d;
+X.for(i=0;i<DIRECTIONS;i++)
+X..neighbor[i]=(struct dirlist *)0;
+X.d=2.0/NRECTS;
+X.initneighbor2(1.0,-1.0,-1.0,0.0,d,0.0,0.0,0.0,d);
+X.initneighbor2(-1.0,-1.0,-1.0,0.0,d,0.0,0.0,0.0,d);
+X.initneighbor2(-1.0,1.0,-1.0,d,0.0,0.0,0.0,0.0,d);
+X.initneighbor2(-1.0,-1.0,-1.0,d,0.0,0.0,0.0,0.0,d);
+X.initneighbor2(-1.0,-1.0,1.0,d,0.0,0.0,0.0,d,0.0);
+X.initneighbor2(-1.0,-1.0,-1.0,d,0.0,0.0,0.0,d,0.0);
+X}
+X
+Xinitneighbor2(x,y,z,dx0,dy0,dz0,dx1,dy1,dz1)
+Xdouble x,y,z,dx0,dy0,dz0,dx1,dy1,dz1;
+X{int i,j,d;
+Xdouble x0,y0,z0,x1,y1,z1;
+X.x0=x+dx0/2+dx1/2;
+X.y0=y+dy0/2+dy1/2;
+X.z0=z+dz0/2+dz1/2;
+X.for(i=0;i<NRECTS;i++)
+X.{.for(j=0;j<NRECTS;j++)
+X..{.x1=x0+i*dx0+j*dx1;
+X...y1=y0+i*dy0+j*dy1;
+X...z1=z0+i*dz0+j*dz1;
+X...d=dindex2(x1,y1,z1);
+X...neighbor[d]=consdir(dindex2(x1+dx0,y1+dy0,z1+dz0),
+X....neighbor[d]);
+X...neighbor[d]=consdir(dindex2(x1-dx0,y1-dy0,z1-dz0),
+X....neighbor[d]);
+X...neighbor[d]=consdir(dindex2(x1+dx1,y1+dy1,z1+dz1),
+X....neighbor[d]);
+X...neighbor[d]=consdir(dindex2(x1-dx1,y1-dy1,z1-dz1),
+X....neighbor[d]);
+X..}
+X.}
+X}
+X
+Xdindex2(x,y,z)
+Xdouble x,y,z;
+X{struct vector v;
+X.v.x=x;
+X.v.y=y;
+X.v.z=z;
+X.return dindex(v);
+X}
+X
+Xprint2(v)
+Xstruct vector *v;
+X{.if(v->z==0)
+X.{.printf("\tz=0\n");
+X..return;
+X.}
+X.printf("\t%g %g\n",v->x/v->z,v->y/v->z);
+X}
+Xsortlist(ol)
+Xregister struct objlist *ol;
+X{register struct objlist *ol2,*ol3;
+Xdouble t;
+Xint obj;
+X.if(!ol)
+X..return;
+X.for(;ol->next;ol=ol->next)
+X.{.ol3=ol;
+X..for(ol2=ol->next;ol2;ol2=ol2->next)
+X...if(ol2->t<ol3->t)
+X....ol3=ol2;
+X..if(ol!=ol3)
+X..{.t=ol->t;
+X...ol->t=ol3->t;
+X...ol3->t=t;
+X...obj=ol->obj;
+X...ol->obj=ol3->obj;
+X...ol3->obj=obj;
+X..}
+X.}
+X}
+EOF26634
+sed 's/^X//' <<'EOF26635' >input.c
+X#include <math.h>
+X#include <stdio.h>
+X
+X#include "ray.h"
+X
+Xinput(s)
+Xchar *s;
+X{struct object *o;
+XFILE *f;
+Xint i,sp,sd;
+Xchar c;
+Xdouble fov;
+X.if((f=fopen(s,"r"))==0)
+X.{.perror(s);
+X..exit(1);
+X.}
+X.o=objects;
+X.if(fscanf(f," f %lf ",&fov)!=1||fov<=0||fov>=180)
+X.{.fprintf(stderr,"field of view format error\n");
+X..exit(1);
+X.}
+X.fovf=tan(fov*3.14159/360)/sqrt(2.0);
+X.o->flags=EYE;
+X.o->center.x=o->center.y=o->center.z=0;
+X.o->radius=0;
+X.o++;
+X.lights=0;
+X.while(fscanf(f," l %lf %lf %lf ",&o->center.x,&o->center.y,
+X..&o->center.z)==3)
+X.{.o->flags=LIGHT;
+X..o->radius=0;
+X..o++;
+X..lights++;
+X.}
+X.maxobj=lights+1;
+X.while(fscanf(f," o %d %d ",&sp,&sd)==2)
+X.{.if(maxobj==MAXOBJECTS)
+X..{.fprintf("too much objects\n");
+X...exit(1);
+X..}
+X..if(sp<0||sp>=nshapetab)
+X..{.fprintf(stderr,"shape number range error\n");
+X...exit(1);
+X..}
+X..if(sd<0||sd>=nshadetab)
+X..{.fprintf(stderr,"shade number range error\n");
+X...exit(1);
+X..}
+X..o= &objects[maxobj];
+X..o->flags=0;
+X
+X..o->shape=shapetab[sp].shapefunc;
+X..o->spparams=nalloc(double,shapetab[sp].nparams);
+X..for(i=0;i<shapetab[sp].nparams;i++)
+X..{.if(fscanf(f," %lf ",&o->spparams[i])!=1)
+X...{.fprintf(stderr,"shape parameter error\n");
+X....exit(1);
+X...}
+X..}
+X..(*shapetab[sp].shapeinitfunc)(o);
+X
+X..o->shade=shadetab[sd].shadefunc;
+X..o->sdparams=nalloc(double,shadetab[sd].nparams);
+X..for(i=0;i<shadetab[sd].nparams;i++)
+X..{.if(fscanf(f," %lf ",&o->sdparams[i])!=1)
+X...{.fprintf(stderr,"shade parameter error\n");
+X....exit(1);
+X...}
+X..}
+X..(*shadetab[sd].shadeinitfunc)(o);
+X
+X..maxobj++;
+X.}
+X.if(fscanf(f," %c",&c)!=1||c!='e')
+X.{.fprintf(stderr,"end command not found\n");
+X..exit(1);
+X.}
+X.(void) fclose(f);
+X}
+EOF26635
+sed 's/^X//' <<'EOF26636' >intersect.c
+X#include "ray.h"
+X
+Xstruct intersect intersect(r)
+Xstruct ray r;
+X{struct intersect i,imin;
+Xregister struct objlist *ol;
+Xregister int o;
+X.imin.obj=0;
+X.if(fflag)
+X.{.if(objects[r.obj].flags&SELF)
+X..{.i=(*objects[r.obj].shape)(r,r.obj);
+X...if(i.obj)
+X....imin=i;
+X..}
+X..for(ol=candidates[r.obj][dindex(r.l)];ol;ol=ol->next)
+X..{.if(oflag&&imin.obj&&imin.t<ol->t)
+X....break;
+X...i=(*objects[ol->obj].shape)(r,ol->obj);
+X...if(i.obj&&(!imin.obj||i.t<imin.t))
+X....imin=i;
+X..}
+X.}
+X.else
+X..for(o=lights+1;o<maxobj;o++)
+X..{.i=(*objects[o].shape)(r,o);
+X...if(i.obj&&(!imin.obj||i.t<imin.t))
+X....imin=i;
+X..}
+X.return imin;
+X}
+EOF26636
+sed 's/^X//' <<'EOF26637' >main.c
+X#include <sys/time.h>
+X#include <sys/resource.h>
+X#include <stdio.h>
+X
+X#include "ray.h"
+X
+Xmain(ac,av)
+Xint ac;
+Xchar **av;
+X{int g;
+Xstruct rusage ru;
+Xstruct timeval tu,tu2;
+X.raycount=0;
+X.shadowcount=0;
+X.fflag=1;
+X.dflag=0;
+X.aflag=0;
+X.tflag=0;
+X.sflag=1;
+X.oflag=1;
+X.while(av[1]&&*av[1]=='-')
+X.{.switch(av[1][1])
+X..{case 's':../* classical slow algorithm */
+X...fflag=0;
+X...break;
+X..case 'd':../* debug flag */
+X...dflag=1;
+X...break;
+X..case 'a':../* do anti-aliasing */
+X...aflag=1;
+X...break;
+X..case 't':../* produce timing information */
+X...tflag=1;
+X...break;
+X..case 'b':../* no shading */
+X...sflag=0;
+X...break;
+X..case 'o':../* don't order candidates */
+X...oflag=0;
+X...break;
+X..case 'r':../* set image resolution */
+X...res = atoi(av[2]);
+X...ac--;
+X...av++;
+X...break;
+X..default:
+X...usage();
+X..}
+X..ac--;
+X..av++;
+X.}
+X.if(ac!=3)
+X..usage();
+X.initshape();
+X.initshade();
+X.input(av[1]);
+X.if(fflag)
+X.{.(void) getrusage(0,&ru);
+X..tu=ru.ru_utime;
+X..initdir();
+X..if(tflag)
+X...fprintf(stderr,"Directions=%d Objects=%d\n",
+X....DIRECTIONS,maxobj);
+X..(void) getrusage(0,&ru);
+X..tu2=ru.ru_utime;
+X..if(tflag)
+X..{.fprintf(stderr,"Initializeation time ");
+X...printtime(tu,tu2);
+X..}
+X.}
+X.else
+X.{.if(tflag)
+X...fprintf(stderr,"Objects=%d\n",maxobj);
+X.}
+X.if((g=creat(av[2],0666))<0)
+X.{.perror(av[2]);
+X..exit(3);
+X.}
+X.(void) getrusage(0,&ru);
+X.tu=ru.ru_utime;
+X.if(aflag)
+X..ascan(g);
+X.else
+X..scan(g);
+X.(void) getrusage(0,&ru);
+X.tu2=ru.ru_utime;
+X.if(tflag)
+X.{.fprintf(stderr,"   Computation time ");
+X..printtime(tu,tu2);
+X..fprintf(stderr,"\n%d rays traced",raycount);
+X..fprintf(stderr,"   %d shadows tested\n",shadowcount);
+X.}
+X.(void) close(g);
+X.exit(0);
+X}
+X
+Xusage()
+X{.fprintf(stderr,
+X.."Usage: ray [-sdatbo] [-r res] scenefile picfile\n");
+X.exit(1);
+X}
+X
+Xprinttime(t0,t1)
+Xstruct timeval t0,t1;
+X{int sec,usec;
+X.usec=t1.tv_usec-t0.tv_usec;
+X.sec=t1.tv_sec-t0.tv_sec;
+X.if(usec<0)
+X.{.usec+=1000000;
+X..sec--;
+X.}
+X.fprintf(stderr,"%4d.%03d",sec,usec/1000);
+X}
+EOF26637
+sed 's/^X//' <<'EOF26638' >scan.c
+X#include <stdio.h>
+X#include <math.h>
+X
+X#include "ray.h"
+X
+Xint res = 128, xres, yres;
+X#define MAXRES 2048
+X
+Xtypedef struct {int xres, yres;} pichead;
+Xtypedef unsigned char icolor[3];
+X
+Xchar aaflag[5][4*MAXRES+1];
+Xicolor aabuf[5][4*MAXRES+1];
+X
+Xpixel(ic,x,y)
+Xicolor ic;
+Xregister double x,y;
+X{register double t;
+Xstruct ray r;
+Xstruct color c;
+Xregister double m;
+X.x*=fovf;
+X.y*=fovf;
+X.r.obj=0;
+X.r.a.x=r.a.y=r.a.z=0;
+X.t=1/sqrt(x*x+y*y+1);
+X.r.l.x=x*t;
+X.r.l.y=y*t;
+X.r.l.z=t;
+X.c=trace(0,r);
+X.m=c.r;
+X.if(m<c.g)
+X..m=c.g;
+X.if(m<c.b)
+X..m=c.b;
+X.if(m>1.0)
+X.{.c.r/=m;
+X..c.g/=m;
+X..c.b/=m;
+X.}
+X.ic[0]=c.r*255;
+X.ic[1]=c.g*255;
+X.ic[2]=c.b*255;
+X}
+X
+Xaapixel2(ic,i,j)
+Xicolor ic;
+Xregister int i,j;
+X{register double x,y;
+X.x=((double)(j-2*xres))/(2*xres);
+X.y=((double)(2*yres-i))/(2*yres);
+X.pixel(ic,x,y);
+X}
+X
+Xaapixel(ic,i,j,ai,s)
+Xicolor ic;
+Xregister int i,j,ai,s;
+X{register int k;
+Xicolor c,c00,c01,c10,c11;
+X.if(!aaflag[ai][j])
+X.{.aapixel2(aabuf[ai][j],i,j);
+X..aaflag[ai][j]=1;
+X.}
+X.if(!aaflag[ai+s][j])
+X.{.aapixel2(aabuf[ai+s][j],i+s,j);
+X..aaflag[ai+s][j]=1;
+X.}
+X.if(!aaflag[ai][j+s])
+X.{.aapixel2(aabuf[ai][j+s],i,j+s);
+X..aaflag[ai][j+s]=1;
+X.}
+X.if(!aaflag[ai+s][j+s])
+X.{.aapixel2(aabuf[ai+s][j+s],i+s,j+s);
+X..aaflag[ai+s][j+s]=1;
+X.}
+X.for(k=0;k<3;k++)
+X.{.c00[k]=aabuf[ai][j][k];
+X..c10[k]=aabuf[ai+s][j][k];
+X..c01[k]=aabuf[ai][j+s][k];
+X..c11[k]=aabuf[ai+s][j+s][k];
+X.}
+X.c[0]=(c00[0]+c01[0]+c10[0]+c11[0])/4;
+X.c[1]=(c00[1]+c01[1]+c10[1]+c11[1])/4;
+X.c[2]=(c00[2]+c01[2]+c10[2]+c11[2])/4;
+X.if(s==1||nearc(c,c00)&&nearc(c,c01)&&nearc(c,c10)&&nearc(c,c11))
+X.{.ic[0]=c[0];
+X..ic[1]=c[1];
+X..ic[2]=c[2];
+X..return;
+X.}
+X.s/=2;
+X.aapixel(c00,i,j,ai,s);
+X.aapixel(c01,i+s,j,ai+s,s);
+X.aapixel(c10,i,j+s,ai,s);
+X.aapixel(c11,i+s,j+s,ai+s,s);
+X.ic[0]=(c00[0]+c01[0]+c10[0]+c11[0])/4;
+X.ic[1]=(c00[1]+c01[1]+c10[1]+c11[1])/4;
+X.ic[2]=(c00[2]+c01[2]+c10[2]+c11[2])/4;
+X}
+X
+Xscan(f)
+Xregister int f;
+X{register int i,j;
+Xregister double x,y;
+Xicolor buf[MAXRES];
+X.scaninit(f);
+X.for(i=0;i<yres;i++)
+X.{.for(j=0;j<xres;j++)
+X..{.x=(2*j-xres+0.5)/xres;
+X...y=(yres-2*i-0.5)/yres;
+X...pixel(buf[j],x,y);
+X..}
+X..(void) write(f,(char *)buf,xres*sizeof(icolor));
+X.}
+X}
+X
+Xascan(f)
+Xregister int f;
+X{icolor buf[MAXRES];
+Xregister double x,y;
+Xregister int i,j,ai;
+X.scaninit(f);
+X.for(ai=0;ai<5;ai++)
+X..for(j=0;j<=4*xres;j++)
+X...aaflag[ai][j]=0;
+X.for(j=0;j<=4*xres;j+=4)
+X.{.x=((double)(j-2*xres))/(2*xres);
+X..y=1;
+X..pixel(aabuf[0][j],x,y);
+X..aaflag[0][j]=1;
+X.}
+X.for(i=0;i<4*yres;i+=4)
+X.{.for(j=0;j<=4*xres;j+=4)
+X..{.x=((double)(j-2*xres))/(2*xres);
+X...y=((double)(2*yres-(i+4)))/(2*yres);
+X...pixel(aabuf[4][j],x,y);
+X...aaflag[4][j]=1;
+X..}
+X..for(j=0;j<4*xres;j+=4)
+X...aapixel(buf[j/4],i,j,0,4);
+X..(void) write(f,(char *)buf,xres*sizeof(icolor));
+X..for(j=0;j<=4*xres;j++)
+X..{.aabuf[0][j][0]=aabuf[4][j][0];
+X...aabuf[0][j][1]=aabuf[4][j][1];
+X...aabuf[0][j][2]=aabuf[4][j][2];
+X...aaflag[0][j]=aaflag[4][j];
+X..}
+X..for(ai=1;ai<5;ai++)
+X..{.for(j=0;j<=4*xres;j++)
+X....aaflag[ai][j]=0;
+X..}
+X.}
+X}
+X
+Xscaninit(f)
+Xint f;
+X{pichead head;
+X.if (res>MAXRES)
+X.{.fprintf(stderr, "res=%d too large, must be less than %d\n",
+X...res, MAXRES);
+X..exit(1);
+X.}
+X.head.xres = xres = res;
+X.head.yres = yres = res;
+X.(void) write(f,(char *)&head,sizeof head);
+X}
+X
+Xnearc(c0,c1)
+Xicolor c0,c1;
+X{register int d;
+X.d=abs(c0[0]-c1[0])+abs(c0[1]-c1[1])+abs(c0[2]-c1[2]);
+X.return d<15;
+X}
+EOF26638
+sed 's/^X//' <<'EOF26639' >shade.c
+X#include <math.h>
+X
+X#include "ray.h"
+X
+Xvoid initdiffuse(),initspecular(),initmirror(),initglass();
+Xstruct color diffuse(),specular(),mirror(),glass();
+X
+Xdouble phong();
+X
+Xinitshade()
+X{.nshadetab=4;
+X.shadetab=nalloc(struct shadetab,nshadetab);
+X.shadetab[0].shadeinitfunc=initdiffuse;
+X.shadetab[0].shadefunc=diffuse;
+X.shadetab[0].nparams=6;
+X.shadetab[1].shadeinitfunc=initspecular;
+X.shadetab[1].shadefunc=specular;
+X.shadetab[1].nparams=10;
+X.shadetab[2].shadeinitfunc=initmirror;
+X.shadetab[2].shadefunc=mirror;
+X.shadetab[2].nparams=13;
+X.shadetab[3].shadeinitfunc=initglass;
+X.shadetab[3].shadefunc=glass;
+X.shadetab[3].nparams=17;
+X}
+X
+Xshadow(o,r)
+Xint o;
+Xstruct ray r;
+X{struct intersect i;
+X.shadowcount++;
+X.i=intersect(r);
+X.return i.obj!=o;
+X}
+X
+Xdouble phong(n,e,li,g)
+Xstruct vector n,e,li;
+Xdouble g;
+X{struct vector h;
+Xdouble l,c,t;
+X.h.x=e.x+li.x;
+X.h.y=e.y+li.y;
+X.h.z=e.z+li.z;
+X.l= -(h.x*n.x+h.y*n.y+h.z*n.z);
+X.if(l<0)
+X..return 0.0;
+X.c=l*l/(h.x*h.x+h.y*h.y+h.z*h.z);
+X.t=(1-c)/c;
+X.if(t>10*g)
+X..return 0;
+X.return exp(-t/g);
+X}
+X
+Xstruct vector nilvect={0.0,0.0,0.0};
+X
+Xstruct vector reflect(n,u)
+Xstruct vector n,u;
+X{struct vector v;
+Xdouble p;
+X.p=2*(n.x*u.x+n.y*u.y+n.z*u.z);
+X.v.x=u.x-p*n.x;
+X.v.y=u.y-p*n.y;
+X.v.z=u.z-p*n.z;
+X.return v;
+X}
+X
+Xstruct vector refract(n,u,ni)
+Xstruct vector n,u;
+Xdouble ni;
+X{struct vector v;
+Xdouble p,t;
+X.p=n.x*u.x+n.y*u.y+n.z*u.z;
+X.if(p<0)
+X.{.t=1-(1-p*p)/(ni*ni);
+X..if(t<=0)
+X...return nilvect;
+X..t= -p/ni-sqrt(t);
+X.}
+X.else
+X.{.ni=1/ni;
+X..t=1-(1-p*p)/(ni*ni);
+X..if(t<=0)
+X...return nilvect;
+X..t= -p/ni+sqrt(t);
+X.}
+X.v.x=u.x/ni+t*n.x;
+X.v.y=u.y/ni+t*n.y;
+X.v.z=u.z/ni+t*n.z;
+X.return v;
+X}
+X
+Xvoid initdiffuse(o)
+Xstruct object *o;
+X{
+X#ifdef lint
+X.o=o;
+X#endif
+X}
+X
+Xvoid initspecular(o)
+Xstruct object *o;
+X{
+X#ifdef lint
+X.o=o;
+X#endif
+X}
+X
+Xvoid initmirror(o)
+Xstruct object *o;
+X{.o->flags|=REFLECT;
+X}
+X
+Xvoid initglass(o)
+Xstruct object *o;
+X{.o->flags|=REFLECT|REFRACT|SELF;
+X}
+X
+Xstruct color diffuse(n,r,i)
+Xint n;
+Xstruct ray r;
+Xstruct intersect i;
+X{int j;
+Xstruct color c;
+Xdouble l,vx,vy,vz;
+Xstruct ray r2;
+Xdouble *sdparams;
+X#ifdef lint
+X.n=n;
+X#endif
+X.sdparams=objects[i.obj].sdparams;
+X.c.r=sdparams[0];
+X.c.g=sdparams[1];
+X.c.b=sdparams[2];
+X.for(j=1;j<lights+1;j++)
+X.{.r2.a=objects[j].center;
+X..vx=r.a.x+i.t*r.l.x-r2.a.x;
+X..vy=r.a.y+i.t*r.l.y-r2.a.y;
+X..vz=r.a.z+i.t*r.l.z-r2.a.z;
+X..l=1/sqrt(vx*vx+vy*vy+vz*vz);
+X..vx*=l;
+X..vy*=l;
+X..vz*=l;
+X..r2.obj=j;
+X..r2.l.x=vx;
+X..r2.l.y=vy;
+X..r2.l.z=vz;
+X..l= -(i.n.x*vx+i.n.y*vy+i.n.z*vz);
+X..if(l>0&&!shadow(i.obj,r2))
+X..{.c.r+=l*sdparams[3];
+X...c.g+=l*sdparams[4];
+X...c.b+=l*sdparams[5];
+X..}
+X.}
+X.return c;
+X}
+X
+Xstruct color specular(n,r,i)
+Xint n;
+Xstruct ray r;
+Xstruct intersect i;
+X{int j;
+Xstruct color c;
+Xdouble l,x,y,z,sp;
+Xstruct ray r2;
+Xstruct vector e,li;
+Xdouble *sdparams;
+X#ifdef lint
+X.n=n;
+X#endif
+X.sdparams=objects[i.obj].sdparams;
+X.c.r=sdparams[0];
+X.c.g=sdparams[1];
+X.c.b=sdparams[2];
+X.x=r.a.x+i.t*r.l.x;
+X.y=r.a.y+i.t*r.l.y;
+X.z=r.a.z+i.t*r.l.z;
+X.e.x=x-objects[0].center.x;
+X.e.y=y-objects[0].center.y;
+X.e.z=z-objects[0].center.z;
+X.l=1/sqrt(e.x*e.x+e.y*e.y+e.z*e.z);
+X.e.x*=l;
+X.e.y*=l;
+X.e.z*=l;
+X.for(j=1;j<lights+1;j++)
+X.{.r2.a=objects[j].center;
+X..li.x=x-r2.a.x;
+X..li.y=y-r2.a.y;
+X..li.z=z-r2.a.z;
+X..l=1/sqrt(li.x*li.x+li.y*li.y+li.z*li.z);
+X..li.x*=l;
+X..li.y*=l;
+X..li.z*=l;
+X..r2.obj=j;
+X..r2.l=li;
+X..l= -(i.n.x*li.x+i.n.y*li.y+i.n.z*li.z);
+X..if(l>0&&!shadow(i.obj,r2))
+X..{.c.r+=l*sdparams[3];
+X...c.g+=l*sdparams[4];
+X...c.b+=l*sdparams[5];
+X...sp=phong(i.n,e,li,sdparams[9]);
+X...c.r+=sp*sdparams[6];
+X...c.g+=sp*sdparams[7];
+X...c.b+=sp*sdparams[8];
+X..}
+X.}
+X.return c;
+X}
+X
+Xstruct color mirror(n,r,i)
+Xint n;
+Xstruct ray r;
+Xstruct intersect i;
+X{int j;
+Xstruct color c,rc;
+Xdouble l,x,y,z,sp;
+Xstruct ray r2;
+Xstruct vector e,li;
+Xdouble *sdparams;
+X.sdparams=objects[i.obj].sdparams;
+X.c.r=sdparams[0];
+X.c.g=sdparams[1];
+X.c.b=sdparams[2];
+X.x=r.a.x+i.t*r.l.x;
+X.y=r.a.y+i.t*r.l.y;
+X.z=r.a.z+i.t*r.l.z;
+X.e.x=x-objects[0].center.x;
+X.e.y=y-objects[0].center.y;
+X.e.z=z-objects[0].center.z;
+X.l=1/sqrt(e.x*e.x+e.y*e.y+e.z*e.z);
+X.e.x*=l;
+X.e.y*=l;
+X.e.z*=l;
+X.for(j=1;j<lights+1;j++)
+X.{.r2.a=objects[j].center;
+X..li.x=x-r2.a.x;
+X..li.y=y-r2.a.y;
+X..li.z=z-r2.a.z;
+X..l=1/sqrt(li.x*li.x+li.y*li.y+li.z*li.z);
+X..li.x*=l;
+X..li.y*=l;
+X..li.z*=l;
+X..r2.obj=j;
+X..r2.l=li;
+X..l= -(i.n.x*li.x+i.n.y*li.y+i.n.z*li.z);
+X..if(l>0&&!shadow(i.obj,r2))
+X..{.c.r+=l*sdparams[3];
+X...c.g+=l*sdparams[4];
+X...c.b+=l*sdparams[5];
+X...sp=phong(i.n,e,li,sdparams[9]);
+X...c.r+=sp*sdparams[6];
+X...c.g+=sp*sdparams[7];
+X...c.b+=sp*sdparams[8];
+X..}
+X.}
+X.r2.obj=i.obj;
+X.r2.a.x=x;
+X.r2.a.y=y;
+X.r2.a.z=z;
+X.r2.l=reflect(i.n,r.l);
+X.rc=trace(n+1,r2);
+X.c.r+=rc.r*sdparams[10];
+X.c.g+=rc.g*sdparams[11];
+X.c.b+=rc.b*sdparams[12];
+X.return c;
+X}
+X
+Xstruct color glass(n,r,i)
+Xint n;
+Xstruct ray r;
+Xstruct intersect i;
+X{int j;
+Xstruct color c,rc;
+Xdouble l,x,y,z,sp;
+Xstruct ray r2;
+Xstruct vector e,li;
+Xdouble *sdparams;
+X.sdparams=objects[i.obj].sdparams;
+X.c.r=sdparams[0];
+X.c.g=sdparams[1];
+X.c.b=sdparams[2];
+X.x=r.a.x+i.t*r.l.x;
+X.y=r.a.y+i.t*r.l.y;
+X.z=r.a.z+i.t*r.l.z;
+X.e.x=x-objects[0].center.x;
+X.e.y=y-objects[0].center.y;
+X.e.z=z-objects[0].center.z;
+X.l=1/sqrt(e.x*e.x+e.y*e.y+e.z*e.z);
+X.e.x*=l;
+X.e.y*=l;
+X.e.z*=l;
+X.for(j=1;j<lights+1;j++)
+X.{.r2.a=objects[j].center;
+X..li.x=x-r2.a.x;
+X..li.y=y-r2.a.y;
+X..li.z=z-r2.a.z;
+X..l=1/sqrt(li.x*li.x+li.y*li.y+li.z*li.z);
+X..li.x*=l;
+X..li.y*=l;
+X..li.z*=l;
+X..r2.obj=j;
+X..r2.l=li;
+X..l= -(i.n.x*li.x+i.n.y*li.y+i.n.z*li.z);
+X..if(l>0&&!shadow(i.obj,r2))
+X..{.c.r+=l*sdparams[3];
+X...c.g+=l*sdparams[4];
+X...c.b+=l*sdparams[5];
+X...sp=phong(i.n,e,li,sdparams[9]);
+X...c.r+=sp*sdparams[6];
+X...c.g+=sp*sdparams[7];
+X...c.b+=sp*sdparams[8];
+X..}
+X.}
+X.r2.obj=i.obj;
+X.r2.a.x=x;
+X.r2.a.y=y;
+X.r2.a.z=z;
+X.r2.l=reflect(i.n,r.l);
+X.rc=trace(n+1,r2);
+X.c.r+=rc.r*sdparams[10];
+X.c.g+=rc.g*sdparams[11];
+X.c.b+=rc.b*sdparams[12];
+X.r2.l=refract(i.n,r.l,sdparams[16]);
+X.if(r2.l.x==0&&r2.l.y==0&&r2.l.z==0)
+X..return c;
+X.rc=trace(n+1,r2);
+X.c.r+=rc.r*sdparams[13];
+X.c.g+=rc.g*sdparams[14];
+X.c.b+=rc.b*sdparams[15];
+X.return c;
+X}
+EOF26639
+sed 's/^X//' <<'EOF26640' >shape.c
+X#include <math.h>
+X
+X#include "ray.h"
+X
+Xvoid initsphere();
+Xstruct intersect sphere();
+X
+Xinitshape()
+X{.nshapetab=1;
+X.shapetab=nalloc(struct shapetab,nshapetab);
+X.shapetab[0].shapeinitfunc=initsphere;
+X.shapetab[0].shapefunc=sphere;
+X.shapetab[0].nparams=4;
+X}
+X
+Xvoid initsphere(o)
+Xstruct object *o;
+X{.o->center.x=o->spparams[0];
+X.o->center.y=o->spparams[1];
+X.o->center.z=o->spparams[2];
+X.o->radius=o->spparams[3];
+X}
+X
+Xstruct intersect sphere(r,obj)
+Xstruct ray r;
+Xregister int obj;
+X{struct vector v,n;
+Xregister double *p,b,c,d,t,t0,t1;
+Xstruct intersect i;
+X.i.obj=0;
+X.p=objects[obj].spparams;
+X.v.x=r.a.x-p[0];
+X.v.y=r.a.y-p[1];
+X.v.z=r.a.z-p[2];
+X.b=r.l.x*v.x+r.l.y*v.y+r.l.z*v.z;
+X.c=v.x*v.x+v.y*v.y+v.z*v.z-p[3]*p[3];
+X.d=b*b-c;
+X.if(d<0)
+X..return i;
+X.d=sqrt(d);
+X.if(b>=0)
+X.{.t0= -b-d;
+X..t1=c/(-b-d);
+X.}
+X.else
+X.{.t0=c/(-b+d);
+X..t1= -b+d;
+X.}
+X.if(t0>MINT)
+X..t=t0;
+X.else if(t1>MINT)
+X..t=t1;
+X.else
+X..return i;
+X.i.obj=obj;
+X.i.t=t;
+X.n.x=r.a.x+r.l.x*t-p[0];
+X.n.y=r.a.y+r.l.y*t-p[1];
+X.n.z=r.a.z+r.l.z*t-p[2];
+X.t=sqrt(n.x*n.x+n.y*n.y+n.z*n.z);
+X.i.n.x=n.x/t;
+X.i.n.y=n.y/t;
+X.i.n.z=n.z/t;
+X.return i;
+X}
+EOF26640
+sed 's/^X//' <<'EOF26641' >trace.c
+X#include "ray.h"
+X
+Xstruct color black={0,0,0},white={1.0,1.0,1.0};
+X
+Xstruct color trace(n,r)
+Xregister int n;
+Xstruct ray r;
+X{struct intersect i;
+X.if(n>=MAXLEVEL)
+X..return bgcolor(r);
+X.raycount++;
+X.i=intersect(r);
+X.if(i.obj>0)
+X.{.if(sflag)
+X...return (*objects[i.obj].shade)(n,r,i);
+X..else
+X...return white;
+X.}
+X.else
+X.{.if(sflag)
+X...return bgcolor(r);
+X..else
+X...return black;
+X.}
+X}
+EOF26641
+sed 's/^X//' <<'EOF26642' >test.v
+Xf 109.5
+Xl.10 10 -5
+Xl.-20 0 -5
+Xo 0 1
+X.-5 -5 10 3
+X.0.2 0 0..0.2 0 0..0.6 0.0 0.0 0.01
+Xo 0 1
+X.-3 5 10 2
+X.0 0.2 0..0 0.2 0..0.0 0.6 0.0 0.01
+Xo 0 1
+X.6 -2 10 2
+X.0 0 0.2..0 0 0.2..0.0 0.0 0.6 0.01
+Xo 0 1
+X.0 -4 20 7
+X.0.2 0.2 0.0.2 0.2 0.0.6 0.6 0.6 0.01
+Xo 0 2
+X.5 5 15 5
+X.0 0 0..0 0 0..0.9 0.9 0.9 0.01.0.9 0.9 0.9
+Xo 0 3
+X.-1 1 7 3
+X.0 0 0..0 0 0..0.2 0.2 0.2 0.01.0.1 0.1 0.1
+X.0.9 0.9 0.9 1.2
+Xe
+EOF26642
+sed 's/^X//' <<'EOF26643' >random.c
+X#include <stdio.h>
+X#include <math.h>
+X
+Xdouble rnd()
+X{.return (random()&0xffff)/65536.0;
+X}
+X
+Xmain(ac,av)
+Xint ac;
+Xchar **av;
+X{int i,j,n;
+Xdouble x,y,z,r,cr,d,l;
+X.if(ac!=3&&ac!=4)
+X.{.fprintf(stderr,"Usage: %s number radious [seed]\n",
+X...av[0]);
+X..exit(1);
+X.}
+X.n=atoi(av[1]);
+X.r=atof(av[2]);
+X.if(ac==4)
+X..srandom(atoi(av[3]));
+X.if(n<0||r<=0)
+X.{.fprintf(stderr,"Usage: %s number radious [seed]\n",
+X...av[0]);
+X..exit(1);
+X.}
+X.for(i=0;i<n;i++)
+X.{.while(1)
+X..{.x=rnd()*2-1;
+X...y=rnd()*2-1;
+X...z=rnd()*2-1;
+X...l=x*x+y*y+z*z;
+X...if(l<=(1-r)*(1-r))
+X....break;;
+X..}
+X..printf("o 0 0\n");
+X..printf("\t%g %g %g %g\n",x,y,z+2,r);
+X..printf("\t0.2 0.2 0.2\t0.4 0.4 0.4\n");
+X.}
+X.exit(0);
+X}
+EOF26643
+exit
+
+

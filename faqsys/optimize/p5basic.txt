@@ -1,0 +1,572 @@
+袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴
+	       THE P5 BASICS, AND THE NEW PROFILING REGISTERS
+
+                              By TalkieToaster
+袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴袴
+
+RELEASE 2 (01/01/96)
+
+DISCLAIMER: I will accept no responsibility whatsoever for any loss or
+damage that may occur directly or indirectly by the use or misuse of
+this information.
+
+Mail: tim@legend.co.uk
+IRC: TimJ
+
+If any technical information is incorrect, PLEASE let me know.
+
+컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴
+ CONTENTS
+컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴
+
+ 1. INTRODUCTION
+ 2. THE P5 PIPELINES
+ 3. THE NEW PROFILING REGISTERS
+ 4. SOME MSR AND TSC MACROS
+
+
+컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴
+1. INTRODUCTION
+컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴
+
+This time round I've gone into more detail. There's still no ground breaking
+information in here, but all the same it's still useful if you want the
+basics.
+
+New :
+  - More about the P5 pipelines
+  - Some TSC and MSR macros for profiling and timing assembly code
+
+컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴
+1. THE P5 PIPELINES
+컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴
+
+First of all... writing about the pipeline is REAL boring.. I hate it.
+If you want detailed information about the dual pipelines I suggest you
+either find another good p5 doc, or muck about with it.
+
+Right, the P5 has two instruction pipelines - U and V. The V pipe can only
+execute selected RISC instructions which are generally ones that take 1
+cycle.
+
+If it is possible, the V-pipe will execute the next available instruction at
+the same time as the U-pipe. To visualise this:
+
+	instructions	  cycles no.	pipe
+
+	mov eax,1	; 1   		executed in U-pipe
+	mov edx,2	; 1   		executed in V-pipe
+	mov ecx,3	; 2   		executed in U-pipe
+	mov ebx,4	; 2    		executed in V-pipe
+
+	Total 2 cycles.
+
+
+The V-pipe isn't a full pipeline and can only execute these instructions:
+
+MOV   AND
+OR    XOR
+ADD   SUB
+CMP
+
+For the above instruction - if using an address (memory) as the destination,
+it can only be execute if there is NO displacement.
+eg: mov [mydata + 4],22 will NOT execute in the V-pipe.
+
+INC   DEC
+PUSH  POP
+TEST  LEA
+JMP   CALL
+JCC
+
+FXCH - This is the only fpu instruction that will execute in the V-pipe.
+
+
+The P5 can only execute these in the V-pipe is one of these instructions are
+in the U-pipe. These are called "pairable" instructions.
+
+MOV   AND
+OR    XOR
+ADD   SUB
+ADC   SBB
+INC   DEC
+CMP   TEST
+PUSH  POP
+LEA   SHL
+SHR   SAL
+ROL   ROR
+RCL   RCR
+
+FXCH - i think :)
+
+The same applies to the MOV,AND,OR etc.. instructions with displacements. If
+they contain a displacement the V-pipe stalls.
+You can check all the stalls using the profiling registers, or the TSC (see
+the later section on these).
+
+In general, pairable instructions are those RISC-type ones.
+
+If the V-pipe can't execute an instruction, it "stalls" and passes it to the
+U-pipe on the next cycle. So the V-pipe skips an instruction.
+If the instruction in V pipe depends on the instruction in the U pipe then
+the V pipe stalls and misses a cycle.. eg:
+
+	add eax,ecx	; U-pipe.. 1 cycle
+	add eax,ecx	; can't execute in V because eax isn't know until
+			; above instruction is comeplete.. so execute in
+			; U-pipe.. 1 cycle
+	Total 2 cycles
+
+On the other hand
+
+	add eax,ecx	; U-pipe.. 1 cycle
+	add ebx,ecx	; V-pipe.. same cycle
+
+	Total 1 cycle , because they both execute at once.
+
+
+Now, onto AGI's. Address Generation Interlocks, are evil. On the 486 AGI's
+occured if you used a register 1 cycle before using it in an EA (Effective
+Address). This stalled the addressing pipeline and gave you a 1 cycle penalty
+while it recalulated the EA.
+All you need do on the pentium is make sure there is 1 cycle between the
+register load and using it in an EA. This includes both pipes.. if the
+instructions pair, then you may not be leaving 1 cycle between the two.
+
+If the instruction going through a pipe require memory read/writes
+and is NOT mov,push or pop, then it cause a lockstep.
+This means the other pipe is locked for all until the last last cycle:
+
+	instructions	  cycles no.	pipe
+
+	add [edx],eax	; 1     	U-pipe, causes lockstep..
+			; 2
+	dec ecx		; 3		V-pipe, can't execute until
+			;		last cycle of the add.
+
+Another thing... uncached code causes a pipeline stall. The code needs to
+be executed at least twice before it is DEFINETLY in the cache. On the
+2nd loop some code may still not be cached. I did some tests and usually
+it cached after the first loop, but other times it wasn't. I suppose it
+depends on the state of the code cache at that point.
+Pahaps it was a freak of the code I was using.. do some tests and see what
+you come up with.
+
+컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴
+3. THE NEW PROFILING REGISTERS
+컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴
+
+The P5 also has some internal profiling and timing registers that can be
+accessed through RDTSC, RDMSR and WRMSR. These allow you to count cycles and
+events like cache misses etc..
+
+
+RDTSC - Read Time Stamp Count
+	The TSC is incremented every cpu cycle. We can use it to get a
+	cycle count.
+
+RDMSR - Read an MSR register. MSR index in ECX, value put in EDX:EAX.
+WRMSR - Write an MSR register. MSR index in ECX, value to store in EDX:EAX.
+
+If you don't have a p5 compiler these are the opcodes:
+RDTSC - db 0fh, 031h
+RDMSR - db 0fh, 032h
+WRMSR - db 0fh, 030h
+
+The values are all 64 bit (EDX:EAX). All the counters are reset on power-on.
+So the TSC variable can last about 5800 years on a P100 if you left it on
+all the time.
+
+Your code need to be running at CPL0 to execute RDMSR or WRMSR. So if you are
+running Window, or in a Win95 DOS BOX, then it will crash.
+
+Also the TSC counts ALL cycles. So the cycle count includes those of any
+multitasking environment you're in (like Win95).
+
+The MSR registers are pretty cool. Or more to the point, registers 11h,12h
+and 13h are cool.
+
+You see, register 11h can be used to tell two timers what to count. These
+timers can be read from 12h and 13h. Using these timers you can count lots
+of profiling information like data reads, data read misses, pipe stalls
+and misaligned data references etc. etc.
+
+Armed with these timers and the TSC, you can tell exactly what you're code
+is doing and where cycles are lost.
+
+To tell the timers what to count you set the bits in 11h like so:
+
+EDX:EAX - 64 bit value
+
+bit 0  - 15 = Timer #0
+bit 16 - 31 = Timer #1
+bit 32 - 63 = Reserved
+
+The bits for each timer are set like so:
+
+bit 0  - 5  = Event to count (list of events follows)
+bit 6       = Enable count in CPL 0,1 and 2 (system code)
+bit 7       = Enable count in CPL 3 (user code)
+bit 8       = 1 = Count cycles, 0 = Count events
+bit 9       = PM0 selection. 1=pin shows overflows, 0=pin shows increments.
+bit 10 - 15 = Reserved
+
+
+Generally you can leave most of the bits alone. Set bits 0-5 to the event
+type, and set either bit 6 or 7. Under most dos-exteders your code runs at
+CPL0 (bit 6), but it the counting doesn't seem to work, try bit 7 instead.
+
+So, to count an event you'd do something like this:
+
+; Set timers...
+
+mov ecx,011h
+mov eax,TIMER#1 bits...
+shl eax,16
+mov eax,TIMER#0 bits...
+WRMSR
+
+; Read start count
+
+mov ecx,012h
+RDMSR
+mov _timer0,eax		; just save bottom 32 bits.
+mov ecx,013h
+RDMSR
+mov _timer1,eax
+
+;-----
+;Do your code here
+;-----
+
+; Read end count
+
+mov ecx,012h
+RDMSR
+mov sub eax,_timer0	; subract start count
+mov _timer0,eax		; save value
+mov ecx,013h
+RDMSR
+sub eax,_timer1
+mov _timer1,eax
+
+
+And that's it. Of course you have to take into account the overhead code
+for timing whatever event you want.
+
+Event types:
+
+00h - Data reads
+01h - Data writes
+02h - Data TLB misses
+03h - Data read misses
+04h - Data write misses
+05h - Writes (hits) to M or E state lines
+06h - Data cache lines written back
+07h - External snoops
+08h - Data cache snoop hits
+09h - Memory accesses in both pipes
+0Ah - Bank conflicts
+0Bh - Misaligned data memory references
+0Ch - Code reads
+0Dh - Code TLB misses
+0Eh - Code cache misses
+0Fh - Any segment register loaded
+10h - Segment descriptor cache accesses
+11h - Segment descriptor cache hits
+12h - Branches
+13h - Branch Target Buffer hits
+14h - Taken branches or BTB hits
+15h - Pipeline flushes
+16h - Instructions executed in both pipes (incl. fpu instructions I think)
+17h - Instructions executed in the v-pipe
+18h - Clocks while bus cycle in progress (bus utilization)
+19h - Pipe stalled by full write buffers (writes backup)   - cycles lost
+1Ah - Pipe stalled by waiting for data memory reads        - cycles lost
+1Bh - Pipe stalled by writes to M or E lines               - cycles lost
+1Ch - Locked bus cycles
+1Dh - I/O read or write cycles
+1Eh - Non-cacheable memory references
+1Fh - Pipeline stalled by address generation interlock (AGI) - cycles lost
+20h - unknown, but counts
+21h - unknown, but counts
+22h - Floating-point operations
+23h - Breakpoint matches on DR0 register
+24h - Breakpoint matches on DR1 register
+25h - Breakpoint matches on DR2 register
+26h - Breakpoint matches on DR3 register
+27h - Hardware interrupts
+28h - Data reads or data writes
+29h - Data read misses or data write misses
+
+컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴
+4. SOME MSR AND TSC MACROS
+컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴
+
+(See also the example files and header files.)
+
+These are basically self explanitary I think, mail me if any problems.
+Oh, they we're tested in 32bit protected mode.
+
+******** SECTION 1 - TSC CYCLE COUNTER **********
+
+These Macros require a memory variable, _TSC , a dword.
+This varaible is used to store the count takes. In StartTSC, it is cached
+before the start value is stored, so we won't get an unpredictable cache
+miss.
+
+StartTSC:
+  - cache the stack memory
+  - cache _TSC count variable
+  - save registers
+  - stall the pipeline with an idiv.
+  - get TSC register (this is definetly executed in the U-pipe)
+  - save the TSC count in the cached _TSC memory variable.
+  - pop registers
+
+
+EndTSC:
+  - push registers
+  - stall pipeline with idiv (maybe not needed, but just to be sure)
+  - get the TSC register
+  - subtract overhead cycles
+  - subtract start value
+  - save count in _TSC memory variable.
+
+It may look strange the way I've stalled the pipeline with an idiv. But the
+RDTSC instruction seems to pair with almost any other instruction. Note. two
+non-pairable instructions in a row would have worked as well (like cdq cdq).
+
+The only problem I can see is with the push at the start of EndTSC. The
+overhead cycles I calculated assume a cache hit on the push. If you get a
+cache miss then the TSC count will be too high. This should only occur when
+you time LOTS of code that completely pushes the cached stack out of the
+cache. I hope this will be a very rare occasion. If anyone can suggest a fix
+for this I'd be happy to put it in.
+
+
+
+;같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같�
+; Macros for the TSC cycle counter
+; To get 'propper' cycle counts from the TSC.. The other timing macros
+; are event based, these TSC macros hopefully get true cycle counts from
+; code.
+;
+; There may be a better way to do this, but this works..
+; The imul completly stalls the pipeline :) and makes sure the instruction
+; pairing is predictable...
+;
+; Try using these macros after a CALL and after some code and see how
+; changing/removing the imul affects things.
+;
+;같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같�
+; Start TSC cycle counter..
+;
+StartTSC	MACRO
+
+  ; Try removing the following pushad/popad, then using
+  ; StartTSC/EndTSC just after a CALL.. Any you'll see the
+  ; stack cache-miss penalty..
+  ;
+
+  pushad		; cache stack stuff (for popd after RDTSC)
+  popad
+
+  pushad
+
+  mov eax,_TSC		; cache _TSC
+
+  imul _TSC		; stall pipeline. RDTSC executes in U-pipe...
+  ;cdq			; these also work.
+  ;cdq
+
+  db 0fh,031h		; RDTSC - get start count
+  mov _TSC,eax		; save start count
+
+  popad
+
+ENDM
+
+; End TSC cycle counter..
+;
+EndTSC		MACRO
+
+  ; Note.. the pushad is affected by the cache.
+  ; no way to get around this one :(
+  ; Just remeber this, if you're code pushes cached stack values out of
+  ; the cache then you'll have an inacurracy.
+
+  pushad		; does not pair.. so stalls pipeline..
+
+  imul edx		; this may not be needed, but it's just incase
+			; the pushad decides to pair with RDTSC..
+			; It's late and I want to write somethinng else :)
+
+  db 0fh,031h		; RDTSC - get end count
+  sub eax,27 		; overhead cycles..
+  sub eax,_TSC		; get range of count
+  mov _TSC,eax		; save range
+  popad
+ENDM
+
+; Just for quick referencing.
+s	equ StartTSC		; Start time
+e	equ EndTSC		; End time
+
+
+
+
+******** SECTION 2 - MSR TIMING MACROS **********
+
+These macros will program and read the MSR timers. StartProfile will time
+the overhead for the particular event, and subtract this at the end.
+For getting cycle counts this is completely useless, use StartTSC and EndTSC
+for that.
+
+If the timing seems wrong, change the CPL at which these work. Under a
+normal system CPL0..2 is where you're code runs. But under other systems
+or windows, there's a good change it will run at CPL3.
+
+To fix this, in the SetMSRTimers macro, make it AND the event with USER_CODE
+(CPL3 code) instead of SYS_CODE (CPL0..2 code).
+
+The way it times the overhead isn't perfect, I know. I tested this with some
+of the events, and it hasn't failed yet. Subtracting the overhead gets better
+counts and allows both timers to get the same count on a particular event.
+
+If anyone finds any particular event where these macros go completely wrong
+then let me know.
+
+alterations I should make in the near future:
+  - stall the pipeline as in StartTSC/EndTSC
+  - cache the memory values at the start
+
+Other than that these macros are pretty good.
+
+They need several dword variables, these are:
+
+_prof0		dd	0		; Timer0 profile count
+_prof1		dd	0		; Timer1 profile count
+
+_profsub0	dd	0		; Overhead count for timer0
+_profsub1	dd      0		; Overhead count for timer1
+
+_profdsub0	dd	0		; dummy sub value for timing
+_profdsub1	dd      0		; the overhead.. must stay 0
+
+
+Since we sub the overhead at the end, when timing the overhead code we need
+to do a dummy sub.
+
+Mail me with any problems.
+
+
+;같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같�
+; General MSR timing macros
+;같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같�
+; Timer bits:
+;  0-5  - Event
+;  6    - Count system overhead (CPL 0-2)
+;  7    - Count user code (CPL 3)
+;  8    - 0 = Count events, 1 = count cycles
+;  9    - 0 = PM0 slection, show incs, 1 = show overflows
+
+USER_CODE    = 0010000000b
+SYS_CODE     = 0001000000b
+COUNT_EVENTS = 0000000000b
+COUNT_CYCLES = 0100000000b
+PM0_INCS     = 0000000000b
+PM0_OVERFLOWS= 1000000000b
+
+; Setup the MSR timers to count something.
+;
+; Trashes eax ecx edx
+;
+SetMSRTimers	MACRO	TIMER0,TIMER1
+  mov ecx,011h		; MSR 11h
+  xor edx,edx		; top 32bits empty
+  mov ax,TIMER1		; timer#0
+  or  ax,SYS_CODE	; time system code (CPL 0)
+  shl eax,16
+  mov ax,TIMER0		; timer#1
+  or  ax,SYS_CODE	; time system code (CPL 0)
+  db 0fh,030h		; WRMSR
+ENDM
+
+; These just trash ecx...
+ReadMSRTimer0	MACRO
+  mov ecx,012h		; Timer #0
+  db 0fh,032h		; RDMSR
+ENDM
+
+ReadMSRTimer1	MACRO
+  mov ecx,013h		; Timer #1
+  db 0fh,032h		; RSMSR
+ENDM
+
+;같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같�
+; Macros to profile some code..
+;
+;같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같같�
+StartProfile MACRO TIMER0 , TIMER1
+
+	; first get overhead for each timer..
+	;
+	; this is by no means perfect, but does allow both timers
+	; to produce the same results. Without this the timers
+	; would produce different results when timeing the same
+	; thing (because timer1 also times the read of timer0)
+	;
+
+	pushad
+	SetMSRTimers TIMER0 , TIMER1	; setup timers
+	ReadMSRTimer0
+	mov _profsub0,eax		; save start of timer0
+	ReadMSRTimer1
+	mov _profsub1,eax		; save start of timer1
+	popad				; get back original regs
+
+	; timed code here.. none just timing overhead
+
+	pushad
+
+	ReadMSRTimer0
+	sub eax,_profdsub0		; dummy sub
+	sub eax,_profsub0		; sub start value
+	mov _profsub0,eax		; save overhead of timer0
+	ReadMSRTimer1
+	sub eax,_profdsub1		; dummy sub
+	sub eax,_profsub1		; sub start value
+	mov _profsub1,eax		; save overhead of timer1
+
+	popad				; get back original regs
+
+
+	; now actually start the timings for real..
+	;
+
+	pushad
+	SetMSRTimers TIMER0 , TIMER1
+	ReadMSRTimer0
+	mov _prof0,eax
+	ReadMSRTimer1
+	mov _prof1,eax
+	popad				; get back original regs
+ENDM
+
+EndProfile MACRO
+	pushad
+
+	ReadMSRTimer0
+	sub eax,_profsub0		; sub overhead time
+	sub eax,_prof0			; sub start time
+	mov _prof0,eax			; save timer0
+	ReadMSRTimer1
+	sub eax,_profsub1		; sub overhead time
+	sub eax,_prof1			; sub start time
+	mov _prof1,eax			; save timer1
+
+	popad				; finally restore the original regs
+ENDM
+
+

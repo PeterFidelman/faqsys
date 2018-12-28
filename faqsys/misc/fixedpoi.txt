@@ -1,0 +1,797 @@
+Hi!
+
+Here's all the messages concerning integer math that I received (via mail or 
+News) and saved. This file is just a simple concatenation of all the messages,
+'cause I haven't had time to write any summaries or anything... Anyway, I hope
+this helps you, it certainly clarified the basic concepts to me! O:)
+
+-MiS-
+/*				Mika Saastamoinen			     */
+/*            (mikasaas@polaris.utu.fi/msaastamoine@finabo.abo.fi)           */
+/*     Student at Turku School of Economics - Information Systems Science    */
+#include <stddisclaimer.h>
+#define AMIGA_In_an_insane_world_it_is_the_sanest_choice TRUE
+
+----------------...
+
+In article <1993Feb12.110623.6317@abo.fi> MSAASTAMOINE@FINABO.ABO.FI (Mika Saastamoinen Tkkk) writes:
+>Hi ya'all!
+>
+>I was wondering if someone could explain to me the basic principles of integer
+>math. Specifically, I'm thinking of the kind of math one uses in 3D (vector)
+>graphics programming. Since I'm not so awfully hot on math I thought I'd ask 
+>you Gurus about this! O:)
+
+I wouldn't consider myself a guru at it but I should be able to help you.  I
+used an integer scheme on the 6809 for Currilian Cruiser (a game I wrote
+and tried to sell back in high school)
+
+>Let's say I'm thinking of the floating point number '1.234567890': How do I
+>convert that to integer without losing accuracy too much 
+
+First let me describe the data structure for what I called fixed point numbers.
+For this example I am going to assume 16bit integers however this is scalable
+up or down.
+
+your data would look like this
+(16bit Integer)(16bit Fraction) where the fraction is an integer count of
+65536ths.  I hope this is clear.  Eg (1234)(32768) is 1234.5
+
+Now to answer the question, the representation of the above number 1.234567890
+would be (1)(15373) and the translation from fixed point back to decmal is:
+1.23457336, this shows your error factor for this number using a 16 bit
+fraction.
+
+How do you convert from/to this format?
+To convert a number like this 12345.6789
+take the integer part and store it in the first 16 bits (12345)
+take the fractional part and multiply it by 65536, .6789*65536=(44492)
+
+To convert a fixed point number like (12345)(44492) to decimal:
+The integer part is in the first 16bit 12345.
+The fractional part is obtained by dividing 44492 into 65536: .67889409
+Add the two part 12345.+.67889409 = 12345.67889409
+
+This system may appear slower at this point, no it's not. Conversions can
+be be done at compile time or done with a calculator and entered manually
+if needed.  Youy speedup is obtained in the math.  Also the fractional part
+may be ignored for some applications.
+
+>                                                         and how would I go
+>about using that integer number in various calculation (mult,div,add,subs) 
+>with (maybe) one or more of the same kind of integer numbers? 
+The integer numbers are transformed into fixed point numbers by using using
+the integer and clearing another 16bit value (hopefully behind the 16bit
+integer).  Now you simply preform the integer 32bit operations.  If your
+archetecture doesn't support 32 bit operations use the add with carry
+schemes.  Note an integer over/underflow/zero have the same meanings
+co compares and condition code side affects can be used for your favorite
+branching instructions.
+
+>
+>Conversion: Do I multiply the float number by something or do I use 2 variables
+>(one for the integer part ('1') & one for the fractions ('234567890')) to 
+>describe it or what?
+
+Sort of, just remember to do the divide/multiply by the base(in my examples it
+is 2^16 because I am have a 16bit example) to get your fractions.
+
+
+>Calculation: What if I had this kind of formula: 'y = A*x*x + B*x + C', where
+>A,B and C are 'converted' integers and x and y 'normal' integers. What do I
+>have to do get a 'correct' answer out of that formula? If I've multiplied the
+>floats, do I divide the result of that formula by the number I multiplied the
+>floats to begin with or if I use that 2-variable-approach... well, I don't
+>know what I'd do then!
+It's simple:
+
+(y)(Don'tCare)=(A)(0)*(xInt)(xFra)*(xInt)(xFra)+(B)(0)
+               *(xInt)(xFra)+(C)(0)
+
+if you want to round off instead of truncating to minimize error, do this:
+
+(y)(Don'tCare)=(A)(0)*(xInt)(xFra)*(xInt)(xFra)+(B)(0)
+               *(xInt)(xFra)+(C)(0)+(0)(32768)
+
+So this operation on say a MC68000 would take 5 or 6 instructions of
+in-line code, no subroutine/function calls, lightning fast.
+
+
+>I've already learnt that using lookup-tables for sin and cos values speeds
+>the (3D vector-) thing up somewhat, but those values are still in floating 
+>point. Now I'd like to know 'How-to-convert' and 'How-to-use-in-calculation'...
+Use the method I described to convert decmimal numbers to fixed point numbers.
+Then use the fixed point numbers in the table.  Note since you are dealing
+with sin/cos all of your integer parts of the fixed numbers will be 0.  If
+space is needed the table can be compressed.  Since sin and cos share datasets
+you can also save space by running the sin table from 0 to 250 degrees
+to get cos X values just use sin X+90
+>                                                                              
+>Say, does it make much difference (in performance) whether you use integer or 
+>floating point math in any case?
+That will change from machine to machine.
+>
+>BTW, I'm using C, so if you have any bits of integer math code handy in that
+>language, could you please send me some? 
+>
+>Thanx for... well, whatever you can tell me! ;)
+>
+>/*				Mika Saastamoinen			     */
+>/*            (mikasaas@polaris.utu.fi/msaastamoine@finabo.abo.fi)           */
+>/*     Student at Turku School of Economics - Information Systems Science    */
+>#include <stddisclaimer.h>
+>#define AMIGA_In_an_insane_world_it_is_the_sanest_choice TRUE
+>
+
+
+If something isn't clear I'll try to clarify it for you.  I don't have
+much time to proof read this and make is sound better, I cannot slip
+my schedule.  Plus not many people are reading it since it has nothing
+to do with IBM compatables super VGA graphics or any of that trash. ;)
+It is such a pain trying to read a newsgroup with so much IBM crap in
+it all the time, oh well enough complaining.
+
+- Brent LaVelle
+lavelle@convex.com
+
+----------------....
+
+In article <1993Feb12.231906.723@news.eng.convex.com> lavelle@convex.com (Brent LaVelle) writes:
+>In article <1993Feb12.110623.6317@abo.fi> MSAASTAMOINE@FINABO.ABO.FI (Mika Saastamoinen Tkkk) writes:
+>>Hi ya'all!
+>>
+>>I was wondering if someone could explain to me the basic principles of integer
+>>math. Specifically, I'm thinking of the kind of math one uses in 3D (vector)
+>>graphics programming. Since I'm not so awfully hot on math I thought I'd ask 
+>>you Gurus about this! O:)
+>
+>I wouldn't consider myself a guru at it but I should be able to help you.  I
+>used an integer scheme on the 6809 for Currilian Cruiser (a game I wrote
+>and tried to sell back in high school)
+[long discussion deleted...]
+
+I found that discussion to be a little unclear, but what he seemed to be
+saying (and what I've done), is that you just take your floating point
+number, and multiply it by some constant to get rid of the fractional
+part.
+
+For example lets take the number 1234.5678 what we might do is multiply
+it by 10000 to get the integer number 12345678, and then we can do 
+calculations with this integer.  Adds and subtracts work normally,
+you don't have to do anything special.  If you multiply two numbers,
+you have to divide the result by your constant to get the true
+answer like so:
+	say we got 1.1 and 2.5
+	converting them we get 11000 and 25000
+	11000*25000/10000 = 27500
+
+If you convert 27500 back to normal numbers you get 2.75 which is equal
+to 1.1 * 2.5.  Dividing is the same way, accept that you need to
+multiply the first number by your constant before doing the division.
+Oh yeah, make sure that when you are multiplying your do the
+consant division last otherwise you'll lose accuracy.
+
+Typically you should use some power of two as your constant, this allows
+fast conversions just by doing shifts (If you want to find 4*x, you
+just shift x left twice)  What constant should you use? The trade off 
+is that bigger constants give you more accuracy but a smaller range.
+I think he mentioned 65536 (2^16), I've found that 256 (2^8) is
+adequate.
+
+Well, hopefully that's somewhat clear...
+
+				-Mike
+--------------------....
+
+In article <1993Feb12.110623.6317@abo.fi> MSAASTAMOINE@FINABO.ABO.FI (Mika Saastamoinen Tkkk) writes:
+
+   I was wondering if someone could explain to me the basic principles
+   of integer math. Specifically, I'm thinking of the kind of math one
+   uses in 3D (vector) graphics programming. Since I'm not so awfully
+   hot on math I thought I'd ask you Gurus about this! O:)
+
+   Let's say I'm thinking of the floating point number '1.234567890':
+   How do I convert that to integer without losing accuracy too much
+   and how would I go about using that integer number in various
+   calculation (mult,div,add,subs) with (maybe) one or more of the
+   same kind of integer numbers?
+
+The following is an extract from some technical documentation I
+started writing for our PC game, Netspace, several months ago.  Note
+that I've set the follow-up to just rec.games.programmer.  I apologize
+for being platform specific, but I assume the general principles
+should be easily adaptable to the Amiga as well.
+
+**** included text
+
+Netspace uses a 32-bit fixed-point math library.  The basic data type
+in the library is a scalar stored as a 32-bit integer.  A vector
+("vect") is an array of three scalars and a viewing coordinate system,
+a basis, is an array of three orthonormal vect's.
+
+Scalars are 32-bit fixed-point numbers.  They use 30 bits for the
+fractional part and two bits for the whole number giving a range for a
+scalar X from -2 <= X < 2.  Scalars are treated in C as long ints.
+They can be added, subtracted, assigned and compared the same as longs.
+Multiplying two scalars, however, creates a 64-bit result that must be
+right-shifted by 30 bits to store back into a 32-bit long.
+
+
+X, Y, Z are fixed-point; x, y, z are floating-point:
+
+        X == x*2^30
+
+        (x + y)*2^30 == (x*2^30) + (y*2^30)
+        X + Y <- X + Y
+
+        (x * y)*2^30 == (x*2^30) * (y*2^30) / 2^30
+        X * Y <- X * Y / 2^30
+
+        (x / y)*2^30 == (x*2^30) * 2^30 / (y*2^30)
+        X / Y <- X * 2^30 / Y
+
+        sqrt(x)*2^30 == sqrt((x*2^30) * 2^30)
+        sqrt(X) <- sqrt(X * 2^30)
+
+        mag(v = (x*2^30, y*2^30, z*2^30)) ==
+            sqrt(x*2^30 * x*2^30 + y*2^30 * y*2^30 + z*2^30 * z*2^30)
+        mag(V = (X, Y, Z)) <- sqrt(X * X + Y * Y + Z * Z))
+
+
+The math library began with a few basic scalar operations, such as
+multiply, divide, and square root.  We later added a 32-bit shift
+function when we realized that our 16-bit C compiler was performing
+them as a loop of single bit shift pairs (shift the high word one bit
+right, shift the low word with carry-in.)
+
+Under MS-DOS, the stack is only 16 bits wide.  This means that passing
+a single 32-bit value takes two push operations, one for the high two
+bytes and another for the low.  As a result, calling several 32-bit
+math routines in succession can be very slow.  We have avoided this by
+converting just about every occurance of two or more consecutive math
+library calls into a single assembly routine.  We now have a routine,
+for instance, which multiplies a vector by a scalar, adds it to a
+second vector and stores the result in a third.  Converting
+complicated arithmetic expressions to assembly gave a marked
+improvement in speed.
+
+**** end inclusion
+
+   Conversion: Do I multiply the float number by something or do I use
+   2 variables (one for the integer part ('1') & one for the fractions
+   ('234567890')) to describe it or what?
+
+Store it in a single int (or long) and simply pretend you know where
+the radix point is (2.30 in my example above.)  The multiply opcode on
+the 386 generates a 64-bit result which I can easily right-shift to
+get the radix point back in the correct place.  Think back to how you
+placed the decimal point in long division back in grade school.
+
+   Say, does it make much difference (in performance) whether you use
+   integer or floating point math in any case?
+
+After some recent e-mail conversations I've had, if you were on a 486
+with its built-in math coprocessor, I would say save yourself the
+trouble of dealing with the integer overflows and stick with
+floating-point.  I have no familiarity with Amigas, however, so your
+mileage may vary.  We achieved and extremely noticeable speed up with
+fixed-point on a 386 which also had a math coprocessor.  Try it both
+ways and find out.
+
+   BTW, I'm using C, so if you have any bits of integer math code
+   handy in that language, could you please send me some?
+
+Sorry, all my math code is in assembly so that it can deal directly
+with the registers for the extended multiply results and subsequent
+shifts.
+
+   Thanx for... well, whatever you can tell me! ;)
+
+My pleasure.
+
+   /*			Mika Saastamoinen		     	*/
+   /*    (mikasaas@polaris.utu.fi/msaastamoine@finabo.abo.fi)   */
+   /* Student at Turku School of Economics - Information Systems Science */
+   #include <stddisclaimer.h>
+   #define AMIGA_In_an_insane_world_it_is_the_sanest_choice TRUE
+           ^^^^^                              ^^^^^^
+Hee hee.  I'm sitting in a room with four rs6000's, four HP 700's,
+four DECstation 2000's and six Sparc2's.  I think I'd rather be insane
+that suffer on an Amiga.  (Sorry, I just liked the contrast.)
+
+
+					- Steven Dollins
+Brown Computer Graphics Group		scd@cs.brown.edu
+--
+He was spoiled and had a trust fund that wouldn't fit in a 32-bit int.
+
+--------------...
+
+By Integer math I take it you mean Fixed Point.
+
+In that case, it's easy to do. You define a long value (4 bytes),
+and use the top two as integer, and the bottom two as fraction.
+
+This gives approx. 4 decimal places accuracy, but can be much
+faster than floating point.
+
+When doing math, you typically can only do a FXP by INT function:
+
+0x45555 * 5
+
+This is the same as 4.333 * 5, and the answer yielded is:
+
+0x15AAA9, or 21.6670, where 4.333*5 is 21.665, so it's fairly accurate.
+
+You convert from floating point to FXP (fixed point) by doing a simple
+multiply:
+
+fxpvar = floatvar * 65536
+
+and to convert back, it's
+
+floatvar = fxpvar/65536
+
+Also, when extracting the integer, doing a:
+
+myint = fxp>>16
+
+yeilds a SWAP instruction (using the SAS/C compiler) which is the most
+efficient way to get the integer value.
+
+I hope this helps.
+
+-----------...
+
+Right, the way I solve this problem is roughly like this:
+
+You want to hold the number 1.234567
+What I do is to store every number as fixed point ie.  every number stored is
+1000 times bigger than the real number.
+
+ie. I store 1234 (and lose the rest)
+
+To add/subtract just add the numbers together
+
+To multiply: multiply and then divide the result bu 1000.
+
+To divide: multiply one of them by 1000 then divide it by the other one.
+
+Nb.  be careful or you`ll lose precision when you multiply
+
+ie.  Multiplying by 1234 rapidly becomes the same as multiplying by 1000.
+
+
+
+Or bit-wise:  I always store my vector stuff in 16 bit words (for speed)
+
+the upper 9 bits hold the position of point on screen, the lower 7 hold spare s
+pace (ie. for the decimals (binerials?)- for accuracy).  Multiplying and dividi
+ng is rather like I suggested for base 10, but more complicated.....
+
+
+Have Fun with life and don`t hesitate to contact me if you have further problem
+s...
+
+
+
+Sincere regards
+
+Ollie
+
+
+> ----------------------------Original text follows----------------------------
+>
+> Hi ya'all!
+>
+> I was wondering if someone could explain to me the basic principles of integer
+> math. Specifically, I'm thinking of the kind of math one uses in 3D (vector)
+> graphics programming. Since I'm not so awfully hot on math I thought I'd ask
+> you Gurus about this! O:)
+>
+> Let's say I'm thinking of the floating point number '1.234567890': How do I
+> convert that to integer without losing accuracy too much and how would I go
+> about using that integer number in various calculation (mult,div,add,subs)
+> with (maybe) one or more of the same kind of integer numbers?
+>
+> Conversion: Do I multiply the float number by something or do I use 2
+variables
+> (one for the integer part ('1') & one for the fractions ('234567890')) to
+> describe it or what?
+>
+> Calculation: What if I had this kind of formula: 'y = A*x*x + B*x + C', where
+> A,B and C are 'converted' integers and x and y 'normal' integers. What do I
+> have to do get a 'correct' answer out of that formula? If I've multiplied the
+> floats, do I divide the result of that formula by the number I multiplied the
+> floats to begin with or if I use that 2-variable-approach... well, I don't
+> know what I'd do then!
+>
+> I've already learnt that using lookup-tables for sin and cos values speeds
+> the (3D vector-) thing up somewhat, but those values are still in floating
+> point. Now I'd like to know 'How-to-convert' and
+'How-to-use-in-calculation'...
+>
+> Say, does it make much difference (in performance) whether you use integer or
+> floating point math in any case?
+>
+> BTW, I'm using C, so if you have any bits of integer math code handy in that
+> language, could you please send me some?
+>
+> Thanx for... well, whatever you can tell me! ;)
+>
+> /*				Mika Saastamoinen			     */
+> /*            (mikasaas@polaris.utu.fi/msaastamoine@finabo.abo.fi)
+*/
+> /*     Student at Turku School of Economics - Information Systems Science
+*/
+> #include <stddisclaimer.h>
+> #define AMIGA_In_an_insane_world_it_is_the_sanest_choice TRUE
+>
+
+-----------------...
+
+Well. I'm not a guru in integer math either, but I did calculations of some
+fractals which I was quite happy with. What I did was to have some bits in
+the decimal part and some bits in the integer part.
+example:    1010,0101 (4 bits integer and 4 bits decimal) 
+
+Adding and subing is now done in the axactly same way as if it was just an
+ordinary integer number.
+	add.l	d0,d1
+or	sub.l	d0,d1
+
+Muling is done by muling the two numbers and shifting the result n bits to
+the right. ( n is the number of bits in the decimal part. In our example
+it is 4.)
+	muls	d0,d1
+	lsr.l	#n,d1
+Why does it work this way? Well.. think of writing the number in an integer
+and a decimal part, but with an extra factor. Example:  N = I*(2^n)*D , where
+(2^n) is the extra factor which actually is the number you have to mutiply an
+integer with to get the same integer in your system. (n is the number of bits
+for the decimals), I is the integer part and D is the decimal part.  When you
+multiply N1 and N2 you get :  I1*I1*(2^n)*(2^n)*D1*d2 , but the number should
+have just (2^n) as a factor, therefore we divide the result by (2^n). This is
+the same as shifting the result n bits to the right.
+Does this clear it up? I hope so, but I think not.
+
+
+Dividing (q/r) is done by shifting q n bits to the left and dividing q by r.
+	lsl.l	#n,d0
+	divs	d1,d0
+
+(Hmm... actually I've never tried dividing two integers, but I think this should
+work.)
+
+Well, I don't know if it was this you were looking for, and I don't know if this
+is the best way of doing it, but it sure helpedalot when I made it in assembly.
+I hope that it can be of some help.
+
+-- 
+ /---------------------------------------------------------------------------\ 
+(  10 rem *** Nice program! ***             |   Letters: abcdefghijklmnopq    )
+ ) 20 print"Espen Skoglund is my name. ";   |            rstuwxyzABCDEFGHI   (
+(  30 goto 20                               |            JKLMNOPQRSTUVWXYZ    )
+ \---------------------------------------------------------------------------/
+
+-----------------...
+
+In article <1993Feb12.110623.6317@abo.fi> you write:
+> Hi ya'all!
+> 
+> I was wondering if someone could explain to me the basic principles of integer
+> math. Specifically, I'm thinking of the kind of math one uses in 3D (vector)
+> graphics programming. Since I'm not so awfully hot on math I thought I'd ask 
+> you Gurus about this! O:)
+> 
+> Let's say I'm thinking of the floating point number '1.234567890': How do I
+> convert that to integer without losing accuracy too much and how would I go
+> about using that integer number in various calculation (mult,div,add,subs) 
+> with (maybe) one or more of the same kind of integer numbers? 
+> 
+> Conversion: Do I multiply the float number by something or do I use 2 variables
+> (one for the integer part ('1') & one for the fractions ('234567890')) to 
+> describe it or what?
+> 
+	The usual approach is to multiply with something. But I suppose
+	this is up to you. By using two variables you will ofcourse get 
+	a much more accurate representation.
+
+
+> Calculation: What if I had this kind of formula: 'y = A*x*x + B*x + C', where
+> A,B and C are 'converted' integers and x and y 'normal' integers. What do I
+> have to do get a 'correct' answer out of that formula? If I've multiplied the
+> floats, do I divide the result of that formula by the number I multiplied the
+> floats to begin with or if I use that 2-variable-approach... well, I don't
+> know what I'd do then!
+
+	Well, the first thing I would do was rewrite the formula....=)
+
+	y = x(A*x+B)+C
+
+	And to get the right answer you divide by the factor you used above.
+	With the two variable approach, this gets more complicated as
+	you get more multiplications and have to take into accont the
+	state of C(arry)-Flag;
+
+> 
+> I've already learnt that using lookup-tables for sin and cos values speeds
+> the (3D vector-) thing up somewhat, but those values are still in floating 
+> point. Now I'd like to know 'How-to-convert' and 'How-to-use-in-calculation'...
+
+
+	HOW TO CONVERT:
+
+#define		PI	3.141592654
+
+	int	sintable[256];
+	float	i;
+
+	for(i=0;i<2*PI;i+=2*PI/256)
+		sintable[i]=(int)30000*sin(i);
+-----------------------------------------------
+
+
+	TO CALCULATE Y=X*SIN(ANGLE);
+
+	y=x*sintable[angle];	//Where you would have to represent represent your
+				//angles in values from 0->255 instead of
+				//0->2*PI =)
+
+// Now, your y is 30000 times too large, and to make the calculation
+// correct just divide by 30000, however it might pay off to use some assembly
+// here as you can gain a lot by using a registers only loop and using
+// a swap command to correct your calculations.
+//(BTW: you would have to multiply with 32767 to make this work with
+// acceptable accuracy )
+
+>                                                                               
+> Say, does it make much difference (in performance) whether you use integer or 
+> floating point math in any case?
+> 
+	This depends, on my A4000 you probably wouldn't gain much =)
+	But, on a machine without an FPU this gives a great speed increase
+	FOR THE CALCULATIONS, but usually you'll spend much more time 
+	drawing lines than calculating points, so the conclusion is
+	that is you've got a fast FPU, dont bother.....
+
+> BTW, I'm using C, so if you have any bits of integer math code handy in that
+> language, could you please send me some? 
+> 
+	I'm coding assembly language, so ehhhhhhh... I don't think so.
+	My routines would be very hard to include in a C program I think.
+	(My calculation loop uses all available registers except the 
+	stack pointer =) )
+
+> Thanx for... well, whatever you can tell me! ;)
+> 
+
+	You are welcome =)
+
+------------------------------------------------------------
+INCLUDE "disclaimer.i"                       Zrouoggathog
+Olav 'Warp' Kalgraf                          Cthulhu in '96!
+internet: olavka@ifi.uio.no                  Hasoithshuna
+
+--------------------...
+
+Scaled integers work just fine.  Remember your algebra:
+
+a = b + c 
+xa = xb + xc
+a = (xb + xc)/x
+
+
+Basically you can take any algebraic expression and multiply by a constant
+then divide by the constant and get the same (truncated) answer.
+
+16-bit integers (shorts) only give 4 positions of accuracy whereas 32-bit
+ints (longs) will give 9.  The trade off is speed.  You also need to be
+sure that your integer math won't overflow.  Doing things like squares
+and cubes can make some pretty big numbers in scaled integers.
+
+Here's a small example:
+#define FUNC(b,c) (b*5 + c*10)
+ 
+ main()
+ {
+ float af,bf=4.56,cf=7.89;
+ long ai,bi,ci;
+ float factor = 1000;
+ af = FUNC(bf,cf);
+ bi = bf*factor;
+ ci = cf*factor;
+ ai = FUNC(bi,ci);
+ printf("Answers are: %g, %g\n",af,ai/factor);
+ }
+
+
+-- 
+-----------------------------------------------------------------------------
+ black@beno.CSS.GOV             land line: 407-676-2923  | I want a computer
+ real home: Melbourne, FL       home line: 407-242-8619  | that does it all!
+ CSI Inc, Computer Software Innovations, Palm Bay, FL
+-----------------------------------------------------------------------------
+
+-------------....
+
+In article <1993Feb12.110623.6317@abo.fi> MSAASTAMOINE@FINABO.ABO.FI (Mika Saastamoinen Tkkk) writes:
+> Hi ya'all!
+> 
+> I was wondering if someone could explain to me the basic principles of integer
+> math. Specifically, I'm thinking of the kind of math one uses in 3D (vector)
+> graphics programming. Since I'm not so awfully hot on math I thought I'd ask 
+> you Gurus about this! O:)
+> 
+> Let's say I'm thinking of the floating point number '1.234567890': How do I
+> convert that to integer without losing accuracy too much and how would I go
+> about using that integer number in various calculation (mult,div,add,subs) 
+> with (maybe) one or more of the same kind of integer numbers? 
+
+You can't convert small FP numbers like that to integer, but consider
+fixed-point maths, where you arbitrarily create a decimal point somewhere
+in a 32-bit integer. You still perform "integer" operations on numbers, but
+you've shifted your range from (say) 2**0 - 2**32-1 to 2**-8 - 2**24-1.
+
+                        Michael Warner (atheist) - Phoenix MicroTechnologies
+                        cbmvax.commodore.com!cbmehq!cbmaus!phoenix!michaelw
+
+   "In the blood of Eden
+    Lie the woman and the man
+    I see the man in the woman
+    And the woman in the man"
+
+                - Peter Gabriel
+
+--------------...
+
+lavelle@convex.com (Brent LaVelle) writes:
+>MSAASTAMOINE@FINABO.ABO.FI (Mika Saastamoinen Tkkk) writes:
+
+>>I was wondering if someone could explain to me the basic principles of integer
+>>math.
+
+>>and how would I go
+>>about using that integer number in various calculation (mult,div,add,subs) 
+>>with (maybe) one or more of the same kind of integer numbers? 
+
+>The integer numbers are transformed into fixed point numbers by using using
+>the integer and clearing another 16bit value (hopefully behind the 16bit
+>integer).  Now you simply preform the integer 32bit operations.
+
+Just to clarify Brent's description...
+
+Say "a" and "b" is your 32-bit value consisting of 16 bits of integer
+component and 16 bits of fractional component.  To ADD a and b, to get c,
+simply use:
+
+	c=a+b;
+
+BUT, to multiply a by b to get c, you need:
+
+	c=a*b/65536;
+
+
+Taking whatever precautions to avoid overflow, and whatever advantage of
+machine instructions your machine requires that your optimising compiler
+doesn't support...
+
+I think it's about time to implement a C++ template for Fixed integers...
+Anyone interested should contact me.
+
+
+--
+Warwick
+  _-_|\      warwick@cs.uq.oz.au            /Disclaimer:
+ /     * <-- Computer Science Department,  /  
+ \_.-._/     University of Queensland,    /   C references are NULL && void*
+      v      Brisbane, Australia.        /  
+
+--------------...
+
+In article <12083@uqcspe.cs.uq.oz.au> warwick@cs.uq.oz.au writes:
+>lavelle@convex.com (Brent LaVelle) writes:
+ [Stuff deleted]
+>Just to clarify Brent's description...
+>
+>Say "a" and "b" is your 32-bit value consisting of 16 bits of integer
+>component and 16 bits of fractional component.  To ADD a and b, to get c,
+>simply use:
+>
+>	c=a+b;
+>
+>BUT, to multiply a by b to get c, you need:
+>
+>	c=a*b/65536;
+
+That is a good point.  However, to "fix" the decmal point you simply shift
+the number by the size of your fraction integer.  That's a mouthfull, here
+is the example, I'll go back to my original notation where fixed point
+numbers are represented as (IntegerPart)(FractionalPart)
+
+This is a long multiplication in base 2^16.
+
+(4)(6) * (2)(3)
+
+    ( 4)( 6)
+ *  ( 2)( 3)
+===========
+    (12)(18)  <- fractional part * whole top number
+( 6)(12)      <- integer part * whole top number
+============
+( 6)(24)      <- Your answer.
+        (18)  <- error (if >= 2^15 you may want to bump up the answer
+ ^^------------- if this number overflows you have an overflow, inturrupt
+                 or set the overflow flag is set, whatever the convention is.
+                 Furthermore it can happen after the multiply OR on a carry
+                 when you add.
+
+Also note if you have 64 bit operations on your processor you can skip
+a lot of stuff, eg:
+
+        ( 4)( 6)
+ *      ( 2)( 3)
+===========
+(00)( 6)(24)      <- Your answer.
+            (18)  <- error (if >= 2^15 you may want to bump up the answer
+ ^^------------- if this number is not zero you have an overflow, inturrupt
+                 or set the overflow flag is set, whatever the convention is.
+                 Furthermore it can happen after the multiply OR on a carry
+                 when you add.
+
+>Taking whatever precautions to avoid overflow, and whatever advantage of
+>machine instructions your machine requires that your optimising compiler
+>doesn't support...
+>
+>I think it's about time to implement a C++ template for Fixed integers...
+>Anyone interested should contact me.
+Be sure to make it in-line stuff.  The call overhead will kill you if
+you try to use functions.
+>
+
+- Brent LaVelle
+lavelle@convex.com
+
+---------------...
+
+Here's a quick way to do these fixed point integers in 68000 assembly:
+
+(assume the two numbers are passed on the stack as usual)
+
+	xdef _Fixed_mul:
+_Fixed_mul:
+	move.w 4(a7),d0
+	mulu.w 10(a7),d0	; d0 = a1*b2
+	move.w 6(a7),d1
+	mulu.w 8(a7),d1		; d1 = a2*b1
+	add.l d1,d0		; d0 = a1*b2+a2*b1
+	move.w 4(a7),d1
+	mulu.w 8(a7),d1		; d1 = a1*b1
+	sll.l #8,d1
+	sll.l #8,d1		; d1 = d1*2^16
+	add.l d1,d0
+	rts
+
+This will work for unsigned, 32-bit fixed points.  If you use 2's
+complement to represent signed ones, it will work for signed ones,
+too.  Two's complement is also useful for addition/subtraction!  Any
+overflows are ignored (integer part of the result is mod 2^16).  It
+would be easy to modify this function to allow you to signal an
+overflow.  Anyway, this is the ideal which the compiler is striving
+for.  Just use this little routine, and worry no more about sloppy
+compilers!  You can even have it pass the arguments in registers, but
+this actually will not speed things up much, since it needs to use
+more registers, and has to save them on the stack anyway.  SAS/C
+allows such register argument passing.
+	For such a simple routine, I'd say assembly code is definitely
+warranted.  The tricky part is printing these numbers out, but hey,
+who cares how slow that is?  The best way is probably to convert them
+to floating point.
+
+--
++----------------------------Ren & Stimpy--------------------------------+
+| "Psst. Hey Guido. It's all so clear to me now. I'm the keeper of the   |
+| cheese. And you're the lemon merchant. Get it? And he knows it. That's |
+| why he's gonna kill us. So we gotta beat it. Yeah. Before he lets      |
+| loose the marmosets on us! Don't worry, little missy! I'll save you!"  |
++--------------- Quantum Seep -- kopnicky@owlnet.rice.edu ---------------+

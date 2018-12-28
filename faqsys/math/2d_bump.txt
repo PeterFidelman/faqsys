@@ -1,0 +1,92 @@
+Hello fellow coders.
+
+This is Sqrt(-1) speaking. Many demos nowadays feature 2d bump mapping
+(the effect in which highlight travels upon a bumpy surface (prolly with
+embossed writing or something on it) seen from above), so I decided to write
+something about it...
+
+As you'll soon see, I convert my page into this kind of a text articels
+w/ sample programs and source codes. I hope you will be happy now.
+(To you whom got this article from else where, consider visiting
+www.sci.fi/~zaphod)
+
+Ok, to the point.
+
+To really do REAL 2d bump mapping one has to calculate normals for every
+pixel in bump map (an image representing "heights" of pixels) and for each
+pixel take dot product of light source and this normal (the normal of the
+surface (ie. bumpy screen) is <0,0,-1>, ie. directly to the viewer, so it
+doesn't affect bump mapping).
+
+This, of course, is awfully slow. And it does not look that good either.
+
+The answer is simple. If we know X and Y of normal, we can calculate it's Z
+(as normals are unit vectors. So Z is simply 1-sqrt(X^2 + Y^2) ). Therefore,
+we can calculate the lighting value for each X and Y and store it into a
+map (which, normally is 256x256). This kind of a map is called enviroment map
+(enviroment maps are used to simulate reflecting objects with simple mapping).
+
+Here's some pseudocode to calculate enviroment map:
+
+for (int y=0;y<256;y++)
+for (int x=0;x<256;x++)
+{
+   float nX=(x-128)/128;
+   float nY=(y-128)/128;
+   float nZ=1-sqrt(nX*nX + nY*nY);
+   if (nZ<0) nZ=0;
+   enviromentmap[x][y]=nZ*256; // 256 shades...
+};
+
+Of course you can use Phong illumination model as well...
+
+So, by picking value at enviromentmap[normalx+128][normaly+128] (if normals are
+in 9.7 fixed point format) we get the correct lighting info for lightsource at
+<0,0,-infinity>. This, althought correct, is not what we want. We want light-
+source to move and be infinitely close to the surface.
+
+Normalx is simply difference of heights in neighbour pixel on X axis... ie.
+
+normalx = bumpmap[x+1][y] - bumpmap[x-1][y]
+
+and for normaly, we ofcourse do
+
+normaly = bumpmap[x][y+1] - bumpmap[x][y-1]
+
+And now, gals and guys, comes the damned easy part :)
+
+We simply pick value from
+enviromentmap[(normalx-(lightx-currentx))][(normalx-(lightx-currentx))].
+Of course, you have to check that values are within range...
+
+So, here's a simple pseudocode for 2d bump mapper:
+
+for (int y=0;y<200;y++)
+for (int x=0;x<320;x++)
+{
+   int nX=bumpmap[x+1][y]-bumpmap[x-1][y];
+   int nY=bumpmap[x][y+1]-bumpmap[x][y-1];
+   int lX=x-lightx;
+   int lY=y-lighty;
+   nX-=lX;
+   nY-=lY;
+   nX+=128;
+   nY+=128;
+   if (nX<0 || nX>255) nX=0;
+   if (nY<0 || nY>255) nY=0;
+   screen[x][y]=enviromentmap[nX][nY];
+};
+
+Hope this helps you...
+
+And don't ask me why the sample proggy is called "dan"... I keep it in a
+directory called "danfort"...
+
+To compile the proddy with DJGPP, write:
+
+cmp dan
+gxx -o dan.exe *.o
+
+That's it.
+
+If you need to contact me, email. zaphod@sci.fi

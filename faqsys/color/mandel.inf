@@ -1,0 +1,242 @@
+<PLAINTEXT>
+         Software Notes for Graphing the Mandelbrot Set
+                     by George Taylor
+ 
+ 
+the mset is defined by the recursive equation z <- z^2+c, where z and c are
+complex values.  the starting value for z is 0.  if for some c, z approaches
+infinity, c is considered not to be a member of the mset.  that is, with
+z starting at zero, and the operation z <- z^2+c performed over and over
+forever, if z at some point approaches infinity then c is not a member of the
+mset.
+ 
+fortuneately it can be shown that if, after an iteration, abs(z) has become
+greater than 2, the value of z will increase towards infinity from then on.
+also, it can be shown that after one iteration, z=c.  therefore, you need
+only test values for c where abs(c)<=2, that is where the real and imaginary
+parts of c vary from -2 to 2 inclusive.
+it is impractical to carry out the iteration forever to determine membership,
+so an iteration limit can be established.  even with powerful computers, an
+iteration limit of 1000 is considered satisfactory to correctly determine
+a points' membership.  however, if after this iteration limit abs(z)<2,
+it can only be assumed with high probability, but not proven, that the
+associated point is a member.
+if the loop exited prematurely due to abs(z)>2, that point is not a member. 
+if abs(z)=2 the absolute value of z will not change in subsequent iterations,
+and is therefore a member.
+ 
+the number of iterations performed before the loop is exited due to abs(z)>2
+is called the height or potential associated with a point c.  those heights
+equal to the iteration limit are assumed to be members.  for an interesting
+display, the varying heights may be plotted as a z axis value, leading to
+a 3d image, or colored according to some arbitrary scheme at the point c.
+traditionally those points assumed to be members are always shown as black
+pixels.
+ 
+one scheme for showing non-member heights, called monochrome banding,
+works by plotting (iteration limit-height) mod 2 heights as black and all other
+heights as white, eg if iteration limit=1000, height 4 pixels are black and
+height 5 pixels are white.  if iteration limit=25, height 15 pixels are black
+and height 10 pixels are white.  in other words, the member pixels are always
+black and the pixels of height (iteration limit-1) are white, with the black
+-white pattern repeated for decreasing heights.
+ 
+you can also using different modulos and more colors.  for example the first 16
+heights could be colored from white in darkening shades of grey to black.
+another variation which can show the heights more clearly is taking the
+logarithm of the height before applying the coloring scheme.  this is because
+the heights tend to rise sharply as you approach a member point.
+areas near member points are referred to as boundary areas, or the edges of
+the mset.
+ 
+taking the information given so far, here is a program to plot the mset with
+monochrome banding on a 320 by 200 pixel screen:
+ 
+input "initial real value of c",crl
+input "final real value of c",crh
+input "initial imaginary value of c",cil 
+input "final imaginary value of c",cih
+input "iteration limit",maxiter
+width=320
+height=200
+xsize=(crh-crl)/width
+ysize=(cih-cil)/height
+for y=0 to 199
+  ci=y*ysize+cil
+  for x=0 to 319
+    cr=x*xsize+crl
+    rem now cr,ci are scaled
+    rem do z<-z^2+c iteration
+    member=true
+    zr=0
+    zi=0
+    for i=1 to maxiter
+      newzr=zr*zr-zi*zi+cr
+      newzi=2*zr*zi+ci
+      zr=newzr
+      zi=newzi
+      z=sqr(zr*zr+zi*zi)
+      if z>2 then
+        member=false
+        exit
+      endif
+    next i
+    if member=true then
+      plot x,y
+    elseif ((maxiter-i) and 1)=0 then
+      plot x,y
+    endif
+  next x
+next y
+end
+ 
+where the function plot x,y will color a pixel black, with the screen 
+initialized to white pixels.
+ 
+speed considerations
+ 
+ 
+it should be noted that the test of the absolute value of z
+abs(z)>2 is eqv to sqr(zr*zr+zi*zi)>2 is eqv to (zr*zr+zi*zi)>4
+ie squaring both sides eliminates the need to do a square root.
+also, the values zr*zr and zi*zi can be saved for use in the next iteration,
+where they are used in the calculation of newzr:
+ 
+zr=0
+zi=0
+zrsquared=0
+zisquared=0
+for i=1 to maxiter
+  newzr=zrsquared-zisquared+cr
+  newzi=2*zr*zi+ci
+  zr=newzr
+  zi=newzi
+  zrsquared=zr*zr
+  zisquared=zi*zi
+  zsquared=zrsquared+zisquared
+  if zsquared>4 then
+  ...
+ 
+also many points can be prematurely eliminated by testing
+abs(zr)>2 or abs(zi)>2;
+that is, if either of the above tests are true, then you know that the
+zsquared>4 test will also be true.  on a small percentage of points this
+will save doing the zr*zr and zi*zi calculations by prematurely exiting the
+loop.  since with scaled arithmetic, a test of abs(x)>2 can be done with:
+ 
+(make d0 positive)
+and.w d0,$c000
+bnz true:
+ 
+even with the extra instructions there may be a savings in time.
+ 
+let the magnification factor of a graph of the mset be defined as 1.0 if it
+is graphed with cr and ci from -2 to +2.  hence the width and height of the
+resulting graph is 4 units.  at higher magnifications, smaller areas of this
+initial graph are shown on the screen.  the higher the magnification, the
+higher maxiter must be to show accurate results.  for example at a
+magnification of 1.0 on a 320x200 screen, a maxiter of only 50 can give
+satisfactory results.  at higher magnifications accordingly higher iteration
+limits must be used.
+ 
+when the calculation is performed in machine language, a scaled integer format
+can be used for speed.  using a scaling factor of 8192, ie 1.000=8192 and
+7.99=65535, a 16 bit word size will have 3 bits to represent the integer part
+and the remaining bits representing the fractional part.
+ 
+it can be shown that with cr and ci limited to +-2, the ranges of the other
+variables are:
+ 
+newzr and newzi from almost -6 to almost +6
+zr^2+zi^2 from 0 to almost 8
+the values of cr and ci that cause the minimum zr^2+zi^2 value are:
+cr and ci are 0
+the values of cr and ci that cause the maximum zr^2+zi^2 value are:
+cr and ci are almost 2
+the values of cr and ci that cause the minimum newzr and newzi values are:
+cr and ci are 0
+the values of cr and ci that cause the maximum newzr and newzi values are:
+cr is almost +-2, ci is 0
+ 
+therefore all numbers involved in calculating the mandelbrot set can be
+performed with the scaler of 8192, in a 16 bit word without ever causing
+an overflow error.
+ 
+with some care, a scaler of 16384 (where 1.000=16384) can be used.  in this case 
+any overflow in any operation can be taken as a premature indicator of the
+zsquared>4 test.  that is, if any operation overflows, the associated point
+is not a member.  note that with a scaler of 16384 there are 2 bits in the integer part, the rest
+in the fractional part, and the range that can be represented is +- almost 4.
+ 
+plotting can be further sped up by observing that the mset is symetrical about
+the x axis.  any positive ci value can be reflected to it's negative
+counterpart and plotted if that point is on the screen.  of course when only
+the upper 1 or 2 or lower 1 or 2 quadrants are being displayed this technique
+cannot be used, since the reflected symetrical part is not in view.
+ 
+the stability condition can be used too to exit the loop.  if the value of z
+remains the same for two iterations in a row, it can be shown that it will
+remain the same from then on.  if this value passes the membership test,
+further iterations need not be done.  note that the real values at this point
+may be changing at some decimal point further on, but within the scope of the
+precision you're using, it is accurate.
+ 
+the method of edge detection can also be used.  all member points are connected
+together, that is there are no set of member points which form an island,
+separate from another group of member points.  hence if you can outline an area
+whose border contains only member points, all points within that border must
+be member points.  this is true in the real mandelbrot set, but in the
+approximated version you see on the computer screen, there may be islands of
+assumed member points which may be connected by tendrils smaller than your
+current pixel size.  but the principle can still be used - each apparent island
+on the screen can be outlined.
+ 
+you can implement this technique by plotting the mset as per usual, but when
+encountering a member point, use edge detection to outline the member set area.
+once outlined, all points within that area can be colored black.  edge
+detection works like this:  starting at a pixel x,y which is a member, test
+all 8 surrounding points for membership.  when one is found make that your new
+base point, and color it black.  continue until you have traced your way to
+your original starting point.  if you should encounter the edge of the screen,
+your surrounding points are limited to fewer directions.  finally, do a flood
+fill of the interior.
+ 
+there are a number of other optimizing techniques, such as the distance
+estimator, which will not be covered in this document.  however you can feel
+satisfied in writing the fastest possible loop for the membership test knowing
+that no further techniques can give the same result.  the distance estimator
+technique for example can speed up graphing of nonmember points, but the graph
+won't look the same as the standard technique, and usually the standard
+technique is used for the remaining pixels that are very near the boundary and
+the members.
+ 
+the membership test loop is essential in any mset plotter regardless of what
+fancy techniques are used.
+ 
+testing your program
+ 
+ 
+it can be shown that c=0+0i is a member.  for a speed benchmark, i suggest
+timing the membership test routine with this point, for an arbitrary number
+of iterations to find an iterations/second value.  this number will be
+indicative of the plotting speed of the basic graphing program.  you can't
+precisely predict plotting times even if the average height per pixel of a
+certain range of c were known, as multiplication of numbers on a microcomputer
+depends on the number of 1 bits in the multiplier.  yet this can't be taken
+as a lower boundary on the time if any sort of pre abszsquared>4 testing is
+implemented, as this could save two multiplies and an addition on some pixels.
+for accuracy testing, you can try the point c=.25+0i which can be represented
+exactly in scaled integer form.  this point will cause a z value approaching
+5+0i.  after 255 iterations you should reach a value of .496188090413988+0i.
+my own testing has shown that for maxiter<=256, a carefully written routine
+will be accurate to the last bit.  in other words the maximum magnification
+possible for a particular scalar can be plotted without error.
+ 
+for comparison i have compiled a (very) short list of benchmarks for various
+computers.
+ 
+commodore 64 with 256k memory expansion which contains a times table and a
+squares table, does about 1100 iterations/second.
+amiga 2000 does 128700 iterations/second.
+ 
+

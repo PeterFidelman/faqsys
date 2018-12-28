@@ -1,0 +1,298 @@
+                     Realtime Bezier Curves And Surfaces
+
+Introduction
+
+One of the most visually displeasing features of polygon/triangle based 3D
+engines is that everything is flat, square, and jaggy. Fine for walls,
+floors, ceilings and so on. But not much good for things such as spheres,
+torii, cones and so on. Bezier curves are a common way of providing curves.
+And now, with forward differencing, its even possible to calculate and
+display realtime triangulated surfaces. There are endless applications for
+such surfaces. For example, smooth landscapes that deform in a nice, fluid
+way. This file will help you understand the theory and implementation of
+said curves
+
+The Polynomial
+
+A polynomial is a set of powers of a given number, x, each having a
+co-efficient. x is usually in the range 0 .. 1. For example, a quadratic is
+a polynomial of degree 2:
+
+Ax^2 + Bx + C
+
+Where the powers are 2, 1, 0. x^1 is x, and x^0 is 1. A polynomial of degree
+5 would be:
+
+Ax^5 + Bx^4 + Cx^3 + Dx^2 + Ex + F
+
+For shorthand, we often write Q(t), P(x) or something similar, to represent
+the polynomial. Beziers are typically made from cubic polynomials:
+
+At^3 + Bt^2 + Ct + D
+
+With a seperate polynomial for X, Y and Z. Though we can make curves of a
+higher degree, cubic polynomials are usually the best compromise. The
+co-efficients for each polynomial are stored in a matrix:
+
+     | ax ay az |
+C =  | bx by bz |
+     | cx cy cz |
+     | dx dy dz |
+
+These are NOT a*x, b*x and so on. 'ax' = 'a' co-ef for 'x', and so on. The
+matrix for a bezier curve is:
+
+
+     | -1   3 -3  1 |
+Mb = |  3  -6  3  0 |
+     | -3   3  0  0 |
+     |  1   0  0  0 |
+
+However, these formulae and matrices on their own are not enough to make a
+curve, we need control points.
+
+Control Points
+
+Control points are points that control the shape of a curve. We will
+consider bezier curves using 4 control points: P1, P2, P3, P4. These 4
+points form a convex hull, that the curve lies in. A convex hull is an
+enclosed, convex area of space. In this case, it will be a polygon, of 4
+sides. P1 is the start point of the curve. P4 is the end point of the curve.
+P2 and P3 control the path of the curve. If you like, we tell the curve to
+go from P1 to P4 via P2 and P3. Note the curve does not intersect P2 and P3,
+but it will intersect P1 and P4.
+
+Now we need to feed those control points to the polynomial. The way this is
+done is by making a geometry vector, Gb. Gb is defined as:
+
+ | P1 |
+ | P2 |
+ | P3 |
+ | P4 |
+
+You will have 3 seperate vectors for X Y and Z. The vectors are then
+multiplied my Mb, the basis matrix:
+
+                  | -1   3 -3  1 |   | P1 |
+                  |  3  -6  3  0 |   | P2 |
+| t^3 t^2 t 1 | * | -3   3  0  0 | * | P3 |
+                  |  1   0  0  0 |   | P4 |
+
+Here, the row matrix consisting of powers of t are the weights, previously
+seen in the cubic polynomial. The square matrix, and the column matrix are
+the co-efficients, when multiplied together. The product of this equation
+gets us back to the cubic polynomial, albeit in slightly modified format:
+
+Q(t) = ((1 - t)^3)P1 + (3t(1-t)^2)P2 + 3(t^2)(1 - t)P3 + (t^3)P4
+
+I put brackets around some of the terms to avoid confusion. So now, if we
+wanted to plot a curve, approximating it using 'n' line segments, we could
+just iterate t from 0 to 1, in steps of 1 / n, draw lines between the
+points, and we'd have a curve. There is, however, a faster way of doing it.
+I'll go into that later.
+
+Bezier Surfaces
+
+Now that you have your curves working, bopping around the screen, you might
+want to try your hand at making surfaces. You can build a surface by having
+16 control points, which define 4 bezier curves. Instead of calling the
+curve Q(t), we will now call it Q(s, t). This diagram should help clarify
+things:
+
+                                   [Image]
+
+Note that the surface needn't be the above shape; thats just for
+visualization purposes. In any practical situation, the control points will
+be moved around, and won't look like that.
+
+Making The Surface
+
+Remember in the previous section, I talked about called the polynomial
+function P(t)? Well, when we're making bezier surfaces, we need to deal with
+two variables, effectively bringing us up a dimension. So, the format for a
+surface would be P(s, t). We can indeed go even higher, to 3 dimensions. 3
+dimensional patches are used for a technique known as FFD, where we have a
+hyperpatch, that loosely resembles a convex polytope, such as a cube. We can
+bend and deform points lying inside that volume by moving around the control
+points of the hyperpatch. However, this is advanced stuff, I won't be
+covering that, just yet.
+
+Now, to build the points for a surface, we will need to interpolate in two
+variables: one outer loop interpolating 't', plus one inner loop
+interpolating 's'.
+
+You will need to interpolate each of the four curves seperately. Then, your
+current point on each of the curves parameterised by 't' becomes your 4
+control points interpolated with 's'. Effectively, we are interpolating a
+curve along a curve. In the previous diagram, imagine that the 4 vertical
+lines each define a curve. In the outer loop, we shall take the current
+point along each of these 4 curves, and interpolate another curve going
+inbetween them.
+
+If we wanted to plot the points of a bezier surface, giving n points in t,
+and m points in s, the following code would work:
+
+For t=0 to 1 in steps of 1/n
+        Get P1, P2, P3, P4 from Curve1(t), Curve2(t), Curve3(t), Curve4(t)
+        Use P1, P2, P3, P4 to construct a curve, Q(s)
+
+        For s=0 to 1 in steps of 1/m
+                Plot Point Q(s)
+        End
+End
+
+By now, you're thinking something like "Wait a minute, interpolating two
+curves, which use cubic polynomials = lots of muls. How the hell can that be
+realtime?". Well, the secret ingredient is something called Forward
+Differencing. This allows us to interpolate the curve using just adds. Much
+faster.
+
+Forward Differencing
+
+Forward differencing allows us to evaluate a polynomial using deltas. It is
+done by differentiating the basic expression:
+
+a*t^3 + b*t^2 + c*t + d
+
+Now, what we want to do, is to succesively differentiate the expression,
+until there are no multiplies left in it; just additions. That way we can
+get a quick inner loop. Recalling the basic trick for differentiating a
+power of 'x', which is:
+
+             n
+Function: a*x
+
+        d         n-1
+        -- = n*a*x
+        dx
+
+We can apply that to our basic cubic polynomial expression. Its pretty easy
+to do, I'll leave it to you as an exercise. All you have to do is
+differentiate the expression 3 times. The resulting code for interpolating
+along a 3D curve would look something like:
+
+Point = P1
+For n steps
+        Plot Point
+        Point.x += deltax;      deltax += deltax2;      deltax2 += deltax3;
+        Point.y += deltay;      deltay += deltay2;      deltay2 += deltay3;
+        Point.z += deltaz;      deltaz += deltaz2;      deltaz2 += deltaz3;
+End
+
+So we add deltax to point.x. Then we add deltax2 to deltax. Then we add
+deltax3 to deltax2. A very clever trick.
+
+Back to the problem in hand. Your deltas will be:
+
+Delta1 = a*(delta^3) + b*(delta^2) + c*delta
+Delta2 = 6*a*(delta^3) + a*b*(delta^2)
+Delta3 = 6*a*(delta^3)
+
+Or in matrix form:
+
+    |         0         0      0  1 |   | a |
+D = |   delta^3   delta^2  delta  0 | * | b |
+    | 6*delta^3 2*delta^2      0  0 |   | c |
+    | 6*delta^3         0      0  0 |   | d |
+
+With seperate deltas X Y and Z. A, b and c are taken from the bezier
+calculations. Heres my bezier plotter code for those of you who are stumped:
+
+void DrawBezierCurve(VECTOR p1, VECTOR p2, VECTOR p3, VECTOR p4,
+                     BYTE colour, LONG numsteps)
+{
+        NUMBER          xdelta, xdelta2, xdelta3;
+        NUMBER          ydelta, ydelta2, ydelta3;
+        NUMBER          zdelta, zdelta2, zdelta3;
+        NUMBER          deltastep, deltastep2, deltastep3;
+        NUMBER          ax, ay, az;
+        NUMBER          bx, by, bz;
+        NUMBER          cx, cy, cz;
+        NUMBER          i;
+        VECTOR          v1, v2;
+
+        deltastep = 1.0 / (NUMBER) numsteps;
+        deltastep2 = deltastep*deltastep;
+        deltastep3 = deltastep2*deltastep;
+
+        ax = -p1.x + 3.0*p2.x - 3.0*p3.x + p4.x;
+        ay = -p1.y + 3.0*p2.y - 3.0*p3.y + p4.y;
+        az = -p1.z + 3.0*p2.z - 3.0*p3.z + p4.z;
+
+        bx = 3.0*p1.x - 6.0*p2.x + 3.0*p3.x;
+        by = 3.0*p1.y - 6.0*p2.y + 3.0*p3.y;
+        bz = 3.0*p1.z - 6.0*p2.z + 3.0*p3.z;
+
+        cx = -3.0*p1.x + 3.0*p2.x;
+        cy = -3.0*p1.y + 3.0*p2.y;
+        cz = -3.0*p1.z + 3.0*p2.z;
+
+        xdelta = ax*deltastep3 + bx*deltastep2 + cx*deltastep;
+        ydelta = ay*deltastep3 + by*deltastep2 + cy*deltastep;
+        zdelta = az*deltastep3 + bz*deltastep2 + cz*deltastep;
+
+        xdelta2 = 6.0*ax*deltastep3 + 2.0*bx*deltastep2;
+        ydelta2 = 6.0*ay*deltastep3 + 2.0*by*deltastep2;
+        zdelta2 = 6.0*az*deltastep3 + 2.0*bz*deltastep2;
+
+        xdelta3 = 6.0*ax*deltastep3;
+        ydelta3 = 6.0*ay*deltastep3;
+        zdelta3 = 6.0*az*deltastep3;
+
+        v1 = p1;
+
+        for(i=0; i<numsteps; i++) {
+                v2.x = v1.x + xdelta;
+                xdelta += xdelta2;
+                xdelta2 += xdelta3;
+
+                v2.y = v1.y + ydelta;
+                ydelta += ydelta2;
+                ydelta2 += ydelta3;
+
+                v2.z = v1.z + zdelta;
+                zdelta += zdelta2;
+                zdelta2 += zdelta3;
+
+                DrawLine3D(v1, v2, colour);
+
+                v1 = v2;
+        }
+}
+
+The typedef NUMBER is a float. I use 'NUMBER' because I find it nice and
+easy to read. Also it allows be to change my floating point precision at the
+drop of a hat. The rest should be self explanatory.
+
+Surfaces And Forward Differences
+
+Coding surfaces using foward differences is a little tricky, but it works
+along the same principals. You will have 4 sets of deltas, for each of the 4
+curves that we take our control points from. A good idea is to typedef a
+struct, and keep them in there. Also when you interpolate in S, use another
+function to do the work. Your code will then look something like:
+
+Calculate forward differences for curves 1-4
+
+For n steps
+        Build a curve from current points on curves 1-4
+        InterpolateCurve(p1, p2, p3, p4, m, buffer)
+        Interpolate curves 1-4 using foward deltas
+End
+
+If you code all this correctly, you will then have a realtime bezier
+surface. And they're great fun! Download the demo from page 1 of this site,
+that shows you just what can be achieved. I may add textures + shading to
+that soon, I left it in wireframe because :
+
+   * normals take ages to calculate
+   * Sometimes produces backfaces, which are then removed
+   * Wireframe makes it easy to see what is going on
+
+There is also a way to calculate the normals to the surface. I haven't got
+round to implementing this yet though. When I do, I'll update this page.
+
+                    Tom Hammersley, tomh@globalnet.co.uk
+                                  [Image]
+
+References: Computer Graphics, Principles & Practice

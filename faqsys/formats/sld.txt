@@ -1,0 +1,158 @@
+C.5  Slide File Format
+
+AutoCAD slide files are screen images written by the MSLIDE command and read
+by the VSLIDE command.  This section describes the format of slide files, for
+the benefit of developers who wish to incorporate support for AutoCAD slides
+into their programs.
+This information is for experienced programmers, and is subject to change
+without notice.
+
+The general format of a slide file is:
+   1.  Header (31 bytes)
+   2.  One or more data records (variable length)
+
+All coordinates and sizes written to the slide file reflect the graphics area
+of the display device from which the slide was created, with point (0,0)
+located at the lower left corner of the graphics area.  For AutoCAD Release
+9 and later, the slide file header consists of the following fields:
+
+      Field       Bytes                     Description
+ Id string          17   "AutoCAD Slide" CR LF ^Z NUL
+ Type indicator     1    Currently set to 86 (decimal).
+ Level indicator    1    Currently set to 2.
+ High X dot         2    Width of the graphics area - 1, in pixels.
+ High Y dot         2    Height of the graphics area - 1, in pixels.
+ Aspect ratio       4    Aspect ratio (horizontal size / vertical size in
+                         inches) of the graphics area, scaled by
+                         10,000,000.  This value is always written with
+                         the least significant byte first.
+ Hardware fill      2    Either 0 or 2 (value is unimportant).
+ Test number        2    A number (1234 hex) used to determine whether
+                         all 2-byte values in this slide file were writ-
+                         ten with the high byte first (as by Intel
+                         8086-family CPUs) or the low byte first (as by
+                         Motorola 68000-family CPUs).
+
+Data records follow the header.  Each data record begins with a 2-byte field
+whose high-order byte is the record type.  The remainder of the record may be
+composed of 1-byte or 2-byte fields, as described in the fol- lowing table.
+To determine whether the 2-byte fields are written with the high byte first
+or the low byte first, examine the Test number field of the header, described
+above.
+
+
+
+
+
+
+     Record    Length      Meaning                Description
+   type (hex)  (bytes)
+    00 - 7F       8        Vector      The from-X coordinate for an
+                                       ordinary vector.  From-Y, to-X,
+                                       and to-Y follow in that order, as
+                                       2-byte values.  The from point is
+                                       saved as the last point.
+    80 - FA       -       Undefined    Reserved for future use.
+       FB         5     Offset vector  The low-order byte and the fol-
+                                       lowing three bytes specify the
+                                       endpoints (from-X, from-Y, to-X,
+                                       to-Y) of a vector, in terms of
+                                       offsets (-128 to +127) from the
+                                       saved last point.  The adjusted
+                                       from point is saved as the last
+                                       point for use by subsequent vec-
+                                       tors.
+       FC         2      End of file   The low-order byte is 00.
+       FD         6      Solid fill    The low-order byte is always
+                                       zero.  The following two 2-byte
+                                       values specify the X and Y coor-
+                                       dinates of one vertex of a poly-
+                                       gon to be solid-filled.  3 to 10
+                                       such records occur in sequence.
+                                       A Solid fill record with a nega-
+                                       tive Y coordinate indicates the
+                                       start or end of such a flood
+                                       sequence.  In the start record,
+                                       the X coordinate indicates the
+                                       number of vertex records to
+                                       follow.
+       FE         3        Common      This is a vector starting at the
+                          endpoint     last point.  The low-order byte
+                           vector      and the following byte specify
+                                       to-X and to-Y in terms of offsets
+                                       (-128 to +127) from the saved
+                                       last point.  The adjusted to
+                                       point is saved as the last point
+                                       for use by subsequent vectors.
+       FF         2       New color    Subsequent vectors are to be
+                                       drawn using the color number
+                                       indicated by the low-order byte.
+
+If a slide contains any vectors at all, a New color record will be the first
+data record.  The order of the vectors in a slide, and the order of the
+endpoints of those vectors, may vary.
+For example, the following is an annotated hex dump of a simple slide file
+created on an IBM PC/AT with an IBM Enhanced Graphics Adapter.  The slide
+consists of a white diagonal line from the lower left corner to the upper
+right corner of the graphics area, a green vertical line near the lower left
+corner, and a small red rectangle at the lower left corner.
+
+  41 75 74 6F 43 41        Id string ("AutoCAD Slide" CR LF ^Z NUL)
+
+
+
+
+
+  44 20 53 6C 69 64
+  65 0D 0A 1A 00
+  56                       Type indicator (86)
+  02                       Level indicator (2)
+  3C 02                    High X dot (572)
+  24 01                    High Y dot (292)
+  0B 80 DF 00              Aspect ratio (14,647,307 / 10,000,000 = 1.46)
+  02 00                    Hardware fill (2)
+  34 12                    Test number (1234 hex)
+  07 FF                    New color (7 = white)
+  3C 02 24 01 00 00 00 00  Vector from 572,292 to 0,0.  572,292 becomes
+                           "last" point
+  03 FF                    New color (3 = green)
+  0F 00 32 00 0F 00 13 00  Vector from 15,50 to 15,19.  15,50 becomes
+                           "last" point
+  01 FF                    New color (1 = red)
+  12 FB E7 12 CE           Offset vector from 15+18,50-25 (33,25) to
+                           15+18,50-50 (33,0).  33,25 becomes "last" point
+  DF FE 00                 Common-endpoint vector from 33,25 to
+                           33-33,25+0 (0,25).  0,25 becomes "last" point
+  00 FE E7                 Common-endpoint vector from (0,25) to
+                           0+0,25-25 (0,0).  0,0 becomes "last" point
+  21 FE 00                 Common-endpoint vector from (0,0) to
+                           0+33,0+0 (33,0).  33,0 becomes "last" point
+  00 FC                    End of file
+
+Old Slide Header
+
+The slide format described above is that produced by AutoCAD Release 9 and
+later, and is portable among all computers running AutoCAD Release 9 or
+later.  Previous versions of AutoCAD (as well as AutoShade 1.0 and
+AutoSketch 1.02) produce slides with a somewhat different header, as shown
+below.
+
+      Field       Bytes                     Description
+ Id string          17   "AutoCAD Slide" CR LF ^Z NUL
+ Type indicator     1    86 (decimal).
+ Level indicator    1    1 (old format).
+ High X dot         2    Width of the graphics area - 1, in pixels.
+ High Y dot         2    Height of the graphics area - 1, in pixels.
+ Aspect ratio       8    Aspect ratio (horizontal size / vertical size in
+                         inches) of the graphics area, written as a
+                         floating-point number.
+ Hardware fill      2    Either 0 or 2 (value is unimportant).
+ Filler byte        1    Unused
+
+Note that the old-format header does not contain a Test number field.  The
+floating-point aspect ratio value and all two-byte integers are written in
+the native format of the CPU used to create the file (for 8086-family CPUs,
+IEEE double-precision and low byte first).  Old-format slide files are not
+portable across machine types, but they can be read by any version of AutoCAD
+running on the same CPU type as the CPU with which the slide was created.
+

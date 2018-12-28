@@ -1,0 +1,1395 @@
+                                [==========]
+
+Hello Everybody:                                            7/15/95
+
+   Here is a second cut at a summarization of the "Influence Mapping"
+thread, including posts that came out after the 6/12/95 summary posting
+here on comp.ai.games.  If I missed any posts please let me know;
+I would be more than happy to include them in a future summarization
+(if there's demand for it).
+
+   The posts are presented essentially as is, with some *minor* editing
+on my part for formatting.  I left the headers and most .sigs intact.
+
+    Here are the e-mail addresses for those contributors whom I have.
+Again, my profound apologies if I missed anybody; PLEASE let me know
+and I'll correct this forthwith:
+
+      Uri Bruck                 (bruck@actcom.co.il)
+      Casey Charlton            (casey@larouss.demon.co.uk)
+      Winchell Chung            (nyrath@clark.net)
+      Christian Darken          (darken@scr.siemens.com)
+      Steve Hodsdon             (hodsdon@scoot.netis.com)
+      Jason Kester              (JKester@sea.ms.ch2m.com)
+      Melle Koning              (melle@rtbbs.iaf.nl)
+      Jon Lindberg              (jsl@aplexus.jhuapl.edu)
+      Andrae Muys               (ccamuys@dingo.cc.uq.oz.au)
+      Sebastien Loisel          (loiselse@ift.ulaval.ca)
+      Blaine S. Tottori         (btottori@utdallas.edu)
+      Steven Woodcock           (swoodcoc@cris.com, woodcock@real3d.com)
+      J.D.Worsley               (jdw9@ukc.ac.uk)
+      Charles Neveu, Ph.D.      (neveu@tibco.com)
+
+    Enjoy!
+
+Steven
+
+   This thread was begun by Steve Hodsdon, who had some ideas w.r.t. the
+problems that were being discussed in the "Recognizing Strategic Dispositions"
+thread.  He suggested a truly novel approach to the problem....
+==============================================================================
+
+From: shodsdon@leotech.mv.com (Steve Hodsdon)
+Newsgroups: comp.ai.games
+Subject: Influence Mapping
+Date: Thu, 18 May 95 06:01:13 GMT
+
+This is an overview of the notes that I'm using for "Recognizing
+Strategic Dispositions."  (An interesting thread that I just started to
+read.  Anybody keep a copy so far that can e-mail it to me?)
+
+     At one time I was going to teach my SWTP computer to play the board
+game GEV (from Steve Jackson Games).  GEV, in case you don't know of it,
+is a very simple wargame.  There is a small assortment of unit types,
+(Light and Heavy Tanks, Missile Tank, Mobile and stationary Howitzers,
+Infantry, and of course, GEVS).  There is also a small variety of
+terrain types -- half a dozen or so.  I needed a way to show the
+computer where the enemy threats were located.
+
+     Enter an article on Map Weighting.  In it, the author talks about
+"influence mapping" and how he came up with the idea from a paper by
+Zobrist (Zobrist, A. L., "A model of visual organization for the game of
+GO," AFIPS Conf. Proc., 1969, 34, 103-112).  The algorithm is simple.
+You take an array which is the same size of the map and set all
+locations to zero.  You then take and place a positive value at each
+friendly unit location and a negative value at each enemy unit location.
+You then loop looking at each location of the array and adjusting the
+value found there by its neighbors.  (Increase it by one for each
+friendly unit and decrease it by one for each enemy unit.)  Now the
+computer can tell how much control the two players had over the board.
+The sign of the value indicates which side had some control.  Values
+near zero meant that you were near no-mans-land.  (Or a "front" if you
+will).  Large values meant that there is a strong control in that area.
+The trick, in my mind, was to determine the starting value for each unit
+type.
+
+     In GEV, each unit has four attributes; Attack Strength, Attack
+Range, Defense Strength, and Movement Range.  Combat is resolved by
+comparing AS against DS, rolling a die, and looking up the result on the
+CRT (Combat Results Table).  It seemed to me that a units overall rating
+would be based on all these attributes.  I thought (at the time) that a
+formula could be used to calculate a units rating.  Looking at the CRT
+and seeing how different attacks would be resolved gave witness to the
+theory.
+
+     Unfortunately, this is about as far as I got.  Married life,
+children, and several moves lost me both the old computer and the board
+games.  :(  (At least the notes were not lost).  Some 15 years have
+passed since I started on that simulation, I have more question now that
+I need to answer.
+
+     In GEV, there is no "fog of war."  You can see all the units at all
+times.  There are no mistaken orders, each unit does what it is told.  I
+now see that several copies of this "influence" array needs to be kept.
+(Or the one copy needs to have flags to indicate "unit seen."  The
+classic trade off between memory used and running speed.)  But I
+digress...
+
+     The algorithm boils down to:
+
+1)   Assign each map location one of three values:
+     a)  If it's empty, assign 0;
+     b)  If it's occupied by a friendly unit, assign a positive value.
+     c)  If it's occupied by an enemy unit, assign a negative value.
+
+2)   Make a new copy of the map with each location receiving its old
+     value modified by the six hexes surrounding it:
+     a)  Increase by one for each adjacent hex containing a positive
+         value.
+     b)  Decrease by one for each adjacent hex containing a negative
+         value.
+
+3)   Copy the new map back into the old map.
+
+4)   Repeat steps 2) and 3) an arbitrary number of times.
+
+                                 * * *
+
+     I would think that this resulting array could tell you many things.
+For example, is a given unit "in supply?"  (Location value greater then
+a threshold value.)  You have identified the natural groups of forces.
+You know the direction of the strongest threat as well as its'
+magnitude.
+
+     Comments are encouraged, what do you experts make of this
+algorithm?
+
+Steve
+
+==============================================================================
+
+From news.gate.net!seminole.gate.net!woodcock Fri May 19 18:26:22 1995
+Path: news.gate.net!seminole.gate.net!woodcock
+From: woodcock@gate.net (Steve Woodcock)
+Newsgroups: comp.ai.games
+Subject: Re: Influence Mapping
+Date: 19 May 1995 03:01:45 GMT
+Lines: 132
+Message-ID: <3ph1mp$19og@news.gate.net>
+References:
+NNTP-Posting-Host: seminole.gate.net
+X-Newsreader: TIN [version 1.2 PL2]
+
+Steve:
+
+   VERY good comments!  Glad to have you onboard...it's good to see
+this newsgroup sparking this type of thinking.
+
+Steve Hodsdon (shodsdon@leotech.mv.com) wrote:
+: This is an overview of the notes that I'm using for "Recognizing
+: Strategic Dispositions."  (An interesting thread that I just started to
+: read.  Anybody keep a copy so far that can e-mail it to me?)
+
+    I've got a full copy of everything so far (minus a couple of posts
+that pretty much covered old ground or just agreed with previous comments).
+They're on my system at work; I'll e-mail them to you tomorrow.
+
+:      At one time I was going to teach my SWTP computer to play the board
+: game GEV (from Steve Jackson Games).  GEV, in case you don't know of it,
+: is a very simple wargame.  There is a small assortment of unit types,
+: (Light and Heavy Tanks, Missile Tank, Mobile and stationary Howitzers,
+: Infantry, and of course, GEVS).  There is also a small variety of
+: terrain types -- half a dozen or so.  I needed a way to show the
+: computer where the enemy threats were located.
+
+    GEV is a *great* game.  Together with OGRE, it consumed a large
+part of my teen years.  Pity SJ Games never did the system justice by
+coming out with additional maps and scenarios.
+
+   GEV and OGRE are *excellent* test cases for an AI experiment.
+
+:      Enter an article on Map Weighting.  In it, the author talks about
+: "influence mapping" and how he came up with the idea from a paper by
+: Zobrist (Zobrist, A. L., "A model of visual organization for the game of
+: GO," AFIPS Conf. Proc., 1969, 34, 103-112).  The algorithm is simple.
+: You take an array which is the same size of the map and set all
+: locations to zero.  You then take and place a positive value at each
+: friendly unit location and a negative value at each enemy unit location.
+: You then loop looking at each location of the array and adjusting the
+: value found there by its neighbors.  (Increase it by one for each
+: friendly unit and decrease it by one for each enemy unit.)  Now the
+: computer can tell how much control the two players had over the board.
+: The sign of the value indicates which side had some control.  Values
+: near zero meant that you were near no-mans-land.  (Or a "front" if you
+: will).  Large values meant that there is a strong control in that area.
+: The trick, in my mind, was to determine the starting value for each unit
+: type.
+:
+:   [amusing anecedotes deleted]
+:
+:      The algorithm boils down to:
+
+: 1)   Assign each map location one of three values:
+:      a)  If it's empty, assign 0;
+:      b)  If it's occupied by a friendly unit, assign a positive value.
+:      c)  If it's occupied by an enemy unit, assign a negative value.
+
+: 2)   Make a new copy of the map with each location receiving its old
+:      value modified by the six hexes surrounding it:
+:      a)  Increase by one for each adjacent hex containing a positive
+:          value.
+:      b)  Decrease by one for each adjacent hex containing a negative
+:          value.
+
+: 3)   Copy the new map back into the old map.
+
+: 4)   Repeat steps 2) and 3) an arbitrary number of times.
+
+:                                  * * *
+
+   This is a very interesting concept, similar in many ways to the
+approach suggested earlier by Danielle.  Her approach, however, focused
+more on using a mapping of known/assumed firepower, but the idea is
+the same, and this may be simpler to implement in some ways.
+
+   Question:  Perhaps I'm just being slow tonight, but what is gained
+by repeating Steps 2/3 an 'arbitrary' number of times?  Having built
+the map in Steps 1-3, why repeat it?  I could see perhaps the desire
+to repeat it so that hexes not adjacent to ANY unit would eventually
+gain some type of value, but is that a.) desirable and b.) a good idea?
+The idea is to propogate the value of a unit outwards to reflect its
+control over an area, combined with that of its comrades, but doing it
+an arbitrary number of times could lead to weirdness.
+
+   I could forsee, for example, a situation where a very high value
+unit (say, an Ogre) 3 hexes from a low value unit (say, a light tank)
+would completeley 'swamp' that units' value, turning the hex from a
+negative number to a positive!  (This presume no check to prevent it,
+of course.)
+
+   Some would argue this is perfectly okay and realistic; after all,
+a light tank 3 hexes from a fully-functional Ogre isn't in too much
+control over its domain.  On the other hand, it could warp your
+tactical planning algorithm if not watched for.
+
+:      I would think that this resulting array could tell you many things.
+: For example, is a given unit "in supply?"  (Location value greater then
+: a threshold value.)  You have identified the natural groups of forces.
+: You know the direction of the strongest threat as well as its'
+: magnitude.
+
+    Good point.  Supply is something we've only talked about tangentially
+and in passing.
+
+:      Comments are encouraged, what do you experts make of this
+: algorithm?
+
+    It has great merit.  Andrae, Danielle, what do you think?  I think
+this fits in with the overall approach that's been slowly being hammered
+out here.
+
+Steven
+
+==============================================================================
+
+From: "Kester, Jason/SEA"
+To: Steve Woodcock
+Subject: AI Stuff
+Date: Fri, 19 May 95 13:06:00 PDT
+
+Jason Kester - jkester@sea.ms.ch2m.com
+>:
+>:      The algorithm boils down to:
+>
+>: 1)   Assign each map location one of three values:
+>:      a)  If it's empty, assign 0;
+>:      b)  If it's occupied by a friendly unit, assign a positive value.
+>:      c)  If it's occupied by an enemy unit, assign a negative value.
+>
+>: 2)   Make a new copy of the map with each location receiving its old
+>:      value modified by the six hexes surrounding it:
+>:      a)  Increase by one for each adjacent hex containing a positive
+>:          value.
+>:      b)  Decrease by one for each adjacent hex containing a negative
+>:          value.
+>
+>: 3)   Copy the new map back into the old map.
+>
+>: 4)   Repeat steps 2) and 3) an arbitrary number of times.
+>
+
+Well, I refined this algorithm a little & tried it out.  First of all, I
+used a square matrix so my computer could handle it easier.  My major
+change, however, was in step two.
+
+for each square:
+  a) get the value it had last time
+  b) add the values of the 8 surrounding squares together & scale (divide)
+them by some
+       factor.  I used 4 & it worked ok, but 2 or 8 would be good too.
+  c) add a&b to get new value.
+
+Then Step 3 & 4   - I repeated twice to get a good dispersion.
+
+Your original values dont need to be too high, since they get increased with
+each iteration.  A couple 10's next to eachother grow to 50 or so after two
+iterations.
+
+Finally, I had a third matrix defined which holds the defensive
+modifications due to terrain.  These can be positive or zero, and you just
+add them on top at the end.  I suppose you could multiply them instead, but
+you get the idea.
+
+I ran this on a 10X10 matrix w/ 3 or four units for + and -, then stuck it
+into my surface mapper.  Sure enough, your zero-level contour defines a
+front.  Your units have areas of influence that overlap & combine w/
+eachother & you can see where thecenter of their force is with a relative
+max (or min).
+
+I guess the next step is to have your forces find a relative max in the
+opponents side, and send a bigger force in there.  The idea being that you
+send a group with a force count higher than the enemy, and not just a bunch
+of individual units that may add up to enough if they happen to get there at
+the right time.
+
+Jason
+
+==============================================================================
+
+From news.gate.net!news.sprintlink.net!demon!larouss.demon.co.uk!casey
+Fri May 19 18:26:22 1995
+Path: news.gate.net!news.sprintlink.net!demon!larouss.demon.co.uk!casey
+From: Casey Charlton
+Newsgroups: comp.ai.games
+Subject: Re: Influence Mapping
+Date: 19 May 1995 14:22:59 +0100
+Organization: None
+Lines: 61
+Sender: news@news.demon.co.uk
+Message-ID: <462534875wnr@larouss.demon.co.uk>
+References:  <3ph1mp$19og@news.gate.net>
+Reply-To: casey@larouss.demon.co.uk
+NNTP-Posting-Host: dispatch.demon.co.uk
+X-Newsreader: Newswin Alpha 0.7
+X-Posting-Host: larouss.demon.co.uk
+
+In article: <3ph1mp$19og@news.gate.net>  woodcock@gate.net (Steve Woodcock) writes:
+> :      Enter an article on Map Weighting.  In it, the author talks about
+> : "influence mapping" and how he came up with the idea from a paper by
+> : Zobrist (Zobrist, A. L., "A model of visual organization for the game of
+> : GO," AFIPS Conf. Proc., 1969, 34, 103-112).  The algorithm is simple.
+> : You take an array which is the same size of the map and set all
+> : locations to zero.  You then take and place a positive value at each
+> : friendly unit location and a negative value at each enemy unit location.
+> : You then loop looking at each location of the array and adjusting the
+> : value found there by its neighbors.  (Increase it by one for each
+> : friendly unit and decrease it by one for each enemy unit.)  Now the
+> : computer can tell how much control the two players had over the board.
+> : The sign of the value indicates which side had some control.  Values
+> : near zero meant that you were near no-mans-land.  (Or a "front" if you
+> : will).  Large values meant that there is a strong control in that area.
+> : The trick, in my mind, was to determine the starting value for each unit
+> : type.
+> :
+
+This is very close to the system that I've been trying to evolve, the basics of
+which follow:
+
+Lets take a hex map for example, and place some terrain, some objectives, and some
+units.
+
+If you build up additional maps of this battlefield, geared towards different
+strategies and needs (attack, defence, movement, etc.), then you can base
+unit orders upon these new maps.
+
+I have been working on the principle of putting a value on each type of
+terrain, and each type of objective, depending on how useful it is to each
+of the strategies that I need to work on, for example a forest might have
+a high defensive value, a lowish offensive value, and a moderate movement
+value. By creating new maps that have a value within each hex it becomes
+easier to evaluate strategies.
+
+If these values are then combined with the units that are currently on
+the map, it becomes possible to evaluate how well / badly defended an area
+is, where weak and strong points are, etc.
+
+If we take a tank, it may add a significant offensive value to it's own
+hex, and due to the range of it's weapons, may add a slightly lower offensive
+value to all hexes within it's LOF and range (possibly modified by terrain
+and chance of hitting as modified by range). If another tank was beside it
+then the two LOF's and ranges would very likely cross, and create fields
+of fire with overall greater values. If an enemy tank was within this
+field it might reduce the values by it's defensive values.
+
+It's sort of like building up a histogram of the battlefield to figure
+out where you are strong, weak, balanced, etc.
+
+I probably haven't explained this very well, because I'm still working on the
+theory behind it, and I'm still in the brainstorming stage, but suggestions,
+comments, modifications, and clarifications, are all welcome.
+
+CC
+
+---------------------------------------------------------------------------
+| Casey Charlton    EMail casey@larouss.demon.co.uk                       |
+---------------------------------------------------------------------------
+
+==============================================================================
+
+From news.gate.net!news.sprintlink.net!howland.reston.ans.net!news.starnet.net!wupost!news.utdallas.edu!btottori Fri May 19 18:26:22 1995
+Path: news.gate.net!news.sprintlink.net!howland.reston.ans.net!news.starnet.net!wupost!news.utdallas.edu!btottori
+From: btottori@utdallas.edu (B Tottori)
+Newsgroups: comp.ai.games
+Subject: Re: Influence Mapping
+Date: 19 May 1995 21:21:49 GMT
+Organization: The University of Texas at Dallas
+Lines: 50
+Message-ID: <3pj25d$boj@news.utdallas.edu>
+References:
+NNTP-Posting-Host: csclass.utdallas.edu
+NNTP-Posting-User: btottori
+X-Newsreader: TIN [version 1.2 PL2]
+
+Steve Hodsdon (shodsdon@leotech.mv.com) wrote:
+:      In GEV, each unit has four attributes; Attack Strength, Attack
+: Range, Defense Strength, and Movement Range.  Combat is resolved by
+: comparing AS against DS, rolling a die, and looking up the result on the
+: CRT (Combat Results Table).  It seemed to me that a units overall rating
+: would be based on all these attributes.  I thought (at the time) that a
+: formula could be used to calculate a units rating.  Looking at the CRT
+: and seeing how different attacks would be resolved gave witness to the
+: theory.
+
+If I remember correctly, GEV is a turn based game and that target range
+is not used to determine the amount of damage done.  It seems to me that you
+could measure a unit's "influence" by looking at:
+
+  1. What locations could the unit move to in its turn (Movement Range).
+  2. For each such location...
+       For each location that is in range of the unit (Attack Range)...
+         Add an amount proportional to the unit's firepower (Attack Strength).
+
+I don't know of a way to incorporate the Defense Strength factor, but you get
+the idea.  Note that this is a very short-sighted view of "influence".
+If I remember, GEV wasn't strictly a "Last Unit Standing" type of game, i.e.,
+there were other objectives that could be met to achieve victory.  These
+would also have to be taken into account somehow.
+
+:      The algorithm boils down to:
+
+: 1)   Assign each map location one of three values:
+:      a)  If it's empty, assign 0;
+:      b)  If it's occupied by a friendly unit, assign a positive value.
+:      c)  If it's occupied by an enemy unit, assign a negative value.
+
+: 2)   Make a new copy of the map with each location receiving its old
+:      value modified by the six hexes surrounding it:
+:      a)  Increase by one for each adjacent hex containing a positive
+:          value.
+:      b)  Decrease by one for each adjacent hex containing a negative
+:          value.
+
+: 3)   Copy the new map back into the old map.
+
+: 4)   Repeat steps 2) and 3) an arbitrary number of times.
+
+I would like to see some results of using this algorithm.  It seems to me
+that the "no man's land" should be quite narrow, but this is purely
+conjecture.
+
+Good Luck and Good Hunting!
+
+Blaine S. Tottori
+
+==============================================================================
+
+From news.gate.net!news.sprintlink.net!gatech!swrinde!elroy.jpl.nasa.gov!usc!sdd.hp.com!night.primate.wisc.edu!aplcenmp!aplexus.jhuapl.edu!jsl Fri May 19 18:26:22 1995
+Newsgroups: comp.ai.games
+Path: news.gate.net!news.sprintlink.net!gatech!swrinde!elroy.jpl.nasa.gov!usc!sdd.hp.com!night.primate.wisc.edu!aplcenmp!aplexus.jhuapl.edu!jsl
+From: jsl@aplexus.jhuapl.edu (Jon Lindberg)
+Subject: Re: Influence Mapping
+Message-ID:
+Keywords: Map analysis mesh analysis
+Sender: usenet@aplcenmp.apl.jhu.edu
+Nntp-Posting-Host: aplexus.jhuapl.edu
+Organization: JHU/APL
+References:  <3ph1mp$19og@news.gate.net>
+Date: Fri, 19 May 1995 16:29:54 GMT
+Lines: 53
+
+>:      The algorithm boils down to:
+>
+>: 1)   Assign each map location one of three values:
+>:      a)  If it's empty, assign 0;
+>:      b)  If it's occupied by a friendly unit, assign a positive value.
+>:      c)  If it's occupied by an enemy unit, assign a negative value.
+>
+>: 2)   Make a new copy of the map with each location receiving its old
+>:      value modified by the six hexes surrounding it:
+>:      a)  Increase by one for each adjacent hex containing a positive
+>:          value.
+>:      b)  Decrease by one for each adjacent hex containing a negative
+>:          value.
+>
+>: 3)   Copy the new map back into the old map.
+>
+>: 4)   Repeat steps 2) and 3) an arbitrary number of times.
+>
+>:                                  * * *
+
+Steve Woodcock writes:
+>  Question:  Perhaps I'm just being slow tonight, but what is gained
+>by repeating Steps 2/3 an 'arbitrary' number of times?  Having built
+>the map in Steps 1-3, why repeat it?
+
+        If you repeat steps 2 and 3 some number of times, your map
+will eventually settle into a steady state where the values in the
+map don't change.  At this point you have propagated the influence
+of each unit across the entire map, and have a clear picture of who
+controls each square and exactly how much they control it.  If you
+don't repeat the process, you will not see effects such as borders
+between areas influenced by different groups of units (which would
+show up as zero or near zero values), and you will not see the
+complete effect of groups of units.
+
+        I'd have to get out my old EE textbooks to recall the
+details but this method is one that is used for computing the
+influence of electromagnetic fields in a plane.  I believe that
+it is generally used for a wide variety of types of field analysis,
+so there should be reference materials available on the
+algorithm at any technical library - details such as the effects
+of computing with 4-adjacency or 8-adjancency, or how to know when
+to stop iterating.  I don't recall what the formal name of this
+type of algorithm is, but the name mesh analysis comes to mind.
+
+                                        Jon
+
+--
+LINDBERG,JON STERLING
+Johns Hopkins University/Applied Physics Laboratory (F2C)
+Johns Hopkins Road
+Laurel, MD  20723
+jsl@aplpy.jhuapl.edu
+
+==============================================================================
+
+From iplmail.orl.mmc.com!news.den.mmc.com!news.coop.net!cs.umd.edu!zombie.ncsc.mil!news.mathworks.com!europa.chnt.gtegsc.com!news.sprintlink.net!pipex!sunsite.doc.ic.ac.uk!ukc!swallow.ukc.ac.uk!jdw9 Wed Jun 14 16:16:17 1995
+Path: iplmail.orl.mmc.com!news.den.mmc.com!news.coop.net!cs.umd.edu!zombie.ncsc.mil!news.mathworks.com!europa.chnt.gtegsc.com!news.sprintlink.net!pipex!sunsite.doc.ic.ac.uk!ukc!swallow.ukc.ac.uk!jdw9
+From: jdw9@ukc.ac.uk (J.D.Worsley)
+Newsgroups: comp.ai.games
+Subject: Re: Influence Mapping thread vs Image analysis?
+Date: Tue, 13 Jun 95 18:02:17 GMT
+Organization: University of Kent at Canterbury, UK.
+Lines: 22
+Sender: jdw9@ukc.ac.uk
+Distribution: world
+Message-ID: <912@swallow.ukc.ac.uk>
+NNTP-Posting-Host: swallow.ukc.ac.uk
+
+I just finished reading the summary of the 'influence mapping'
+thread, unfortunately my final exams have hindered my newsreading
+in the past few weeks :(, but I digress...
+
+My first thought on reading the summary was "hey, isn't that
+similar to image analysis techniques ?". The idea of allowing a unit,
+or a pixel, to influence the output value of it's neighbour is similar to
+how the eye is meant to work (if I remember my college Biology ;). I think
+it is also an approach used by edge detection algorithms in image analysis
+(please correct me if I'm wrong).
+
+The two short points I wanted to make were:
+- if anyone is going to try the 'influence mapping' approach, perhaps
+image analysis books might provide the algorithms already ?(there is after
+all no point in reinventing the wheel).
+- also, you can look at the playing field unit by unit, and work out
+spheres of influence, but why not at a higher level to work out the
+'general lie' of the forces on the ground ? , for the 'long term'
+strategy ?
+
+Jari
+- imagination on holiday, sorry no sig.
+
+==============================================================================
+
+From iplmail.orl.mmc.com!woodcock Wed Jun 14 16:16:43 1995
+Path: iplmail.orl.mmc.com!woodcock
+From: woodcock@escmail.orl.mmc.com (Steve Woodcock)
+Newsgroups: comp.ai.games
+Subject: Re: Influence Mapping thread vs Image analysis?
+Date: 14 Jun 1995 20:16:07 GMT
+Organization: Martin Marietta
+Lines: 142
+Distribution: world
+Message-ID: <3rng27$n83@theopolis.orl.mmc.com>
+References: <912@swallow.ukc.ac.uk>
+NNTP-Posting-Host: taipei.orl.mmc.com
+X-Newsreader: TIN [version 1.2 PL2]
+
+Hello Everybody:
+
+     Jason is having trouble posting to this group again (I know the feeling;
+my commerical server has been up and down like a yo-yo lately) so he asked
+me to post this for him.
+
+Steve
+
+=============================================================================
+
+Well, I posted this to comp.ai.games, but for some reason our news server
+doesn't send out to the outside world, so once again, I ask you to please
+post this for me.  If it somehow managed to make it there by itself, and you
+see it, could you let me know?  Thanks!
+
+By the way, I liked the discussion summaries.  They'll probably fire up a
+whole new round of debate!
+
+Jason
+ -----------
+In article <912@swallow.ukc.ac.uk> jdw9@ukc.ac.uk (J.D.Worsley) writes:
+>My first thought on reading the summary was "hey, isn't that
+>similar to image analysis techniques ?". The idea of allowing a unit,
+>or a pixel, to influence the output value of it's neighbour is similar to
+>how the eye is meant to work (if I remember my college Biology ;). I think
+>it is also an approach used by edge detection algorithms in image analysis
+>(please correct me if I'm wrong).
+>Jari
+
+Actually, when I did my testing a while back, I used heat transfer
+equations, with each unit being represented by a temperature
+constraint on a point of a flat plate.  If you constrain a
+single point to a certain temperature, it will influence other
+points of the plate over time, eventually reaching a steady
+state.  With only one point constrained, the entire plate
+will reach a constant temperature in the steady state.  With
+several point sources, both positive and negative, the
+steady state solution will define areas of influence, and
+show a quick picture of who owns what.  Here is a quick
+example of how a few units might affect their surroundings:
+
+Initial:            Steady State:
+0  0  6  0  0       0  3  6  3  1
+0  0  0  0  0      -3 -1  2  4  3
+0 -6  0  4  0      -5 -6 -1  4  4
+0 -4  0  0  0      -5 -4 -2  5  5
+0  0 -6  6  0      -4 -5 -6  6  5
+
+If you produce a contour map of this data, you can see the
+front as the zero level.
+
+The real beauty of the heat-transfer analogy is that by
+changing the thermal conductivity of any point on the
+plate, you can modify the ability to influence it.  This
+may not make much sense at first, but imagine a composite
+plate made up of various materials stuck together
+to represent terrain on a map.  Now obviously, if a particular
+map section is made of styrofoam, it will not conduct heat
+as well as a section made of aluminum.  So what you do is
+define how well each terrain type conducts influence.  Say,
+make mountainous terrain conduct like styrofoam, forrests
+conduct like steel, plains like aluminum, and roads like
+gold.  This way, a tank sitting in the mountains wont be
+able to command as large an area as one in the middle of
+a field.  Make sense?
+
+Imagine a tank sitting in the middle of a 5x5 grid, with
+the edges all constrained to a level of zero.  The map
+on the left contains the terrain data in terms of thermal
+conductivity (which determines how well heat (military strength)
+can be transfered through it).  Say the 4s represent forrest,
+and the 9s represent open grassland.  The influence of a
+strength 8 tank might look like this:
+
+Terrain map:      Influence map:
+9  9  9  9  9     0  1  2  1  0
+9  9  9  9  9     1  3  4  3  1
+9  9  9  9  9     2  4  8  4  2
+4  4  4  4  4     0  1  2  1  0
+4  4  4  4  4     0  0  0  0  0
+
+The influence map shows what the tank commands, and how well
+he commands it.
+
+This approach works well with supply lines, since all you
+need to do is set the conductivity for roads to be really
+high.  This way, ALL troops along or near a road would
+boost the power of any other unit along that road.  If an
+enemy puts units on a road square, that line to the forward
+units is broken, and the influence from rear units must now
+flow overland (through styrofoam instead of gold) to get
+there.
+
+Well, that's all I'll say about that for a while.  Now to
+quickly touch on a couple other areas...
+
+If you actually did input those earlier digrams into a
+surface mapper, you would notice that the areas of influence
+look like little hills & valleys.  It would make sense then
+to use some civil engineering methods for earth moving to
+take 'dirt' from your 'hill' & fill up the other guy's 'valley'.
+This is the approach you'd take if you were simply looking
+to eradicate all the enemy forces from the face of the earth.
+Just figure out how many units it will take to fill up the
+enemy hole & send them in all at once.
+
+If your objective is to capture strategic points with the
+least resistance, you can use trajectory generation algorithms
+to find 'passes' in the enemy influence mountains.  I dont
+really want to dig up my old robotics texts to go into the
+math here, but I remember it being pretty straightforward.
+
+Anyway, enough rambling!  If anyone wants, I'll post some
+of my original source (I did it in Qbasic, since that all
+I have on my computer at work!) its only 200 lines or so,
+and it illustrates what's going on pretty well.
+
+Jason Kester
+
+==============================================================================
+Steven Woodcock                                           _
+Senior Software Engineer, Gameware                  _____C .._.
+Lockheed Martin Information Systems Group      ____/     \___/
+Phone:  407-826-6986                          <____/\_---\_\      "Ferretman"
+E-mail: woodcock@gate.net (Home)
+        swoodcoc@oldcolo.com (Alternate Home)
+        woodcock@escmail.orl.mmc.com (Work)
+Disclaimer:  My opinions in NO way reflect the opinions of the
+             Lockheed Martin Information Systems Group, although
+             (like Rush Limbaugh) they should.  ;)
+Motto:
+    "...Men will awake presently and be Men again, and colour and laughter and
+ splendid living will return to a grey civilization. But that will only come
+ true because a few Men will believe in it, and fight for it, and fight in its
+ name against everything that sneers and snarls at that ideal..."
+
+                                                  --  Leslie Charteris
+                                                      THE LAST HERO
+
+==============================================================================
+
+From iplmail.orl.mmc.com!news.den.mmc.com!butch!news.sanders.com!news2.near.net!howland.reston.ans.net!news.sprintlink.net!news.clark.net!nyrath Wed Jun 14 17:37:12 1995
+Path: iplmail.orl.mmc.com!news.den.mmc.com!butch!news.sanders.com!news2.near.net!howland.reston.ans.net!news.sprintlink.net!news.clark.net!nyrath
+From: nyrath@clark.net (Nyrath the nearly wise)
+Newsgroups: comp.ai.games
+Subject: Re: Influence Mapping:  Summary
+Date: 13 Jun 1995 22:28:51 GMT
+Organization: morthrai.morgoth.web
+Lines: 73
+Message-ID: <3rl3f3$88b@clarknet.clark.net>
+References: <3rict3$bl2@theopolis.orl.mmc.com>
+NNTP-Posting-Host: clark.net
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-Newsreader: TIN [version 1.2 PL2]
+
+I actually used influence mapping in a computer game I wrote
+years ago for the Atari 800 ( Gulf Strike )
+
+It was a *very* crude AI, as it had to fit into a computer
+that had 24K of ram. Basically it mirrored the human user,
+so that he got the illusion of a sentient opponent.
+
+The influence map was an array of bytes, the same dimension as
+the game map. First, it was zeroed out by filling it with
+128. Values from 128 to 0 represented increasing AI strength,
+while values from 129 to 255 represented increasing user strength.
+
+For every AI army unit, that unit's combat strength was subtracted
+from its location on the influence map. In each square that was
+adjacent, (combat strength - 1) was subtracted. In each square that
+was adjacent to the prior adjacent squares, (combat strength - 2)
+was subtracted. Repeat until (combat strength - n) = 0. Now,
+do the next AI unit.
+ Repeat the procedure with the user's units, except that their
+combat strength is added to the influence matrix instead of being
+subtracted. (add combat strength - 1, then add combat strength - 2,
+etc.)
+
+ When it comes time for the AI units to move, they examine the value
+of the influence map at their location.
+If the value is less than 128, that means that the unit either has
+no close enemies, lots of buddies nearby, or both. So it adopts
+the "Brave" strategy.
+If the value is greater than 128, the opposite is true, so it adopts
+the "Coward" strategy.
+
+"Brave" strategy: move in such a fashion that each new location
+has an influence value that is equal to or greater than the current
+location. (The idea is to charge the enemy. The pious hope is that
+lots of your buddies are also charging)
+"Coward" strategy: just the opposite, move in such a fashion that
+each new location has an influence value that is equal to or less
+than the current location. (The idea being to run away from the
+enemy, and hopefully cluster with your buddies)
+
+At the start of the next turn, the influence map is zeroed out
+and the whole thing starts again.
+
+A complication was the presence of impassible terrain on the map.
+I adopted a flood algorithm for determining the next "adjacent"
+square, when filling the influence map. Influence would "flood"
+around impassible terrain, and leak through gaps. I forget the
+details of the flood algorithm, but they really are not important.
+I also had problems with AI units too stupid to move around
+impassible terrain. I had to resort to another map with "bread
+crumbs" on it. These crumbs were placed by me when the map was
+created. They helped an AI unit find the passable gaps. (i.e.,
+if an AI unit had a choice between moving to two new squares, each
+with the same value, it would choose the one that had the crumb
+in it.)
+
+It worked surprisingly well, all things considered. I'm sure this
+crude algorithm can inspire a better one.
+I got the idea for the algorithm from a gaming journal, from an
+article probably inspired by the original influence mapping article.
+
+I too am a fan of GEV and OGRE. Not surprisingly. I'm the one
+who drew the original drawings, and designed the appearance of the Ogre
+and all the other units.
+
+*--- WINCHELL CHUNG ---*+ ogre o mk-V * /-I'm nobody------------------------\
+|Nyrath the nearly wise| . +.  |  * . ' | Nobody at all. But the secrets of |
+|  nyrath@clark.net    |.* \\_/|\_// +  | universe don't mind. They reveal  |
+| winchchung@delphi.com|___/(o)|(o)\___ | themselves to nobodies that care. |
+*----------------------*####"""""""#### \--OUTER LIMITS: "Galaxy Being"-----/
+
+==============================================================================
+
+From iplmail.orl.mmc.com!news.den.mmc.com!butch!netcomsv!uu3news.netcom.com!ix.netcom.com!howland.reston.ans.net!swrinde!elroy.jpl.nasa.gov!usc!math.ohio-state.edu!uwm.edu!news.moneng.mei.com!news.ecn.bgu.edu!siemens!darken Sun Jun 18 17:10:11 1995
+Newsgroups: comp.ai.games
+Path: iplmail.orl.mmc.com!news.den.mmc.com!butch!netcomsv!uu3news.netcom.com!ix.netcom.com!howland.reston.ans.net!swrinde!elroy.jpl.nasa.gov!usc!math.ohio-state.edu!uwm.edu!news.moneng.mei.com!news.ecn.bgu.edu!siemens!darken
+From: darken@scr.siemens.com (Christian Darken)
+Subject: Re: Influence Mapping thread vs Image analysis?
+Message-ID:
+Sender: news@scr.siemens.com (NeTnEwS)
+Nntp-Posting-Host: avocet.scr.siemens.com
+Organization: Siemens Corporate Research, Princeton NJ
+Date: Fri, 16 Jun 1995 18:38:03 GMT
+Lines: 231
+
+Posted on behalf of "Kester, Jason/SEA"
+(his news poster is still broken).
+
+Chris
+
+ ------------
+Well, here's the source code I promised the other day.  Since I wrote it all
+at work during lunch, all I had to work with was QBasic, so it's pretty
+slow.  If I was coding it into an actual
+game, I'd write it in assembly, since it's pretty simplistic & needs a bunch
+of iterrations to come up with steady state solutions.
+
+So I wanted to go through & make sure the theory was right, but it turns out
+I sold back my heat transfer book for beer money several years back & I
+think I failed the final, so I guess I cant really go around calling myself
+an expert.  But I seem to remember the finite element algorithm to be pretty
+simple.  Basicly, for each iteration, you set each point to the average of
+its four previous neighbors, then scale with the thermal conductivity.  You
+want to make sure that you dont change any of the points which have
+constraints on them & you have to be careful around the edges of the map or
+you'll accidently constrain it to zero.  I have deliberately left out any
+heating constraints since I dont want to deal with del^2's & mean looking
+pde's.
+
+I never got around to putting in the variable thermal conductivity.  I did,
+however, set the
+program up to deal with it, so if you fill the SIGMA() array with #'s from
+zero to one, it will use them.  I was just lazy & didn't really want to take
+up 60 more lines with a redundant loader & another input file.
+
+Well, here it is.  The qbasic program comes 1st and can be called whatever
+you want.  Save the data file as "war3.inp" or change the appropriate line
+in the file.  Try changing the size of the map that it looks at, and the #
+if iterations!
+
+Jason Kester
+
+ -------------------------------CUT HERE---------------------------------
+
+' WAR3.BAS      Jason Kester
+'
+' This is a pretty simplistic demonstration of using finite element
+' heat transfer algorithms to simulate an influence map for a strategic
+' wargame.
+
+' There is currently no support for loading in terrain files, but it
+' should be easy to do.  Just copy the load routine & change some
+' variables.  Sigma values should range from 0 to 1, with 0 being
+' impassible terrain (void) and 1 being superconducting
+
+' Be careful editing the input files, as the reader would like nothing
+' more than to hang & lock your computer.  The "Save?" option can
+' be used to generate an xyz .dat file that can be used with Surfer
+' or another mapping program.
+
+CLOSE
+DIM weightmap(50, 50), conmap(50, 50)
+DIM tempmap(50, 50)
+DIM sigma(50, 50)
+
+REM weightmap =         current state
+REM conmap =            initial state with constraints
+REM tempmap =           temporary map to swap w/ weightmap
+REM sigma=              thermal conductivity (terrain info)
+
+size = 9                ' map size (can be 0 to 19 to work with input file)
+factor = 4              ' how many neighbors a cell has
+iterations = 5          ' the more iterations, the better the solution
+                        ' Try 50 for close to steady state.
+infile$ = "war3.inp"
+sigmafile$ = "terrain.inp" ' no support for this yet.
+datfile$ = "war3.dat"
+
+REM open file
+OPEN infile$ FOR INPUT AS #1
+  LINE INPUT #1, a$:       REM skip 1st line
+q = 1
+repeat:
+  LINE INPUT #1, raw$
+  IF raw$ = "---" THEN GOTO done        ' Terminate input file with this
+  IF EOF(1) THEN GOTO done              ' but dont hang if you dont.
+  p = 1
+lupethru:
+  grid$ = MID$(raw$, p, 1)
+  IF (grid$ = "!" OR p > 40) THEN       ' Terminate lines with "!"
+    q = q + 1                           ' otherwise lenght defaults to 40
+    GOTO repeat
+  END IF
+  IF grid$ = "x" THEN weightmap(q, p) = 8       ' Place Units
+  IF grid$ = "o" THEN weightmap(q, p) = -8
+  IF grid$ = "X" THEN weightmap(q, p) = 16
+  IF grid$ = "O" THEN weightmap(q, p) = -16
+  conmap(q, p) = weightmap(q, p)                ' Place on constraint map
+too
+  sigma(q, p) = .9       ' Everything conducts well for now...
+  p = p + 1
+  GOTO lupethru
+done:
+CLOSE 1
+
+CLS             ' clear the screen!
+PRINT
+PRINT
+PRINT
+PRINT "Step 1 - Drop Units Onto Map"
+PRINT
+
+FOR b = 0 TO size
+  FOR a = 0 TO size
+    IF (a < 12) THEN LOCATE (b + 1), (5 * a + 1)
+    PRINT " "; weightmap(b, a); "  ";
+  NEXT
+  IF (a < 12) THEN LOCATE (b + 1), (5 * a + 1)
+  PRINT "          "
+NEXT
+
+'       Step 2
+FOR rept = 1 TO iterations
+
+FOR a = 0 TO size
+  FOR b = 0 TO size
+    tempmap(b, a) = 0
+    tfact = factor
+rem       THE ALGORITHM:
+    IF (b <= 0 OR b >= size) THEN tfact = tfact - 1
+    IF (a <= 0 OR a >= size) THEN tfact = tfact - 1
+
+    IF b > 0 THEN tempmap(b, a) = tempmap(b, a) + weightmap(b - 1, a) /
+tfact
+    IF a > 0 THEN tempmap(b, a) = tempmap(b, a) + weightmap(b, a - 1) /
+tfact
+    IF b < size THEN tempmap(b, a) = tempmap(b, a) + weightmap(b + 1, a) /
+tfact
+    IF a < size THEN tempmap(b, a) = tempmap(b, a) + weightmap(b, a + 1) /
+tfact
+REM    tempmap(b, a) = tempmap(b, a) + weightmap(b, a) * 2 / factor
+    tempmap(b, a) = sigma(b, a) * tempmap(b, a)
+'       A note here.  The way it works now is that the influence from
+'       other squares is scaled by the current square.  This allows
+'       influence to spread well from mountains to fields, but not
+'       the other way around.  Another approach would be to scale
+'       each component by its respective sigma, limiting the ammount
+'       of influence flowing out from neighboring squares, rather
+'       than that flowing in to this square.
+'       Try it both ways, change the IF lines to look like:
+'       ... + sigma(b-1,a)*weightmap(b-1,a)/tfact
+'       & see how it changes things.
+
+    IF (conmap(b, a)) THEN tempmap(b, a) = conmap(b, a)
+                ' constrain initial points to prevent overheating
+  NEXT
+NEXT
+
+FOR b = 0 TO size
+  FOR a = 0 TO size
+    weightmap(b, a) = tempmap(b, a)
+    tempmap(b, a) = 0
+  NEXT
+NEXT
+
+'PRINT
+PRINT "Step 2 - Smooth"
+PRINT
+
+FOR b = 0 TO size
+  FOR a = 0 TO size
+    IF (a < 12) THEN LOCATE (b + 1), (5 * a + 1)
+    PRINT " "; weightmap(b, a); "  ";
+  NEXT
+  IF (a < 12) THEN LOCATE (b + 1), (5 * a + 1)
+  PRINT "          "
+NEXT
+
+laap:
+  k$ = INKEY$
+REM  IF k$ = "" THEN GOTO laap  'uncomment this to wait for keypress
+  IF k$ = "x" THEN GOTO goaway
+NEXT
+
+PRINT
+PRINT "Save?"
+INPUT a$
+IF a$ <> "y" THEN END
+PRINT "saving."                 ' dump to output
+OPEN "war3.dat" FOR OUTPUT AS #5
+FOR a = 0 TO size
+  FOR b = 0 TO size
+    PRINT #5, b, a, weightmap(b, a)
+  NEXT
+NEXT
+
+goaway:
+CLOSE 5
+
+ -------------------------------CUT HERE---------------------------------
+This next file is "war3.inp".  leave the "---" at the end, it needs it!
+ ---------------------------------CUT HERE---------------------------------
+1234567890123456789012345678901234567890
+  X                  x                  !
+ XX           x                         !
+    X   X  X                            !
+     o       x  x      x                !
+  X               x                     !
+       O      o       x                 !
+                        x               !
+  X   o     o      O                    !
+                                        !
+             o      o                   !
+        O                               !
+                O       O               !
+                                        !
+            o        o     o            !
+                                        !
+      x                                 !
+ O           O     o                    !
+                                        !
+        x    x                          !
+                                        !
+                                        !
+                                        !
+                                        !
+                                        !
+ ---
+
+==============================================================================
+
+From iplmail.orl.mmc.com!news.den.mmc.com!news.coop.net!cs.umd.edu!zombie.ncsc.mil!news.mathworks.com!news.kei.com!wang!news Sun Jun 18 17:26:55 1995
+Newsgroups: comp.ai.games
+Path: iplmail.orl.mmc.com!news.den.mmc.com!news.coop.net!cs.umd.edu!zombie.ncsc.mil!news.mathworks.com!news.kei.com!wang!news
+From: bruck@actcom.co.il (Uri Bruck)
+Subject: Re: Influence Mapping:  Strategic . . .
+Organization: ACTCOM - Internet Services in Israel
+Date: Fri, 16 Jun 1995 13:05:10 GMT
+Message-ID:
+References: <3rict3$bl2@theopolis.orl.mmc.com> <3rl3f3$88b@clarknet.clark.net> <3rnl56$n83@theopolis.orl.mmc.com>
+Sender: news@wang.com
+Lines: 103
+
+I thinkI can add something to the thread about influence mapping, using
+the already mentioned idea of General/Sargent algorithm.
+This may seem obvious to many of you, but it's a point worth mentioning.
+
+The hierarchical division to General/Sargent can be used to save a lot of
+computation time if each level sees the map in a different resolution.
+Personally I prefer having four levels (am currently trying to implement
+something using four levels of units) where the two lower levels
+are actually represented as field units, and therefore structurally similar,
+the two higher levels are command levels.
+
+This design (with more or less levels) becomes effective if the General
+only sees the map  in a lower resolution than.
+(Perhaps I should also mention that I like to use cartesian coordinates rather
+than hexes, since I have no pre-computer war game experience, this deosn't
+mean using squares - like Dune II apparently does, but continous coordinates)
+Influence mapping can still be done this way.
+Suppose we have different maps of the playing fields, in different
+resolutions (sp?), each level sees the map in an appropriate resolution.
+
+The General(HQ) sees the entire map in low resolution, it will see groups
+of units as areas of influence, we could also add heading and velocity of
+units to determine how dangerous they are to areas that the AI wants to
+defend. A faster group of units would be more dangerous because it would
+reach the AI area in less time. The AI knows it has several 2nd level
+commanders at its disposal, it can assign one to defend a specific area,
+it can assign a couple of others to secure a position that will threaten
+an enemy installation, this will be done after low resolutions analysis is
+done using perhaps one of the previously posted methids of influence mapping.
+
+The 2nd level commanders - Colonels - receive their instructions, such as,
+attack a certain area,= they would need a more detailed map of that area, and
+perhaps the way to get there, it is not necessary to make the detailed map
+for the entire playing field, only for those areas which the Colonels need
+information about, if two Colonels need information about the same area, they
+can use the same piece of map. Colonels have different kinds of units they
+can use to carry out their mission. The units are grouped under sargents,
+
+I see two possible kinds of groups, homogenous groups, or mixed groups,
+provided the units in the mixed groups can travel the same types of terrain
+at more or less the same speeds.  Colonels need to find the method that
+will give the best chance of success in their mission. They can another
+method mentioned under several names in the thread, like 'flowing' through
+the influence map and determine the shortest route, finding the weakest
+spot etc.
+
+They can try to determine which tatics would have the best chance of
+success.
+If they 'know' (pre-programmed knowledge) that destroying a certain defended
+installation can be done in one of two ways:
+1. head on attack
+2. long range artillery first - short range attack later.
+each of these tactics would state some requirements
+(f'rinstance no.2 would require that the Colonel can use its long range units
+to shell the destination, while the other forces maneaver into position
+to attack - it would need to calculate the approximate amount of time
+it would take to carry this out, it could also test the possibily of
+using different balances)
+In short the Colonel would have access to many generalized tactical
+scripts for each command would have to choose the one with the highest
+possibilty of success.
+
+Sargents are simpler - They receive one of the basic command from the Colonel
+and distribute them among their units, basic command like move, attack, stand
+and hold fire, all the lower level stuff like changing direction, updating
+position etc. is handled by the unit itself. The Sargent may receiv a command
+to attack a group of units, and assign each of its units to on of the units in
+the group. Most of the units in the group can be pretty dumb - the Sargent can
+be used to check out the surounding area and adjust the movement orders if
+necessary.
+
+F'rinstance, if they are being shot at while en route, it would be up to
+the Sargent to decide whether they should try to evade the attack and still
+try to make it to their assigned destination, or dispatch some of the units
+to take care of the immediate danger while the others continue on their
+main mission.
+
+This may sound comlicated to do at every turn - but then I was not thinking
+of a turn based game in the usual sense, but something more along the lines
+of Dune II, which runs continously.
+
+What is left is detemining how often each level of command should be updated.
+Units that actually move should be continously updated. The higher the level
+the less updating one needs, what the higher level units should do is mostly
+check on the progress of the current mission and things that may need
+immediate attention. this can be done both by using the maps,and the reports
+(In my implementation I update the maps about every six program cycles, when
+considereing a turn based game this sound too slow, but I my design was
+a continous play game, to prvent jerkiness, I update 1 sixth of the
+general map, every turn)
+
+Reports - just as commands flow down the command hierarchy, reports should
+flow upwards, information from reports can sometimes greatly enhance the
+information received from control maps, letting each command level know
+the exact status of the units one level below, thus it can determine whether
+its plans are being carried out successfuly, whether it is necessary to call
+on resrves, change plan of action, give commands at the proper time.
+(this assumes flasless communications - it would interesting to watch
+what happens if we allow comminications to falter)
+
+AI should also try to guess where the enemy intends to attack, recognize
+concentrations of force before they happen, this is posssible, by
+extrapolating movement vectors of groups o funits, this isn't precise, but
+it give the AI a general idea where the enemy might converge and it could send
+some forces to be in the vicinity, so they can at least slow down the
+enemy forces.
+
+Uri Bruck
+
+==============================================================================
+
+From iplmail.orl.mmc.com!news.den.mmc.com!butch!news.sanders.com!news2.near.net!howland.reston.ans.net!europa.chnt.gtegsc.com!news.sprintlink.net!mv!leotech!news Tue Jun 20 10:26:34 1995
+Path: iplmail.orl.mmc.com!news.den.mmc.com!butch!news.sanders.com!news2.near.net!howland.reston.ans.net!europa.chnt.gtegsc.com!news.sprintlink.net!mv!leotech!news
+From: shodsdon@leotech.mv.com (Steve Hodsdon)
+Newsgroups: comp.ai.games
+Subject: Influence Mapping:  Summary
+Message-ID:
+Date: Sat, 17 Jun 95 23:34:28 GMT
+References: <3rl3f3$88b@clarknet.clark.net>
+Organization: NETIS Public Access Internet * 603-432-2517 *
+Lines: 62
+X-Newsreader: ZipNews Reader/Mailer v0.93b (Beta)
+
+In article <3rl3f3$88b@clarknet.clark.net> nyrath@clark.net writes:
+
+>
+> I actually used influence mapping in a computer game I wrote
+> years ago for the Atari 800 ( Gulf Strike )
+>
+
+[snip]
+
+>
+> At the start of the next turn, the influence map is zeroed out
+> and the whole thing starts again.
+
+This is how I saw the algorithm working.  You seem to be using the upper
+bit as a sign bit, it shows which side has more influence over a
+paticular spot on the map.  (My 6800/6502 assembly programming sticks
+with me...)
+
+>
+> A complication was the presence of impassible terrain on the map.
+> I adopted a flood algorithm for determining the next "adjacent"
+> square, when filling the influence map. Influence would "flood"
+> around impassible terrain, and leak through gaps. I forget the
+> details of the flood algorithm, but they really are not important.
+
+An interesting idea.  I'll bet this kept the units from getting stuck in
+the middle of the map.
+
+> I also had problems with AI units too stupid to move around
+> impassible terrain. I had to resort to another map with "bread
+> crumbs" on it. These crumbs were placed by me when the map was
+> created. They helped an AI unit find the passable gaps. (i.e.,
+> if an AI unit had a choice between moving to two new squares, each
+> with the same value, it would choose the one that had the crumb
+> in it.)
+
+Now this is interesting.  This could be used to "seed" the prevered
+path.
+
+>
+> It worked surprisingly well, all things considered. I'm sure this
+> crude algorithm can inspire a better one.
+> I got the idea for the algorithm from a gaming journal, from an
+> article probably inspired by the original influence mapping article.
+
+For some reason my notes don't show just which magazine I copied them
+from.  I *think* it was Computer Gaming World, around '82 or so.
+
+>
+>
+> I too am a fan of GEV and OGRE. Not surprisingly. I'm the one
+> who drew the original drawings, and designed the appearance of the Ogre
+> and all the other units.
+
+Ohhh, a celib!  :)  Good to see you here.
+
+Steve
+--
+
+Whoops, Gotta run.                     |  shodsdon@netis.mv.com
+The cat's caught in the printer!       |
+
+==============================================================================
+
+From iplmail.orl.mmc.com!news.den.mmc.com!butch!newsjunkie.ans.net!howland.reston.ans.net!vixen.cso.uiuc.edu!news.uoregon.edu!usenet.eel.ufl.edu!news.mathworks.com!news.kei.com!simtel!harbinger.cc.monash.edu.au!bunyip.cc.uq.oz.au!dingo.cc.uq.oz.au!ccamuys Tue Jun 20 10:28:42 1995
+Path: iplmail.orl.mmc.com!news.den.mmc.com!butch!newsjunkie.ans.net!howland.reston.ans.net!vixen.cso.uiuc.edu!news.uoregon.edu!usenet.eel.ufl.edu!news.mathworks.com!news.kei.com!simtel!harbinger.cc.monash.edu.au!bunyip.cc.uq.oz.au!dingo.cc.uq.oz.au!ccamuys
+From: ccamuys@dingo.cc.uq.oz.au (Andrae Muys)
+Newsgroups: comp.ai.games
+Subject: Re:Influence Mapping/Image/Heat
+Date: 19 Jun 1995 11:49:23 GMT
+Organization: University of Queensland
+Lines: 67
+Message-ID: <3s3o83$gj4@dingo.cc.uq.oz.au>
+NNTP-Posting-Host: dingo.cc.uq.oz.au
+X-Newsreader: TIN [version 1.2 PL1]
+
+Jason,
+   I read your post to comp.ai.games, and really enjoyed it.  One thing I
+would like your opinion on would be to, instead of point held @ const'
+temp', edges @ zero.  Use Heat injected into point and dQ/dt=0 at edges.
+Then map the influence as a complex value, with magnitude + j.decay. or
+similar.  I'm just brain storming here so I would welcome input.
+
+I only covered the maths behind scalar/vector fields last year so I still
+have all the maths texts at home.  After exams I'll look it up and post a
+few equations which apply.  I am studing elec' eng'.  So most of my
+theory comes from an elec' background(hence j as sqrt(-1)).  In the
+strat' disp' thread we were discussing ways of including time in your
+estimation of influence.  In complex freq' the frequency(jw) is plotted
+on the imag' axis, while the exp' growth/decay of the signal is plotted
+on the real' axis.  I can't remember whether an injection of heat reaches
+a non-trivial ss, however I can't imagine we will be iterating till any
+map reaches ss.  It was proposed that the rate of change of influence be
+used in some way to include time in the mapping.  I havn't had a chance
+to write any test code yet.(but only 9days left till exams end :-))
+OK just brainstorming how about this as a basic algorthim...
+
+Pass 1. each unit propigates its strength a certain distance(say fireing
+range for inf/art, charging for cav).  One side +ve, other -ve,
+influence=SUM(all units influence).
+     // This shouldn't be too computationally intensive as each unit will
+     // propigate its influence a very limited distance.
+
+Pass 2. each square propigates influence per some formula, probably
+heat/field based. Stored as a complex variable, with mag=+-3dB point(or
+some other difference.  phase=some function(derivitives/logs/whatever of
+growth/decay of value, probably including the time to reach certain dB
+levels)
+
+Pass 3. (maybe) I like the idea of lower resolutions of influence.  So an
+average of some description is produced for the general(whatever).
+However I am concerned about possible abrubt changes at boundries so how
+about this as a solution.
+    Use large squares(easy), but overlap them and let general look at a
+quater of each square.  This would mean that when considering the
+influence in a particular 1/4 you would look at four values, upper-left,
+upper-right, lower-left, lower-right.  These may be very similar in which
+case the influence is relitivly const.  Or very different in which case
+you will know of the abrubt change in the vicinity.  What do you think?
+
+running out of time, so any more will have to come another time.
+
+Andrae.
+
+ -----------
+In article <912@swallow.ukc.ac.uk> jdw9@ukc.ac.uk (J.D.Worsley) writes:
+>My first thought on reading the summary was "hey, isn't that
+
+Actually, when I did my testing a while back, I used heat transfer
+equations, with each unit being represented by a temperature
+constraint on a point of a flat plate.  If you constrain a
+single point to a certain temperature, it will influence other
+points of the plate over time, eventually reaching a steady
+state.  With only one point constrained, the entire plate
+will reach a constant temperature in the steady state.  With
+
+--
+=====================================================================
+a.muys@mailbox.uq.oz.au      |
+Andrae Muys                  |
+Prentice Centre              |   If you are reading this you can feel
+University of Queensland.    |    safe in the knowledge you are
+Australia                    |    literate.
+
+==============================================================================
+
+From iplmail.orl.mmc.com!news.den.mmc.com!butch!newsjunkie.ans.net!howland.reston.ans.net!news.sprintlink.net!simtel!harbinger.cc.monash.edu.au!bunyip.cc.uq.oz.au!dingo.cc.uq.oz.au!ccamuys Tue Jun 20 10:29:03 1995
+Path: iplmail.orl.mmc.com!news.den.mmc.com!butch!newsjunkie.ans.net!howland.reston.ans.net!news.sprintlink.net!simtel!harbinger.cc.monash.edu.au!bunyip.cc.uq.oz.au!dingo.cc.uq.oz.au!ccamuys
+From: ccamuys@dingo.cc.uq.oz.au (Andrae Muys)
+Newsgroups: comp.ai.games
+Subject: Re: Influence Mapping/Image/Heat
+Date: 20 Jun 1995 07:50:02 GMT
+Organization: University of Queensland
+Lines: 33
+Message-ID: <3s5uja$doa@dingo.cc.uq.oz.au>
+References: <3s3o83$gj4@dingo.cc.uq.oz.au>
+NNTP-Posting-Host: dingo.cc.uq.oz.au
+X-Newsreader: TIN [version 1.2 PL1]
+
+Andrae Muys (ccamuys@dingo.cc.uq.oz.au) wrote:
+: Jason,
+(((Big snip)))
+: running out of time, so any more will have to come another time.
+
+I have considered futher and I seem to remember that the resulting
+distribution from an injection of heat at at point is a gaussian curve
+(e.g. normal)  which is a continuous approximation of a binomial
+distribution.  The nice thing about a binomial distribution is that it is
+discrete so it is even possible that integers could be used, or at least
+the effects of differing FPU's could be reduced.  It would seem realistic
+that the effects of a unit would propigate with some exponential
+function.
+
+Well what do you think???
+
+Andrae.
+
+==============================================================================
+(Added after reading the thread in late 1996)
+From: "Charles Neveu, Ph.D."
+
+Hi Steven:
+
+Very nice web site.
+
+I have something to add to influence mapping thread: the first influence
+mapping algorithm is essentially identical to an image processing
+operation called "chamfering" "Chamfer" is a woodworking/metalworking
+term that means beveling. It's done to an edge image, and the idea, I
+think, is to use the intermediate values to group the individual edge
+pixels into longer curves. The resultant image looks beveled. There is a
+simple algorithm for doing it completely in two passes over the image.
+
+Regards,
+Charles
+--
+Charles Neveu Ph.D
+TIBCO Inc.            email: neveu@tibco.com
+3165 Porter Drive     voice: 415.846-5137
+Palo Alto, CA 94304   fax:   415.846-5005
+
+                                [==========]
+
+                                   [ICU]
+                 Back to the Archived Game AI Threads Page

@@ -1,0 +1,35 @@
+
+IPAS 3 Demo
+IMG.BXP
+
+by Tom Hudson
+9/21/93
+
+
+This IPAS III process is a simple bitmap I/O demonstration.  It reads and
+writes simple, uncompressed 24-bit truecolor image files with additional
+information on gamma, aspect ratio and so on.
+
+When placed in the PROCESS-PATH directory, this process is automatically
+called by 3DS whenever the user requests a file with an .IMG extension.
+
+The .IMG file format is:
+
+Pos  	Length	Description
+-----	------	-------------------------------------
+0		4		Magic number (FC6B8A2F)
+4		4		Width in pixels (integer)
+8		4		Height in pixels (integer)
+12		4		Alpha flag (0=No alpha, 1=alpha) (Integer)
+16		4		Aspect ratio (float)
+20		4		Gamma (float)
+24		77		Description line 1, 76 chars + NULL termination
+101		77		Description line 2, 76 chars + NULL termination
+178		77		Description line 3, 76 chars + NULL termination
+255		77		Description line 4, 76 chars + NULL termination
+332		????	Image data (width*height*3 bytes, RGB order) (unsigned char)
+????	????	Alpha data, if alpha flag nonzero (width*height bytes)
+				(unsigned char)
+
+End of document.
+

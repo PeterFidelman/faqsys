@@ -1,0 +1,233 @@
+      DIRECT MEMORY ACCESS CONTROLLER (Type 1, PS/2 Type)
+      ===================================================
+      
+The Direct Memory Access (DMA) controller allows I/O devices to 
+transfer data directly to and from memory. This frees the system 
+microprocessor of I/= tasks, resulting in a higher throughput.
+
+The functions of the DMA controller can be grouped into two 
+categories: program mode and DMA transfer mode.
+
+The DMA controller supports the following:
+
+    * Register an program compatibility with the IBM Personal 
+      Computer AT DMA channels (8237 compatible mode)
+    * 16MB 24-bit address capability for memory and 64Kb 16-bit 
+      address capability for I/O
+    * Eight (AT only 4?) independent DMA channels capable of 
+      transferring data between memory and I/O devices
+
+      
+DMA Controller Operations
+-------------------------
+
+The DMA controller does two types of operations:
+    * Data transfer between memory and I/O devices
+    * Read verifications ( not documentet here )
+    
+DATA TRANSFER BETWEEN MEMORY AND I/O DEVICES
+
+The DMA controller performs serial transfer for all read and write 
+operations. These transfers can be between memory and I/O on any 
+channel. Data is read from a device and latched in the DMA 
+controller before it is ritten back to a second device. The memory 
+address needs to be specified only for a DMA data transfer. A 
+programmable 16-bit address can be provided during the 
+I/O portion of the transfer as a programmable option. If the 
+programmable 16 bit-bit address is not selected, the 
+I/O address is forced to hex 0000 during the I/O transfer.
+
+Figure 1. DMA I/O Address Map:
+Address	Description			Bit		Byte
+(hex)					Description	Pointer
+
+0000	Channel 0, Memory address reg.	00-15		Used
+0001	Channel 0, Transfer Count reg.	00-15		Used
+0002	Channel 1, Memory address reg.	00-15		Used
+0003	Channel 1, Transfer Count reg.	00-15		Used
+0004	Channel 2, Memory address reg.	00-15		Used
+0005	Channel 2, Transfer Count reg.	00-15		Used
+0006	Channel 3, Memory address reg.	00-15		Used
+0007	Channel 3, Transfer Count reg.	00-15		Used
+0008	Channel 0-3, Status reg.	00-07
+000A	Channel 0-3, Mask reg. (Set/Re) 00-02
+000B	Channel 0-3, Mode reg. (Write)  00-07
+000C	Clear byte pointer (Write)	N/A
+000D	DMA Controller reset (Write)	N/A
+000E	Channel 0-3, Clear Mask reg.(W) N/A
+000F	Channel 0-3, Write Mask reg.	00-03
+0081	Channel 2, Page Table Addr.reg. 00-07 **
+0082	Channel 3, Page Table Addr.reg. 00-07 **
+0083	Channel 1, Page Table Addr.reg. 00-07 **
+0087	Channel 0, Page Table Addr.reg. 00-07 **
+
+** Upper byte of memory address register.
+Figure 1. DMA I/O Address Map
+
+
+BYTE POINTER
+------------
+
+A byte pointer gives 8-bits ports access to consecutive bytes of 
+registers grater than 8 bits. For program I/O, the registers which 
+use it are the Memmory Address registres (3 byes), the Transfer 
+Count registers (2 bytes),and the I/O Address registers (2 bytes). 
+Interrupts shuld be masked off when programming DMA controller 
+operations.
+
+DMA Registers
+-------------
+
+All system microprocessor access to the DMA controller must be 8-
+bit I/O instructions. The following lists the name and size of the 
+DMA registers
+
+Figure 2. DMA registers
+       		Size	Quantity of	Allocation
+Register	(bits)	registers
+
+Memory Address	24	8		1 per channel
+I/O Address	16	8		1 per channel
+Transfer Count	16	8		1 per channel
+Temp. Holding	16	1		All channels
+Mask		4	2		1 for channels 3-0
+Arbus		4	2		1 for channels 0
+Mode		8	8		1 per channel
+Status		8	2		1 for channel 3-0
+Function	8	1		All channels
+Refresh		9	1		independent of DMA
+
+Figure 2. DMA Registers
+
+
+MEMORY ADDRESS REGISTER
+-----------------------
+
+Each channel has a 24-bit (AT 16-bit) Memory Address register, 
+which is loaded by the system microprocessor. The Mode register 
+determines wheter the adress is incremented or decremented. The 
+Mode register can be read by the system microprocessor on 
+successive I/O byte operations. To read this register, the 
+microprocessor must use the extended DMA commands (not documented 
+here).
+
+
+I/O ADDRESSE REGISTER
+---------------------
+
+Each channel has a 16-bit I/O Adress register, which is loadedd by 
+the system microprocessor. The bits in this register do not change 
+during DMA transfers. This register can be read by the system 
+microprocessor in successive I/O byte operations. To read this 
+register, the microprocessor must use the extended DMA commands 
+(not documented here).
+
+Typically, a DMA slave is selected for DMA trasnfers by a decode of 
+the arbitration level, status (-S0 exclusively ORed with -S1), and 
+M/-IO. In this case, the respective I/O address register must have 
+a value of zero.
+
+A DMA slave may be selected based on a decode of the address rather 
+the arbitration level. In this case, the respective I/O address 
+register must have the proper I/O address value.
+
+
+TRANSFER COUNT REGISTER
+-----------------------
+
+Each channel has a16-bit Transfer Coun register, which is loaded by 
+the system microprocessor. The transfer count determines how many 
+transfers the DMA channel wil execute before reaching the terminal 
+count. The number of transfers is always 1 more than the count 
+specifies. If the count is 0, DMA controller doen one transfer. 
+This register can be read by the microprocessor in successive I/O 
+byte operations. To read this register, the system microprocessor 
+can use only the extended DMA commands.
+
+
+TEMPORARY HOLDING REGISTER
+--------------------------
+
+This 16-bit register holds the intermediate value for the serial 
+DMA transfer taking place. A DMA operation requires the data to 
+be held in the register before it is written back. This register is 
+not accessible by the system microprocessor.
+
+
+MASK REGISTER
+-------------
+
+Figure 3. Set/Clear single mask bit using 8237 compatible mode:
+
+	Bit	Function
+	7 - 3	Resered = 0
+	2	0 Clear Mask Bit
+		1 Set Mask Bit
+	1, 0	00 Select channel 0
+		01 Select channel 1
+		10 Select channel 2
+		11 Select channel 3
+		
+Figure 3. Set/Clear single mask bit using 8237 compatible mode.
+
+Figure 4. DMA Mask register write using 8237 compatibel mode:
+
+	Bit	Function
+	7 - 4	Reserved = 0
+	3	0 Clear Channel 3 Mask bit
+		1 Set Channel 3 Mask bit
+	
+	2	0 Clear Channel 2 Mask bit
+		1 Set Channel 2 Mask bit
+		 
+	1	0 Clear Channel 1 Mask bit
+		1 Set Channel 1 Mask bit
+
+	0	0 Clear Channel 0 Mask bit
+		1 Set Channel 0 Mask bit
+		
+Figure 4. DMA Mask register write using 8237 compatibel mode.
+
+Each channel has o corresponding mask bit that, when set, disables 
+the DMA from servicing the requesting device. Each mask bit can be 
+set to 0 or 1 by the system microprocessor. A system reset or DMA 
+Controller Reset commands sets all mask bits to 1. A Clear Mask 
+Register command sets mask bits 0-3 to 9.
+
+When a device requestind DMA cycles wins the arbitration cyce, and 
+the mask bit is set to 1 on the corresponding channel, the DMA 
+ontroller does not execute any cycles it behalf and allows external 
+devices to provide the transfer. If no device responds, the bus 
+times out and causes a nonmaskable interrupt (NMI). This register 
+can be programmed using the 8237 compatible mode commands (used by 
+the IBM Personal Computer AT) or the extended DMA commands (not 
+documented here).
+
+
+MODE REGISTER
+-------------
+
+The Mode register for each channel identifies the type of operation 
+that takes place when that channel transfers data.
+
+Figure 5. 8237 Compatible Mode Register:
+
+	Bit	Function
+	7, 6	Reserved = 0
+	5, 4	Reserved = 0
+	3, 2	00 Verify operation
+		01 Write operation
+		10 Read operation
+		11 Reserved
+	1, 0	Channel accessed
+		  00 Select channel 0
+		  01 Select channel 1
+		  10 Select channel 2
+		  11 Select channel 3
+		  
+Figure 5. 8237 Compatible Mode Register.
+
+The Mode register is programmed by the system microprocessor, and 
+its contents are reformatted and stored internally in the DMA 
+controller. In the 8237 compatible mode, this register can only be 
+written.

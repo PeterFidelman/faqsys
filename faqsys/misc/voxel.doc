@@ -1,0 +1,223 @@
+  Included files:
+
+      VOXEL.C   - Watcom C/C++ Source code for height-field render
+      VOXEL.EXE - Executable form of the source code
+      VOXEL.DOC - This documentation file
+
+
+  Instructions:
+
+      At your DOS prompt type "VOXEL" and press enter. If you have a mouse
+    installed, use it to move around. If you do not, a scripted fly by will be
+    shown.
+
+    This executable is Win95 friendly.
+
+
+  Terminology:
+
+      A common discrepancy arises when discussing voxel based landscapes.
+    The word voxel comes from "volumetric pixel". Voxel landscapes are a
+    very special case of voxel data. NovaLogic coined the term voxel
+    landscape with their game "Commanche: Maximum Overkill" as their solution
+    to high speed voxel rendering for entertainment software. Since only
+    portions of the original voxel data was used (mainly its height above
+    some plane), such systems have become to be known as height fields. The
+    name "height field" implies a two dimensional grid of displacements which
+    is exactly the voxel data used by the original Commanche rendering engine
+    was.
+      I tend to use the terms "Voxel" and "Height-field" interchangeably
+    because of the roots established with the original Commanche rendering
+    engine. Some of you out there won't like this but that's not my problem
+    to deal with.
+
+
+  How it works:
+
+    To begin with, I set up 2 arrays. Each array is the width of the area I
+  want to render (in this case its 320 for mode 13h). In each index of the
+  array I keep height and color information. These buffers can be referred to
+  as a top buffer and bottom buffer. I refer to them as Buf1 and Buf2 in my
+  code (Buf1 would be the top buffer).
+
+    To trace the area to be rendered, I texture map the triangle created by
+  the view system. I start with the line in the view system between the points
+  (x1,y1) and (x2,y2). This point is the maximum depth of rendering and is
+  also a special case. This is a line of constant z, so perspective handling
+  will only need to be handled once for this entire line. The perspective
+  transform I use can be found in any documentation on 3D rendering.
+
+    y' = ScreenMidY - (Y * Distance) / Z
+
+  We want to store these perspective transforms in our "top" buffer. To do
+  this, we have to stretch the (x1, y1),(x2, y2) line to the rendering width
+  (which is 320 in this case). We then count for the screen width (320), using
+  the texture value (the texture is our height map) as the Y in the perspective
+  transform. The Z value we use in the maximum depth used in rendering. We also
+  need the color at that particular point. For simplicity sake, we will use the
+  map color. Here is a piece of code to illustrate how this is done.
+
+  for (x = 0; x < 320; x++)
+  {
+    topbuffer[x].y = 99 - (heightmap[xval >> 8 + yval & 0xff00]*Distance)/z;
+    topbuffer[x].c = heightmap[xval >> 8 + yval & 0xff00]
+    yval += ystep;
+    xval += xstep;
+  }
+
+  We are using 24.8 fixed point for the texturing coordinates and using
+  a 256x256 map. As you may have figured out, this does not provide any
+  smoothing, which is okay. Since we are at the furthest point from the viewer
+  sampling every point looks the same as interpolating between heights (this
+  is why its a special case, along with writing to the top buffer).
+
+  With the furthest line done, we are ready to handle the meat of the
+  rendering. The intermediate lines make up the greatest portion of the view
+  so we will take great care to make sure they look the best. For starters,
+  increment the texture values so they are one step closer to the viewer.
+  You are now ready to enter the intermediate section. For this section you
+  loop from the maximum depth - 1, to the nearest depth + 1. The basic process
+  for rendering this section is to read the map values, interpolate the heights
+  and colors, render the vertical lines, increment the texture coordinates,
+  then repeat.
+
+  Reading the map values for this section is a bit different than the furthest
+  line case. For this we only want to do a perspective transform on the first
+  point in each height value we reach. This process is actually a little tricky,
+  but still quite fast. To do this properly, we must keep a secondary list that
+  contains the X values of the points we actually perspective transform.
+  Ideally these points will be 2-4 pixels apart, maybe more. We also need a
+  way to tell if we have moved to a new index in our map, which tells us to
+  record the X value. This is actually fairly simple. We keep an old value
+  and a current value. When the current value is the same as the old value,
+  we are at the same map location. To simplify this even more, you can keep
+  old and current values as an offset instead of coordinates. The thought might
+  arise concerning what you initialize the old value to before the loop begins.
+  This is simple. Initialize it to a number that is impossible for the index
+  to reach, such as -1. Since I know you are thoroughly confused at this point
+  I will give you a small piece of code to illustrate what is going on.
+
+
+  oldindex = -1;  // initialize old value
+  xindex = 0;     // initialize x index table counter
+
+  for (x = 0; x < 320; x++)
+  {
+    index = (xval >> 8) + (yval & 0xff00);  // get curent index value
+    if (index != oldindex)
+    {
+      bottombuffer[x].y = 99 - (heightmap[index]*Distance)/z;
+      bottombuffer[x].c = heightmap[index]
+
+      xtable[xindex] = x;  // record X value
+      xindex++;
+
+      oldindex = index;
+    }
+    yval += ystep;
+    xval += xstep;
+  }
+
+
+  Once that loop is complete, we have a list of the columns where a
+  perspective transform was performed, and we skipped any duplicate transforms.
+  Also notice that we are saving to the BottomBuffer instead of the top. When
+  doing the intermediate lines, we always store to the bottom buffer. A subtle
+  point to this process is what if the right most point (x = 319) is still
+  equal to the old index? We won't get a closing value in our xtable list
+  resulting in fluctuating values making for an ugly display. The easiest way
+  to fix this is to modify the IF statement to read:
+
+    if (index != oldindex) || (x = 319)
+
+  This will always make sure we have an ending (the -1 always makes sure we
+  have a beginning).
+
+  When that loop is finished, you are ready to perform the magic. This little
+  step is what makes the land so smooth. You must interpolate the height and
+  the color between the xtable points. A simple linear interpolation is all
+  that's necessary to provide a convincing look. Since you know the number of
+  xtable entries, and you know the x values at each of those entries,
+  interpolation is straight forward. During the interpolation, be sure to
+  store the in-between values back into the bottom buffer. Here is how I do it.
+
+  for (i = 0; i < (xindex - 1); i++)
+  {
+    cval = bottomtable[xtable[i]].c << 8;
+    yval = bottomtable[xtable[i]].y << 8;
+    cstep = ((bottomtable[xtable[i+1]].c - bottomtable[xtable[i]].c) << 8) /
+            (xtable[i+1] - xtable[i]);
+    ystep = ((bottomtable[xtable[i+1]].y - bottomtable[xtable[i]].y) << 8) /
+            (xtable[i+1] - xtable[i]);
+
+    for (j = xtable[i]+1; j < xtable[i+1]; j++)
+    {
+       cval += cstep;
+       yval += ystep;
+       bottomtable[j].y = yval >> 8;
+       bottomtable[j].c = cval >> 8;
+    }
+  }
+
+  There are a few subtle points in this loop. The first is i looping from
+  0 to xindex - 2 ( < xindex - 1 ). This is because we sometimes index xtable
+  with an i+1. Looping to xindex - 1 would go beyond the bounds of the array
+  resulting in bogus data. The next point is j looping from xtable[i]+1. This
+  is because we already know the value at xtable[i]. No need to re-store the
+  value.
+
+  The difficult part of the routine is now finished. From here, you call a
+  function to draw vertical lines from the top buffer to the bottom buffer.
+  The function should do some sort of color interpolation. Also note that
+  this routine should only draw a vertical line if the top buffer value
+  is less than the bottom buffer value.
+
+  After you draw the vertical lines, copy the values in the bottom buffer
+  to the top buffer. This will prime the tables for the next time around.
+  Increment your texture values once again, then your loop should continue.
+
+  Once you have reached the end of that loop, you are ready for the nearest
+  line. This line is also a special case, but is much easier to handle than
+  the other two cases. Entering this loop, we have the top buffer set with
+  the last values we calculated, and we are at the closest point to the viewer
+  in the texture. In the last loop, we go just like the first loop (furthest
+  depth), but instead of doing a perspective transform to get the height, just
+  store the value 199. Since this is the bottom of the screen, it automatically
+  gets rid of any holes in the rendering. You still need to interpolate the
+  texture values though in order to get the color. When looping, store the
+  values in the bottom buffer. Here is code on how to do it.
+
+  for (x = 0; x < 320; x++)
+  {
+    bottombuffer[x].y = 199;
+    bottombuffer[x].c = heightmap[xval >> 8 + yval & 0xff00]
+    yval += ystep;
+    xval += xstep;
+  }
+
+  With the last loop complete, do another call to the vertical line drawing
+  routine. Once that is finished, your landscape is rendered.
+
+
+  Notes:
+
+    If you have trouble following this explanation, I have included full
+  working source code of this method. There are a few optimizations in the
+  source code that I haven't discussed here.
+
+    I have skimped on a few details in this explanation, but the main point
+  of interest is how I interpolated the heights and colors. See the source
+  code for complete details.
+
+    There are also several shortcomings to this method. The biggest deals
+  with rotations. When you rotate to certain angles you get terrible peaks
+  on quite a few portions of the display. I know the cause, but I don't
+  feel like explaining it (I've typed enough already). You can probably
+  get rid of it by doing a conditional rendering based on the slope of the
+  lines when doing the texture mapping.
+
+
+  If you have any questions or comments, please feel free to contact me.
+
+  Alex Chalfin
+  achalfin@one.net

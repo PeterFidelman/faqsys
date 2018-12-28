@@ -1,0 +1,180 @@
+Newsgroups: rec.games.programmer
+From: jang@ecf.toronto.edu (JANG  HIN LANG)
+Subject: AI Learning Algorithms
+Date: Wed, 30 Nov 1994 22:45:40 GMT
+
+I do not believe anyone discussed, in detail, on how to apply
+basic principles of articificial intelligence, neural computing 
+and machine learning into computer games.  In using the
+outdated Kohonen Algorithm (explained below) we can simulate
+an intelligent computer opponent that can learn from its 
+mistakes.
+ 
+
+For the interested few, here in my treatment on the subject.
+
+
+---
+
+
+The least sophisticated of AI algorithms simluates the function
+of the biological neuron.  First proposed four decades ago, the
+outline of the basic model is as follows
+
+
+
+dendrite                   |------------|
+(input) -----------------O |            |
+                           | cell body  | O---------------
+                           |            |          axon (output)
+(input) -----------------O |            |
+                           |------------|
+
+where O is a synapse.
+
+The synapse is not an actual physical linkage; instead it is a
+temporary chemical one that can vary over time.  To represent
+these variable connections in our computer model we assign a 
+multiplicative weight to each input pathway.  A high weight
+term denotes a favourable connection.  The cell body contains
+a predefined value known as the threshold.  An output signal
+wll be produced if the input to the neuron is greater than
+the threshold value.
+
+We now require a mechanism that allows us the simulate learning
+in our perceptrons.
+
+In biological systems, the process of learning is thought to 
+involve modifications in the effective coupling between neurons.
+In our computer model, we make small adjustments to the weights.
+To appreciate what this means, consider this learning paradigm:
+
+	- set the weights w and thresholds t of perceptrons to
+	  random values
+
+	- present the input x(0), x(1), x(2), ...., x(n-1)
+
+	- calculate the actual output by comparing the threshold
+	  value and the weighted sum of the input
+
+
+			n - 1
+			-----
+	weighted sum =  \	w(i) * x(i)
+			/
+			-----
+			i = 0
+
+	- alter the weights to reinforce correct decisions and 
+	  discourage incorrect decisions.
+
+
+Adaptation of the learning paradigm lead to the development of 
+the Kohonen Network Algorithm, named after Professor T. Kohonen
+of the Faculty of Information Sciences at the University of
+Helsinki, Finland.  Instead of comparing input values to thresholds,
+(as in the case with perceptrons) Kohonen compared the weights of
+all output nodes and picked the set of nodes having weights that
+closely matched the magnitude of the input signal.
+
+
+NOTE: --->	the following algorithm may not be appropriate for
+		your particular application in terms of space
+		and time efficiency.  If you require information
+		regarding optimised AI learning algorithms consult
+		this reference:
+
+		Kaelbling, Leslie Pack
+		Learning in Embedded Systems
+		The MIT Press, Cambridge, Massachusetts
+		(c) 1993
+		ISBN 0-262-11174-8
+
+
+The self-organising network consists of a matrix of output nodes j
+all of which are connected to every input node i.
+
+
+			----------------
+			\  O    O    O	\
+			 \		 \
+	output nodes j	  \  O    O    O  \
+			   \		   \
+			    \  O    O    O  \
+			     ----------------
+
+
+
+	input nodes i		O	O
+
+
+The algorithm determines the "winning" node j* that closely matches
+the expected output as determined by the set of input nodes i.  
+Modifying the weights of j* and its neighbours will produce a
+set of desired outcomes.
+
+Kohonen successfully implemented this technique for a speech
+recognition system in the mid 1980's.
+
+-------------------------
+KOHONEN NETWORK ALGORITHM
+-------------------------
+
+
+1. Initialise network
+	- define w(ij) (0 <= i <= n-1) to be the weight from input
+	  node i to output node j.  Set the weights from the n 
+	  inputs to some small values.  Set the initial radius
+	  of the neighbourhood around node j, N(j), to some large
+	  value.
+
+2. Present input
+	- present input x(0), x(1), x(2), .... , x(n-1) where x(i)
+	  is the input to node i.
+
+3. Calculate distance
+	- compute distance d(j) between input node i and each output
+	  node j as in
+
+
+			n - 1
+			-----
+		d(j) =  \	(x(i) - w(ij))^2
+			/
+			-----
+			i = 0
+
+4. Select minimum distance and denote output node j with minimum d(j)
+   to be j*.
+
+5. Update weights
+	- update weight for node j* and its neighbours as defined by
+	  the extent of boundary N(j).
+
+	
+		w(ij) = w(ij) + M * (x(i) - w(ij))
+
+	The M term is used to control the rate of weight adjustment.
+	This value should be set in the range [0.5, 1] and then
+	gradually decreased in accordance to a linear function as
+	the number of learning cycles increases.
+
+6. If the expected solution set has not been found, repeat the
+   learning cycle (steps 2-5).
+
+7. The solution set S of the network is now a counter-strategy tactic
+   that a computer opponent can use against the player.
+
+   If, for example, the network consists of 16 output nodes, four input
+   nodes and minimum neighbourhood size of four, the Kohonen Algorithm
+   can develop 216 (9 * 4!) unique strategy tactics.  Provided that
+   the network has been trained well, the computer opponent will be
+   rather challenging.
+
+
+
+--------------------------------------------------------------------
+
+
+
+

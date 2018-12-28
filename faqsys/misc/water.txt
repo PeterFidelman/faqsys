@@ -1,0 +1,137 @@
+Water
+
+---------------------------------------------------------------------------
+
+Introduction
+
+Water is a really nice effect, one of the better tricks around. Its also
+pretty simple to code, should take no more than an afternoons work to get a
+good water routine.
+---------------------------------------------------------------------------
+
+Basics
+
+First thing you'll need is 2 buffers, for the water. This needs to be an
+array of ints, same size as destination buffer. Arrange these in a
+2-element array, to ease the flipping. Clear these to zero, and you're
+ready to start.
+
+---------------------------------------------------------------------------
+
+Calculate The New Water
+
+Calculating the new water is pretty simple. You'll need a loop that execute
+from 1 to height-1, then 1 to width - 1. At each element for the water,
+you'll need to sum the North, South, East, West points from the current
+water, and divide by 2 Not 4, 2. Then subtract the new water for [y][x]
+from this. This is your basic smooth function. Now you need to add the
+'harmonic motion' to it. Take the new-water[y][x], shift it right x places
+(x could be 4) and subtract it from the new-water[y][x]. Pseudo-code for
+this might look like:
+
+for y := 1 to height - 1
+
+        for x := 1 to width - 1
+
+                new-water[y][x] = ((old-water[y-1][x] +
+
+                                    old-water[y+1][x] +
+
+                                    old-water[y][x-1] +
+
+                                    old-water[y][x+1]) / 2) -
+
+                                    new-water[y][x])
+
+                new-water[y][x] -= new-water[y][x] shr x
+
+        end
+
+end
+
+Not too hard to make into working code. Because there are 2 pages, and we
+are flipping between them, the references to what seem like uncalculated
+water ( - new-water[y][x]) are ok, because they come around and feed back.
+This is all it takes to calculate the water! You may also want a part where
+you set the 1 pixel wide frame around the water to 0, just to be safe.
+
+---------------------------------------------------------------------------
+
+Paint The Water
+
+Water is also pretty straightforward to paint. In fact some of the
+techniques here, you will see later on in the bump-mapping. Back to the
+task in hand. We will again need a loop for every pixel on the screen. What
+we need to do is calculate a kind-of normal at each pixel. This is simply:
+
+offsetx = water[y][x] - water[y+1][x]
+
+offsety = water[y][x] - water[y][x+1]
+
+Which measures changes in X and Y. 'Colour' is then calculated by 128 -
+offsetx. Clip colour to the 0..255 range. Divide both offsetx and offsety
+by 8, and add them to x and y. Now for the tricky bit. You'll need a
+background image (or perhaps you can do without ...). You need to light the
+background image by the water. This is done by:
+
+offsetx /= 3;
+
+offsety /= 8;
+
+indexu = offsetx + x;
+
+indexv = offsety + y;
+
+MulTable[backdrop[indexv*256+indexu]*256+colour];
+
+MulTable is another handy lookup table. It simply takes the value of
+(row*col) >> 8.
+
+Pseudo code for this would be :
+
+For y := 1 to height - 1
+
+        For x := 1 to width - 1
+
+                offsetx = water[y][x] - water[y+1][x]
+
+                offsety = water[y][x] - water[y][x+1]
+
+                colour = 128 - offsetx
+
+                trim colour to 0..255
+
+                divide offsetx and offsety by 8
+
+                add offsetx to x giving indexu
+
+                add offsety to y giving indexv
+
+                Plot (backdrop*colour) >> 8, lookup in table
+
+        End
+
+End
+
+What we are effectively doing here is applying fake lighting to the water,
+then mixing the colours. There are plenty of variations on calculating the
+normals. Plenty of room for exploration there.
+
+---------------------------------------------------------------------------
+
+The Water Loop
+
+Note it makes a difference what order you do calculations in. Its pretty
+simple though. You need to:
+
+  1. Draw to the water
+  2. Paint it
+  3. Calculate new water
+  4. Page flip the water
+
+If you stick to that, you can't go wrong. If you really want to be smart,
+you'll use the texturemap lighting info on this page to do make logos and
+so on ripple. I've even seen it combined with bump-mapping. Water is a very
+rewarding effect, well worth coding.
+
+Tom Hammersley,tomh@globalnet.co.uk

@@ -1,0 +1,115 @@
+These programs are a file compressor and decompressor based on the 
+Limpel-Ziv algorithm.
+
+The compression algorithm builds a string translation table that maps 
+substrings from the input stream into fixed-length codes.  These codes 
+are used by the decompression algorithm to rebuild the compressor's table 
+and reconstruct the original data stream.  In it's simplest form, the 
+algorithm can be stated as:
+	"If <w>k is in the table, then <w> is in the table."
+
+The following comments were paraphrased from the VMS LZCOMP program 
+sources.  The algorithm is from the article "A Technique for High 
+Performance Data Compression" by Terry A. Welch which appeared in IEEE 
+Computer Volume 17, Number 6 (June 1984), pp 8-19.
+
+Compress:
+	1) Initialize table to single character strings.
+	2) Read first character.  Set <w> (the prefix string) to that
+	   character.
+	3) Read next character, k.
+	4) If at end of file, output code <w> and exit.
+	5) If <w>k is in the table, set <w> to <w>k; goto step 3.
+	6) Output code <w>.
+	7) Put <w>k into table.
+	8) Set <w> to k. Goto step 3.
+
+<w> is a code which represents a string in the table.  When a new 
+character k is read in, the table is searched for <w>k.  If this 
+combination is found, <w> is set to the code for that combination and the 
+next character is read in.  Otherwise, this combination is added to the 
+table, the code <w> is written to the output stream and <w> is set to k.
+
+The decompression algorithm builds an identical table by parsing each 
+received code into a prefix string and extension character.  The 
+extension character is pushed onto the stack and the prefix string 
+translated again until it is a single character.  This completes the 
+decompression.  The decompressed code is then output by popping the stack 
+and a new entry is made in the table.
+
+The algorithm breaks when the input stream contains the sequence 
+k<w>k<w>k, where k<w> is already in the compressor's table.  This 
+sequence is handled in step 3 below.
+
+Decompress:
+	1) Read first input code, assign to <w>, k, oldcode and
+	   finchar.  Output k.
+	2) Read next code <w>, assign to incode.  If end of file, exit.
+	3) If <w> not in table (k<w>k<w>k case),
+	   a) Push finchar onto stack.
+	   b) Set <w> and incode to oldcode.
+	4) If <w> in table,
+	   a) Push <w>.char onto stack.
+	   b) Set <w> to <w>.code.
+	   c) Goto step 4.
+	5) Set oldcode and finchar to <w>, output finchar.
+	6) While characters on stack pop stack and output character.
+	7) Add <oldcode>k to table.
+	8) Set oldcode to incode.
+	9) Goto step 2.
+
+The algorithm used here has one additional feature.  The output codes are 
+variable length.  They start at nine bits.  Once the number of codes 
+exceeds the current code size, the number of bits in the code is 
+increased.  When the table is completely full, a clear code is 
+transmitted for the decompressor and the table is reinitialized.  This 
+program uses a maximum code size of 12 bits for a total of 4096 codes.
+
+The decompressor realizes that the code size is changing when it's table 
+size reaches the maximum for the current code size.  At this point, the 
+code size is increased.  Remember that the decompressor's table is 
+identical to the compressor's table at any point in the original data 
+stream.
+
+My sources of reference while implementing these programs were the 
+following:
+
+	Bernie Eiben, DEC
+	Unix (tm) COMPRESS program sources
+	VMS LZCOMP/LZDCMP program sources (Martin Minow, DEC)
+	ARC file archiver sources (Thom Henderson, System Enhancement 
+	   Associates)
+
+Toad Hall Tweaks:
+LZCOMP2:
+	- Still prompts for input,output file names.
+	- Rewritten as a .COM file (tighter, faster).
+	- Output is identical to LZCOMP.ASM
+LZCOMP3:
+	- Takes input filename from command line (else uses StdIn).
+	- Outputs per DOS redirection (e.g., LZCOMP3 BOGUS.TXT >BOGUS.LZW)
+	- Won't work with "<BOGUS.TXT" input redirection or as a filter
+	  (sigh...)
+	- Tighter and faster yet.
+
+LZDCMP2,
+LZDCMP3:
+	- Same tweaks as equivalent LZCOMP files.
+
+Kudos to the original author:
+	Tom Pfau
+	Digital Equipment Corporation
+	Parsippany, NJ
+
+... nice hack!  Sure beats the horrible C stuff I've only been able
+to find to date for any sort of file compression!
+
+I'm now contemplating some comments I read in a recent ARC utility
+(GSARC) where the author expanded the number of code bits from 9..2
+to 3..13 (as I recall); and he doesn't discard the table on overflow.
+Does some tricky other stuff (not clear yet).
+
+David Kirschbaum
+Toad Hall
+kirsch@braggvax.ARPA
+

@@ -1,0 +1,463 @@
+Path: unixg.ubc.ca!ubc-cs!news-server.csri.toronto.edu!bonnie.concordia.ca!uunet!usc!rpi!usenet.coe.montana.edu!news.u.washington.edu!milton.u.washington.edu!jesjones
+From: jesjones@milton.u.washington.edu (Jesse Jones)
+Newsgroups: alt.fractals
+Subject: 3D Transform
+Summary: Discussion of how to render a fractal image in 3D.
+Keywords: Fractal 3D Transform Mandella
+Message-ID: <1992Apr19.213929.7834@u.washington.edu>
+Date: 19 Apr 92 21:39:29 GMT
+References: <1992Apr19.213254.7575@u.washington.edu>
+Sender: news@u.washington.edu (USENET News System)
+Organization: University of Washington, Seattle
+Lines: 450
+ 
+ 
+                          Rendering Fractals in 3D
+                              by Jesse Jones
+ 
+   This file discusses how to render fractal images as three-dimensional 
+figures. The algorithm is taken from "The Science of Fractal Images" starting on
+page 113. I'll discuss the algorithm and various implementation details Saupe 
+glosses over. I'll also include code in Modula-2. The algorithm presented here 
+has been implemented in a Macintosh program called Mandella. The  latest version
+is 5.6. Version 6.0 should be ready sometime in May 1992. I should mention that
+the 3D transform looks best if it is used on an image drawn with Continuous
+Potential.
+   
+   The idea is to treat each dwell value (iteration count) as a height. The view
+point will be parallel to the y-axis and at some some angle theta to the z-axis. 
+If x, y and z are normalized so that they range from 0 to 1 then the projection 
+is given by (x, y, z) -> (x, y*Sin(theta) + z*Cos(theta)) (see diagram). Theta = 
+pi/2 corresponds to a top view, theta = 0 corresponds to a side view. The 3D 
+image will be rendered column by column starting at the bottom and working 
+upward. Points that fall below the last projected point (the horizon) will not
+be plotted. Occasionally there will be gaps between points in the projected 
+rows. These points will be given interpolated values.
+ 
+                                  \  /
+                                   \/
+                                 B /\                     A = Sin(theta)
+                               \  /  \                    B = Cos(theta)
+                                \/    \
+                                /\     \
+                             A /  \     \
+                          \   /    \     \
+                           \ /      \  |  \
+                            /        \ |   \
+                           / \        \|    \
+                              \        \     \
+                               \     1 -\ ------------ 
+                                \      | \     \ z   | 
+                                 \     |  \     |    | 
+                                  \    |   \    |    | 
+                                   \   |    \   |    |
+                                    \  |     \  |    |
+                                     \ |      \ |    |
+                                theta \|       \|    |
+                     -------------------------------------
+                                       0        y    1
+                                       
+                 Figure 1: Projection from unit cube to the screen.
+                 
+                 
+   Typically the 3D images will look much better if they are scaled so that the
+height variations are reasonable. In Mandella I scale z like this: 
+z := scale*z^gradient. In a normal Mandelbrot fractal the heights will increase
+very slowly until they near the set. They then increase very rapidly. If 
+gradient is set to a number less then one (e.g. 1/8) the heights will increase 
+in a smoother fashion. Scale is used to control the amount of the screen the 3D 
+image uses. For example if the 3D image uses half the screen you can double 
+scale so that the entire screen is used.
+ 
+   Points at the bottom of the image pose a problem: in general they will not
+have the same height so there will be areas with no defined values. Saupe 
+suggests two approaches: 1) Clip the image so that only the defined pixels are 
+visible. 2) "Pull down" the front of the image.
+ 
+   I wasn't satisfied with either approach. Clipping could easily hide much of
+the original image. And pulling down the front resulted in too much distortion.
+So in Mandella I decided to calculate extra rows of data below the bottom of
+the original image. These extra rows of data are retained so that they are
+only calculated once (although more may have to be calculated if theta changes).
+There is also a preview option that merely colors any undefined pixels black.
+ 
+   Colors are usually selected according to the light intensity at the pixel.
+The intensity corresponds to the amount of shadow the point is in. It depends 
+on the surface normal, the vector pointing to the light source, and the view 
+vector. The color can be set to either the intensity or the original color 
+multiplied by intensity (for 24-bit color systems).
+                 
+   The normal at the point (Xi, Yi, Zi) can be calculated like so: 
+      normal = (dx/r, dy/r, dz/r) with 
+      dx = Zi,j - Zi+1,j
+      dy = Zi,j-1 - Zi,j 
+      dz = 1/(N - 1) where N is the number of points in the y direction
+      r = Sqrt(dx^2 + dy^2 + dz^2)
+Fractals tend to be quite rough. To smooth the 3D image the normal's can be 
+taken to be the average of several nearby points (see the procedure GetNormal 
+below).
+ 
+   Let light be the vector at (Xi, Yi, Zi) pointing toward the light source. If 
+we  assume the light source is infinitely far away light will be the same for 
+every point in the image. We'll fix the light source by specifying two angles: 
+sunH and sunV. sunH will fix the light source in the XY plane and sunV will fix 
+the elevation. We can take light to be (-Sin(sunH), -Cos(sunH), Sin(sunV)). So 
+sunH = 0 corresponds to the sun being directly in front of the image. sunH = 
+pi/2 corresponds to the sun being to the left of the image. And sunV = 0 
+corresponds to the sun being on the horizon. sunV = pi/2 corresponds to the sun 
+being directly overhead.
+ 
+   To calculate the intensity we need two more vectors: the view vector and the
+reflected light vector. The view vector is simply view = (0, -Cos(theta), 
+Sin(theta)). The reflected light vector is reflect = 2*Cos(phi)*normal - light 
+where phi is the angle between normal and light vectors. Let alpha be the angle 
+between reflect and view. We then have: 
+intensity = ambient                                              if Cos(phi) < 0
+            ambient+diffuse*Cos(phi)+specular*(Cos(alpha))^shine otherwise
+Some good values are ambient = 0, diffuse = 0.6, specular = 0.4, and shine = 4.
+ 
+   There are several other games we can play. For example on the cover of "The
+Science of Fractal Images" is a 3D view of a portion of the Mandelbrot set with
+the set colored blue and much lower then surrounding points. So the set looks 
+rather like a lake. Mandella provides a variable called DeltaSet. If DeltaSet is
+-10 the each point in the set will be moved down 10 pixels. The height of points
+in the set may also be increased if DeltaSet is positive.
+ 
+   Other options include: Stars, DeSpeckle, and Randomize. Stars is an integer
+controlling the number of stars in the background. The window is first cleared
+to the sky color and then Stars dots are drawn using the star color. DeSpeckle
+is usefull for some of the more oddball fractals that have isolated points that
+appear to be in the set. If DeSpeckle is on points where count = maxCount are
+given count values equal to the maximum count value of the neighbor points. The
+Randomize option was stolen from FractInt. It randomizes the colors by a small
+amount to remove sparkles from the image. They suggest that it be used for 
+images drawn without Continuous Potential. Since I use Continuous Potential 
+almost exclusively for 3D I haven't used Randomize much.
+ 
+   This, then, is the outline for the 3D algorithm. Note that a straightforward
+implementation will be very slow, even with floating point hardware. To 
+calculate the height of a pixel we need to at minimum evaluate two trig 
+functions. And then to find the intensity we evaluate two more trig functions 
+and raise a real number to a user defined value. The obvious solution is to use 
+look-up tables. For example we can define look up tables y and z such that 
+height := y[v] + z[count] where v is zero for the bottom scan line. For the 
+intensity we can convert the normal vector to a triplet of integer values by 
+multiplying each component by a constant. Intensity is then just 
+shadow[a, b, c]. Finally rewriting everything in assembly will speed the 
+transform considerably, in my case the assembly code was over five times faster.
+Mandella 5.6 transforms a 512x384 image into 3D in 30-45 seconds.
+ 
+   In the interests of clarity I've omitted the code related to calculating 
+extra scan lines to fill in the blanks at the bottom of the image. Instead any 
+undefined pixels will be colored  black. I've also taken a few other liberties 
+with the code. For example Counts is not really an array. Instead it's a handle 
+to a block of memory so that it can be easily resized.
+ 
+ 
+CONST
+   maxN = 15;                    (* normals can point in maxN^3 directions *)
+   
+   Sky   = -1;                   (* Used in the Intensity array for pixels in *)
+   Star  = -2;                   (* the background of the 3D image. *)
+   Black = -3;
+   
+   maxIntensity = 1024;
+   
+TYPE
+   CountArray = ARRAY [1..maxWidth, 1..maxHeight] OF CARDINAL;
+   IntArray   = ARRAY [1..maxWidth, 1..maxHeight] OF INTEGER;
+   
+   LookUpTable: ARRAY [0..max] OF INTEGER;
+   ShadowTable: ARRAY [-maxN..maxN, -maxN..maxN, -maxN..maxN] OF INTEGER;
+   
+   Vector = ARRAY [1..3] OF REAL; 
+   
+VAR
+   (* The following variables are the options set by the user. *)
+   
+   style   : DrawStyle;             
+   view    : REAL;               (* The view angle (in radians) *)
+   sunH    : REAL;               (* location of sun on xy-plane *)
+   sunV    : REAL;               (* elevation of sun *)
+   Scale   : REAL;               (* Scales heights by a constant amount *)
+   Gradient: REAL;               (* Controls rate of increase in heights *)
+   Smooth  : INTEGER;            (* Number of points to use for normals *)
+   Stars   : INTEGER;            (* Controls the number of stars *)
+   DeltaSet: INTEGER;            (* Amount to offset points in the set by *)
+ 
+   ambient : REAL;               (* These control the lighting model *)
+   diffuse : REAL;
+   specular: REAL;
+   shiny   : REAL;
+   
+   (* These variables are used internally. *)
+   
+   NoPixels : Point;             (* Number of pixels in h and v directions *)
+   Counts   : CountArray;        (* 2D array of iteration counts *)
+   Intensity: IntArray;          (* The new array of palette indices *)
+   offset   : INTEGER;           (* Amount to shift image down by *)
+   y, z     : LookUpTable;
+   shadow   : ShadowTable;
+ 
+ 
+PROCEDURE Condition (min, value, max: INTEGER): INTEGER;
+   VAR new: INTEGER;
+BEGIN
+   IF value < min THEN
+      new := min;
+   ELSIF value > max THEN
+      new := max;
+   ELSE
+      new := value;
+   END;
+   RETURN new;
+END Condition;
+ 
+(* ------------------------ Vector math routines ---------------------------- *)
+ 
+   (* Normalize the vector a so that it has length one. *)
+PROCEDURE Normalize (a: Vector): Vector;
+   VAR 
+      b  : Vector;
+      mag: REAL;
+BEGIN
+   mag := Sqrt(a[1]*a[1] + a[2]*a[2] + a[3]*a[3]);
+   IF mag = 0.0 THEN
+      b := a;
+   ELSE
+      b[1] := a[1]/mag;
+      b[2] := a[2]/mag;
+      b[3] := a[3]/mag;
+   END;
+   RETURN b;
+END Normalize;
+   
+PROCEDURE BuildVector (x, y, z: REAL): Vector;
+   VAR 
+      b  : Vector;
+      mag: REAL;
+BEGIN
+   b[1] := x;
+   b[2] := y;
+   b[3] := z;
+   mag := Sqrt(x*x + y*y + z*z);
+   IF mag > 0.0 THEN
+      b[1] := x/mag;
+      b[2] := y/mag;
+      b[3] := z/mag;
+   END;
+   RETURN b;
+END BuildVector;
+   
+   (* Return the length of the vector a. *)
+PROCEDURE Mag (a: Vector): REAL;
+BEGIN
+   RETURN Sqrt(a[1]*a[1] + a[2]*a[2] + a[3]*a[3]);
+END Normalize;
+ 
+   (* Return the dot product of the vectors a and b. Note that the dot product
+      is equal to the cosine of the angles between the vectors multiplied by the
+      lengths of both vectors. *)
+PROCEDURE DotProduct (a, b: Vector): REAL;
+BEGIN
+   RETURN a[1]*b[1] + a[2]*b[2] + a[3]*b[3];
+END DotProduct;
+   
+(* ------------------------ 3D transform routines --------------------------- *)
+ 
+PROCEDURE GetHeight (h, v: INTEGER): REAL;
+BEGIN
+   h := Condition(1, h, NoPixels.h);      
+   v := Condition(1, NoPixels.v - v, NoPixels.v);
+   RETURN FLOAT(Counts[h, v]);
+END GetHeight;
+   
+PROCEDURE GetNormal (h, v: INTEGER): Vector;
+   VAR 
+      normal: Vector;
+      min   : INTEGER;
+      max   : INTEGER;
+      k     : INTEGER;
+BEGIN
+   normal[1] := 0.0; normal[2] := 0.0;
+   min := -(Smooth DIV 2);
+   max := Smooth + min;
+   FOR k := min TO max DO
+      normal[1] := normal[1] + GetHeight(h + k, v) - GetHeight(h + k + 1, v);
+      normal[2] := normal[2] + GetHeight(h, v + k - 1) - GetHeight(h, v + k);
+   END;
+   normal[1] := normal[1]/FLOAT(Smooth+1);               (* get average *)
+   normal[2] := normal[2]/FLOAT(Smooth+1);
+   normal[3] := 1.0/FLOAT(NoPixels.v);
+   RETURN Normalize(normal);
+END GetNormal;
+ 
+PROCEDURE Iluminate (h, v: INTEGER): INTEGER;
+   VAR
+      normal : Vector;
+      a, b, c: INTEGER;
+      max    : extended;
+      value  : INTEGER;
+BEGIN
+   IF Counts[h, v] >= maxCount THEN
+      value := Black;
+   ELSE
+      max := FLOAT(maxN);
+      normal := GetNormal(h, v);
+      a := ROUND(max*normal[1]);
+      b := ROUND(max*normal[2]);
+      c := ROUND(max*normal[3]);
+      value := shadow[a, b, c];
+   END;
+   RETURN value;
+END Iluminate;
+ 
+PROCEDURE MapPixel (h, v: INTEGER): INTEGER;
+   VAR height, count: INTEGER;
+BEGIN
+   count := Counts[h, NoPixels.v - v + 1];
+   height := y[v] + z[count] - offset;
+   IF count >= maxCount THEN INC(height, DeltaSet) END;
+   RETURN height;
+END MapPixel;
+ 
+PROCEDURE ConvertTo3D;
+   VAR
+      h, v, k  : INTEGER;
+      horizon  : INTEGER;           (* floating horizon *)
+      p, p0, p1: INTEGER;           (* projected heights *)
+      dy       : REAL;              (* used for interpolation *)
+      temp     : INTEGER;
+      light    : INTEGER;
+BEGIN
+   FOR h := 1 TO NoPixels.h DO      (* proceed col by col, starting at bottom *)
+      p0 := MapPixel(h, 1);         (* and working up *)
+      light := Iluminate(h, 1);
+      FOR k := 0 TO p0-1 DO
+         Intensity[h, NoPixels.v - k] := Black;
+      END;
+      Intensity[h, NoPixels.v - p0] := light;
+      horizon := p0;
+      FOR v := 2 TO NoPixels.v DO
+         p1 := MapPixel(h, v);
+         IF p1 > horizon THEN       (* plot only if point is above horizon *)
+            light := Iluminate(h, v);
+            Intensity[h, NoPixels.v - p1] := light;
+            p := p1 - 1;
+            WHILE p > horizon DO    (* interpolate intensities for the gap *)
+               dy := FLOAT(p - p0)/FLOAT(p1 - p0);
+               temp := ROUND((1.0 - dy)*FLOAT(Iluminate(h, v-1)) + 
+                       dy*FLOAT(light));
+               Intensity[h, NoPixels.v - p] := temp;
+               DEC(p);
+            END;
+            horizon := p1;
+         END;
+         p0 := p1;
+      END;
+   END;
+END ConvertTo3D;
+ 
+(* ---------------------- Initialization routines --------------------------- *)
+   
+   (* Init the look up tables used for computing the heights for pixels. *)
+PROCEDURE InitHeight;
+   VAR 
+      maxZ, scaling: REAL;
+      count, row   : INTEGER;
+BEGIN
+   maxZ := Scale*FLOAT(NoPixels.v-1)*Cos(view);
+   FOR count := 0 TO maxCount DO
+      z[count] := ROUND(maxZ*Raise(FLOAT(count)/FLOAT(maxCount), Gradient));
+   END;
+   scaling := Scale*Sin(view);
+   FOR row := 1 TO NoPixels.v DO
+      y[row] := ROUND(FLOAT(row)*scaling);
+   END;
+END InitHeight;
+ 
+   (* Init look up table used to calculate intensity. *)
+PROCEDURE InitShadow;
+   VAR 
+      maxIntens : REAL;
+      eye, light: Vector;        (* these vectors are normalized *)
+      normal    : Vector;        (* this is the (unnormalized) surface normal *)
+      reflect   : Vector;        (* the reflected light vector *)
+      angle     : REAL;          (* this is actually Cos(angle) *)
+      alpha     : REAL;          (* and this is Cos(alpha) *)
+      intensity : REAL;
+      x, y, z   : INTEGER;
+BEGIN
+   maxIntens := ambient + diffuse + specular;
+   eye := BuildVector(0.0, -Cos(view), Sin(view));
+   light := BuildVector(-Sin(sunH), -Cos(sunH), Sin(sunV));
+   FOR x := -maxN TO maxN DO
+      normal[1] := FLOAT(x)/maxN;
+      FOR y := -maxN TO maxN DO
+         normal[2] := FLOAT(y)/maxN;
+         FOR z := -maxN TO maxN DO
+            normal[3] := FLOAT(z)/maxN;
+            angle := DotProduct(normal, light)/Mag(normal);
+            IF angle < 0.0 THEN
+               intensity := ambient;
+            ELSE
+               reflect[1] := 2.0*angle*normal[1] - light[1];
+               reflect[2] := 2.0*angle*normal[2] - light[2];
+               reflect[3] := 2.0*angle*normal[3] - light[3];
+               alpha := ABS(DotProduct(eye, reflect)/Mag(reflect));
+               intensity := ambient + diffuse*angle + 
+                            specular*RaiseInt(alpha, shiny);
+            END;
+            shadow[x, y, z] := ROUND(maxIntensity*intensity/maxIntens);
+         END;
+      END;
+   END;
+END InitShadow;
+ 
+   (* Offset is set to the smallest height in the bottom row. Then when heights
+      are computed offset is subtracted from each of them so the image has a
+      mimimum of undefined pixels at the bottom. *)
+PROCEDURE FindOffset;
+   VAR h, height, count: INTEGER;
+BEGIN
+   offset := MAX(INTEGER);                      (* find smallest offset *)
+   FOR h := 1 TO NoPixels.h DO
+      count := Counts[h, 1];
+      height := z[count];
+      IF height < offset THEN offset := height END;
+   END;
+END FindOffset;
+ 
+PROCEDURE AddStars;
+   VAR 
+      h, v  : INTEGER;
+      number: LONGINT;
+      count : LONGINT;
+BEGIN
+   number := LONG(NoPixels.h)*LONG(NoPixels.v);
+   number := LONG(Stars)*number DIV 10000;
+   FOR count := 1 TO number DO
+      h := Random(NoPixels.h-1);
+      v := Random(NoPixels.v-1);
+      Intensity[h+1, v+1] := Star;
+   END;
+END AddStars;
+ 
+(* ----------------------- The main routine --------------------------------- *)
+ 
+PROCEDURE RenderAs3D;
+   VAR size: LONGINT;
+BEGIN
+   size := LONG(NoPixels.v)*LONG(NoPixels.v);
+   FillMem(ADR(Intensity), size, Sky);          
+   AddStars;                                    
+   InitHeight;
+   InitShadow;
+   FindOffset;                                  
+   ConvertTo3D;                                 
+END RenderAs3D;
+ 
+ 
+Jesse Jones
+Usenet: jesjones@milton.u.washington.edu
+CServe: 73627,152

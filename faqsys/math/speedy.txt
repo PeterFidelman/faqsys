@@ -1,0 +1,623 @@
+     Hello, my friend! You are viewer nr 3098 since December 1995 of:
+
+                   SPEEDY FREE DIRECTION TEXTURE MAPPING
+                           AND OTHER NIFTY TRICKS
+
+              Some Wild-Ass Speculations and Untested Theories
+                            (that will work :-)
+
+                     by Håkan 'Zap' Andersson, 95-02-02
+
+                  Throw me a mail at: zap@lysator.liu.se
+
+-1. Greed/Copyright
+
+If you use any of this stuff in your commercial game, I at least think I
+deserve to:
+
+  1. Be mentioned and thanked thoroughly in the game. Thank Hakan 'Zap'
+     Andersson, zap@lysator.liu.se
+  2. Receive a copy of the game!!
+  3. Receive obscene amounts of cash :-)
+
+If you fail to comply to the above, it may turn out that I had already
+patented all algorithms herein, and I would then throw a "Unisys" at you! A
+joke, I hope you get that?
+
+The information herein is Copyright -95 Håkan 'Zap' Andersson
+
+  If you want to add this page to your WWW page, feel free to link to this
+  page (http://www.lysator.liu.se/~zap/speedy.html) but don't make a local
+   copy of it onto your WWW site without telling me (I might update this
+                later, and your copy wouldn't get updated!)
+
+PART I
+
+"Texturing in a skewed universe"
+
+0. Introduction
+
+So, you played Wolfenstein 3D. So you played DOOM. And you played Descent.
+Texturemapping in Real Time has proven to be a reality, even on a tiny old
+PC.
+
+This document will take you on a Guided Tour through one of my more recent
+speculations on the subject. There is no doubt that what I outline here
+will WORK. I call it speculations only because I havn't actually imple-
+mented or tested it! Sadly, I have a life, and that life prevents me from
+luxurios amounts of time at the console hacking for FUN. [It instead forces
+me to luxurious amounts at the same console, hacking for my bread].
+
+So none would be happier than I if somebody had the time to IMPLEMENT any
+of this, and please give me the sourcecode when he is done!!!
+
+1. History
+
+When I first played Wolfenstein 3D, I was chocked by the "real time
+textures" that it could produce on my old 386/20. I thought that stuff was
+only poss- ible on SGI Onyx machines and above. I was baffled.
+
+But after some months, the "secret" of the method was analyzed to death by
+the net. So, it was just vertical slices of wall being scaled vertically!
+
+But still - Wolfenstein proves to be the very basis of the idea that will
+be talked about in this document. Everybody and his sister trying to do a
+similar thing, would have initially tried to scan-convert the polygons
+HORIZONTALLY. Mostly because all textbooks on the subject talk about
+horizontal scanlines as if they were the only things that exists. [Reading
+too many books limits your thinking!] Wolfensteins strike of genious was to
+work VERTICALLY.
+
+But everybody "knew" that this only worked for walls. We all "knew" that
+there would NEVER be a game capable of drawing textured floors and
+ceilings. And boy were we wrong.
+
+Out came DOOM. As usual, I thought this was something only a SGI Onyx could
+do. Now the FLOOR had textures! How the hell was THIS possible!?
+
+As usual, the trusty ol' internet (not the RUSTY old internet :-) provided
+the answer. Naturally, they DID work horizontally on the floor, since
+horizontally meant along the same Z, which meant linearilly in texture
+space.
+
+"Of course" we thought. "Ok" we thought. "Now we know. Walls work. Floors
+too. But it is still impossible to work on any orientation of textures.
+That, at least, is something that only an SGI Onyx can do".
+
+Then came Descent.
+
+Of course, I knew this was not possible, and that this was not happening in
+MY tiny computer. (A mere 486/66!). I creapt around the case of my computer
+to see if there wasn't an SGI machine hidden in there after all!
+
+This time, I didn't wait for the 'net to think for me. This time, I did the
+thinking all on my own. This is the result of that thinking.
+
+2. What Wolfenstein and DOOM taught us
+
+The basic principle taught by DOOM (and by Wolfenstein) is this:
+
+TRUTH I:
+     As long as you are drawing your polygon ALONG LINES WITH EQUAL Z (The
+     Y axis for walls and the X axis for floors/ceilings) THE TEXTURE IS
+     TRAVERSED LINEARILY.
+
+Of course, this was all fine and dandy for FLOORS and WALLS. But what the
+hell did that help us on that sloping plane we wanted to texture!?
+
+The answer is, IT HELPED A LOT. We only have to bang our heads on the
+walls, and FORGET ALL THAT NONSENSE ABOUT WALKING ALONG HORIZONTAL OR
+VERTICAL SCANLINES!!
+
+TRUTH II:
+     ALL polygons drawn on screen has along SOME DIRECTION equal Z
+     coordinates along that line.
+
+This means, that if we can scanconvert our polygons not horizontally, not
+vertically, but ALONG THIS LINE, we can TRAVERSE THE TEXTURE LINEARILLY. I
+needn't go in to HOW MUCH THIS WILL SPEED UP EVERYTHING compared to one
+division per pixel (a common need in texturing algorithms) or bicubic
+approximations.
+
+3. How the hell (whimsical DOOM reference intended) do we do it!?
+
+Step one: Find the elusive screen-direction which represents equal-Z. This
+turns out to be so trivial it hardly even needs to be mentioned:
+
+Take the normal vector, converted to screen-coordinates (as a 2D vector).
+Your 'constant Z line' will be that vector rotated 90 degrees.
+[Alternatively, the cross product between the normal and the viewing
+direction will give you the same line in 3D]. The special case being that
+the normal points directly at the screen (having (0, 0) size in screen
+space). This simply means that you can pick ANY line - since the whole
+POLYGON is on the same Z!
+
+Now all you have to do, is to scan-convert your polygon in THIS DIRECTION
+ON SCREEN. Calculate what texture-coordinate-span that line has, and
+linearily walk the texture as you draw that line in the polygon.
+
+That is "it", really.
+
+4. How can we make this EFFICIENTLY (and without holes?)
+
+Firstly, as with ALL line-drawing algorithms, we need different 'versions'
+of it depending on if the lines slope is in the range +-45 degrees, or if
+it is closer to the Y direction. I will here only discuss the 'almost
+horizontal case', where the line has a direction so that for each pixel
+step along X, Y may OR may NOT increase/decrease one.
+
+The algorithm only needs to be "rotated" to work with Y instead of X, and I
+leave this as an exercise to the reader. Heh. :-)
+
+So, assuming that the polygon we want to draw turns out to fulfill this
+need, we can do the following:
+
+I am assuming we want to draw this polygon into a palette-device that is
+represented in memory as an array of bytes, row by row. This discussion
+does NOT assume any particular hardware. You may use MODE13 on a PC, or a
+WinGBitmap under Windows (NT), or you may use an X bitmap under X. Lets
+have the following C variables:
+
+     unsigned char *screen; /* Pointer to screen memory */
+     short x_size;          /* Screen X size */
+     short y_size;          /* Screen Y size */
+
+     /* A macro to reference any given pixel (read OR write) */
+     #define PIXEL(x, y) screen[y * x_size + x]
+
+Since we are in this example walking along X, we find the 'maximum
+horizontal size' of the polygon: It's minimum X and it's maximum X
+coordinates.
+
+Now we get clever. We get ourselves an array of integers containing
+'x_size' elements. [If we are on a PC, or are confined to 320x200, or any
+other resolution with less than 64k pixels, a short is sufficient.
+Otherwize, we need a long]
+
+This array will store our sloping line. To save time filling in the array,
+we only walk it starting in the MINIMUM X of the polygon and walk towards
+MAXIMUM X of the polygon.
+
+Into the array we fill in the BYTE OFFSET for that pixel.
+
+Meaning, for the purely horizontal line, the array would contain:
+
+   0   1   2   3   4   5   6   7   8   9   ....
+
+But for a line that looks like this:
+
+               X X X
+         X X X
+   X X X
+
+Would, on a 320 x 200 graphics mode contain the following offsets:
+
+  0  1  2  -323 -324 -325 -646 -647 -648
+
+The reason we store this in an array is threefold:
+
+  1. Speed! The line is the same all across the polygon! Why calculate it
+     more than once!?
+  2. Avoid HOLES. If you calculated the line 'on the fly' you could end up
+     with results such as this:
+
+                            2 2 2           1 = Line 1
+                      2 2 2 . 1 1 1         2 = Line 2
+                2 2 2 . 1 1 1               . = Holes in the texture
+                  1 1 1
+
+               With a precalculated line, we are guaranteed to get:
+
+                              2 2
+                        2 2 2 1 1 1
+                  2 2 2 1 1 1
+                  1 1 1
+
+  3. By not only storeing the Y coordinate, but the BYTE OFFSET, we save
+     ourselves a multiplication!
+
+5. How to Scanconvert a polygon along a 'skewed line'
+
+But now your real headache starts. How the HELL should I make a polygon
+scan- conversion algorithm that works along this 'skewed line'!? Didn't I
+have ENOUGH trouble writing a normal "horizontal" polygon scan converter!?
+:-)
+
+All I say is: Relax, pal. There is hope. There is an easy way:
+
+If you have a line that is 'skewed' by a slope of 1:3 (as in the example
+above), all you have to do, is this:
+
+BEFORE scanconverting your polygon (but AFTER transforming to screen- space
+AND clipping), SKEW THE POLYGON VERTICIES by THE SAME AMOUNT but in the
+OPPOSITE DIRECTION (in screen space). Then use your NORMAL HORIZONTAL SCAN
+CONVERSION ALGORIHM. But when you DRAW the LINES, DONT draw the
+HORIZONTALLY! Use the offset vector, and draw them in the skewed direction!
+
+If our sloping line looks like this:
+
+                 X X X
+           X X X
+     X X X
+
+Then if this is the original polygon verticies:
+
+   1 .               . 2
+
+   3 .
+             . 4
+
+After 'skewing' it would look like this:
+
+   1 .
+
+                     . 2    (moved down 2)
+
+   3 .
+
+             . 4  (moved down 1)
+
+To paraphrase: Never "TELL" your scanconverter that you are working with
+skewed scanconversion! "Fool" it by feeding it a skewed polygon, and get
+the right result by "skewing back" the output!
+
+So, what's the catch? Well, using this method ain't "perfect". You can get
+seams and holes BETWEEN your polygons, because the outcome of the edge of
+the polygon depends a little (but not much) on the angle of the skewed
+line. [Maybe there is a way to treat the edges of the polygon specially? I
+have many different ideas on this subject, but I dont know how "bad" the
+result will be, since I have yet to implement ANY of this!]
+
+Now, keep in mind that each "scan" along this "skewed" line represents one
+Z coordinate. This means that for each "scan" you'll need only ONE divide
+to find out at which point on the TEXTURE your START COORDINATES are. You
+can also obtain the 'step' size and direction to walk the texture bitmap.
+Note that the step DIRECTION is the same all over the polygon, but the step
+SIZE depends on 1/Z. So the direction only needs to be calculated once per
+polygon. The size needs to be calculated once per scan. (HOW your texture
+is mapped to the polygon is irrelevant - as long it is linear. The texture
+needn't necessarily be mapped flat on the polygon - it may even be a
+threedimensional hypertexture!!)
+
+This method also lends itself nicely to a Z-buffer! No need to recalculate
+Z! It is the same along each "scan"! So only a TEST needs to be done! And
+if you use a 16-bit Z-buffer, you can use the 'offset vector' discussed
+above multiplied by two (= shifted left once) to get the offset into the
+Z-buffer!
+
+6. Conclusion on texturing
+
+After realizing this, I feel that Descent isn't impossible after all. I
+doubt they use exactly THIS technique, but at least it has proven to be
+theoreti- cally possible to render free-direction textures in realtime.
+
+PART II:
+
+"Let there be light"
+
+0. Some words about lighting
+
+OK, so we figured out one way to do quick texturemapping. So we cracked the
+secret of Descent? Nope.
+
+Instead, one of Descent's MOST impressive effects is now the LIGHTING! It
+seems like they have TRUE lightsourcing with light fall-off in the
+distance!! And it is not just a "one shade per polygon" thing! It is a true
+"one shade per pixel" thing! (Try landing a flare on a polygon in some dark
+area! You get a nice pool of light around it!)
+
+This is extremely impressing that they can do this AND texturemapping in
+realtime, at the SAME time!
+
+Sadly, I havn't got a clue. Anyone?
+
+Instead, I have got quite a BIG clue about something completely DIFFERENT:
+
+1. DOOM Lighting basics
+
+Instead of talking about how Descent does it's ligting, lets step back to
+something a lot less complex: DOOM's lighting.
+
+DOOM really doesn't have much of lighting. What you CAN do, is specify a
+'brightness' of a certain area of your 'world'.
+
+What DOOM *has* is a 'shade remapping table', and this is what I will use
+as a base of my idea. Allow me to explain:
+
+DOOM uses a 256 color graphics mode - which means that it uses a palette.
+(Well, actually several palettes that gets exchanged, e.g. a red-ish
+palette for when you are hurt, e.t.c, but let's not get picky)
+
+When the lighting is 100% the pixel in the texturemap is the same pixel
+value that gets written to screen. But DOOM uses a bunch of (34 i think)
+remapping tables for different lighting levels. Such as:
+
+   unsigned char LightRemap[34][256];
+
+So to find the output pixel, the following algorithm would be used:
+
+   output_pixel = LightRemap[light_level][input_pixel];
+
+The LightRemap vector would be precalculated (in DOOM's case it is actually
+loaded from the WAD file). So when light_level is max, and imput_pixel
+references a white pixel, output_pixel will return the same white pixel.
+But when the lighting is 50%, output_pixel will instead be a gray color.
+
+2. Random dithering to the people!
+
+Now one problem that is seen in ALL 3D games is that you can SEE how their
+lighting falls off in 'steps'. If the palette only contains three
+darkness-levels of purple, then the LightRemap vector would for light-
+levels from 0-25% reference BLACK, for 25%-50% the darkest, and so on. You
+would VERY EASILY *see* the borders between the different levels, as the
+light diminishes in the distance. That looks UGLY.
+
+Now if the game programmers had added FOR EACH PIXEL a RANDOM value to the
+light. (Quick random values can be gotten from a table. They dont need to
+be superrandom, only chaotic). This would have given us a DITHER of the
+screen. And that DITHER would CHANGE for each frame (since it is RANDOM).
+This would INCREASE the perceived number of colors greatly! Sure - EACH
+FRAME would look like a "snowy mess" of random noise. But when played
+quickly, it would look smooth!
+
+Compare the perceived color quality of a TV picture from what you get when
+pausing a frame on your VCR, and you will understand what I am saying. You
+dont see all the noise in the picture, because the average of the noise
+over time for each pixel is the intended pixel value. The human eye
+'removes' the noise for you.
+
+Dithering would increase the colorresolution of games such as DOOM and
+Descent, and the 'noisy picture' would look MORE REAL than the 'clean'
+picture of today. (This is true of all moving graphics/animation)
+
+3. Bumpmapping in realtime? Impossible! NOT!
+
+Now lets get to the REAL fun!!!
+
+One of the Truths I have found in computer graphics is that texture-
+mapping can GREATLY reduce the number of polygons you need to make an
+object convincing.
+
+But sometimes you still need to have extra polygons, just get away from the
+"flat" look of the polygons.
+
+Another Truth that I found (while implementing my once commercial
+raytracer) is that the REAL fun starts with BUMPMAPPING! That is when you
+start talking about REAL decreases in the polygon count!
+
+Instead of having hundreds of polygons to make a wobbly mountain side, have
+ONE polygon, and add the wobblyness of the surface as a bumpmap!
+
+The basic idea behind bumpmapping:
+
+To do bumpmapping, you need to be doing SOME kind of "real" lighting. But
+the lighting does NOT need to be ANY MORE COMPLEX than simple cosine
+lighting. We dont even need point lightsources! Directional light is OK.
+
+To get the light-level of a polygon, we simply take the dot-product between
+the light-direction and the surface normal vector! That's it!
+
+If we use directional light, we can assume that light is coming from the
+direction Lx, Ly, Lz. (This should be a normalized vector: The 'length'
+should be 1.0) and the polygon normal is Nx, Ny, Nz, the light level is:
+
+    Light = Lx * Nx + Ly * Ny + Lz * Nz
+
+What could be simpler!?
+
+Now, Bumpmapping means VARYING the normal vector over the surface, and
+recalculating a NEW lightlevel for each pixel. For instance, lets assume a
+surface that is flat in the X-Y plane. If we vary the X component of the
+surface normal with a sinus function along X, it will look like the surface
+was rippled with waves in the X direction!
+
+The shading of these ripples would be "correct": If we the light comes from
+the LEFT, the LEFT side of the ripples would be bright and the right side
+would be dark. if the light came from the RIGHT, the reverse would be true.
+
+Now compare games like DOOM, where they "fake" bumpmapping by simply
+PAINTING light and dark edges on stuff like doors and similar. This looks
+horrible when two doors opposite eachother in a corridor both have their
+"bright" edges on their upper and LEFT sides!
+
+And trust me, the eye/brain is REALLY good at picking out these
+inconsitensies. The eye/brain uses shading as its PRIMARY CUE to the real
+nature of the surface! Yes! The PRIMARY cue! The whole human optical
+subsystem is oriented towards recognizing shades as being surface
+variations! A warning-this-is-not-real flag is IMMEDIATELY raised when the
+'bright edge' of a door doesn't match the intended light direction!
+
+This is where even Descent falls apart!
+
+4. How can we get this into games such as DOOM?
+
+Well, first of all SOME kind of 'directional light' must exist. But
+experience tells me that even a hardcoded directional light, where the
+light comes from the SAME direction all over the 'world', can increase the
+realism. And we need to be doing AT LEAST cosine shading.
+
+Above I said that to do bumpmapping, we must RECALCULATE THE SHADING FOR
+EACH PIXEL. Now that doesn't sound very fast, does it? Well, the thing is,
+we dont need to do that! But first let me explain:
+
+In advanced rendering systems you normally have one bitmap as texture- map,
+and another bitmap as the bump-map. The bumpmap usually defines the
+simulated 'height' of the surface as the brightness of the bitmap. But
+HEIGHT in ITSELF is not interesting! (If the surface is flat - it has the
+same height. Only where the height CHANGES the surface isn't flat, and the
+normal is affected); HEIGHT is not interesting, CHANGE of height is.
+
+So a traditional renderer will have to sample at least FOUR adjacent pixels
+in the bump-map bitmap, and calculate the 'slope' in that part of the
+bitmap based on their RELATIVE brightness. That 'slope' is then transformed
+into a deformation of the normal vector - which in turn (via the shading
+algorithm) yields another shade at that point (phew!).
+
+HOW THE HELL DO I INTEND TO DO SOMETHING LIKE THAT IN REALTIME!?
+
+Now, lets assume that we want to make a 'groove' along the Y axis in the
+middle of our polygon. Lets say the polygon is 64x64 units large, is flat
+in the XY plane, and the texture mapped to the polygon is also 64x64 in
+size.
+
+So what we want to do, is at X coordinate 32 we want to make a 'groove', so
+the polygon will LOOK as if it's profile was this:
+
+The 'intended' surface seen from negative Y axis:
+
+  --------------\_/---------------
+
+  |             |||              |
+X 0            / | \           X 64
+           X 31  32 33
+
+Since we are using "flat shading", we will only calculate one brightness
+level for the whole polygon: The dot-product between the normal vector and
+the light direction.
+
+Lets say that the result is 80%. So, the overall lighting of the polygon is
+80%! And 80% is the lightlevel we use on all pixels of the polygon EXCEPT
+those at X=31 and X=33! Because all pixels at X=31 should look as if they
+were going 'into' the surface (the normal vector displaced to the right),
+and those at X=33 should look as coming 'out of' the surface (normal vector
+displaced to the LEFT).
+
+Lets say the lighting level for a normal displaced a little to the left is
+95%, and a normal vector displaced a little to the right is 50%.
+
+As you can see, we then have three different shadings for this polygon with
+the current lighting conditions:
+80% for most of it, 50% for column 31, and 95% for column 33.
+
+As you can see, we do NOT need to recalculate the shading for each pixel.
+
+We only need to recalculate the shading level AS MANY TIMES AS WE HAVE
+DIFFERENT DISPLACEMENTS OF THE NORMAL VECTOR.
+
+5. How to implement this:
+
+We can let the normal texture bitmap that you use for texturing contain
+additional data: Any number of 'normal displacement' structures.
+
+   struct normal_displacement {
+       int palette_index;
+       real normal_displace_x, normal_displace_y;
+       int color_to_use;
+   };
+
+Any number of these structures may be attached to a bitmap. Lets say we
+have the following bitmap. Our goal is to depict a flat gray surface with a
+raised gray square in the middle. (Each number represents the palette index
+for that pixel:)
+
+  Y
+    11111111111111111111111111111
+    11111111111111111111111111111
+    11111222222222222222222111111
+    11111311111111111111114111111
+    11111311111111111111114111111
+    11111311111111111111114111111
+    11111311111111111111114111111
+    11111311111111111111114111111
+    11111311111111111111114111111
+    11111311111111111111114111111
+    11111355555555555555554111111
+    11111111111111111111111111111
+    11111111111111111111111111111
+(0,0)                             X
+
+Attach to this bitmap we have the following four normal_displacement
+structures:
+
+    {
+       palette_index      = 2;
+       normal_displace_x  = 0;
+       normal_displace_y  = 0.5;
+       color_to_use       = 1;
+    }
+    {
+       palette_index      = 3;
+       normal_displace_x  = -0.5;
+       normal_displace_y  = 0;
+       color_to_use       = 1;
+    }
+    {
+       palette_index      = 4;
+       normal_displace_x  = 0.5;
+       normal_displace_y  = 0;
+       color_to_use       = 1;
+    }
+    {
+       palette_index      = 5;
+       normal_displace_x  = 0;
+       normal_displace_y  = -0.5;
+       color_to_use       = 1;
+    }
+
+Now what does this mean?
+
+Let's say that color index 1 is just medium gray. So all pixels with index
+1 will simply be medium gray.
+The structures appended means that color index 2 *IN THE BITMAP* should
+represent an edge pointing 'upwards' (we displace the normal vector's Y by
+0.5 (normally this displacement would need to be trans- formed into the
+space of the polygon, but for our example, this is sufficient)).
+Now since color index 2 maybe normally be GREEN, PURPLE or any other
+undesired color, the structure contains the member color_to_use. In our
+example, this is 1. This means that this pixel will ALSO be medium gray -
+but with a DIFFERENT LIGHTING LEVEL.
+Similarily, color index 3 is an edge pointing 'to the left', 4 is an edge
+pointing 'to the right', and 5 is an edge 'pointing down'.
+
+If we would have wanted another COLOR, but the same DISPLACEMENT, we would
+have needed another structure for that, e.g. if the lower half of the
+bitmap would have been GREEN, we would have needed a few different
+displacement-structures for green pixels as well.
+
+How how should we make this efficiently? Well, remember the LightRemap
+vector we talked about earlier. This comes into play for us.
+
+The overall color level of the polygon is 80%, remember?
+
+So, lets make a COPY of the LightRemap vector for light level 80%. Lets put
+this into vector LightRemapCopy:
+
+    unsigned char LightRemapCopy[256];
+    memcpy(LightRemapCopy, LightRemap[light_level]);
+
+Now, lets walk through the normal_displacement structures. For each
+structure:
+
+    struct normal_displacement nrm;
+
+    /* Displace the normal */
+
+    displace_normal(normal, &new_normal, nrm);
+
+    /* Calculate a new light level */
+
+    new_light = calculate_light(new_normal);
+
+    /* Now plug this NEW stuff into the REMAPPING VECTOR FOR THAT PALETTE
+       INDEX! */
+
+    LightRemapCopy[nrm.palette_index] = LightRemap[new_lightlevel][nrm.color_to_use];
+
+After this is done, you simply SPLASH the polygon ONTO the screen, and use
+the 'LightRemapCopy' vector as your color-remapping vector! This will give
+you the correct bump-mapping shading for the whole bitmap WITHOUT ADDING
+ONCE SIGLE PROCESSOR CYCLE TO THE ACTUAL DRAWING OF THE TEXTURE ON SCREEN!
+
+[To speed this even further one can skip the copy step, and make these
+changes directly into the LightRemap vector - and remember the original
+values and plug them back after the polygon is rendered!]
+
+HOW ABOUT IT PEOPLE!? WHEN DO WE SEE THE FIRST DOOM-LIKE FREE-DIRECTION
+TEXTUREMAPPING GAME WITH BUMPMAPPING!? WHEN DO WE GET A VERSION OF DESCENT
+WHERE THE MINE *REALLY* LOOKS LIKE A MINE - WITH WOBBLY WALLS!!! HOW ABOUT
+TOMORROW!? I CANT WAIT!!!!
+
+Hope this wasn't completely unreadable!                             [Image]
+/Z
+
+To My Homepage....

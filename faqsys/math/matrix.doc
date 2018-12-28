@@ -1,0 +1,896 @@
+
+        OTMMATX.DOC     -   matrix transformation tutorial
+
+        (or if you prefer, "A proven antidote for VLA 3d tutorials" :)
+
+        Copyright (C) 1995, Zach Mortensen  [Voltaire OTM.TAP]
+        All rights reserved.
+
+        email - mortens1@nersc.gov
+
+
+Table of Contents
+
+        0.  Introduction
+        1.  Math Prerequisites
+        2.  Importance of Correct Transformations
+        3.  What a Matrix Represents
+        4.  Matrix Multiplication
+        5.  Transforming a Vector by a Matrix
+        6.  Object Space Transformations
+        7.  Camera Transformations
+        8.  Inverse Transformations
+        9.  Hierarchical Transformations
+        A.  Precision
+        B.  Conclusion
+
+
+Introduction
+
+            It has been entirely too long since I wrote my last doc, I just
+        had to make another one :)  This is a topic which I have spent a great
+        deal of time teaching lately, so I decided to make a doc that would
+        expedite the process for me.
+
+            If you are looking for advice from a certified expert, you will
+        not find it in this doc.  I am merely an individual who has spent the
+        past year studying realtime rendering, and who is willing to share
+        what he has learned.  However, you should rest assured that I do not
+        write docs about things I have never implemented in working code, and
+        I never code anything I don't fully understand.  In other words, I
+        think I know what I am talking about here :)
+
+            All of the techniques in this file can be implemented regardless
+        of the programming language you use, from assembler to C to Visual
+        Basic.  I will, however, be giving any pseudocode examples in C,
+        because it seems to be the universal language of coders right now.
+        For the sake of simplicity, all code examples will use floating point
+        math.  Floating point is the wave of the future, as a matter of fact
+        its faster than fixed point integer math on the newest RISC machines
+        (PowerPC, DEC Alpha).  Unfortunately, Intel users have been given
+        hideously slow floating point processors in the past and are less than
+        confident in the ability of their machines; but things will get better
+        very shortly.
+
+
+Math Prerequisites
+
+            Sadly, matrix math is something that is all but ignored in most
+        high school curricula in the United States.  But hey, the best stuff
+        is skipped in high school, everybody knows that :)  You should not be
+        afraid of matrix math just because your high school math teacher does
+        not teach it.  Now that I think about it, matrix math is probably
+        skipped in high school simply because there is nothing taught in high
+        school that applies its principles.
+
+            The only matrix math I was taught in high school was for solving
+        systems of equations.  Basically, we were taught that a matrix is a
+        simple and powerful way to represent a complex system of equations.
+        This is a great explanation, although extremely simplistic.  Keep this
+        in mind throughout the course of this doc.
+
+            The math of matrices is very simple.  Nothing higher than first
+        year algebra is used, although an understanding of trigenometry will
+        make your life much easier when it comes to understanding the meaning
+        of all those numbers in a matrix.  If you have had a course in Linear
+        Algebra at a university, this doc will probably be old news to you.
+
+
+Importance of Correct Transformations
+
+            When I first began coding vector graphics, I had a great
+        understanding of trigenometry and anything but fond memories of matrix
+        math as it was presented in my high school courses.  To me, matrix
+        math seemed to be an unneccessarily complex way to solve a simple
+        algebraic problem, like trying to swat a fly with an elephant gun.
+        Indeed, many algebraic problems can be solved without the use of
+        matrix math.
+
+            However, vector graphics pose a system of equations that are
+        anything but simple to solve algebraically.  Consider the following:
+        in a typical vector world, there are many objects.  Each of these
+        objects moves in its own space (object space), relative to its own set
+        of coordinate axes.  There are several cameras, each of which moves in
+        its own space (camera space or eyespace) according to its own set of
+        coordinate axes.  At some point, the objects must be transformed from
+        object space to eyespace so they can be displayed as the eye sees
+        them.  Apart from this, there is the issue of object hierarchies.  In
+        a realistic vector environment, object hierarchies must be handled
+        correctly.  These issues present formidable challenges without the use
+        of matrix math.  However, by using matrix math we can deal with all
+        of these issues in a simple and speedy manner.
+
+            Granted, I am assuming that everyone wants to make simulation
+        quality vector code.  This type of code requires correct
+        transformations.  Speaking from a demo scene point of view, very few
+        demos implement correct transformations simply because they are not
+        required for the application.  The stereotypical vector scene in a
+        demo is a childish attempt to display speed and pretty rendering on a
+        single object.  Most demo coders do not care if their objects are
+        moving correctly, they just want them to move around a bit.  This
+        attitude is fine, assuming you never want to do anything with your
+        code besides show a spinning cube or toroid.
+
+            Any impressive vector application (game, simulator, etc.) requires
+        correct transformations.  Consider the following example.  An airplane
+        is oriented such that its nose is pointing in the positive z
+        direction, its right wing is pointing in the positive x direction, its
+        cockpit is pointing in the positive y direction.  The airplane's local
+        x, y, and z axes are aligned with the world x, y, and z axes.  If this
+        airplane were rotated 90 degrees about its y axis, its nose would be
+        pointing toward the world -x axis, its right wing pointing toward
+        the world +z, and its cockpit remaining in the world +y direction.
+        Most transformations, whether correct or incorrect, would accomplish
+        this.  Here is the 'acid test' to see whether your transformations are
+        correct.  From this new position, rotate the airplane about its z
+        axis.  If your transformations are correct, the airplane will rotate
+        about its own z axis (it will roll).  If your transformation is
+        incorrect, the airplane will rotate about the world z axis (its nose
+        will pitch up or down).
+
+            This rather silly example poses quite a serious question.  If your
+        transformations are not correct, how will you control object movement
+        in a vector world?  How will you guarantee your airplane will roll
+        when you tell it to instead of pitching?  The same problem arises with
+        incorrect camera rotation.  The consequences of such incorrectness in
+        a flight simulator or game would make the game unplayable.
+
+            The solution to this problem is simple; the use of 4x4 matrix
+        transformations.
+
+
+What a Matrix Represents
+
+            Before we continue, it will help you greatly to understand what
+        the values in a matrix represent.  A 4x4 matrix contains 4 vectors,
+        which represent the world space coordinates of the x, y and z unit
+        axis vectors, and the world space coordinate which is the origin of
+        these axis vectors.
+
+                X     Y     Z     C
+            Ú                         ¿
+            ³ Ú   ¿ Ú   ¿ Ú   ¿ Ú   ¿ ³
+            ³ ³   ³ ³   ³ ³   ³ ³   ³ ³
+            ³ ³X  ³ ³X  ³ ³X  ³ ³0  ³ ³
+            ³ ³   ³ ³   ³ ³   ³ ³   ³ ³
+            ³ ³   ³ ³   ³ ³   ³ ³   ³ ³
+            ³ ³Y  ³ ³Y  ³ ³Y  ³ ³0  ³ ³
+            ³ ³   ³ ³   ³ ³   ³ ³   ³ ³
+            ³ ³   ³ ³   ³ ³   ³ ³   ³ ³
+            ³ ³Z  ³ ³Z  ³ ³Z  ³ ³0  ³ ³
+            ³ À   Ù À   Ù À   Ù ³   ³ ³
+            ³ ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿ ³   ³ ³
+        O   ³  X     Y     Z    ³1  ³ ³
+            ³ ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ À   Ù ³
+            À                         Ù
+
+        The X column contains the world space coordinates of the local X axis
+        The Y column contains the world space coordinates of the local Y axis
+        The Z column contains the world space coordinates of the local Z axis
+
+        These vectors are unit vectors.  A unit vector is a vector whose
+        magnitude is 1.  Basically, unit vectors are used to define
+        directions, when magnitude is not really important.
+
+        The C column always contains the specified values
+        The O row contains the world space coordinates of the object's origin
+
+        You can make life easy for yourself by storing matrices which contain
+        axis information in each object.  I keep two matrices for every
+        object; omatrix, which stores the object space matrix, and ematrix,
+        which stores the eyespace matrix for the object.
+
+        A special matrix is the identity matrix:
+
+        Ú                         ¿
+        ³ Ú   ¿ Ú   ¿ Ú   ¿ Ú   ¿ ³
+        ³ ³   ³ ³   ³ ³   ³ ³   ³ ³
+        ³ ³1  ³ ³0  ³ ³0  ³ ³0  ³ ³
+        ³ ³   ³ ³   ³ ³   ³ ³   ³ ³
+        ³ ³   ³ ³   ³ ³   ³ ³   ³ ³
+        ³ ³0  ³ ³1  ³ ³0  ³ ³0  ³ ³
+        ³ ³   ³ ³   ³ ³   ³ ³   ³ ³
+        ³ ³   ³ ³   ³ ³   ³ ³   ³ ³
+        ³ ³0  ³ ³0  ³ ³1  ³ ³0  ³ ³
+        ³ À   Ù À   Ù À   Ù ³   ³ ³
+        ³ ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿ ³   ³ ³
+        ³  0     0     0    ³1  ³ ³
+        ³ ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ À   Ù ³
+        À                         Ù
+
+        Notice why the identity matrix is special?  The identity matrix
+        represents a set of object axes that are aligned with the world axes.
+        Remember that the vectors stored in the matrix are unit vectors.  Now,
+        because the world x coordinate of the local x axis is 1, the world y
+        and z coordinates of the local x axis are 0, and the origin vector
+        is [0, 0, 0], the local x axis lies directly on the world x axis.  The
+        same is true for the local y and z axes.
+
+        The other special property of the identity matrix is given away in its
+        name.  If you are familiar with math, you know that there are identity
+        elements in the set of any arithmetic operation.  When an binary
+        operation is performed on some operand and the identity element of the
+        set, the operand is the result of the operation.  For example,
+        identity elements for multiplication and division are 1, and identity
+        elements for addition and subtraction are 0.  x + 0 = x; x - 0 = x; x
+        * 1 = x; x / 1 = x.  Similarly, [x] * [identity] = [x] (I will denote
+        matrices in brackets [] throughout this doc, for example [x] is
+        "matrix x").
+
+
+Matrix Multiplication
+
+            There are two matrix operations which we will use in our
+        matrix transformations, multiplying (concatenating) two matrices, and
+        transforming a vector by a matrix.  We will now examine the first of
+        these two operations, matrix multiplication.
+
+            Matrix multiplication is the operation by which one matrix is
+        transformed by another.  A very important thing to remember is that
+        matrix multiplication is not commutative.  That is, [a] * [b] != [b] *
+        [a].  For now, it will suffice to say that a matrix multiplication
+        stores the results of the sum of the products of matrix rows and
+        columns.  Here is some example code of a matrix multiplication routine
+        which multiplies matrix [a] * matrix [b], then copies the result to
+        matrix a.
+
+
+void matmult(float a[4][4], float b[4][4])
+{
+    float temp[4][4];       // temporary matrix for storing result
+    int i, j;               // row and column counters
+
+    for (j = 0; j < 4; j++)         // transform by columns first
+        for (i = 0; i < 4; i++)     // then by rows
+            temp[i][j] = a[i][0] * b[0][j] + a[i][1] * b[1][j] +
+                         a[i][2] * b[2][j] + a[i][3] * b[3][j];
+
+    for (i = 0; i < 4; i++)         // copy result matrix into matrix a
+        for (j = 0; j < 4; j++)
+            a[i][j] = temp[i][j];
+}
+
+            I have been informed that there is a faster way of multiplying
+        matrices, which involves taking the dot product of rows and columns.
+        However, I have yet to implement such a method, so I will not discuss
+        it here at this time.
+
+
+Transforming a Vector by a Matrix
+
+            This is the second operation which is required for our matrix
+        transformations.  It involves projecting a stationary vector onto
+        transformed axis vectors using the dot product.  One dot product is
+        performed for each coordinate axis.
+
+
+        x = x0 * matrix[0][0] + y0 * matrix[1][0] + z0 * matrix[2][0] +
+            w0 * matrix[3][0];
+
+        y = x0 * matrix[0][1] + y0 * matrix[1][1] + z0 * matrix[2][1] +
+            w0 * matrix[3][1];
+
+        z = x0 * matrix[0][2] + y0 * matrix[1][2] + z0 * matrix[2][2] +
+            w0 * matrix[3][2];
+
+
+        The x0, y0, etc. coordinates are the original object space coordinates
+        for the vector.  That is, they never change due to transformation.
+
+        "Alright," you say.  "Where did all the w coordinates come from???"
+        Good question :)  The w coordinates come from what is known as a
+        homogenous coordinate system, which is basically a way to represent 3d
+        space in terms of a 4d matrix.  Because we are limiting ourselves to
+        3d, we pick a constant, nonzero value for w (1.0 is a good choice,
+        since anything * 1.0 = itself).  If we use this identity axiom, we can
+        eliminate a multiply from each of the dot products:
+
+
+        x = x0 * matrix[0][0] + y0 * matrix[1][0] + z0 * matrix[2][0] +
+            matrix[3][0];
+
+        y = x0 * matrix[0][1] + y0 * matrix[1][1] + z0 * matrix[2][1] +
+            matrix[3][1];
+
+        z = x0 * matrix[0][2] + y0 * matrix[1][2] + z0 * matrix[2][2] +
+            matrix[3][2];
+
+
+        These are the formulas you should use to transform a vector by a
+        matrix.
+
+
+Object Space Transformations
+
+            Now that we know how to multiply matrices together, we can
+        implement the actual formulas used in our transformations.  There are
+        three operations performed on a vector by a matrix transformation:
+        translation, rotation, and scaling.
+
+            Translation can best be described as linear change in position.
+        This change can be represented by a delta vector [dx, dy, dz], where
+        dx represents the change in the object's x position, dy represents the
+        change in its y position, and dz its z position.
+
+            If done correctly, object space translation allows objects to
+        translate forward/backward, left/right, and up/down, relative to the
+        current orientation of the object.  Using our airplane as an example,
+        if the nose of the airplane is oriented along the object's local z
+        axis, then translating the airplane in the +z direction will make the
+        airplane move forward (the direction in which its nose is pointing)
+        regardless of the airplane's orientation.
+
+        Here is the translation matrix:
+
+        Ú                         ¿
+        ³ Ú   ¿ Ú   ¿ Ú   ¿ Ú   ¿ ³
+        ³ ³   ³ ³   ³ ³   ³ ³   ³ ³
+        ³ ³1  ³ ³0  ³ ³0  ³ ³0  ³ ³
+        ³ ³   ³ ³   ³ ³   ³ ³   ³ ³
+        ³ ³   ³ ³   ³ ³   ³ ³   ³ ³
+        ³ ³0  ³ ³1  ³ ³0  ³ ³0  ³ ³
+        ³ ³   ³ ³   ³ ³   ³ ³   ³ ³
+        ³ ³   ³ ³   ³ ³   ³ ³   ³ ³
+        ³ ³0  ³ ³0  ³ ³1  ³ ³0  ³ ³
+        ³ À   Ù À   Ù À   Ù ³   ³ ³
+        ³ ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿ ³   ³ ³
+        ³  dx    dy    dz   ³1  ³ ³
+        ³ ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ À   Ù ³
+        À                         Ù
+
+        where [dx, dy, dz] is the displacement vector.  After this operation,
+        the object will have moved in its own coordinate system, according to
+        the displacement (translation) vector.
+
+            The next operation that is performed by our matrix transformation
+        is rotation.  Rotation can be described as circular motion about some
+        axis, in this case the axis is one of the object's local axes.  Since
+        there are three axes in each object, we need to rotate around each of
+        them.  Here are the matrices for rotation about each axis:
+
+        about the x axis:
+
+        Ú                         ¿
+        ³ Ú   ¿ Ú   ¿ Ú   ¿ Ú   ¿ ³
+        ³ ³   ³ ³   ³ ³   ³ ³   ³ ³
+        ³ ³1  ³ ³0  ³ ³0  ³ ³0  ³ ³
+        ³ ³   ³ ³   ³ ³   ³ ³   ³ ³
+        ³ ³   ³ ³   ³ ³   ³ ³   ³ ³
+        ³ ³0  ³ ³cx ³ ³sx ³ ³0  ³ ³
+        ³ ³   ³ ³   ³ ³   ³ ³   ³ ³
+        ³ ³   ³ ³   ³ ³   ³ ³   ³ ³
+        ³ ³0  ³ ³-sx³ ³cx ³ ³0  ³ ³
+        ³ À   Ù À   Ù À   Ù ³   ³ ³
+        ³ ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿ ³   ³ ³
+        ³  0     0     0    ³1  ³ ³
+        ³ ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ À   Ù ³
+        À                         Ù
+
+
+        about the y axis:
+
+        Ú                         ¿
+        ³ Ú   ¿ Ú   ¿ Ú   ¿ Ú   ¿ ³
+        ³ ³   ³ ³   ³ ³   ³ ³   ³ ³
+        ³ ³cy ³ ³0  ³ ³-sy³ ³0  ³ ³
+        ³ ³   ³ ³   ³ ³   ³ ³   ³ ³
+        ³ ³   ³ ³   ³ ³   ³ ³   ³ ³
+        ³ ³0  ³ ³1  ³ ³0  ³ ³0  ³ ³
+        ³ ³   ³ ³   ³ ³   ³ ³   ³ ³
+        ³ ³   ³ ³   ³ ³   ³ ³   ³ ³
+        ³ ³sy ³ ³0  ³ ³cy ³ ³0  ³ ³
+        ³ À   Ù À   Ù À   Ù ³   ³ ³
+        ³ ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿ ³   ³ ³
+        ³  0     0     0    ³1  ³ ³
+        ³ ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ À   Ù ³
+        À                         Ù
+
+        about the z axis:
+
+        Ú                         ¿
+        ³ Ú   ¿ Ú   ¿ Ú   ¿ Ú   ¿ ³
+        ³ ³   ³ ³   ³ ³   ³ ³   ³ ³
+        ³ ³cz ³ ³sz ³ ³0  ³ ³0  ³ ³
+        ³ ³   ³ ³   ³ ³   ³ ³   ³ ³
+        ³ ³   ³ ³   ³ ³   ³ ³   ³ ³
+        ³ ³-sz³ ³cz ³ ³0  ³ ³0  ³ ³
+        ³ ³   ³ ³   ³ ³   ³ ³   ³ ³
+        ³ ³   ³ ³   ³ ³   ³ ³   ³ ³
+        ³ ³0  ³ ³0  ³ ³1  ³ ³0  ³ ³
+        ³ À   Ù À   Ù À   Ù ³   ³ ³
+        ³ ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿ ³   ³ ³
+        ³  0     0     0    ³1  ³ ³
+        ³ ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ À   Ù ³
+        À                         Ù
+
+
+            The cx, sx, cy, sy, cz, and sz variables are the values of the
+        cosines and sines of the angles of rotation about the x, y, and z
+        axes, respectively.  Remeber that the angles used represent angular
+        displacement just as the values used in the translation step denote a
+        linear displacement.  Correct transformation CANNOT be accomplished
+        with matrix multiplication if you use the cumulative angles of
+        rotation.  I have been told that quaternions are able to perform this
+        operation correctly, however I know nothing of quaternions and how
+        they are implemented.  The incremental angles used here represent
+        rotation from the current object orientation.  In other words, by
+        rotating 1 degree about the z axis, you are telling your object
+        "Rotate 1 degree about your z axis, regardless of your current
+        orientation, and regardless of how you got to that orientation."  If
+        you think about it a bit, you will realize that this is how the real
+        world operates.  In object space, the series of rotations an object
+        undergoes to attain a certain orientation have no effect on the
+        object space results of any upcoming rotations.
+
+            Now that we know the matrix formulas for translation and rotation,
+        we can combine them to transform our objects.  The formula for
+        transformations in object space is
+
+        [O] = [O] * [T] * [X] * [Y] * [Z]
+
+        where O is the object's matrix, T is the translation matrix, and X, Y,
+        and Z are the rotation matrices for their respective axes.  Remember,
+        that order of matrix multiplication is very important!
+
+            The recursive assignment of O poses a question:  What is the
+        original value of the object matrix?  To eliminate any terrible errors
+        in transformation, the matrices which store an object's orientation
+        should always be initialized to identity.
+
+
+Camera Transformations
+
+            Good camera code is a key to a good vector engine.  If the camera
+        does not move correctly in a first-person type simulation, any hope of
+        realism is lost.  Fortunately, camera code is very easy to implement
+        using matrices.
+
+            Each camera should contain one matrix which defines its current
+        orientation.  Like the object matrix, the camera matrix (I call it
+        cmatrix) should be initialized to identity to avoid hideous errors.
+        The camera matrix is built in exactly the same way as the object
+        matrix, using CT, CX, CY and CZ.  These translation and
+        rotation matrices are made in exactly the same way as their
+        object space counterparts, except for the obvious fact that
+        they are made using camera rotation and translation vectors.
+        Depending on your implementation, the components of the displacement
+        vectors may need to be negated.  Sometimes all of the [dx, dy, dz] and
+        [xangle, yangle, zangle] need to be negated, sometimes some of them.
+        Once again, it depends on your implementation.  If you find your
+        camera is moving forward instead of backward, right instead of left,
+        up instead of down, etc. you need to negate a vector component
+        somewhere.  Once you get that straightened out, build the camera
+        matrix like this
+
+        [C] = [C] * [CT] * [CX] * [CY] * [CZ]
+
+        Once you have made the camera matrix, you can transform your object
+        matrices to camera space with a simple matrix multiplication
+
+        [E] = [O] * [C]
+
+        where [E] is the eyespace matrix, [O] is the object space matrix for
+        the object, and [C] is the camera space matrix for the camera you are
+        using (which we calculated above).
+
+            If you are an incredibly astute individual, you will have realized
+        that I have left a step out of this process.  Where did I add the
+        world coordinates of the object's origin?  The translation in the
+        object matrix is a displacement which is added to the origin of
+        the object, but what of the original value of the object's origin?
+
+            The reason I left this step out until now is because it is easiest
+        to perform this operation in the middle of transforming an object to
+        eyespace.  Something to remember is that the object origin is
+        expressed in terms of world space coordinates.  If we want our
+        transformations to be correct, we have to add world space coordinates
+        to world space coordinates, adding them to camera or object space
+        coordinates would give us incorrect results.  The only time we have
+        world space coordinates in this process is after object transformation
+        is complete.  At this time, we can add the coordinates of the object's
+        origin to the origin vector found in the transformation matrix.  Here
+        is some example code illustrating this process.  omatrix contains the
+        object space transformation matrix, cmatrix contains the camera
+        transformation matrix.  ematrix will be the result of omatrix *
+        cmatrix.
+
+
+    (initialize tmatrix, xmatrix, ymatrix, zmatrix...)
+
+    ...
+
+    matmult(omatrix, tmatrix);      // translate the object
+    matmult(omatrix, zmatrix);      // rotate about z
+    matmult(omatrix, xmatrix);      // rotate about x
+    matmult(omatrix, ymatrix);      // rotate about y
+
+    initmatrix(ematrix);            // initialize eye space matrix to identity
+
+    matmult(ematrix, omatrix);      // copy the object space matrix to eye space
+
+    ematrix[3][0] += origin->lx;    // add origin vector
+    ematrix[3][1] += origin->ly;
+    ematrix[3][2] += origin->lz;
+
+    matmult(ematrix, cmatrix);      // convert world space to eye space
+
+
+
+Inverse Transformations
+
+            Inverse transformations are used to perform hidden surface removal
+        in object space, without transforming any normal vectors.  Likewise,
+        the same technique can be used in shading.  This method provides some
+        obvious speed increases over transforming normal vectors, the correct
+        culling or shading information can be determined by inversely
+        transforming a view or light vector, then taking the dot product of
+        this inversely transformed vector and the non-transformed normal
+        vectors.  In addition to the rendering time saved by not transforming
+        normal vectors, this method can give significant time savings by
+        allowing you to hide points as well as polys.  If you determine that
+        only the points contained in visible polygons are visible, you can
+        avoid transforming points contained in those polygons which are not
+        visible.  This usually accounts for around half of the points in an
+        object.
+
+            Inverse transformation requires an inverse matrix, which is made
+        by negating all of the angles in the constituent rotation matrices and
+        multiplying them together in reverse order.  As you can imagine, this
+        is quite a slow process, especially when a camera and hierarchical
+        object are involved!  Thankfully though, there is a shortcut.
+
+            Certain types of matrices (I believe those that have a determinant
+        of 1) can be inverted by swapping rows and columns.  The
+        transformation matrix is this type of matrix.  I made a utility to
+        test this property, generating an inverse matrix with the negate and
+        multiply in reverse order algorithm, and comparing it to the original
+        matrix.  I found that transformation matrices do fit the pattern of
+        inversion by row and column swapping.
+
+            This means that you can inverse transform your view and light
+        vectors with the following formulas (notice that these are identical
+        to the regular transformation formulas, but have the row and column
+        indices swapped):
+
+
+        x = x0 * matrix[0][0] + y0 * matrix[0][1] + z0 * matrix[0][2];
+
+        y = x0 * matrix[1][0] + y0 * matrix[1][1] + z0 * matrix[1][2];
+
+        z = x0 * matrix[2][0] + y0 * matrix[2][1] + z0 * matrix[2][2];
+
+
+        If you are a smart one, you will also notice that there are only 3
+        terms in these equations, the w term (translation part of the matrix)
+        is missing.  This is because we are inverse transforming, the result
+        is object space.  We want all of our vectors to start at the origin
+        for this operation, in object space the origin is [0, 0, 0].
+
+
+Hierarchical Transformations
+
+            I must confess, MechWarrior ][ is the game that inspired me to
+        grind out all of this matrix code.  I found it so realistic, being
+        able to move in so many different coordinate systems (I wonder if the
+        casual user realizes this? :)  I had been wanting to implement all
+        this in my code for quite some time, and playing MW2 was the event
+        that pushed me over the edge.
+
+            Another thing that this game showed me was the usefulness of
+        hierarchical transformations.  If you are lost in my terminology, let
+        me explain what I mean by hierarchical transformations.
+
+            Apart from being a great spelling bee word, a hierarchy is an
+        organazation of things into levels.  In a very general sense, the
+        things higher up in a hierarchy have control over the lower things.
+        This applies to business, government, and our favorite subject, matrix
+        transformations.
+
+            As far as matrix transformations are concerned, consider an arm as
+        an example of a hierarchical object.  The topmost object in the arm
+        hierarchy is the bicep or upper arm, followed by the forearm, the
+        hand, and the fingers.  Each of these 'objects' has an origin, the
+        bicep has the shoulder, the forearm has the elbow, the hand has the
+        wrist, and the fingers have the knuckles.
+
+            Here is where the hierarchical part comes into play, remember what
+        I said earlier about higher things on a hierarchy being able to
+        control the lower things?  Well, move your bicep up in the air by
+        pivoting your shoulder.  Surprise!  Your forearm, hand and fingers
+        moved with your bicep.  Now move your forearm by bending your elbow.
+        Notice that your hand and fingers moved, but your bicep did not.  This
+        is because your forearm is lower in the hierarchy than your bicep, and
+        therefore has no control over it.
+
+            Here is an interesting question.  How on earth do you
+        mathematically represent this hierarchy of objects in a correct
+        manner?  More importantly, how can you do it quickly?  Using matrices,
+        you can correctly transform a hierarchy of objects in no more time
+        than it takes to transform non-hierarchical objects.
+
+            Alright, its time for a little side trip into the dreaded land of
+        data structures.  While it is coding hell for the beginner, the land
+        of data structures is the playground of any experienced programmer.
+        Data structures are easy, its the implementation that kills most
+        people.  Most people with little experience in data structures and
+        data relationship immediately try to swat a fly with an elephant gun
+        by applying every data structure in the book to a simple problem.
+        "How about if I make an array of stacks containing doubly linked lists
+        of AVL trees, would that work?"  Well, I'm not one to say it would
+        not.  However, I have found that the simplest solution to a problem is
+        generally the best.
+
+            In this case, the simplest solution to creating a hierarchical
+        object data structure is to have parent objects keep track of their
+        children only.
+
+
+typedef struct object
+{
+    (other stuff here)
+
+    ...
+
+    object **children;
+    int numchildren;
+
+} object;
+
+
+        The **children member of the struct above allows you to dynamically
+        allocate enough memory for the children of each object.  For example,
+        if we were making an instance of this struct for a hand, we would
+        allocate an array of five pointers for **children.  These pointers
+        would be set to the addresses of the object structs which contain the
+        children of the hand, namely the fingers.
+
+            Now that we have discussed how to implement the hierarchy data
+        structures, lets move on to cover how to perform the actual
+        hierarchical transformations.  First, if you will recall, our system
+        of matrix transformations handles incremental rotation and
+        translation; that is, objects are transformed according to some change
+        in position and change in angles of rotation.  This feature lends
+        itself well to hierarchical transformation.
+
+            If you were to transform two objects by the same matrix, what
+        would be the result?  The two objects would have the same orientation
+        relative to each other before and after the transformation.  This
+        property of matrix transformation is key to hierarchical
+        transformations.  Consider the arm example again.  Keeping your elbow
+        and wrist stiff, extend your arm in front of you and raise and lower
+        it by rotating your arm at the shoulder.  Your arm will stay straight,
+        it appears that all objects (bicep, forearm, hand, fingers) are
+        behaving as one object.
+
+            If this were the extent of a hierarchy's usefulness, we could
+        simply transform each child object using the matrix of its parent.
+        But we want each child object to be able to move on its own too; that
+        is, we want to be able to bend the elbow, wrist, and fingers while we
+        raise and lower our shoulders, using the arm example again.  Here is
+        where the incremental rotation comes in handy.  Consider the matrix of
+        a parent object as a starting point.  The orientation of a child can
+        then be expressed in terms of this parent orientation plus some
+        rotation and translation increment.  This increment can be expressed
+        in terms of an object matrix.
+
+            Actually, we already calculate this matrix in our code; in my code
+        its the omatrix member of the object struct.  This matrix contains the
+        orientation of the object, and we can easily express this orientation
+        in terms of an increment to the orientation of a parent object.  To do
+        this, simply understand that when you rotate the forearm 5 degrees,
+        you are putting a 5 degree bend in your arm between the forearm and
+        the bicep.  Likewise, translating the forearm or hand would move it
+        relative to its parent according to the displacement vector specified.
+        Of course, the initial position of the object's origin must be given
+        as a displacement from the origin of the parent object if you are
+        going to use this system of object hierarchy.
+
+            Here is where the big advantages of this method come into play.
+        According to what we have already said, the transformation formula for
+        a child in an object hierarcy would be
+
+        [O] = [O] * [T] * [X] * [Y] * [Z] * parent.[O] * parent.parent.[O] ...
+        [E] = [O] * [C]
+
+        where parent.[O] is the object space matrix of the parent to this
+        object, parent.parent.[O] is the object space matrix of the parent's
+        parent, etc.
+
+        We can shorten this definition to
+
+        [E] = [O] * [T] * [X] * [Y] * [Z] * parent.[O] * ... * [C]
+
+        Since [E] = [O] * [C], we can substitute parent.[E] = parent.[O] *
+        [C].  Then, our transformation formula becomes
+
+        [E] = [O] * [T] * [X] * [Y] * [Z] * parent.[E]
+
+        Which is the same number of matrix multiplies as our original
+        transformation formula!
+
+            Now back to data structures for a second, so we can make some
+        pseudo code illustrating this point.  In my rendering engine, I keep a
+        list of objects to be rendered.  Using this method of hierarchy, only
+        the parent object in the hierarchy should be in this list.  This is
+        because all objects in the object list are rendered using the camera
+        matrix, whereas all children must be rendered using the eyespace
+        matrix of their parent (which contains the parent object space matrix
+        and the camera matrix).  Therefore, in a call to transform or render
+        an object, you should make sure that the object will transform and
+        render its children.  here is some pseudocode
+
+void transformobject(object *obj, float cmatrix[4][4])
+{
+
+    (do transformations on this object)
+
+    ...
+
+    for (count = 0; count < obj->numchildren; count++)
+        transformobject(obj->children[count], obj->ematrix);
+
+}
+
+void renderobject(object *obj)
+{
+
+    (render the object however you like)
+
+    ...
+
+    for (count = 0; count < obj->numchildren; count++)
+        renderobject(obj->children[count]);
+
+}
+
+
+Precision
+
+            There is one drawback to this method of matrix transformation, it
+        requires that the values stored in your matrix be very precise.  This
+        is a problem because all digital representations of fractional numbers
+        are approximated somewhat, and no matter how precise the
+        approximation, errors will propagate.  This means that the more you
+        use an approximated value in calculations, the less precise the value
+        becomes.  There are several solutions to this problem, I will briefly
+        discuss each and then leave the decision to you.
+
+            The first (and most obvious) solution is to use the most precise
+        data type availible.  On the PC, we have 64 bit (double) and 80 bit
+        (long double) floating point data types.  Clearly, using these data
+        types will result in VERY little loss of precision in calculations.
+        This is a viable solution to our problem but may not be desireable due
+        to the larger storage requirements and possible speed hits which
+        accompany these data types.
+
+            The second solution is to use 32 bit single precision floating
+        point data.  Its precision is more than adequate in most cases, and
+        its speed is tolerable when a floating point coprocessor is present.
+        Also, single precision floats do not require any more space to store
+        than long integers.  Disadvantages of this data type are that it is
+        somewhat slow even on machines with a floating point coprocessor, and
+        there is always the chance that someone without a FPU will use the
+        software.  In this case, pure floating point math will be anywhere
+        from 10 to 100 times slower than integer math.
+
+            The third option is to use integer math.  The obvious benefit here
+        is speed, the obvious disadvantage is precision.  16.16 integer math
+        (16 bit integer, 16 bit fraction) allows for less than 5 decimal
+        places of precision.  This may sound like a lot, but consider the fact
+        that the axis vectors in the transformation matrix all have a
+        magnitude of 1, which means that the individual x, y, and z components
+        are always less than or equal to 1.  Your fractional bits become very
+        important in such a situation.
+
+            As far as my personal preference, I use single precision floating
+        point math in my transformation matrix.  I have found it to be the
+        best compromise between speed and precision.  As processors become
+        more and more adept at floating point calculation, floating point math
+        will be faster than integer math.  Many of the newer RISC based
+        processors already have floating point math that is faster than its
+        integer counterpart.  For example, friends of mine developing
+        PowerPC rendering software tell me that floating point math is three
+        to four times faster than integer math on their platforms.  The
+        PowerPC has a nifty little instruction called fpmuladd which performs
+        a floating point multiply and add in once clock cycle!  It makes your
+        matrix multiplication routines pretty fast.  There are also faster
+        desktop FPUs.  The floating point unit in a DEC Alpha chip is roughly
+        the same speed as those in Cray supercomputers made in the early
+        1980's!
+
+            Now, about how to handle the loss of precision.  Two things
+        happen when a matrix loses precision; its axis vectors change
+        magnitude so that they are no longer unit vectors, and its axis
+        vectors "wander" around a bit so that they are no longer
+        perpendicular to each other.  I have implemented both integer and
+        single precision floating point versions of these matrix
+        transformations.  I found that the 16.16 fixed point integer versions
+        will lose precision after somewhere around 10^2 transformations, while
+        the single precision floating point version shows no noticable loss of
+        precision after 10^5 transformations.  However, there was a slightly
+        noticable wobble of objects in the third level of hierarchy when using
+        single precision floating point.  I attribute this to a normal,
+        usually unnoticable loss of precision which is more noticable because
+        it is shown in the same frame as objects transformed with more precise
+        versions of the same matrix.
+
+            If you are a die hard integer math freak who refuses to accept the
+        fact that floating point is the wave of the future, there are a few
+        things you can do to justify your use of integer math with reasonable
+        matrix precision.  First, you could try using 0.32 fixed point in the
+        rotation portion of the transformation matrix.  However, you are going
+        to have to do some 64 bit shifting around, and some tricky shifting in
+        your matrix multiplication routine to accomidate translation values,
+        which are almost always greater than 1.  The next method involves
+        fixing your matrix so all the vectors are the proper length and
+        mutually perpendicular.  This is quite a math problem to solve if you
+        have never considered the solution or have no knowledge of vector
+        operations.  There are two ways of going about this, one involves dot
+        products, the other involves cross products.
+
+            The dot product method is based on the fact that the dot product
+        of perpendicular vectors is 0, because the dot product is the
+        projection of one vector onto another.  If the dot product is not 0,
+        you have a value which is related to how far the vectors overlap in a
+        certain direction.  By subtracting this value from the vector, you can
+        straighten it in that direction.  After you straighten all your
+        vectors in this manner, you re-normalize them so that their lengths
+        are 1 (length changes as a result of the perpendicularity correction),
+        and you are set.
+
+            The cross product method involves the fact that the cross product
+        operation yeilds a vector which is perpendicular to its operands.  By
+        taking the cross product of two axes, you can make a third axis which
+        is perpendicular to both.  Then, by taking the cross product of this
+        new axis and the first of the two axes in the first cross product
+        operation, you can generate a new second axis which is perpendicular
+        to axes one and three.  One is perpendicular to three and two, two is
+        perpendicular to three.  There you have it, mutual perpendicularity.
+        Of course, you also need to normalize these vectors when you are done.
+
+
+Conclusion
+
+            Wow, writing docs is loads of fun...I wonder why I waited this
+        long to make a new one?  heh...
+
+            All of this stuff came from my head.  I'm not the type who sits
+        down in front of a terminal with a copy of Foley's book (I don't even
+        own a copy of that monster...probably never will) or any other book
+        for that matter (don't own any books on graphics at all, come to think
+        of it :)  On the other hand, I'm not claiming that everything in here
+        is my own idea.  Actually, there are no big secrets divulged here,
+        sorry if thats what you were looking for.  These techniques are pretty
+        much common knowledge, if that were not the case, how would I have
+        found out about them? :)  "So why did you write a doc then, fool?"
+        Because I have found myself spending lots of time explaining this
+        stuff lately, and its better for all parties involved for me to write
+        things down in a doc rather than teaching the same things to different
+        people day after day.  Now I can just say, "here, read this! :)"
+
+            I have been asked if its ok to publish my other docs in diskmags,
+        newsletters, etc.  I have no problem with this whatsoever, as long as
+        I am dealt with fairly.  That is, you can publish this doc anywhere as
+        long as you do not lead anyone to believe it is not my work.
+
+        Greets to -
+
+            OTM
+            TAP coders
+            lfp
+            HardCode
+            Darkshade and wili
+            StarScream
+            ShadowH
+            Daredevil
+            MaxD
+            tmL
+            Simm
+            MoominG
+            Silvio
+            MiKiEx
+            Riz
+
+            y todos he olvidado
+
+

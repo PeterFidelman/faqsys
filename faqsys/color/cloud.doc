@@ -1,0 +1,419 @@
+
+
+                                Cloud
+
+        "Cloud" is a program that generates and displays fractal surfaces.
+        I had briefly looked at 'sc', but found that it was too slow to
+        be interesting.  I read about generating fractal surfaces and 
+        displaying them as clouds in the (technical) book "Fractals", by
+        Jens Feder (ISBN 0-306-42851-2), section 13.4 "Random Addition
+        Surfaces".  So I thought I'd try it myself.  What follows are
+        some explanations of the program's user interface, and some of
+        its workings.   The clouds that look like these images are called
+        "fracto-cumulus" by the way.
+
+        Requirements:  It requires about 200K to run - I've tried it on an 
+        A1000 with expansion memory turned off, and it works OK.
+
+Cloud brings up a custom lo-res screen (320x200).  The screen is in two
+sections - the right 3/4 is where the image is displayed.  On the left of 
+the screen is a control panel with a bunch of gadgets. Most of these gadgets
+are grouped into three little panels.  From the top of the window downwards,
+these buttons are:
+
+        Standard Window Close Gadget:
+                Exit Cloud by clicking on the window's close gadget.
+
+        Auto - toggle to select the automatic generate and display loop.
+                When "auto" is set, the program will loop between generating
+                new images and displaying them.  To stop, toggle "auto" back
+                off.  To pause, toggle "pause".
+
+        Pause - toggle to pause while in the automatic loop.
+                This pauses the program while in the automatic loop.
+                You can then select other palettes.
+
+        Save - this will let you save the current image as an IFF file,
+                when it is implemented.
+
+        '  ' - (there is an empty, unused gadget beneath Save)
+
+        Rand - toggle to turn on the randomizer.
+                This enables a section of code that adjusts the random
+                number generator.  If you don't turn this on, you will
+                get the same sequence of images each time you run Cloud.
+
+        Scroll - toggle to have the display scroll up from the bottom.
+                When this is off, the new image fills in from the top
+                of the screen downwards.  When it is on, the screen is
+                scrolled upwards, with the old image disappearing off the
+                top, and the new image appearing on the bottom.  It adds
+                "lightning" to the clouds.
+
+        Gen - to generate and display a new image.
+                This generates a new image, and displays it.
+
+        Re-Do - to re-display the present image.
+                This displays the current image again, which is useful to
+                see the effects the different scalings can have on the
+                same image.
+
+        "d = XX %" - place to enter the delta percent value.
+                This string gadget accepts a two digit number whose value
+                is used in generating new images.  The gadget hit box
+                surrounds the digits.  The value determines the smoothness
+                of the image.  For clouds, a good value is 80%, for terrain
+                and water, 70% is better.  Lower and higher values are also
+                interesting, if less natural.
+
+        Log - selects a logarithmic scaling,
+        Lin - selects a linear scaling,
+        Exp - selects an exponential scaling,
+        Histo - selects an equal area scaling between data and colors.
+                You choose one of these four buttons to select the type
+                of scaling performed to map the image data to the screen.
+                There's more on this later.
+
+        Color Bar - shows the current image palette.
+                This isn't a gadget, it just shows you what the palette is.
+
+        Reverse - flips the color palette end for end.
+                By flipping the palette over, the image seems to reverse;
+                dark things become light, and light sections become dark.
+
+        Atmos - selects the "cloud in the sky" color palette,
+        Earth - selects the Rand McNally map palette,
+        Water - selects an "islands in oceans" palette,
+        Therm - selects a palette that is reminiscient of thermal images.
+                Choose one of these four buttons to select the color palette
+                for displaying the image.  These are active at all times,
+                so that while generating the next image, you can fiddle with
+                the one currently on the screen.
+
+-------------------------------------------------
+About the color palettes (or do you say palette?):
+
+The following table lists the color trends in each of the palettes.
+
+Color range     Atmos           Earth           Water           Therm
+                -----           -----           -----           -----
+  HI            white           near white      light green     red
+  ^              ...            dark brown      sand            orange
+  |             lighter blue    light brown     blue-green      yellow
+  |              ...            green           light blue      green
+  v             lighter blue    sand            blue            blue
+  LO            blue            lake blue       deep blue       dark blue
+
+Data means:     density         height          depth           temperature
+
+If you're running Workbench 1.3, you can use the Palette command to change
+Cloud's colors.  Put the Cloud screen in the front, pull it down to expose
+a CLI window or the drawer containing the "Palette" command, and invoke
+"Palette".  You can then change Cloud's colors temporarily - the color changes
+are not remembered by Cloud.  Also, there will be a white rectangle left over
+from where the Palette window was.  Just click on the Re-Do gadget to redraw
+the image.
+ 
+-----------------------------
+About the scaling selections:
+
+The data can be mapped to the colors in many ways - I've chosen 4: linear,
+log, exponential, and equal area.   Each has its own good and bad points.
+
+The linear scaling makes a hazy cloud, but it leaves the Earth landscape
+flat and boring.  This is because the majority of the data values get
+mapped to the middle range of the palette - so we don't see much of the
+peaks and pits.
+
+The log scaling tends to expand the lower data values over a larger color
+range and compress the higher values into the higher colors.  It emphasizes
+the upper data values at the expense of the lower ones.  It makes the sky
+seem even more hazy.
+
+Exponential scaling is the reverse of log scaling.  The higher data values
+will be spread across a greater color range, as compared with linear scaling,
+and the lower data values will be compressed into the lowest color(s).  It
+emphasizes the lower data values at the expense of the upper ones.  The sky
+becomes more blue with this setting.
+
+The equal-area scaling uses a histogram to find out the distribution of the
+data values.  It then maps the data values to colors such that each color
+occurs as often as every other color.  It seems to reveal lots of detail,
+and so it makes Therm and Water busy looking, but it makes Atmos look better.
+It emphasizes the extremes of the data, both upper and lower, at the expense
+of the mid-range values.  The sky looks most natural with this setting - 
+patches of blue sky and patches of white clouds with quick transitions between.
+
+-----------------------------
+About the scaling algorithms:
+
+LINEAR scaling maps the data values to palette color positions (pen numbers)
+with the equation:
+                                   Delta-C
+                C =  (V - VMin) *  -------  +  LoColor
+                                   Delta-V
+
+This divides the range VMin to VMax into NColor sections (where NColor = 
+HiColor - LoColor + 1).  Actually, instead of doing that equation over 
+66000 times, I build a color lookup table, from the minimum data value to 
+the maximum data value, and use that equation NColor (13) times to fill the
+table.
+
+LOGARITHMIC scaling finds the multiplicative factor such that:
+
+                                NColor
+                VMax = VMin * X
+
+This will divide the range VMin to VMax into NColor sections, each of which
+is X times larger than the previous.  X can be found by:
+
+                               (1 / NColor)
+                X = (VMax/VMin) 
+
+The EXPONENTIAL scaling uses the logarithmic routine to first build the
+color table for the logarithmic scaling.  Then it flips the table around
+end-for-end, and top-to-bottom.  This changes the up-and-over logarithmic
+curve to the over-and-up exponential curve.
+
+HISTOGRAM scaling produces an equal-area scaling, where the range VMin to
+VMax is divided into NColor sections, each of which has the same number
+of image points within it.  To do this, a histogram is made from the image
+data.  The histogram is a table that  represents how many data points occur 
+for each data value, over all the data values (from VMin to VMax), i.e. how
+many data elements are at a certain height for all heights.  (Typically, the
+histogram looks like the infamous "bell-shaped" curve used by school teachers
+to place exam grades "on the curve".  This is that curve.)  Next, the histogram
+is summed along its values - changing the bell-curve into an stretched out
+S-curve:
+                 -                                        ----          -
+              -     -                                  --               -
+            -         -         -->                  --                 -
+        ---             ---                     ----                    -
+
+Given this final table, we can divide the vertical span of the table into
+NColor sections.  Working towards the graph line and then down to the baseline,
+we find the NColor data values that divide the original image into NColor
+equal-area pieces.  From this information, we build the color lookup table.
+
+Note that in all of these scaling algorithms, it is much quicker at run time
+to build a 1024 element table once, than it is to repeatedly perform the
+same calculation over 66000 times.  The cost is in memory use: an extra
+1KB for the lookup table and 4KB for the histogram seem worth it.
+
+The only routine that uses floating point arithmetic is the Logarithmic 
+scaling routine.  It uses the "pow()" function and floating point 
+multiplication and floating-point to integer conversions.  Roughly two dozen 
+explicit floating-point operations are needed.  All other routines throughout
+the program use integer arithmetic.
+
+--------------------------------
+The central algorithm for Cloud:
+
+(This is mostly a historical account of how the generator evolved, as well
+as a summary for myself...:-)
+
+Assumptions:
+        - the generated image will be square, size of 2^N + 1 (257 x 257)
+        - x axis runs left-right, y axis goes up-down
+
+Data generation:
+        - there are N iterations
+        - each iteration has two parts
+                - adding random values to elements of the array,
+                - generating new elements by averaging between the old ones
+        - during each iteration the "step" between elements is halved
+        - between iterations the range of the random value is decreased
+        - we're finished when the step size becomes 1
+        - the initial step size is 2^N (first iteration does the 4 corners)
+
+Data display:
+        - the max and min are found
+        - one of four routines are used to fill a Color LookUp table
+        - each point in the array is translated by the color lookup table
+          into a pen color which is written to the respective screen pixel
+
+-------------------
+Generation example:
+                                ------------- NUMBER OF ELEMENTS -----------
+Iteration       Step            Add random      Average new     Total points
+1               N       (256)   4               5               9       (3x3)
+2               N/2     (128)   9               16              25      (5x5)
+3               N/4     ( 64)                                           (9x9)
+4               N/8     ( 32)                                   (17x17)
+5               N/16    ( 16)                                   (33x33)
+6               N/32    (  8)                                   (65x65)
+7               N/64    (  4)                                   (129x129)
+8               N/128   (  2)                                   (257x257)
+
+---------------------
+Generation algorithm:
+
+The first 4 elements:           Generate 5 more, to make 9:
+(256 pts apart)                 (now 128 pts apart)
+        o           o           o     -     o   
+
+                                |     X     |
+
+        o           o           o     -     o   
+
+Next iteration:
+
+Take 9 elements:                Generate 16 more, to make 25:
+(128 pts apart)                 (now 64 pts apart)
+        o     o     o           o  -  o  -  o
+                                |  X  |  X  |
+        o     o     o           o  -  o  -  o
+                                |  X  |  X  |
+        o     o     o           o  -  o  -  o
+
+At each step, the character shows what to do at that element:
+        "o" is an old element, 
+                on the first pass we add a random value to it, 
+                then on the second pass we use it to generate the new elements
+        "-" is a new element, 
+                it is generated by averaging the left and right neighbors
+        "|" is a new element,
+                generated by averaging the top and bottom neighbors
+        "X" is a new element,
+                generated by averaging the neighbors in the surrounding corners
+
+The initial algorithm went like this:
+
+    randrange = rrmax
+    stepsize = MAX
+    while ( stepsize > 1 )
+    do
+        /* first elevate the random points */
+
+        for y in the set {0, stepsize, 2*stepsize,... MAX}
+        for x in the set {0, stepsize, 2*stepsize,... MAX}
+            data[x,y] += random_value
+        end x
+        end y
+
+        /* now, adjust the stepsize, and generate the new points */
+
+        stepsize /= 2
+
+        for y in the set {0, stepsize, 2*stepsize,... MAX}
+            if ( y is "odd" )   /* generate the "| X | X |..." averages */
+            for x in the set {0, 2*stepsize, 4*stepsize,... MAX"}
+                data[x,y] = ( data[x,y-1 ] + data[x, y+1] ) / 2  /* do |'s */
+            for x in the set {stepsize, 3*stepsize,... (MAX)}
+                data[x,y] = ( data[x-1,y-1] + data[x-1,y+1] +   /* do X's */
+                          data[x+1,y-1] + data[x+1,y+1] ) / 4
+
+            else                /* y is "even", generate "o - o - o ..."  */
+                for x in the set {stepsize, 3*stepsize,... (MAX)}
+                    data[x,y] = ( data[x-1,y] + data[x+1,y] ) / 2
+        end y
+
+        randrange = randrange * fraction
+    done            
+
+In the present program, all array indexing is avoided, and the core algorithm 
+is implemented differently.  One problem with the above algorithm is that
+each old element is accessed 8 times when generating new elements. 
+You can see this by looking at the general pattern around an old element:
+
+        X | X
+        - o -           <-- this `o' gets bothered 8 times!
+        X | X
+                
+We can take another look and use a different pattern for our core routine.
+Instead of having different actions for each row, we can treat the array
+as a set of "cells":
+
+        ... o - o ...           Or, giving them names:  NW  N  NE
+        ... | X |                                        W  C  E
+        ... o - o ...                                   SW  S  SE
+
+where C is the center of the cell, and the other corners and sides are
+named after the compass points.
+
+We can save a lot of unnecessary fetches by realizing that the East side
+of the current cell is the West side of the next cell.  In this way, the
+old elements are fetched only twice apiece - once for the cells below them,
+and once for the cells above them.
+
+Our computational cell is:
+                                        Generate these:         From these:
+        (NW)    NE  =>  (NW)    NE                              (NW)    NE
+          W  C  E         W  C  E               C  E                    
+        (SW) S  SE  =>  (SW) S  SE              S               (SW)    SE
+          current ---->    next   
+
+From the last cell (to the left), we have NW and SW.  For this current cell 
+we fetch NE and SE.  We compute S, C, and E, and store them.  To prepare for 
+the next cell (to the right), we update NW from NE, and SW from SE.  We then 
+move our pointers to go to the next cell.
+
+Now the core algorithm becomes:
+
+        Generate the first row of "o - o - ... o" separately.
+        Get pointers to W and C.
+        Pick up NW, SW; average them and store at W.
+        Shift the W pointer to now point to E.
+        For all the rows:
+                For the cells in this row:
+                        Pick up NE, SE.
+                        Generate the various averages, and store at S, C, E.
+                                S = (SE + SW)/2
+                                E = (NE + SE)/2
+                                C = (NE + SE + SW + NW)/4
+                        Shift SE to SW, shift NE to NW.
+                        Shift C pointer to next C (to the right).
+                        Shift E pointer to next E (to the right).
+
+There is one final trick -  we can see that C can be generated in many
+ways, and one way is:  C = (E + W)/2.  We can adjust the algorithm to
+remember W and SW, instead of NW and SW.  The advantage is there's slightly
+less bother when indexing off the pointers.  Also, I use two times W, i.e.
+before it is halved.  This way there is less problem of truncation in 
+computing element C.  The inner core equations finally become:
+
+                        Pick up NE, SE
+                        Form E2 = NE + SE
+                        Store E = E2/2
+                        Store C = (W2 + E2)/4
+                        Store S = (SE + SW)/2
+                        Update SW from SE
+                        Update W2 from E2
+                        Update C and E pointers
+
+And that's why you don't have to wait very long for a new image.
+
+---------------------------
+About that "delta percent":
+
+The integer gadget lets you change the amount that the random numbers
+influence the evolving surface.  In the initial algorithm given above, 
+the range of the random numbers was changed at each iteration by the 
+statement:
+                randrange = randrange * fraction
+
+The value of "delta percent" gets turned into `fraction'.  What it means
+is that at each iteration, the range of random numbers is decreased by
+"delta percent".  If it is 80% (default), then the range of random numbers
+decreases like this: 100, 80, 64, 51, 41, 33, 26, 21 (for 8 iterations).
+With higher values, the resulting image is "bumpier"; with lower values
+it is smoother.  Lower values are useful to help you get a feel for how
+the scaling types affect the image.  I find that the images are too noisy
+with values above 80, and have a nice smoothness with values around 50.
+Below 40 the images become too simple to be interesting in themselves.
+
+----------------
+Some last words:
+
+I hope you like 'Cloud' as much as I do.  It was fun to watch it grow
+and evolve.  Bugs, problem reports, and suggestions for improvements
+can be sent to:
+
+Mail:   Mike Hall       
+        2 S 461 Cherice Dr.
+        Warrenville, IL  60555
+UUCP: att!cuuxb!migh
+
+Thanks!
+
+

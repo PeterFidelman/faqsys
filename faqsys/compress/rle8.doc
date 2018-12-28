@@ -1,0 +1,94 @@
+  
+Run Length Encoding compressor program 8 bit header version  
+  
+Written by Shaun Case 1991 in Borland C++ 2.0  
+                              with sizeof (int) == 2  
+  
+This program and its source code are Public Domain.  
+This program should be portable to any machine with  
+2 byte short ints and 8 bit bytes, if you patch the  
+filename stuff, which is ms-dos specific.  
+  
+  
+What is run length encoding?  
+  
+Run Length Encoding, also known as RLE, is a method of compressing data  
+that has a lot of "runs" of bytes (or bits) in it.  A "run" is a series  
+of bytes that are all the same. For instance, the string "THIS IS A  
+VEEEEEEEEEEEEEEEEEEEEEEEERY INTERESTING SENTENCE" has a run of 23 'E's  
+in it.  This could be compressed in the following manner:  
+  
+THIS IS A V23ERY INTERESTING SENTENCE  
+  
+resulting in a savings of 20 characters.  A further savings of one  
+character can be realized if the sequence "23" is replaced by a single  
+byte with the value 23.  
+  
+However, if the text to be encoded is arbitrary, then it may contain  
+numbers as well as letters, and bytes of all possible values.  For this  
+reason, there must be some way to let the decoder know when a compressed  
+run is encountered, and when a sequence to be passed straight through is  
+encountered.  For this reason, the following file format was used:  
+  
+  
+========= tech info =========  
+  
+8 bit header version.  
+  
+File format:  
+  
+13 byte original filename, followed by  
+  
+[ 8 bit header + data ][ 8 bit header + data ][ 8 bit header + data ]  
+etc..  
+  
+header:  
+  
+  bit 7         : 1 if following byte is a run  
+  bit 6 - 0     : legnth of run (max 127, min 3)  
+  
+data: 1 byte : which character run consists of  
+  
+*** OR ***  
+  
+header:  
+  
+  bit 7         : 0 if following bytes are sequence  
+  bit 6 - 0     : legnth of sequence (max 127)  
+  
+data:  (header AND 0x7F) bytes of data  
+                : data bytes copied to output stream unchanged  
+  
+===============================  
+  
+bugs:  
+  
+        None known  
+  
+  
+Nasty features :  
+  
+        1)  When encoder reaches max run length, it is written  
+            out correctly, but is followed by a 1 length run of  
+            the next byte.  Odd.  Reason unknown.  
+  
+        2)  Better compression could be achieved by having min  
+            compression length and sequence length understood  
+            to be 2.  This would allow an "understood" multiplication  
+            of the seq_len or run_len by 2, since 1 is never used,  
+            allowing sequences of 254 bytes.  This is not likely  
+            to give much better compression in most cases,  
+            and is left as an exercise for the reader.  
+  
+            Implementing this requires fixing 1 above, too.  
+  
+  
+  
+  
+Author:  atman%ecst.csuchico.edu@RELAY.CS.NET (internet)  
+         1@9651                               (WWIVnet)  
+         atman of 1:119/666.0                 (fidonet)  
+  
+  
+Tell me hi if you use this program!  
+ 

@@ -1,0 +1,33 @@
+From pdxgate!usenet.ee.pdx.edu!ogicse!emory!swrinde!zaphod.mps.ohio-state.edu!sdd.hp.com!hpscit.sc.hp.com!hplextra!hpfcso!fwb Wed Mar 10 14:15:42 PST 1993
+
+My favorite:
+
+#include <math.h>
+
+main()
+{
+    float f;
+
+    while(1){
+        scanf("%f", &f);
+        if( f > 0.0 )
+            printf("%f %f\n", f, exp(log(f)/3.0));
+        else
+            printf("%f %f\n", f, -exp(log(-f)/3.0));
+    }
+}
+
+Do they still teach this in freshman High School?
+
+Did anyone see an IBM announcement of a CPU that 
+used fast logs 1 year or so ago?
+
+Frank
+
+     _/_/_/_/ _/        _/ _/_/_/  | Frank Bennett, MTS
+    _/        _/       _/ _/    _/ | Hewlett Packard
+   _/_/_/     _/ _/   _/ _/_/_/    | Fort Collins, CO
+  _/          _/_/ _/_/ _/    _/   | (303) 229-2679
+ _/           _/    _/ _/_/_/      | fwb@fc.hp.com
+
+

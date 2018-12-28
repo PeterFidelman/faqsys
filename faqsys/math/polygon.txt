@@ -1,0 +1,192 @@
+Polygon filling
+
+Third part of The 3D Coding Blackhole tutorial series
+
+Home at http://3Dblackhole.base.org
+
+NOTE: Some part of functions and some members of structures are not
+explained here, but we'll discuss them in other tutorials of the series.
+They're usually displayed in totality for the sake of similarity between
+the different tutorials and with the complete 3D engine.
+---------------------------------------------------------------------------
+
+   * The polygon structure
+   * Finding the triangles
+   * Scanning the triangles lines
+
+The polygon structure
+
+How will we store our polygons? First of all, you must know that at this
+state, our polygons will be flat 2D polygons. And since the original
+polygons will be 3D, we will only need one temporary 2D polygon, so we can
+set the maximum number of 2D vertices to a constant number, without wasting
+an important amount of memory:
+
+typedef struct
+{
+   _2D Points[20];
+    int PointsCount;
+   int Texture;
+}Polygon2D_t;
+
+And our 3D structure:
+
+typedef struct
+{
+    int Count;
+   int * Vertex;
+   int Texture;
+
+   Vertex_t P,M,N;
+}Polygon_t;
+
+Wondering why the array of vertices consists of integer values? Well... If
+you think about it, in a cube three polygons use the same vertex. So
+storing and transforming the same vertex in 3 polygons would be wasting
+both time and memory. We will rather store them in an object structure, and
+in the polygons, we will put the indexes of the appropriate vertices. Look
+at our object structure:
+
+typedef struct
+{
+   int VertexCount;
+   int PolygonCount;
+   Vertex_t * Vertex;
+   Polygon_t * Polygon;
+   _3D Scaling;
+   _3D Position;
+   _3D Angle;
+   int NeedUpdate;
+}Object_t;
+
+Finding the triangles
+
+As you will realize in the next chapter, drawing a triangle is much simpler
+than drawing an arbitrary polygon. So we'll start by cutting our polygons
+into 3-vertices shapes. The method is really simple and straightforward:
+
+void POLY_Draw(Polygon2D_t *Polygon)
+{
+    _2D P1,P2,P3;
+   int i;
+
+   P1 = Polygon->Points[0];
+   for(i=1; i < Polygon->PointsCount-1; i++)
+   {
+       P2=Polygon->Points[i];
+       P3=Polygon->Points[i+1];
+       POLY_Triangle(P1,P2,P3,Polygon->Texture);
+   }
+}
+
+                                  [Image]
+
+Scanning the triangles lines
+
+Now what about the Triangle function? What we have to do is to draw every
+horizontal scan line, and to do so we have to find the starting and ending
+x coordinate of every row. We will start by defining two simple useful
+macros to class two points vertically and two numbers:
+
+#define MIN(a,b) ((a<b)?(a):(b))
+#define MAX(a,b) ((a>b)?(a):(b))
+#define MaxPoint(a,b) ((a.y > b.y) ? a : b)
+#define MinPoint(a,b) ((b.y > a.y) ? a : b)
+
+Then we will define three others to class three points:
+
+#define MaxPoint3(a,b,c) MaxPoint(MaxPoint(a,b),MaxPoint(b,c))
+#define MidPoint3(a,b,c) MaxPoint(MinPoint(a,b),MinPoint(a,c))
+#define MinPoint3(a,b,c) MinPoint(MinPoint(a,b),MinPoint(b,c))
+
+You will notice that the MidPoint3 macro doesn't always work properly,
+depending on the order of the 3 points. We will fix this with a if
+statement. Now our declarations:
+
+void POLY_Triangle(_2D   p1,_2D p2,_2D p3,char c)
+{
+   _2D p1d,p2d,p3d;
+   int xd1,yd1,xd2,yd2,i;
+   int Lx,Rx;
+
+And we will do a first sorting of our 3 points:
+
+   p1d = MinPoint3(p1,p2,p3);
+   p2d = MidPoint3(p2,p3,p1);
+   p3d = MaxPoint3(p3,p1,p2);
+
+Why is there a rotation of the points when calling these macros? I'll tell
+you I'm not sure myself, but it probably has something to do with the fact
+that points are passed counter-clockwise. Try to change the macro and you
+will see junk on your screen! Now, we're not sure about our MidPoint, so we
+do a little check, and when we're in this condition, it seems that the
+MinPoint can be wrong, so we correct that too:
+
+   if(p2.y < p1.y)
+   {
+      p1d=MinPoint3(p2,p1,p3);
+      p2d=MidPoint3(p1,p3,p2);
+   }
+
+I know these orders seem strange, but just try to change them and
+everything turns to garbage so either try to understand them (and then
+please mail me your conclusion so I can add it here), or accept them the
+way they are. Anyway, now we must compute the deltas:
+
+   xd1=p2d.x-p1d.x;
+   yd1=p2d.y-p1d.y;
+   xd2=p3d.x-p1d.x;
+   yd2=p3d.y-p1d.y;
+
+Ok, here is the first side, that we only bother to draw if there is a delta
+y:
+
+   if(yd1)
+      for(i=p1d.y; i<=p2d.y; i++)
+      {
+
+We compute the x values with the starting x coordinate, adding the delta y
+between the current point and our starting point, multiplied by the inverse
+of the slope ( x / y ).
+
+          Lx = p1d.x + ((i - p1d.y) * xd1) / yd1;
+          Rx = p1d.x + ((i - p1d.y) * xd2) / yd2;
+
+If we are not on the same point, draw the horizontal run, passing the two
+points in order:
+
+          if(Lx!=Rx)
+             VID_HLine(MIN(Lx,Rx),MAX(Lx,Rx),i,c);
+      }
+
+Now we recompute the first deltas and do the second side:
+
+   xd1=p3d.x-p2d.x;
+   yd1=p3d.y-p2d.y;
+
+   if(yd1)
+      for(i   = p2d.y;   i <= p3d.y;   i++)
+      {
+         Lx =   p1d.x   + ((i   - p1d.y)   * xd2) / yd2;
+         Rx =   p2d.x   + ((i   - p2d.y)   * xd1) / yd1;
+         if(Lx!=Rx)
+            VID_HLine(MIN(Lx,Rx),MAX(Lx,Rx),i,c);
+      }
+}
+
+That's it! You've got your polygon filler! The implementation for a flat
+filling system is only a simple for:
+
+void VID_HLine(int x1, int x2, int y, char c)
+{
+   int x;
+   for(x=x1; x<=x2; x++)
+      putpixel(x, y, c);
+}
+
+---------------------------------------------------------------------------
+E-mail me at jerstlouis@videotron.ca
+Back to Jerome St-Louis's Homepage
+Back to The 3D Coding BlackHole
+
+                                                  Last Updated: 08-24-1997

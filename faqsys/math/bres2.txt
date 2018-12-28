@@ -1,0 +1,280 @@
+Site change!
+
+If you are currently viewing this document at intranet.on.ca, please note
+that the domain name will change on April 7, 1996 to intranet.ca. Please
+update your bookmarks and/or e-mail the maintainer of the site that linked
+to this page.
+
+Thanks,
+Sunir Shah
+
+---------------------------------------------------------------------------
+
+        WASTE - Warfare by Artificial Strategic and Tactical Engines
+
+[---------------------------------------------------------------------]
+
+                         Bresenham's Line Algorithm
+
+                               by Sunir Shah
+                        Last changed July 19, 1996.
+
+[---------------------------------------------------------------------]
+
+1. Introduction
+
+One of the most fundamental algorithms in the entire Universe of Algorithm
+Kind is the digital difference analyzer (DDA), which is pretty much what
+Bresenham's line algorithm is all about. In fact, this algorithm is
+considered a graphics primitive, which is why I know it. However, it also
+has many other non-graphical uses such as tracing a line across the WASTE
+map, or tracing the line of sight or any other 'line' problems.
+
+[---------------------------------------------------------------------]
+
+2. Background
+
+Before we begin, let's analyze the problem a bit. We have an 2D grid of
+some sort, like a map; however, the ordered pairs that reference a point on
+this grid can only be made up of integers because this is a computer and
+you can't have 0.3 of a byte. Unfortunately, in the real world, a line
+doesn't just stick to integral ordered pairs (see diagram 007-1).
+
+[Image]
+
+Actually, we're not even interested in the intersection of the grid lines.
+The grid, because it's on a computer, is actually an array arranged like
+so:
+
+                            0 1 2 3 4 5
+                           +-+-+-+-+-+-+
+                          0| | | | | | |x
+                           +-+-+-+-+-+-+
+                          1| | | | | | |
+                           +-+-+-+-+-+-+
+                          2| | | | | | |
+                           +-+-+-+-+-+-+
+                          3| | | | | | |
+                           +-+-+-+-+-+-+
+                            y
+
+Where (0,0) is the first element, (1,0) is the next, going upto (5,3).
+
+Astute readers will notice that the Cartesian coordinates have been
+reversed vertically. This is really only conceptual. If you wanted, you can
+arrange the program so that positive is up and negative is down (the proper
+way). However, I've chosen to represent the y axis as above simply because
+that's how most graphic displays I've come into contact with deal with it
+that way and at some point I want to represent the data in WASTE on a
+graphical display.
+
+To see what a line of slope 1/2 looks like on this array, see diagram
+007-2. To create the line, I simply moved one down for every two across.
+The line looks pretty good, although a bit blocky (technically, the term is
+"aliased"). However, if we try a really odd fractional slope, such as
+0.397, we'd have a really strange looking series of boxes. In fact, it'd be
+pretty hard to draw using a "one down for every two across" methodology.
+Fortunately, Bresenham's line algorithm steps in to save the day.
+
+[Image]
+
+[---------------------------------------------------------------------]
+
+3. The Math
+
+Every line has a slope. For those unaware, a slope is defined simply as
+Rise/Run = DeltaY/DeltaX = (y2-y1)/(x2-x1). A slope is sometimes refered to
+as the variable m. This information is highly important for what's coming
+next.
+
+Consider drawing a horizontal line (m = 0). All you have to do is loop
+through from point A to point B adding one from the X coordinate without
+altering the Y coordinate.
+
+LOOP WHILE not at point B ********* x <-- x + 1 END LOOP
+
+Similarly, for a vertical line (m = undefined as DeltaX = 0) loop through
+adding one from the Y coordinate without altering the X coordinate.
+
+LOOP WHILE not at point B * y <-- y + 1 * END LOOP *
+
+Although a bit harder, for a diagonal line with a slope of 1, you combine
+the two loops above, incrementing each coordinate every iteration.
+
+LOOP WHILE not at point B * x <-- x + 1 * y <-- y + 1 * END LOOP *
+
+Consider that every line can be made up by incrementing or decrement one
+coordinate every iteration and incrementing or decrementing the other
+coordinate periodically. For example, the line in part 2 had a slope of
+1/2. Every iteration, the X coordinate was incremented whereas every SECOND
+loop the Y coordinate was incremented.
+
+More complex slopes, such as 3/4, require a bit more thought. The slope
+ratio itself gives us some information. For every 4 boxes to the right, the
+line should go up 3. However, we have to distribute the 3 up movements out
+over the 4 right movements. So, quick division tells us that for every 1
+1/3 times we go right we have to go up.
+
+What?! How can you have a third of a loop? You can't. The decimal is called
+the error. The solution is to accumulate the error as we go along in a
+variable. When the error is greater than or equal to one, it accounts for
+one iteration out of the 4 that go right (plus the decimal). In this sense
+it is exactly like the diagonal above, but for one coordinate, an iteration
+is 'sucked up' every so often.
+
+One thing to keep in mind is that a slope can be negative. This indicates
+the direction of the line. In our coordinate system (reversed Y), a line
+slanting left has a positive slope and a line slanting right as a negative
+slope, exactly the reverse with real Cartesian coordinates. Also keep in
+mind that both DeltaX AND DeltaY can be negative, resulting in a positive
+slope (the negatives divide out); however, the negativeness of the delta
+values is important when it comes to direction. We won't be adding one in
+every loop. Sometimes we'll need to subtract one.
+
+[---------------------------------------------------------------------]
+
+4. The Algorithm
+
+Given A(x1,y1) and B(x2,y2) and that the line is from A to B
+
+X <-- x1
+Y <-- y1
+
+DeltaX <-- x2 - x1
+DeltaY <-- y2 - y1
+
+IF DeltaX < 0
+    XChange <-- -1
+    DeltaX = -DeltaX
+
+ELSE
+    XChange <-- 1
+ENDIF
+
+IF DeltaY < 0
+    YChange <-- -1
+    DeltaY = -DeltaY
+
+ELSE
+    YChange <-- 1
+ENDIF
+
+ERROR <-- 0
+i <-- 0
+
+IF DeltaX < DeltaY
+    Length <-- DeltaY + 1
+
+    LOOP WHILE i < Length
+        Y <-- Y + YChange
+        Error <-- Error + DeltaX
+
+        IF Error > DeltaY
+            X <-- X + XChange
+            Error <-- Error - DeltaY
+        ENDIF
+
+        i <-- i + 1
+
+    ENDLOOP
+
+ELSE
+    Length <-- DeltaX + 1
+
+    LOOP WHILE i < Length
+        X <-- X + XChange
+        Error <-- Error + DeltaY
+
+        IF Error > DeltaX
+            Y <-- Y + YChange
+            Error <-- Error - DeltaX
+        ENDIF
+
+        i <-- i + 1
+
+    ENDLOOP
+ENDIF
+
+[---------------------------------------------------------------------]
+
+5. The Explanation
+
+Since I've already explained the math, the algorithm's explanation will be
+(relatively) easy.
+
+First thing we need set the X and Y coordinates to the starting point
+(point A). Then, for calculating the slope and the direction, the delta X
+and delta Y coordinates are calculated.
+
+The next step, which is done for both coordinates, deals with the direction
+of movement. For the X coordinate, movement to the left (negative delta X)
+is checked for and if true, the value added to the X coordinate during the
+loop is set to -1. If it's false, it's set to 1. Similarly, for the Y
+coordinate, up equates to -1 and down equates to 1.
+
+Next, the error variable is set to 0 to begin accounting for the the
+accumulated error. The loop counter is also set to 0 here although it could
+just as easily be set to 0 inside the if-else construct.
+
+Speaking of which, we then test to see which coordinate gets incremented
+more often. Actually a greater delta Y is checked for but it equates to the
+two cases. Both blocks are similar in nature, the first block being for
+lines with a slope greater than 1 and the second for blocks less than or
+equal to 1. Keep in mind that a line with a slope equal to one can just as
+easily be dealt with in either block because it's inbetween both sets of
+lines.
+
+In the blocks, a loop iterates the number of times the greater-delta
+coordinate has to increment. In each iteration, the greater-delta
+coordinate either increments or decrements depending on its direction.
+
+Then comes the crux of the algorithm: the accumulated error. Remember that
+the slope is the rise over the run. Because it's a ratio, it can be derived
+from any section of the line. Keeping that in mind, we can claim that for
+the one unit we moved in the direction of the constantly updated
+coordinate, we moved some fractional unit in the direction of the
+periodically updated coordinate. In fact, this fraction is the lesser-delta
+coordinate on the greater-delta coordinate. Once this fraction exceeds one,
+the periodically updated coordinate gets updated. To account for the bit
+over one (the decimal), just subtract one from the fraction or, in other
+words, the denominator from the numerator.
+
+For instance, in the first block where the Y coordinate gets updated every
+iteration, we add delta X to the error term. Once the numerator is greater
+than or equal to the denominator (delta Y), add one to the X coordinate and
+then subtract delta Y (denominator) from the error term.
+
+That's it. And you thought it was complicated!
+
+[---------------------------------------------------------------------]
+
+6. Optimizations
+
+What?! This tried and tested algorithm has room for improvement? I don't
+think so.
+
+Well, the only improvement that I can see is instead of incrementing the X
+and Y coordinates each time and then using them to index into the array
+(although I left that out above), precalculate the linear offset into the
+array (y*width+x) and then add +/- array width for the Y coordinate and +/-
+1 for the X coordinate to the offset. This way, instead of doing a
+multiplication and an add each loop, we only have to do those once.
+
+[---------------------------------------------------------------------]
+
+Get the plain-text version here, Diagram 007-1 here and Diagram 007-2 here.
+
+[Image]
+
+[Back: WASTE Homepage | Prev: Visibility ]
+
+This document has been released into the public domain.
+
+[---------------------------------------------------------------------]
+
+  [Image] [Image] [Image] [Image] [Image] [Image] [Image] [Image] [Image]
+                          [Image] [Image] [Image]
+
+      [ Home | E-Mail | FTP | Synapsis Entertainment | Lamer | WASTE |
+comp.ai.games FAQ | The Programmers' Booklist | Wall o' Gratin | Acid | The
+              Seafood and Crab Subway Sandwich Mystery | z ]

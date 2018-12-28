@@ -1,0 +1,150 @@
+
+File        : Sincos.tut
+Date        : 7.2.1997
+Author      : [CrY0] / Quasar
+Email       : uzs3e7@ibm.rhrz.uni-bonn.de
+Description : Fast sin and cos calculations using Euler's formula.
+Source code : Borland / Turbo C++ 3.1.
+
+
+[Intr0]
+
+ Hi folks, [CrY0] here. Actually i don't know how many people will ever need
+to do real time sin and cos calculations, since almost everything can be done
+with tables. At least, that's what i thought, but yesterday i met Kory on IRC
+channel #coders, and he really needed to do that for a prog. he was coding. So 
+i called up on my math knowledge and came up with a quite quick method to do 
+the job, at least, as long as you don't mind having accuracy losses. :)
+
+I know many others have done this before, it is nothing new, but you can always
+use another tutor, right? 
+
+[MatH]
+
+ Ok, if you have had higher trig, and you know what a sum ( represented by the
+greek letter Sigma ) and the constane e is, then skip this part and go straight 
+for the source code later on the text.
+
+ The method i will explain here is based on Euler's formula.
+
+ First, we need to define some stuff and notation:
+
+a)
+          n
+   n!  =  ô k  =  1*2*3*...*n   
+         k=1 
+  
+   example:  4! = 1*2*3*4 = 24
+
+b) ( Where E means 'the sum of' , i couldnt find Sigma on my keyboard :) )
+
+               1
+  e    =  E   ---  = Euler's number. This is a constant. The value is not 
+         n=0   n!    of interest for us now, so just read on :)
+
+
+c) Euler's Formula:
+
+   i*x
+  e    =  cos x + i*sin x     where i is the square root of -1 (complex).
+
+  
+Now we can use b) and write Euler's formula like this:
+     
+                                     n                 2*k
+   i*x        (i*x)          n      x           k     x      
+  e    =  E  -------  =  E  i  *  ------  E (-1)  *  ------  
+         n=0    n!      n=0         n!   k=0         (2*k)!  
+
+                           2*k+1
+                       k  x
+          + i * E  (-1)  --------
+               k=0       (2*k+1)!
+
+
+  We see that we splitted the first sum into two sums. We notice too that the 
+in the first sum we have the even numbers and in the secont the odd numbers in
+the power of x, 2*k  and  2*k+1. Further, we see that the first sub-sum (i like
+that word :) ) is real, and the second is complex. 
+
+Now if we look at c), we see that cos x is real part and i*sin x the complex
+one. Ok, made 'click' already??
+
+ Allright, i dont want to bore you with the math stuff anymore, so ill go 
+straight to the interesting part.
+  
+                       2*k            2      4      6
+                   k  x              x      x      x
+  cos x  =  E  (-1)  ------  =  1 - ---- + ---- - ---- + ...
+           k=0       (2*k)!          2!     4!     6!
+
+                       2*k+1          3      5      7
+                   k  x              x      x      x
+  sin x  =  E  (-1)  ------  =  x - ---- + ---- - ---- + ...
+           k=0      (2*k+1)!         3!     5!     7!
+
+
+ Ok? That's fine, i hear you say, but how does that improve my sexual life???
+
+ It doesnt improve your sexual life, but your code can be made pretty fast. Isnt
+that the real important thing?? :)
+
+ 
+
+[C0De]
+
+ Let's try to set up a little piece of code that will do the job. I will begin 
+with lame floating-point-using C code, and move down to fast fixed point 
+arithmetic in pure ASM. ( Note: that will be on a separated file ).
+
+#include <stdio.h>
+#include <math.h>    // We need this to compare our results with the real sin()
+                     // and cos() functions.
+                     // Besides, we need the pow() function.
+void main()
+{
+    float result;
+    float x;
+
+    printf("\nEnter x: " );  // x is the number whose sinus you want to
+                             // calculate.
+    scanf( "%f", &x );       // Enter x.
+
+    result = x - pow( x, 3 ) / 6;  // Do it!
+
+    // Check our result with math.h's sin() function.
+
+    printf( "\nOur result      : %f", result );
+    printf( "\nmath.h's result : %f", sin( x ) );
+}
+
+Try it with many values, and you will see that it is not very accurate, but it
+is fast. If you need more accuracy, then you must do the following:
+
+
+   result = x - pow( x, 3 )/6 + pow( x, 5 )/120 - pow( x, 7 )/5040 ...
+
+ Where 6 = 3!, 120 = 5!, 5040 = 7! ...
+
+ Ok? Now go ahead and try the cosine for yourself! 
+
+Well, thats all for now, next week ill finish the assembler part of this tutor,
+so stay tuned!
+
+[GrReEtZ]
+
+ A tutor can't be complete without the greetings part, so here i go:
+
+ -  Mega Greetz to my demo group, QUASAR.
+
+ -  Special Greetz to Kory for making me write this in the first place :)
+
+ - Cool greetz to: tig2, zylon, debonair, barog, RuneStar, CRShadow, iitm, 
+   X, RyanT, Scorpio, Frenzy, luvscrs, Kaneda, Killgates, jungle, and
+   everyone else in Undernet #coders i forget, you guys rule!!!
+
+
+ For bugs, flames, marriage proposals or just for fun, email me at the above 
+ address.
+
+[E0f]

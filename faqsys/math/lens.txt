@@ -1,0 +1,244 @@
+This is some info on how one could implement a lens.
+You should also have the file lens.gif, which contains some pictures to
+clarify this text.
+The first part is some stuff in general, the real explanation of the lens
+transformation is in the second part.
+
+
+How to implement the transformation
+-----------------------------------
+
+The main idea is: I want to transform a fraction of a picture.
+Consider the smallest square possible, that contains all pixels affected by the
+transformation. That is the 'blue' part of the picture.
+I'm considering a precalculated transformation, so the dimensions of the
+blue square are know (and constant). Therefore, I also know the total amount of
+pixels involved in the transformation. Lets say NPI is a constant, representing
+the 'N'umber of 'P'ixels 'I'nvolved. (That is the number of 'blue' pixels)
+My program then requires 3 arrays: ORG[NPI], TFM[NPI] and DEST[NPI].
+
+I first copy all 'blue' pixels to the array, called ORG. 
+[  Suppose the blue square is 10 by 10 pixel, than ORG[0..9] contain the      ]
+[  value of the pixels on the first line, ORG[10..11] contain the value of    ]
+[  the pixels on the second line, and so on...                                ]
+So ORG is an array with the original values of the pixels. The copying-routine
+depends on the resolution (and the video mode) I'm working in.
+
+I now want to transform the 'blue' picture, that is: I want to transform
+the array ORG. For each pixel, I'm gonna  determine its new value, and store it
+in DEST. To know what its new value is, I use the third array TFM. This array
+is a constant, and can therefore by calculated in advance. (You'll see how that
+is done for the lens in the second part of this text)
+
+This array says for each pixel: the pixel at position i in the result, should
+be the same as the pixel at position TFM[i] in the original.
+[ So the formula is DEST[i] = ORG[TMF[i]] for all elements from 0 till NPI-1. ]
+The transformation is fast, and does not depend on the resolution/video-mode.
+
+We now copy the array DEST to the blue rectangle on the image, and the
+transformation is complete.
+
+
+If the transformed region is to be connect to the position of the mouse,
+then every time the mouse is moved you have to:
+1. Copy the original (array ORG) back to the old position,
+2. Get the 'blue' region at the new position in the array ORG,
+3. Do the transformation from ORG to DEST,
+4. Copy the transformed region (DEST) onto the picture.
+
+
+[  Here are some simple transformations:                                      ]
+[  ( suppose the blue region has dimensions dX by dY, thus NPI = dX*dY )      ]
+[                                                                             ]
+[  for i:=0 to dX*dY-1 do                                                     ]
+[      TFM[i]:=i;                                                             ]
+[  Defines no change at all !                                                 ]
+[  (that is: the transformed picture is the same as the original)             ]
+[                                                                             ]
+[  for i:=0 to dX*dY-1 do                                                     ]
+[      TMF[i]:=(dX*dY-1) -i;                                                  ]
+[  This flips the original round both axis (X and Y)                          ]
+[                                                                             ]
+[  for i:=0 to dY-1 do                                                        ]
+[      for j:=0 to dX-1 do                                                    ]
+[          TFM[i*dX+j] := i*dX + dX-1 - j;                                    ]
+[  This flips the original round the X-axis only                              ]
+[                                                                             ]
+[  const M=2;                                                                 ]
+[  for i:=0 to dY-1 do                                                        ]
+[      for j:=0 to dX-1 do                                                    ]
+[          TFM[i*dX+j] := (i div M)*dX + (j div M);                           ]
+[  This magnifies the upper left corner by a factor of M                      ]
+
+[  Mind you:                                                                  ]
+[  if you do the copying directly on the screen, you'll get some flickering.  ]
+[  One way to avoid that is using a virtual screen.                           ]
+[  That means you use an array, say VirtScr, wich represents the real screen. ]
+[  You then perform all action where the screen is involed (loading the image,]
+[  getting ORG and writing DEST) on the VirtScr, and than copy that VirtScr   ]
+[  on the real screen. However, that has 2 disadvantages:                     ]
+[  1. You'll use more memory (for the VirtScr)                                ]
+[  2. The result will be slower (because you have to copy the VirtScr to the  ]
+[     real screen)                                                            ]
+
+
+How to make the lens transformation
+-----------------------------------
+
+Okay. So now the question is how to make the transformation array for the lens.
+Consider a sphere S, intersecting with a plane à. This defines a circle C in
+the plane. Define Rc as the ray of the circle C, Rs as the ray of the sphere S,
+and d as the distance from the centre of the sphere to the plane à.
+We know then that: 
+                             Rcý + dý = Rsý           (1)
+
+If you want several lenses with the same radius, but different lens-strength,
+then you must preserve the same value for Rc. If the size of the transformed
+area is L by L pixels (the lens is circular, so the involved area is a square)
+then Rc should be «L. The distance d determines the strength of the lens.
+So, knowing Rc and d, we can determine Rs.
+
+Suppose we're given L (so Rc = «L), we made a choice for d, and we calculated
+the value of Rs. We now want to transform each pixel in the square (LxL).
+We simply check all pixels [2 loops: one for the X-axis and one for the Y-axis]
+We call the point we're transforming p. If p lies outside or on C, then the
+point isn't transformed. That is: TFM(p)=p; if (x,y) are the coordinates of
+p than TFM[x+y*L] := x+y*L.
+
+If p lies within the C, then the point will be transformed:
+the effect should be as if all points within the circle were projected from
+the centre of the sphere onto the sphere. Hence, for a given point p,
+we determine the point q (see picture). That point q is the projection of some
+point i within the circle C, so from the point q, we draw a line to the centre
+of the sphere, thus defining the point i, which is the intersection of that
+line whith the plane. That is the transformation of the point p: TFM(p)=i,
+because: if the point i was to be projected on the sphere, it would end up at
+the point q. Since we're looking straight onto the plane, the points q and p
+are the same. (that is: they end up at the same point on your screen).
+
+
+
+When implementing, you can use some shortcuts:
+Lets say L and d are given. Then Rc=«L;
+Consider the origin of a rectangular system in the centre of the circle C.
+The X-axis and the Y-axis are parrallel to the plane à, in such a way that
+the square that is to be transformed, is defined as:
+
+                   [-Rc,Rc] x [-Rc,Rc]
+
+The orientation of the Z-axis is such that the coordinates of the centre of the
+sphere are (0,0,-d). The sphere is given by:
+
+                 xý + yý + (z+d)ý = Rsý                   (2)
+
+hence:  [ (1) ]
+
+                 xý + yý + (z+d)ý = Rcý + dý              (3)
+
+Consider the point P within the circle C. Thus, its coordinates are:
+
+           (Px,Py,0)     and       Pxý + Pyý < Rcý        (4)
+
+
+The coordinates of the point Q can be found through this system:
+
+        |   x = Px            Â- defines the line, parrallel to the Z-axis
+        |   y = Py            Ù  through the point P.
+        |   xý + yý + (z+d)ý = Rcý + dý
+
+We immediatly find Qx and Qy (Qx=Px; Qy=Py), and for Qz we find:
+
+        Pxý + Pyý + Qzý + 2*d*Qz + dý = Rcý + dý
+
+        Qzý + 2*d*Qz - Rcý + Pxý + Pyý = 0
+
+        D = dý -  (Pxý + Pyý - Rcý)                       (5)
+
+        since  Rcý > Pxý + Pyý    [ (4) ],  we find D>0, and
+
+        Qz = 1 ñ ûD.
+
+We find 2 solutions (the line intersects the sphere twice !), but consider
+only the one with Qz>0. We find coordinates for Q:
+
+        (Qx,Qy,Qz) ð (Px,Py,1+ûD)    <see (5) for D>      (6)
+
+Finally, we find the coordinates of the point I through :
+[ (Sx,Sy,Sz) are the coordinates of the centre of the sphere ]
+[ (Sx,Sy,Sz) ð (0,0,-d)                                      ]
+
+         |      ( z - Sz)  
+         |  x = --------- * (Qx-Sx) + Sx        ¿
+         |      (Qz - Sz)                       Ã defines the line through
+         |                                      ³ the centre of the sphere
+         |      ( z - Sz)                       ³ and the point Q
+         |  y = --------- * (Qy-Sy) + Sy        Ù
+         |      (Qz - Sz)
+         |
+         |  z = 0                               -- defines the plane à
+
+We find:
+
+                  ( 0 - (-d) )
+           Ix  =  ------------ * (Qx-0) + 0
+                  ( Qz - (-d))
+
+                  ( 0 - (-d) )
+           Iy  =  ------------ * (Qy-0) + 0
+                  ( Qz - (-d))
+
+           Iz  =  0
+
+
+hence:                d
+           Ix  =  --------- Qx
+                   Qz + d
+
+                      d
+           Iy  =  --------- Qy
+                   Qz + d
+
+           Iz  =  0
+
+
+We know the coordinates of Q   (they can be fully determined if the coordinates
+of P are known), and we know d, so I can be calculated.
+We could than say:
+
+    TFM[ («L+Px) + («L+Py) * L ] := («L+Ix) + («L+Iy) * L;
+
+( Remember:  Px,Py,Ix and Iy all are  î [-Rc,Rc] and  Rc ð «L )
+
+Now, you can see (by just observing the drawing, or by checking the formulas)
+that if we find
+
+     TFM[ p( Px, Py) ] = i( Ix, Iy)
+
+then also
+
+     TFM[ p( Px,-Py) ] = i( Ix,-Iy)
+     TFM[ p(-Px, Py) ] = i(-Ix, Iy)
+     TFM[ p(-Px,-Py) ] = i(-Ix,-Iy)
+
+so that the entire transformation can be defined be calculating ¬ of the
+transformed area.
+
+
+
+That's about it. I ain't too good in explaining, I know, so if things
+still aren't entirely clear to you, don't hesitate to ask me: I'll try
+to rephrase.
+
+[ you can contact me through                                                  ]
+[                                                                             ]
+[  Internet     :        Joey@toeg.rug.ac.be                                  ]
+[                                                                             ]
+[  Buster BBS   :        write to our PR:       RETARD ED                     ]
+[  (+32-53-77.23.85)     or myself              JOEY                          ]
+[                                                                             ]
+[  Mail         :        Joey                                                 ]
+[                        Ottogracht 46                                        ]
+[                        B-9000 Gent                                          ]
+[                        (Belgium)                                            ]
+
+Joey/SD

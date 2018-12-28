@@ -1,0 +1,1385 @@
+From jdstone@destin.dazixco.ingr.com Fri Oct 14 22:13:59 1994
+From: jdstone@destin.dazixco.ingr.com (Jon Stone)
+Newsgroups: comp.graphics.algorithms,comp.answers,news.answers
+Subject: comp.graphics.algorithms Frequently Asked Questions (FAQ)
+Supersedes: <graphics_779018404@baggins.dazixco.ingr.com>
+Followup-To: comp.graphics.algorithms
+Date: 9 Oct 1994 10:00:06 GMT
+Organization: Intergraph Corp., Boulder CO
+Reply-To: jdstone@ingr.com
+NNTP-Posting-Host: destin.dazixco.ingr.com
+Summary: This posting contains a list of Frequently Asked
+	 Questions (and their answers) about computer graphics
+	 algorithms. It should be read by anyone who wishes to
+	 post to the comp.graphics.algorithms newsgroup.
+
+Archive-name:	   graphics/algorithms-faq
+Version:           1.14
+Last-Modified:     September 29, 1994
+Posting-Frequency: monthly
+
+
+
+Welcome to the FAQ for comp.graphics.algorithms!
+
+Thanks to all who have contributed.  Corrections and contributions
+always welcome.
+
+Changed items are marked with a |.
+New items are marked with a +.
+Items needing input are marked with a ?.
+
+All ftp    references are of the form ftp://node/path
+All Mosaic references are of the form http://node/path
+
+----------------------------------------------------------------------
+Table of Contents
+----------------------------------------------------------------------
+
+   0) Charter of comp.graphics.algorithms
+|  1) Are the postings to comp.graphics.algorithms archived?
+   2) What are some must have books on graphics algorithms?
+   3) Are there any online references?
+   4) Where is all the source?
+   5) How do I rotate a 2D point?
+   6) How do I rotate a 3D point?
+   7) How do I find the distance from a point to a line?
+   8) How do I find intersections of 2 2D line segments?
+   9) How do I find the intersection of a line and a plane?
+  10) How do I rotate a bitmap?
+  11) How do I display a 24 bit image in 8 bits?
+  12) How do I fill the area an arbitrary shape?
+  13) How do I find the 'edges' in a bitmap?
+? 14) How do I enlarge/sharpen/fuzz a bitmap?
+  15) How do I map a texture on to a shape?
+  16) How do I find the area/orientation of a polygon?
+  17) How do I find if a point lies within a polygon?
+? 18) How do I find the intersection of two convex polygons?
+  19) How do I detect a 'corner' in a collection of points?
+  20) How do I generate a circle through three points?
+  21) How do I generate a bezier curve that is parallel to another bezier?
+  22) How do I split a bezier at a specific value for t?
+  23) How do I find a t value at a specific point on a bezier?
+  24) How do I fit a bezier curve to a circle?
+  25) What is ARCBALL?
+  26) Where can I find ARCBALL source?
+  27) How do I clip a polygon against a rectangle?
+  28) How do I clip a polygon against another polygon?
+? 29) Where can I get source for Weiler/Atherton clipping?
+? 30) How do I generate a spline to approximate (insert curve here)?
+? 31) Where do I get source to display (raster font format)?
+? 32) What is morphing/how is it done?
+? 33) How do I draw an anti-aliased line/polygon/ellipse?
+  34) How do I determine the intersection between a ray and a polygon?
+  35) How do I determine the intersection between a ray and a sphere?
+  36) How do I determine the intersection between a ray and a bezier surface?
+  37) How do I ray trace caustics?
+  38) How do I quickly draw a filled triangle?
+  39) Where can I get source for Voronoi/Delaunay triangulation?
+  40) Where do I get source for convex hull?
+  41) What is the marching cubes algorithm?
+? 42) What is the status of the patent on the "marching cubes" algorithm?
+  43) How do I do a hidden surface test (backface culling) with 3d points?
+  44) How do I do a hidden surface test (backface culling) with 2d points?
+  45) Where can I find graph layout algorithms?
+? 46) Where can I find algorithms for 2D collision detection?
+  47) Where can I find algorithms for 3D collision detection?
+  48) 3D Noise functions and turbulence in Solid texturing.
+  49) How do I perform basic viewing in 3d?
+? 50) How can you contribute to this FAQ?
+  51) Contributors.  Who made this all possible.
+
+----------------------------------------------------------------------
+
+Subject: 0) Charter of comp.graphics.algorithms
+
+    Comp.graphics.algorithms is an unmoderated newsgroup intended
+    as a forum for the discussion of the algorithms used in the
+    process of generating computer graphics.  These algorithms may
+    be recently proposed in published journals or papers, old or
+    previously known algorithms, or hacks used incidental to the
+    process of computer graphics.  The scope of these algorithms
+    may range from an efficient way to multiply matrices, all the
+    way to a global illumination method incorporating ray tracing,
+    radiosity, infinite spectrum modeling, and perhaps even
+    mirrored balls and lime jello.
+ 
+    It is hoped that this group will serve as a forum for programmers
+    and researchers to exchange ideas and ask questions on recent
+    papers or current research related to computer graphics.
+
+    comp.graphics.algorithms is not:
+
+     - for requests for gifs, or other pictures
+     - for requests for image translator software (i.e. gif <--> jpg)
+
+----------------------------------------------------------------------
+
+Subject: 1) Are the postings to comp.graphics.algorithms archived?
+
+|   Yes.  The "official" archive is stored at:
+|
+|     http://www.cis.ohio-state/hypertext/faq/usenet/graphics/algorithms-faq/faq.html
+|     ftp://rtfm.mit.edu/pub/usenet-by-group/news.answers/graphics/algorithms-faq
+|
+|   Also available at:
+|
+|     ftp://wuarchive.wustl.edu/graphics/graphics/mail-lists/comp.graphics.algorithms
+
+    It is archived in the same manner that all other newsgroups are
+    being archived there, namely there is an Index file with all the
+    subjects, and all the articles are being kept in a hierarchy based
+    on the year and month they are posted.
+
+|   FYI, all usenet FAQ's are available with Mosaic via
+|
+|   http://www.cis.ohio-state/hypertext/faq/usenet/top.html
+
+
+----------------------------------------------------------------------
+
+Subject: 2) What are some must have books on graphics algorithms?
+
+    The keywords in brackets are used to refer to the books in later
+    questions.  They generally refer to the first author except where
+    it is necessary to resolve ambiguity or in the case of the Gems.
+
+
+    Basic computer graphics, rendering algorithms,
+    ----------------------------------------------
+
+    [Foley]
+    Computer Graphics: Principles and Practice (2nd Ed.),
+    J.D. Foley, A. van Dam, S.K. Feiner, J.F. Hughes, Addison-Wesley
+    1990, ISBN 0-201-12110-7
+
+    [Rogers:Procedural]
+    Procedural Elements for Computer Graphics,
+    David F. Rogers, McGraw Hill 1985, ISBN 0-07-053534-5
+
+    [Rogers:Mathematical]
+    Mathematical Elements for Computer Graphics 2nd Ed.,
+    David F. Rogers and J. Alan Adams, McGraw Hill 1990, ISBN
+    0-07-053530-2
+
+    [Watt:3D]
+    _3D Computer Graphics, 2nd Edition_,
+    Alan Watt, Addison-Wesley 1993, ISBN 0-201-63186-5
+
+    [Glassner:RayTracing]
+    An Introduction to Ray Tracing,
+    Andrew Glassner (ed.), Academic Press 1989, ISBN 0-12-286160-4
+
+    [Gems I]
+    Graphics Gems,
+    Andrew Glassner (ed.), Academic Press 1990, ISBN 0-12-286165-5
+
+    [Gems II]
+    Graphics Gems II,
+    James Arvo (ed.), Academic Press 1991, ISBN 0-12-64480-0
+
+    [Gems III]
+    Graphics Gems III,
+    David Kirk (ed.), Academic Press 1992, ISBN 0-12-409670-0 (with
+    IBM disk) or 0-12-409671-9 (with Mac disk)
+
+    [Gems IV]
+    Graphics Gems IV,
+    Paul S. Heckbert (ed.), Academic Press 1994, ISBN 0-12-336155-9
+    (with IBM disk) or 0-12-336156-7 (with Mac disk)
+
+    [Watt:Animation]
+    Advanced Animation and Rendering Techniques,
+    Alan Watt, Mark Watt, Addison-Wesley 1992, ISBN 0-201-54412-1
+
+    [Bartels]
+    An Introduction to Splines for Use in Computer Graphics and
+        Geometric Modeling,
+    Richard H. Bartels, John C. Beatty, Brian A. Barsky, 1987, ISBN
+    0-934613-27-3
+
+    [Farin]
+    Curves and Surfaces for Computer Aided Geometric Design:
+    A Practical Guide, 3rd Edition, Gerald E. Farin, Academic Press
+    1993. ISBN 0-12-249052-5
+
+    [Prusinkiewicz]
+    The Algorithmic Beauty of Plants,
+    Przemyslaw W. Prusinkiewicz, Aristid Lindenmayer, Springer-Verlag,
+    1990, ISBN 0-387-97297-8, ISBN 3-540-97297-8
+
+    [Oliver]
+    Tricks of the Graphics Gurus,
+    Dick Oliver, et al. (2) 3.5 PC disks included, $39.95 SAMS Publishing
+
+    [Hearn]
+    Introduction to computer graphics,
+    Hearn & Baker
+
+
+    For image processing,
+    ---------------------
+
+    [Barnsley]
+    Fractal Image Compression,
+    Michael F. Barnsley and Lyman P. Hurd, AK Peters, Ltd, 1993 ISBN
+    1-56881-000-8
+
+    [Jain]
+    Fundamentals of Image Processing,
+    Anil K. Jain, Prentice-Hall 1989, ISBN 0-13-336165-9
+
+    [Castleman]
+    Digital Image Processing,
+    Kenneth R. Castleman, Prentice-Hall 1979, ISBN 0-13-212365-7
+
+    [Pratt]
+    Digital Image Processing, Second Edition,
+    William K. Pratt, Wiley-Interscience 1991, ISBN 0-471-85766-1
+
+    [Gonzalez]
+    Digital Image Processing (2nd Ed.),
+    Rafael C. Gonzalez, Paul Wintz, Addison-Wesley 1987, ISBN
+    0-201-11026-1
+
+    [Russ]
+    The Image Processing Handbook,
+    John C. Russ, CRC Press 1992, ISBN 0-8493-4233-3
+
+    [Wolberg]
+    Digital Image Warping,
+    George Wolberg, IEEE Computer Society Press Monograph 1990, ISBN
+    0-8186-8944-7
+
+
+    Computational geometry,
+    ----------------------
+
+    [Bowyer]
+    A Programmer's Geometry,
+    Adrian Bowyer, John Woodwark, Butterworths 1983, ISBN
+    0-408-01242-0 Pbk
+
+    [O' Rourke]
+    Computational Geometry in C,
+    Joseph O'Rourke, Cambridge University Press 1994, ISBN
+    0-521-44592-2 Pbk, ISBN 0-521-44034-3 Hdbk
+
+    [Mortenson]
+    Geometric Modeling,
+    Michael E. Mortenson, Wiley 1985, ISBN 0-471-88279-8
+
+    [Preparata]
+    Computational Geometry: An Introduction,
+    Franco P. Preparata, Michael Ian Shamos, Springer-Verlag 1985,
+    ISBN 0-387-96131-3
+
+
+----------------------------------------------------------------------
+
+Subject: 3) Are there any online references?
+
+    The computational geometry community maintains its own
+    bibliography of publications in or closely related to that
+    subject.  Every four months, additions and corrections are
+    solicited from users, after which the database is updated and
+    released anew.  As of September 1993, it contained 5356 bib-tex
+    entries.  It can be retrieved from
+ 
+    ftp://cs.usask.ca/pub/geometry/geombib.tar.Z - bibliography proper
+ 
+    ftp://cs.usask.ca/pub/geometry/geom.ps.Z     - PostScript format
+ 
+    ftp://cs.usask.ca/pub/geometry/o-cgc19.ps.Z	 - overview published
+        in '93 in SIGACT News and the Internat. J. Comput.  Geom. Appl.
+ 
+    ftp://cs.usask.ca/pub/geometry/ftp-hints     - detailed retrieval info
+ 
+    Announcing the ACM SIGGRAPH Online Bibliography Project, by
+    Stephen Spencer (biblio@siggraph.org)
+
+    The database is available for anonymous FTP from the
+    ftp://siggraph.org/publications/bibliography directory.  Please
+    download and examine the file READ_ME in that directory for more
+    specific information concerning the database.
+
+    'netlib' is a useful source for algorithms, member inquiries for
+    SIAM, and bibliographic searches.  For information, send mail to
+    netlib@ornl.gov, with "send index" in the body of the mail
+    message.
+ 
+    You can also find free sources for numerical computation in C via
+    ftp://usc.edu/pub/C-numanal.  In particular, grab
+    numcomp-free-c.gz in that directory. 
+ 
+    Check out Nick Fotis's computer graphics resources FAQ -- it's
+    packed with pointers to all sorts of great computer graphics
+    stuff.  This FAQ is posted biweekly to comp.graphics.
+
+
+----------------------------------------------------------------------
+
+Subject: 4) Where is all the source?
+
+    Graphics Gems source code.
+    ftp://princeton.edu:pub/Graphics/GraphicsGems
+
+    General 'stuff'
+    ftp://wuarchive.wustl.edu/graphics/graphics
+
+
+----------------------------------------------------------------------
+
+Subject: 5) How do I rotate a 2D point?
+
+    In 2-D, the 2x2 matrix is very simple.  If you want to rotate a
+    column vector v by t degrees using matrix M, use
+
+        M = {{cos t, -sin t}, {sin t, cos t}} in M*v.
+
+    If you have a row vector, use the transpose of M (turn rows into
+    columns and vice versa).  If you want to combine rotations, in 2-D
+    you can just add their angles, but in higher dimensions you must
+    multiply their matrices.
+
+
+----------------------------------------------------------------------
+
+Subject: 6) How do I rotate a 3D point?
+
+    Assuming you want to rotate vectors around the origin of your
+    coordinate system. (If you want to rotate around some other point,
+    subtract its coordinates from the point you are rotating, do the
+    rotation, and then add back what you subtracted.) In 3-D, you need
+    not only an angle, but also an axis. (In higher dimensions it gets
+    much worse, very quickly.)  Actually, you need 3 independent
+    numbers, and these come in a variety of flavors.  The flavor I
+    recommend is unit quaternions: 4 numbers that square and add up to
+    +1.  You can write these as [(x,y,z),w], with 4 real numbers, or
+    [v,w], with v, a 3-D vector pointing along the axis. The concept
+    of an axis is unique to 3-D. It is a line through the origin
+    containing all the points which do not move during the rotation.
+    So we know if we are turning forwards or back, we use a vector
+    pointing out along the line. Suppose you want to use unit vector u
+    as your axis, and rotate by 2t degrees.  (Yes, that's twice t.)
+    Make a quaternion [u sin t, cos t]. You can use the quaternion --
+    call it q -- directly on a vector v with quaternion
+    multiplication, q v q^-1, or just convert the quaternion to a 3x3
+    matrix M. If the components of q are {(x,y,z),w], then you want
+    the matrix
+
+        M = {{1-2(yy+zz),  2(xy-wz),  2(xz+wy)},
+             {  2(xy+wz),1-2(xx+zz),  2(yz-wx)},
+             {  2(xz-wy),  2(yz+wx),1-2(xx+yy)}}.
+
+    Rotations, translations, and much more are explained in all basic
+    computer graphics texts.  Quaternions are covered briefly in
+    [Foley], and more extensively in several Graphics Gems, and the
+    SIGGRAPH 85 proceedings.
+
+
+----------------------------------------------------------------------
+
+Subject: 7) How do I find the distance from a point to a line?
+
+
+    Let the point be C (XC,YC) and the line be AB (XA,YA) to (XB,YB).
+    The length of the line segment AB is L:
+
+        L=((XB-XA)**2+(YB-YA)**2)**0.5
+
+    and
+            (YA-YC)(YA-YB)-(XA-XC)(XB-XA)
+        r = -----------------------------
+                        L**2
+
+            (YA-YC)(XB-XA)-(XA-XC)(YB-YA)
+        s = -----------------------------
+                        L**2
+
+    Let I be the point of perpendicular projection of C onto AB, the
+
+        XI=XA+r(XB-XA)
+        YI=YA+r(YB-YA)
+
+    Distance from A to I = r*L
+    Distance from C to I = s*L
+
+    If r<0      I is on backward extension of AB
+    If r>1      I is on ahead extension of AB
+    If 0<=r<=1  I is on AB
+
+    If s<0      C is left of AB (you can just check the numerator)
+    If s>0      C is right of AB
+    If s=0      C is on AB
+
+
+----------------------------------------------------------------------
+
+Subject: 8) How do I find intersections of 2 2D line segments?
+
+    This problem can be extremely easy or extremely difficult depends
+    on your applications.  If all you want is the intersection point,
+    the following should work:
+
+    Let A,B,C,D be 2-space position vectors.  Then the directed line
+    segments AB & CD are given by:
+
+        AB=A+r(B-A), r in [0,1]
+        CD=C+s(D-C), s in [0,1]
+
+    If AB & CD intersect, then
+
+        A+r(B-A)=C+s(D-C), or
+
+        XA+r(XB-XA)=XC+s(XD-XC)
+        YA+r(YB-YA)=YC+s(YD-YC)  for some r,s in [0,1]
+
+    Solving the above for r and s yields
+
+            (YA-YC)(XD-XC)-(XA-XC)(YD-YC)
+        r = -----------------------------  (eqn 1)
+            (XB-XA)(YD-YC)-(YB-YA)(XD-XC)
+
+            (YA-YC)(XB-XA)-(XA-XC)(YB-YA)
+        s = -----------------------------  (eqn 2)
+            (XB-XA)(YD-YC)-(YB-YA)(XD-XC)
+
+    Let I be the position vector of the intersection point, then
+
+        I=A+r(B-A) or
+
+        XI=XA+r(XB-XA)
+        YI=YA+r(YB-YA)
+
+    By examining the values of r & s, you can also determine some
+    other limiting conditions:
+
+        If 0<=r<=1 & 0<=s<=1, intersection exists
+            r<0 or r>1 or s<0 or s>1 line segments do not intersect
+
+        If the denominator in eqn 1 is zero, AB & CD are parallel
+        If the numerator in eqn 1 is also zero, AB & CD are coincident
+
+    If the intersection point of the 2 lines are needed (lines in this
+    context mean infinite lines) regardless whether the two line
+    segments intersect, then
+
+        If r>1, I is located on extension of AB
+        If r<0, I is located on extension of BA
+        If s>1, I is located on extension of CD
+        If s<0, I is located on extension of DC
+
+    Also note that the denominators of eqn 1 & 2 are identical.
+
+    References:
+
+    [O'Rourke] pp. 249-51
+    [Gems III] pp. 199-202 "Faster Line Segment Intersection,"
+
+
+----------------------------------------------------------------------
+
+Subject: 9) How do I find the intersection of a line and a plane?
+
+    If the plane is defined as:
+
+        a*x + b*y + c*z + d = 0
+
+    and the line is defined as:
+
+        x = x1 + (x2 - x1)*t = x1 + i*t
+        y = y1 + (y2 - y1)*t = y1 + j*t
+        z = z1 + (z2 - z1)*t = z1 + k*t
+
+    Then just substitute these into the plane equation. You end up
+    with:
+
+        t = - (a*x1 + b*y1 + c*z1 + d)/(a*i + b*j + c*k)
+
+    If the denominator is zero, then the vector (a,b,c) and the vector
+    (i,j,k) are perpendicular.  Note that (a,b,c) is the normal to the
+    plane and (i,j,k) is the direction of the line.  It follows that
+    the line is either parallel to the plane or contained in the
+    plane. In either case there is no unique intersection point.
+
+
+----------------------------------------------------------------------
+
+Subject: 10) How do I rotate a bitmap?
+
+    The easiest way, according to the comp.graphics faq, is to take
+    the rotation transformation and invert it. Then you just iterate
+    over the destination image, apply this inverse transformation and
+    find which source pixel to copy there.
+
+    A much nicer way comes from the observation that the rotation
+    matrix:
+
+        R(T) = { { cos(T), -sin(T) }, { sin(T), cos(T) } }
+
+    is formed my multiplying three matrices, namely:
+
+        R(T) = M1(T) * M2(T) * M3(T)
+
+    where
+
+        M1(T) = { { 1, -tan(T/2) },
+                  { 0, 1         } }
+        M2(T) = { { 1,      0    },
+                  { sin(T), 1    } }
+        M3(T) = { { 1, -tan(T/2) },
+                  { 0,         1 } }
+
+    Each transformation can be performed in a separate pass, and
+    because these transformations are either row-preserving or
+    column-preserving, anti-aliasing is quite easy.
+
+    Reference:
+
+    Paeth, A. W., "A Fast Algorithm for General Raster Rotation",
+    Proceedings Graphics Interface '89, Canadian Information
+    Processing Society, 1986, 77-81
+    [Note - e-mail copies of this paper are no longer available]
+
+    [Gems I]
+
+
+----------------------------------------------------------------------
+
+Subject: 11) How do I display a 24 bit image in 8 bits?
+
+    [Gems I] pp. 287-293, "A Simple Method for Color Quantization:
+    Octree Quantization"
+
+    B. Kurz.  Optimal Color Quantization for Color Displays.
+    Proceedings of the IEEE Conference on Computer Vision and Pattern
+    Recognition, 1983, pp. 217-224.
+
+    [Gems II] pp. 116-125, "Efficient Inverse Color Map Computation"
+
+        This describes an efficient technique to
+        map actual colors to a reduced color map,
+        selected by some other technique described
+        in the other papers.
+
+    [Gems II] pp. 126-133, "Efficient Statistical Computations for
+    Optimal Color Quantization"
+
+    Xiaolin Wu.  Color Quantization by Dynamic Programming and
+    Principal Analysis.  ACM Transactions on Graphics, Vol. 11, No. 4,
+    October 1992, pp 348-372.
+
+
+----------------------------------------------------------------------
+
+Subject: 12) How do I fill the area of an arbitrary shape?
+
+
+    "A Fast Algorithm for the Restoration of Images Based on Chain
+        Codes Description and Its Applications", L.W. Chang & K.L. Leu,
+        Computer Vision, Graphics, and Image Processing, vol.50,
+        pp296-307 (1990)
+
+    "An Introductory Course in Computer Graphics" by Richard Kingslake,
+        (2nd edition) published by Chartwell-Bratt ISBN 0-86238-284-X
+
+    [Gems I]
+    [Foley]
+    [Hearn]
+
+
+----------------------------------------------------------------------
+
+Subject: 13) How do I find the 'edges' in a bitmap?
+
+    A simple method is to put the bitmap through the filter:
+
+        -1    -1    -1
+        -1     8    -1
+        -1    -1    -1
+
+    This will highlight changes in contrast.  Then any part of the
+    picture where the absolute filtered value is higher than some
+    threshold is an "edge".
+
+
+----------------------------------------------------------------------
+
+Subject: 14) How do I enlarge/sharpen/fuzz a bitmap?
+
+
+----------------------------------------------------------------------
+
+Subject: 15) How do I map a texture on to a shape?
+
+    Paul S. Heckbert, "Survey of Texture Mapping", IEEE Computer
+    Graphics and Applications V6, #11, Nov. 1986, pp 56-67 revised
+    from Graphics Interface '86 version
+
+    Eric A. Bier and Kenneth R. Sloan, Jr., "Two-Part Texture
+    Mappings", IEEE Computer Graphics and Applications V6 #9, Sept.
+    1986, pp 40-53 (projection parameterizations)
+
+
+----------------------------------------------------------------------
+
+Subject: 16) How do I find the area/orientation of a polygon?
+
+    Compute the signed area.  The orientation is counter-clockwise if
+    this area is positive.  There's a Gem on computing signed areas.
+
+    A slightly faster method is based on the observation that it isn't
+    necessary to compute the area.  One can find the lowest, rightmost
+    point of the polygon, and then take the cross product of the edges
+    fore and aft of it.  Both methods are O(n) for n vertices, but it
+    does seem a waste to add up the total area when a single cross
+    product (of just the right edges) suffices.
+
+    The reason that the lowest, rightmost point works is that the
+    internal angle at this vertex is necessarily convex, strictly less
+    than pi (even if there are several equally-lowest points).
+
+    The key formula is this:
+
+        If the coordinates of vertex v_i are x_i and y_i,
+        twice the area of a polygon is given by
+
+        2 A( P ) = sum_{i=0}^{n-1} (x_i y_{i+1} - y_i x_{i+1}).
+
+    Reference:
+
+    [O' Rourke] pp. 18-27.
+
+
+----------------------------------------------------------------------
+
+Subject: 17) How do I find if a point lies within a polygon?
+
+    A quick comment - the code in the Sedgewick book Algorithms is
+    wrong.
+
+    The short answer, for the FAQ, could be:
+
+    int pnpoly(int npol, float *xp, float *yp, float x, float y)
+    {
+      int i, j, c = 0;
+      for (i = 0, j = npol-1; i < npol; j = i++) {
+        if ((((yp[i]<=y) && (y<yp[j])) ||
+             ((yp[j]<=y) && (y<yp[i]))) &&
+            (x < (xp[j] - xp[i]) * (y - yp[i]) / (yp[j] - yp[i]) + xp[i]))
+          c = !c;
+      }
+      return c;
+    }
+
+    This code is from Wm. Randolph Franklin, wrf@ecse.rpi.edu, a
+    professor at RPI, with some minor modifications for speed by me.
+    A good reference for this problem will be:
+
+    References:
+
+    [O'Rourke] pp. 233-238
+    [Gems IV]  pp. 23-45
+    [Glassner:RayTracing]
+
+
+----------------------------------------------------------------------
+
+Subject: 18) How do I find the intersection of two convex polygons?
+
+    [O'Rourke] pp. 242-252
+
+
+----------------------------------------------------------------------
+
+Subject: 19) How do I detect a 'corner' in a collection of points?
+
+    For the general solution to the problem get Ata Etemadi's software
+    package and associated  papers from one of the addresses below.
+    It's very fast and detects polygons too.
+
+    ftp://peipa.essex.ac.uk/ipa/src/process
+    ftp://ftp.teleos.com/VISION-LIST-ARCHIVE/SHAREWARE
+
+
+----------------------------------------------------------------------
+
+Subject: 20) How do I generate a circle through three points?
+
+    Let the three given points be a, b, c.  Use _0 and _1 to represent
+    x and y coordinates. The coordinates of the center p=(p_0,p_1) of
+    the circle determined by a, b, and c are:
+
+            p_0 =
+                    ( b_1 a_0^2
+                    - c_1 a_0^2
+                    - b_1^2 a_1
+                    + c_1^2 a_1
+                    + b_0^2 c_1
+                    + a_1^2 b_1
+                    + c_0^2 a_1
+                    - c_1^2 b_1
+                    - c_0^2 b_1
+                    - b_0^2 a_1
+                    + b_1^2 c_1
+                    - a_1^2 c_1 )
+                / D
+
+            p_1 =
+                    ( a_0^2 c_0
+                    + a_1^2 c_0
+                    + b_0^2 a_0
+                    - b_0^2 c_0
+                    + b_1^2 a_0
+                    - b_1^2 c_0
+                    - a_0^2 b_0
+                    - a_1^2 b_0
+                    - c_0^2 a_0
+                    + c_0^2 b_0
+                    - c_1^2 a_0
+                    + c_1^2 b_0)
+                / D
+
+    where
+
+            D = 2( a_1 c_0 + b_1 a_0 - b_1 c_0 -a_1 b_0 -c_1 a_0 + c_1 b_0 )
+
+    The radius of the circle is then:
+
+            r^2 = (a_0 - p_0)^2 + (a_1 - p_1)^2
+
+    Reference:
+
+    [O' Rourke] p. 201
+
+
+----------------------------------------------------------------------
+
+Subject: 21) How do I generate a bezier curve that is parallel to another bezier?
+
+    You can't.  The only case where this is possible is when the
+    bezier can be represented by a straight line.  And then the
+    parallel 'bezier' can also be represented by a straight line.
+
+
+----------------------------------------------------------------------
+
+Subject: 22) How do I split a bezier at a specific value for t?
+
+    A Bezier curve is a parametric polynomial function from the
+    interval [0..1] to a space, usually 2-D or 3-D.  Common Bezier
+    curves use cubic polynomials, so have the form
+
+        f(t) = a3 t^3 + a2 t^2 + a1 t + a0,
+
+    where the coefficients are points in 3-D. Blossoming converts this
+    polynomial to a more helpful form.  Let s = 1-t, and think of
+    tri-linear interpolation:
+
+        F([s0,t0],[s1,t1],[s2,t2]) =
+            s0(s1(s2 c30 + t2 c21) + t1(s2 c21 + t2 c12)) +
+            t0(s1(s2 c21 + t2 c12) + t1(s2 c12 + t2 c03))
+            =
+            c30(s0 s1 s2) +
+            c21(s0 s1 t2 + s0 t1 s2 + t0 s1 s2) +
+            c12(s0 t1 t2 + t0 s1 t2 + t0 t1 s2) +
+            c03(t0 t1 t2).
+
+    The data points c30, c21, c12, and c03 have been used in such a
+    way as to make the resulting function give the same value if any
+    two arguments, say [s0,t0] and [s2,t2], are swapped. When [1-t,t]
+    is used for all three arguments, the result is the cubic Bezier
+    curve with those data points controlling it:
+
+          f(t) = F([1-t,t],[1-t,t],[1-t,t])
+               =  (1-t)^3 c30 +
+                 3(1-t)^2 t c21 +
+                 3(1-t) t^2 c12 +
+                 t^3 c03.
+
+    Notice that
+           F([1,0],[1,0],[1,0]) = c30,
+           F([1,0],[1,0],[0,1]) = c21,
+           F([1,0],[0,1],[0,1]) = c12, _
+           F([0,1],[0,1],[0,1]) = c03.
+
+    In other words, cij is obtained by giving F argument t's i of
+    which are 0 and j of which are 1. Since F is a linear polynomial
+    in each argument, we can find f(t) using a series of simple steps.
+    Begin with
+
+        f000 = c30, f001 = c21, f011 = c12, f111 = c03.
+
+    Then compute in succession:
+
+        f00t = s f000 + t f001, f01t = s f001 + t f011,
+        f11t = s f011 + t f111,
+        f0tt = s f00t + t f01t, f1tt = s f01t + t f11t,
+        fttt = s f0tt + t f1tt.
+
+    This is the de Casteljau algorithm for computing f(t) = fttt.
+
+    It also has split the curve for the intervals [0..t] and [t..1].
+    The control points for the first interval are f000, f00t, f0tt,
+    fttt, while those for the second interval are fttt, f1tt, f11t,
+    f111.
+
+    If you evaluate 3 F([1-t,t],[1-t,t],[-1,1]) you will get the
+    derivate of f at t. Similarly, 2*3 F([1-t,t],[-1,1],[-1,1]) gives
+    the second derivative of f at t, and finally using 1*2*3
+    F([-1,1],[-1,1],[-1,1]) gives the third derivative.
+
+    This procedure is easily generalized to different degrees,
+    triangular patches, and B-spline curves.
+
+
+----------------------------------------------------------------------
+
+Subject: 23) How do I find a t value at a specific point on a bezier?
+
+    In general, you'll need to find t closest to your search point.
+    There are a number of ways you can do this. Look at [Gems I, 607],
+    there's a chapter on finding the nearest point on the bezier
+    curve.  In my experience, digitizing the bezier curve is an
+    acceptable method. You can also try recursively subdividing the
+    curve, see if you point is in the convex hull of the control
+    points, and checking is the control points are close enough to a
+    linear line segment and find the nearest point on the line
+    segment, using linear interpolation and keeping track of the
+    subdivision level, you'll be able to find t.
+
+
+----------------------------------------------------------------------
+
+Subject: 24) How do I fit a bezier curve to a circle?
+
+    Interestingly enough, bezier curves can approximate a circle but
+    not perfectly fit a circle.
+
+    Michael Goldapp, "Approximation of circular arcs by cubic
+    polynomials" Computer Aided Geometric Design (#8 1991 pp.227-238)
+
+    Tor Dokken and Morten Daehlen, "Good Approximations of circles by
+    curvature-continuous Bezier curves" Computer Aided Geometric
+    Design (#7 1990 pp. 33-41).
+
+
+----------------------------------------------------------------------
+
+Subject: 25) What is ARCBALL?
+
+    Arcball is a general purpose 3-D rotation controller described by
+    Ken Shoemake in the Graphics Interface '92 Proceedings.  It
+    features good behavior, easy implementation, cheap execution, and
+    optional axis constraints. A Macintosh demo and electronic version
+    of the original paper (Microsoft Word format) may be obtained from
+    ftp::/ftp.cis.upenn.edu/pub/graphics.
+
+
+----------------------------------------------------------------------
+
+Subject: 26) Where can I find ARCBALL source?
+
+    Complete source code appears in Graphics Gems IV pp. 175-192. A
+    fairly complete sketch of the code appeared in the original
+    article, in Graphics Interface 92 Proceedings, available from
+    Morgan Kaufmann.
+
+
+----------------------------------------------------------------------
+
+Subject: 27) How do I clip a polygon against a rectangle?
+
+    This is the Sutherland-Hodgman algorithm, an old favorite that
+    should be covered in any textbook. Any of the references listed in
+    the FAQ should have it.  According to Vatti (q.v.)  "This
+    [algorithm] produces degenerate edges in certain concave / self
+    intersecting polygons that need to be removed as a special
+    extension to the main algorithm" (though this is not a problem if
+    all you are doing with the results is scan converting them.)
+
+
+----------------------------------------------------------------------
+
+Subject: 28) How do I clip a polygon against another polygon?
+
+    People interested in some alpha state code, written in C++ with
+    templates (for example: g++) can contact Klamer Schutte,
+    klamer@mi.el.utwente.nl.  Or with Mosaic, at
+    http://ph.tn.tudelft.nl:2000/People/klamer/Klamer.html#clippoly.
+    Also from ftp://galaxy.ph.tn.tudelft.nl/pub/klamer/clippoly.tar.gz
+
+
+----------------------------------------------------------------------
+
+Subject: 29) Where can I get source for Weiler/Atherton clipping?
+
+
+----------------------------------------------------------------------
+
+Subject: 30) How do I generate a spline to approximate (insert curve here)?
+
+
+----------------------------------------------------------------------
+
+Subject: 31) Where do I get source to display (raster font format)?
+
+
+----------------------------------------------------------------------
+
+Subject: 32) What is morphing/how is it done?
+
+
+----------------------------------------------------------------------
+
+Subject: 33)How do I draw an anti-aliased line/polygon/ellipse?
+
+
+----------------------------------------------------------------------
+
+Subject: 34) How do I determine the intersection between a ray and a polygon
+
+    First find the intersection between the ray and the plane in which
+    the polygon is situated. Then see if the point of intersection is
+    in the polygon.
+
+    Reference:
+
+    [Glassner:RayTracing]
+
+
+----------------------------------------------------------------------
+
+Subject: 35) How do I determine the intersection between a ray and a sphere
+
+    Given a ray defined as:
+
+        x = x1 + (x2 - x1)*t = x1 + i*t
+        y = y1 + (y2 - y1)*t = y1 + j*t
+        z = z1 + (z2 - z1)*t = z1 + k*t
+
+    and a sphere defined as:
+
+        (x - l)**2 + (y - m)**2 + (z - n)**2 = r**2
+
+    Substituting in gives the quadratic equation:
+
+        a*t**2 + b*t + c = 0
+
+    where:
+
+        a = i**2 + j**2 + k**2
+        b = 2*i*(x1 - l) + 2*j*(y1 - m) + 2*k*(x1 - n)
+        c = l**2 + m**2 + n**2 + x1**2 + y1**2 + z1**2
+            - 2*(l*x1 + m*y1 + n*z1) - r**2
+
+    If the determinant of this equation is less than 0, the line does
+    not intersect the sphere. If it is zero, the line is tangential to
+    the sphere and if it is greater than zero it intersects at two
+    points. Solving the equation and substituting the values of t into
+    the ray equation will give you the points.
+
+    Reference:
+
+    [Glassner:RayTracing]
+
+
+----------------------------------------------------------------------
+
+Subject: 36) How do I determine the intersection between a ray and a bezier
+             surface?
+
+    Joy I.K. and Bhetanabhotla M.N., "Ray tracing parametric surfaces
+    utilizing numeric techniques and ray coherence", Computer
+    Graphics, 16, 1986, 279-286
+
+    Joy and Bhetanabhotla is only one approach of three major method
+    classes: tessellation, direct computation, and a hybrid of the
+    two.  Tessellation is relatively easy (you intersect the polygons
+    making up the tessellation) and has no numerical problems, but can
+    be inaccurate; direct is cheap on memory, but very expensive
+    computationally, and can (and usually does) suffer from precision
+    problems within the root solver; hybrids try to blend the two.
+
+    Reference:
+
+    [Glassner:RayTracing]
+
+
+----------------------------------------------------------------------
+
+Subject: 37) How do I ray trace caustics?
+
+    There is a discussion in [Watt:Animation], but I don't know how
+    good it is.
+
+    It's hard to get right.
+
+    One right (but incredibly expensive) answer is:
+
+    @InProceedings{mitchell-1992-illumination,
+      author         = "Don P. Mitchell and Pat Hanrahan",
+      title          = "Illumination From Curved Reflectors",
+      year           = "1992",
+      month          = "July",
+      volume         = "26",
+      booktitle      = "Computer Graphics (SIGGRAPH '92 Proceedings)",
+      pages          = "283--291",
+      keywords       = "caustics, interval arithmetic, ray tracing",
+      editor         = "Edwin E. Catmull",
+    }
+
+    A cheat:
+
+    @Article{inakage-1986-caustics,
+      author         = "Masa Inakage",
+      title          = "Caustics and Specular Reflection Models for
+                        Spherical Objects and Lenses ",
+      pages          = "379--383",
+      journal        = "The Visual Computer",
+      volume         = "2",
+      number         = "6",
+      year           = "1986",
+      keywords       = "ray tracing effects",
+    }
+
+    very specialized:
+
+    @Article{yuan-1988-gemstone,
+      author         = "Ying Yuan and Tosiyasu L. Kunii and Naota
+                        Inamato and Lining Sun ",
+      title          = "Gemstone Fire: Adaptive Dispersive Ray Tracing
+                        of Polyhedrons ",
+      year           = "1988",
+      month          = "November",
+      journal        = "The Visual Computer",
+      volume         = "4",
+      number         = "5",
+      pages          = "259--70",
+      keywords       = "caustics",
+    }
+
+
+----------------------------------------------------------------------
+
+Subject: 38) How do I quickly draw a filled triangle?
+
+    The easiest way is to render each line separately into an edge
+    buffer. This buffer is a structure which looks like this (in C):
+
+        struct { int xmin, xmax; } edgebuffer[YDIM];
+
+    There is one entry for each scan line on the screen, and each
+    entry is to be interpreted as a horizontal line to be drawn from
+    xmin to xmax.
+
+    Since most people who ask this question are trying to write fast
+    games on the PC, I'll tell you where to find code.  Look at:
+
+        ftp::/ftp.uwp.edu/pub/msdos/demos/programming/source
+
+
+----------------------------------------------------------------------
+
+Subject: 39) Where can I get source for Voronoi/Delaunay triangulation?
+
+    Source code in C for general dimension convex hull and Delaunay
+    triangulation (qhull) is now available from:
+ 
+        ftp://geom.umn.edu/pub/software/qhull.tar.Z
+        ftp://geom.umn.edu/pub/software/qhull.sit.hqx for Macintosh
+ 
+    You can view the results in 3-d and 4-d with geomview from:
+ 
+    ftp::/geom.umn.edu:/pub/software/geomview/geomview-sgi.tar.Z  - Iris
+    ftp::/geom.umn.edu:/pub/software/geomview/geomview-next.tar.Z - Next
+
+    Convex hull is an easy way to build convex polytopes (just list
+    the vertices).  The algorithm also produces approximate convex
+    hulls.  For example, we have produced the approximate convex hull
+    of 12,000 points in R^6, randomly distributed in the unit cube.
+
+    The distribution includes .ps files for:
+
+        Barber, C.B., Dobkin, D.P., and Huhdanpaa, H., "The Quickhull
+        Algorithm for Convex Hull," Technical Report GCG53, The
+        Geometry Center, Univ. of Minnesota, July 1993.
+
+    References:
+
+    [O' Rourke] pp. 168-204
+    Three-dimensional convex hull C code in Chapter 4 (p.130-60).
+
+
+----------------------------------------------------------------------
+
+Subject: 40) Where do I get source for convex hull?
+
+    See the previous question on Delaunay triangulation.  The two are
+    the same because the Delaunay triangulation of a set of points is
+    the convex hull of the points lifted to a paraboloid.
+
+    References:
+    [O' Rourke] pp. 70-112
+    C code for Graham's algorithm on p.80-96.
+    Three-dimensional convex hull discussed in Chapter 4 (p.113-67).
+    C code for the incremental algorithm on p.130-60.
+
+
+----------------------------------------------------------------------
+
+Subject: 41) What is the marching cubes algorithm?
+
+    The marching cubes algorithm is used in volume rendering to
+    construct an isosurface from a 3D field of values.
+ 
+    The 2D analog would be to take an image, and for each pixel, set
+    it to black if the value is below some threshold, and set it to
+    white if it's above the threshold.  Then smooth the jagged black
+    outlines by skinning them with lines.
+ 
+    The marching cubes algorithm tests the corner of each cube (or
+    voxel) in the scalar field as being either above or below a given
+    threshold.  This yields a collection of boxes with classified
+    corners.  Since there are eight corners with one of two states,
+    there are 256 different possible combinations for each cube.
+    Then, for each cube, you replace the cube with a surface that
+    meets the classification of the cube.  For example, the following
+    are some 2D examples showing the cubes and their associated
+    surface.
+ 
+        - ----- +       - ----- -       - ----- +       - ----- +
+        |:::'   |       |:::::::|       |::::   |       |   ':::|
+        |:'     |       |:::::::|       |::::   |       |.    ':|
+        |       |       |       |       |::::   |       |::.    |
+        + ----- +       + ----- +       - ----- +       + ----- -
+ 
+    The result of the marching cubes algorithm is a smooth surface
+    that approximates the isosurface that is constant along a given
+    threshold. This is useful for displaying a volume of oil in a
+    geological volume, for example.
+
+
+----------------------------------------------------------------------
+
+Subject: 42) What is the status of the patent on the "marching cubes" algorithm?
+
+
+----------------------------------------------------------------------
+
+Subject: 43) How do I do a hidden surface test (backface culling) with 3d points?
+
+    Just define all points of all polygons in clockwise order.
+
+            c = (x3*((z1*y2)-(y1*z2))+
+                (y3*((x1*z2)-(z1*x2))+
+                (z3*((y1*x2)-(x1*y2))+
+
+    x1,y1,z1, x2,y2,z2, x3,y3,z3 = the first three points of the
+    polygon.
+
+    If c is positive the polygon is visible. If c is negative the
+    polygon is invisible (or the other way).
+
+
+----------------------------------------------------------------------
+
+Subject: 44) How do I do a hidden surface test (backface culling) with 2d points?
+
+    c = (x1-x2)*(y3-y2)-(y1-y2)*(x3-x2)
+
+    x1,y1, x2,y2, x3,y3 = the first three points of the polygon.
+
+    If c is positive the polygon is visible. If c is negative the
+    polygon is invisible (or the other way).
+
+
+----------------------------------------------------------------------
+
+Subject: 45) Where can I find graph layout algorithms?
+
+    See the paper by Eades and Tamassia, "Algorithms for Drawing
+    Graphs: An Annotated Bibliography," Tech Rep CS-89-09, Dept.  of
+    CS, Brown Univ, Feb. 1989.
+
+    A revised version of the annotated bibliography on graph drawing
+    algorithms by Giuseppe Di Battista, Peter Eades, and Roberto
+    Tamassia is now available from
+ 
+    ftp://wilma.cs.brown.edu/pub/papers/compgeo/gdbiblio.tex.Z and
+    ftp://wilma.cs.brown.edu/pub/papers/compgeo/gdbiblio.ps.Z
+
+
+----------------------------------------------------------------------
+
+Subject: 46) Where can I find algorithms for 2D collision detection?
+
+
+----------------------------------------------------------------------
+
+Subject: 47) Where can I find algorithms for 3D collision detection?
+
+    Check out "proxima", from Purdue, which is a C++ library for 3D
+    collision detection for arbitrary polyhedra.  It's a nice system;
+    the algorithms are sophisticated, but the code is of modest size.
+
+    There's a copy in ftp://shasta.stanford.edu/pub/nagle/proxima; it
+    may not be the latest version.
+
+
+----------------------------------------------------------------------
+
+Subject: 48) 3D Noise functions and turbulence in Solid texturing.
+
+    See:
+        ftp://gondwana.ecr.mu.oz.au/pub/siggraph92_C23.shar
+        ftp://ftp.cis.ohio-state.edu/siggraph92/siggraph92_C23.shar
+
+    In it there are implementations of Perlin's noise and turbulence
+    functions, (By the man himself) as well as Lewis' sparse
+    convolution noise function (by D. Peachey) There is also some of
+    other stuff in there (Musgrave's Earth texture functions, and some
+    stuff on animating gases by Ebert).
+
+
+----------------------------------------------------------------------
+
+Subject: 49) How do I perform basic viewing in 3d?
+
+    We describe the shape and position of objects using numbers,
+    usually (x,y,z) coordinates. For example, the corners of a cube
+    might be {(0,0,0), (1,0,0), (1,1,0), (0,1,0), (0,0,1), (1,0,1),
+    (1,1,1), (0,1,1)}. A deep understanding of what we are saying with
+    these numbers requires mathematical study, but I will try to keep
+    this simple. At the least, we must understand that we have
+    designated some point in space as the origin--coordinates
+    (0,0,0)--and marked off lines in 3 mutually perpendicular
+    directions using equally spaced units to give us (x,y,z) values.
+    It might be helpful to know if we are using 1 to mean 1 foot, 1
+    meter, or 1 parsec; the numbers alone do not tell us.
+ 
+    A picture on a screen is two steps removed from the 3D world it
+    depicts. First, it is a 2D projection; and second, it is a finite
+    resolution approximation to the infinitely precise projection. I
+    will ignore the approximation (sampling) for now. To know what the
+    projection looks like, we need to know where our viewpoint is, and
+    where the plane of the projection is, both in the 3D world. Think
+    of it as looking out a window into a scene. As artists discovered
+    some 500 years ago, each point in the world appears to be at a
+    point on the window. If you move your head or look out a different
+    window, everything changes. When the mathematicians understood
+    what the artists were doing, they invented perspective geometry.
+ 
+    If your viewpoint is at the origin--(0,0,0)--and the window sits
+    parallel to the x-y plane but at z=1, projection is no more than
+    (x,y,z) in the world appears at (x/z,y/z,1) on the plane. Distant
+    points will have large z values, causing them to shrink in the
+    picture. That's perspective.
+ 
+    The trick is to take an arbitrary viewpoint and plane, and
+    transform the world so we have the simple viewing situation.
+    There are two steps: move the viewpoint to the origin, then move
+    the viewplane to the z=1 plane. If the viewpoint is at (vx,vy,vz),
+    transform every point by the translation (x,y,z) -->
+    (x-vx,y-vy,z-vz). This includes the viewpoint and the viewplane.
+    Now we need to rotate so that the z axis points straight at the
+    viewplane, then scale so it is 1 unit away.
+ 
+    After all this, we may find ourselves looking out upside- down. It
+    is traditional to specify some direction in the world or viewplane
+    as "up", and rotate so the positive y axis points that way (as
+    nearly as possible if it's a world vector). Finally, we have acted
+    so far as if the window was the entire plane instead of a limited
+    portal. A final shift and scale transforms coordinates in the
+    plane to coordinates on the screen, so that a rectangular region
+    of interest (our "window") in the plane fills a rectangular region
+    of the screen (our "canvas" if you like).
+ 
+    I have left out details of how you define and perform the rotation
+    of the viewplane, but I'm sure someone else will be happy to
+    supply those if there is demand. It requires knowing how to
+    describe a plane, and how to rotate vectors to line up. Neither is
+    difficult, but this is already using a lot of net space. One
+    further practical difficulty is the need to clip away parts of the
+    world behind us, so -(x,y,z) doesn't pop up at (x/z,y/z,1).
+    (Notice the mathematics of projection alone would allow that!) But
+    all the viewing transformations can be done using translation,
+    rotation, scale, and a final perspective divide. If a 4x4
+    homogeneous matrix is used, it can represent everything needed,
+    which saves a lot of work.
+
+
+----------------------------------------------------------------------
+
+Subject: 50) How can you contribute to this FAQ?
+
+    Send email to jdstone@ingr.com with your suggestions, possible
+    topics, corrections, or pointers to information.  Remember, I am
+    not an expert on many of these topics.  I'm the editor.
+
+    Here are some possible topics that may interest many of our
+    readers.
+
+    Clipping...
+    Splines
+    Nurbs
+    Image Warping/Transformation/Filtering
+    Anti-aliasing
+    Volume Rendering
+    Morphing (synonymous with generalized Warping)
+    MPEG
+    JPEG
+    Z-buffer/A-buffer/etc.
+    interpolation (linear, spline, fft, etc.)
+    Modeling tricks  (fractal mountains, trees, seashells)
+
+    Surfaces
+    Ray Tracing
+    Reflection/Refraction
+
+    1) Computing the minimum bounding boxes of various geometric
+       elements such as circular arcs, parabolas, clothoids, splines,
+       etc.  What is the most efficient way to do them for the
+       following cases:
+
+        i)  The boxes are all orthogonal to the XY plane;
+        ii) The boxes is oriented such that the smallest area
+            rectangular bounding boxes are computed.
+
+    2) What is the most efficient way to tell if a polygon crosses
+       itself?  i.e. without intersecting every edge with every edge.
+
+----------------------------------------------------------------------
+
+Subject: 51) Contributors.  Who made this all possible.
+
+    andrewfg@aifh.ed.ac.uk (Andrew Fitzgibbon)
+    atae@spva.ph.ic.ac.uk (Ata Etemadi)
+    atsao@tkk.win.net (Anson Tsao)
+    barber@geom.umn.edu (Brad Barber)
+    bromage@mundil.cs.mu.OZ.AU (Andrew James Bromage)
+    cek@Princeton.EDU (Craig Kolb)
+    fritz@riverside.MR.Net (Fritz Lott)
+    hollasch@kgc.com (Steve Hollasch)
+    jens_alfke@powertalk.apple.com (Jens Alfke)
+    karsten@addx.stgt.sub.org (Karsten Weiss)
+    lhf@visgraf.impa.br (Luiz Henrique de Figueiredo)
+    orourke@cs.smith.edu (Joseph O'Rourke)
+    paik@mlo.dec.com (Samuel S. Paik)
+    sammy@icarus.smds.com (Samuel Murphy)
+    sanguish@digifix.com (Scott Anguish)
+    shoemake@graphics.cis.upenn.edu (Ken Shoemake)
+    slin@esri.com (Sum Lin)
+    spl@szechuan.ucsd.edu (Steve Lamont)
+    weilej@rpi.edu (Jason Weiler)
+
+
+$Id: algorithms,v 1.14 1994/09/29 00:54:31 jdstone Exp $
+
+-- 
+----------------------------------------------------------------------
+Jon Stone                             Intergraph Corporation
+jdstone@ingr.com                      Boulder, CO
+----------------------------------------------------------------------
+

@@ -1,0 +1,85 @@
+From arenberg@csed-pyramid.UUCP Thu Oct 20 14:24:30 1988
+Subject: Re: Ray/Triangle Intersection with Barycentric Coordinates
+Date: 20 Oct 88 18:24:30 GMT
+References: <2925@utah-gr.UUCP>
+Posted: Thu Oct 20 11:24:30 1988
+
+
+Ok, here is how I handle this calculation in my ray tracing program.  I
+think it is quite effecient.
+
+Let a triangle be represented in the following manner :
+
+..   |\
+..   |  \
+..p1 |    \
+..   |      \
+  O ------------>  |________\
+       p0              p2
+
+where p0 is the vector from the origin to one vertex and p1, p2 are the
+vectors from the first vertex to the other two vertices.
+
+Let N =   p1 X p2  be the normal to the triangle. 
+          -------
+.| p1 X p2 |
+
+Construct the matrices
+
+    b =  |  p1  | ,  bb = inv(b) = | bb[0] |
+. |  p2  |                  | bb[1] |
+. |  N   |                  | bb[2] |
+
+and store away bb.
+
+Let the intersecting ray be parameterizes as
+
+    r = t * D + P
+
+Now you can quickly intersect the ray with the triangle using the following
+psuedo code. ( . means vector dot product)
+
+    Den = D . bb[2]
+    if (Den == 0) then ray parallel to triangle plane, so return
+    
+    Num = (p0 - P) . bb[2]
+
+    t = Num / Den
+    if (t <= 0) then on or behind triangle, so return
+    
+    p = t * D + P - p0
+
+    a = p . bb[0]
+    b = p . bb[1]
+    
+    if (a < 0.0 || b < 0.0 || a + b > 1.0) then not in triangle and return
+
+    b1 = 1 - a - b     /* barycentric coordinates */
+    b2 = a
+    b3 = b
+
+
+The idea here is that the matrix bb transforms to a coordinate frame where
+the sides of the triangle form the X,Y axes and the normal the Z axis
+of the frame and the sides have been scaled to unit length.  The variable Den
+represents the dZ component of the ray in this frame.  If dZ is zero, then
+the ray must be parallel to the X,Y plane.  Num is the Z location of
+the ray origin in the new frame and t is simply the parameter in both
+frames required to intersect the ray with the triangle's plane.  Once t is
+known, the intersection point is found in the original frame, saved for
+latter use, and the X,Y coordinates of this point are found in the
+triangle's frame.  A simple comparison is then made to determine if the
+point is inside the triangle.  The barycenter coordinates are also easily
+found.
+
+I haven't seen this algorithm in any of the literature, but then I haven't
+really looked either.  If anyone knows if this approach has been published
+before, I'd really like to know about it.
+
+Jeff Arenberg
+-------------------------------------------------------------
+UUCP : ( ucbvax, ihnp4, uscvax ) !trwrb!csed-pyramid!arenberg
+GEnie: shifty
+-------------------------------------------------------------
+
+

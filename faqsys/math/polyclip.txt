@@ -1,0 +1,171 @@
+Last modified: 12/28/97
+
+You are the [Image] visitor.
+
+This article is an extension to the Clipping Lines page.
+
+Go back to the 3D Basics page.
+
+Author: Patrick Reilly: reillyp@gte.net
+
+----------------------------------------------------------------------------
+
+                              Clipping Polygons
+
+----------------------------------------------------------------------------
+
+Line clipping is all you need if you are doing transparent wire-frame
+modelling, but most 3D applications will be modelling 3D polygons. Polygon
+clipping is somewhat of a natural extension from line clipping, because
+polygons are defined as a set of line segments that make up the edges of the
+polygons, and clipping a polygon against the Z=1, X=Z, X=-Z, Y=Z, and Y=-Z
+clipping planes will involve clipping the polygon edges to the clipping
+planes.
+
+I assume here that for a polygon P I can get P.numVerts = number of vertices
+in P, and for i = 0..P.NumVerts-1 I can get P.Vert[i] = the i'th vertex of
+P. The edges (line segments) of P are from P.Vert[0]..P.Vert[1],
+P.Vert[1]..P.Vert[2], ..., P.Vert[P.NumVerts-2]..P.Vert[P.NumVerts-1], and
+P.Vert[P.NumVerts-1] to P.Vert[0]. IOW the vertices are listed either
+clock-wise or counter-clockwise around the poly edges, and the poly is
+implied to be closed.
+
+Also note the following on how we will treat a polygon:
+
+   * If P.NumVerts == 0 then the poly has no edges, no area, etc (ignore
+     it).
+   * If P.NumVerts == 1 then the poly has 1 edge of 0 length (ie a point -
+     probably ignore it).
+   * If P.NumVerts == 2 then the poly has 2 edges that lie on top of each
+     other (poly has no area - probably ignore it)
+   * If P.NumVerts >= 3 then the poly probably has an area (unless the 3+
+     vertices are colinear), and should be handled.
+
+Usually in 3D graphics you consider a polygon to be invisible if it has no
+visible area. This is the equivalent of viewing the poly "edgewise", and the
+poly is considered to have zero width.
+
+As you might expect, drawing the polygon will, at a minimum, involve
+transforming it from world-space to clip-space, clipping it, and then (if
+any of it is visible) drawing whatever is left over. Transforming the
+polygon from world-space to clip-space just involves transforming each of
+its vertices.
+
+The next step is to clip the poly to the Z=1, X=Z, X=-Z, Y=Z, and Y=-Z
+clipping planes. How is that done? Let's take it one plane at a time.
+
+Consider the Z=1 clipping plane. As the line-clipping page showed this can
+result in, at most, one new vertex (actually, in line clipping we replaced
+one of the vertices with the point where the line intersects the plane). But
+unlike line-clipping, we cannot just replace vertices as we find a line
+segment that crosses a clipping plane, as the following diagram shows:
+
+[Image] diagram 1.1
+
+Here, we started with the line segment from p1 to p2. It crossed the Z=1
+plane, so the line-clip algorithm replaced p2 with p2'. But now we end up
+checking a line segment from p2' to p3, when we wanted to check from p2 to
+p3! We have changed the characteristics of the polygon!
+
+What we would instead like to do is:
+
+   * Check p1. It is visible, so add it to the output list of vertices.
+   * Check p1 to p2. It crosses the Z=1 plane, so find the intersect point
+     (p2') and add that to the output list (p2 was not visible, so do not
+     add it to the output list).
+   * Check p2 to p3. It crosses the Z=1 plane, so find the intersect point
+     and add that to the output list. p3 was visible, so also add it to the
+     output list.
+   * Continue for the rest of the vertices in the polygon.
+
+This will yield a diagram like this instead:
+
+[Image] diagram 1.2
+
+Now our output polygon has the edges:
+
+   * p1..p2'
+   * p2'..p2''
+   * p2''..p3
+   * p3..
+
+We have shortened two edges (p1..p2 and p2..p3), and introduced a new edge
+(p2'..p2''). From a vertex point of view we have added one new vertex; we
+originally had a 5-sided (and 5-vertex) poly, and now we have a 6-sided (and
+6-vertex) poly. You should also note that, if the polygon is convex
+("inside" angle between any two adjacent edges is <= 180 degrees) then
+clipping the polygon against a plane will yield at most one additional
+vertex. Conceptually, clipping the polygon will entail:
+
+   * Let P = poly to clip, P1 = an output poly, P2 = an output poly
+   * Clip P to the Z=1 plane (ie "near" plane), storing the output vertices
+     in P1. Note that P1.NumVerts can be as large as P.NumVerts+1. If
+     P1.NumVerts < 3 then consider the whole polygon clipped.
+   * Clip P1 to the X=-Z (ie "left" plane), storing the output vertices in
+     P2. P2.NumVerts can be as large as P.NumVerts+2. If P2.NumVerts < 3,
+     consider the polygon clipped.
+   * Clip P2 to the X=Z (ie "right" plane), storing the output vertices in
+     P1. P1.NumVerts can be as large as P.NumVerts+3. If P1.NumVerts < 3,
+     consider the poly clipped.
+   * Clip P1 to the Y=-Z (ie "top") plane and store in P2. P2.NumVerts can
+     be up to P.NumVerts+4. If P2.NumVerts < 3, consider the poly clipped.
+   * Clip P2 to the Y=-Z (ie "bottom") plane and store in P1. P1.NumVerts
+     can be up to P.NumVerts+5. If P1.NumVerts < 3, consider the poly
+     clipped.
+   * Transform P1.Vert[...] from clip-space (3D) to pixel-space (2D).
+   * Paint the polygon to the screen.
+
+Notice that this algorithm clips a complete polygon against each of the five
+clipping planes, stopping early if it is completely clipped against one of
+the planes. Alternatively you might come up with an algorithm that clips
+each line segment against the 5 clipping planes - but this would mean you
+would never short-circuit (stop early because the poly is completely
+clipped).
+
+Notice also that there is a LOT of operations required here - and this is
+just to render a poly from 3D to 2D! We haven't even examined shading,
+texture mapping, bump mapping, etc! And this is going on for each poly you
+want to render, indicating two important concepts:
+
+   * Optimize the poly rendering section. See comments below.
+   * Minimize the number of polys drawn. Go to 3D Basics page and follow the
+     Polygon Culling (and other) links.
+
+At this point (even after reading about line-clipping) you may ask: why all
+this overhead? I have to clip against Z=1 to prevent the "mirror effect" in
+the perspective transform (3D to 2D transform), but won't it be cheaper to
+clip in the 2D functions instead of the 3D functions?
+
+The answer is: it depends on what you want to do. For wire-frame models and
+solid-color polygons, it would be cheaper to clip in 2D instead of 3D. But
+shading, texture mapping, bump mapping, etc are expensive on a per-pixel
+basis (vs 3D clipping, which is expensive on a per-vertex basis - and a poly
+usually has a LOT more pixels than vertices!) For example: you might have a
+texture-mapped poly which is only 75% visible - 25% of the area is invisible
+and would be clipped if doing 3D clipping. If you don't clip in 3D however,
+you will have to texture map that 25% - and this will undoubtedly cost more
+(in time) than if you had first done clipping in clip-space.
+
+Keep in mind however that I do not have empirical evidence for this
+statement <g>, and provide no mathematical proofs. Not only that, but many
+factors in 3D graphics are app-dependent, and what might be most efficient
+in general may turn out to be less efficient under a certain set of game
+design specs. If you have the development time available, you might want to
+code in both techniques, have a switch (pre-processor macros, etc), and test
+both methods.
+
+I do not include sample code for polygon clipping for the simple fact that
+optimizations will be critical in this section, and optimization techniques
+will depend greatly on the data structures you use. For example: in the
+above code snippet I just blithely transformed all the poly vertices from
+world-space to clip-space (by multiplying by the camera->ParentToClip()
+matrix, presented in the line-clipping article). However a real-world 3D
+application will probably have "objects" that are made up of multiple polys,
+and these polys will "share" a vertex. The above algorithm would then
+"waste" rendering time by transforming shared vertices more than once. For
+example: instead of a poly containing a list of Point3Ds, you may have it
+containing a Point3D (the world-space coordinate), another Point3D (the
+clip-space coordinate), flags (Sutherland-Cohen clipping outcodes, boolean
+flags to indicate if this point has been transformed to clip-space yet,
+etc). In that case any code I wrote would not remotely work, because you are
+using different data structures.

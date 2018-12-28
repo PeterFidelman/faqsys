@@ -1,0 +1,338 @@
+                              Frustum Clipping
+
+Introduction
+
+Frustum clipping is a vital, yet neglected subject. I haven't read any
+documents on it yet on the web. So, now I will show you my findings on the
+subject, which should prove to be enough for you to implement frustum
+clipping in your engine.
+
+Clipping a polygon
+
+To clip the polygon, I will be using an algorithm known as the
+Sutherland-Hodgman polygon clipping algorithm. Its pretty simple to
+implement, and easy enough to understand.
+
+The algorithm works by clipping a polygon against n planes, one after the
+other. The output from one clip is used as the input to another. Imagine you
+have a square piece of wood, say NxM units in size. Now on top of that piece
+of wood, you put a shape, say a triangle, made of paper. The most obvious
+way to clip it to the square would be to work your way around the edges,
+cutting off excess paper as you go. With me so far? So, you would clip
+against the lines:
+
+(0, 0) - (N, 0)
+(N, 0) - (N, M)
+(N, M) - (0, M)
+(0, M) - (0, 0)
+
+Recalling that the square was NxM units in size. This is effectively 2D
+clipping to the 2D viewport. However, in 3D, we need to clip to a frustum. A
+frustum is basically a 3d pyramid, with the top lopped off. We store and
+clip against either 5 or 6 planes, depending on whether you want back plane
+clipping. The frustum is a convex volume in space, and we can also use it to
+check whether or not an item is viewable.
+
+There are 4 cases that could occur when clipping the shape. These are:
+
+  1. Both endpoints inside region
+  2. Both endpoints outside region
+  3. Line is entering region
+  4. Line is leaving region
+
+Obviously, for case 1 we do not insert any points into the final polygon.
+For case 2 we insert both points. Cases 3 and 4 are a little more complex
+however. We need to find out whether we are leaving or entering the region.
+Once we know this, we can then perform the actual clipping. If we are
+leaving the region, we must insert one point. If we are entering the region,
+we must insert two points. If you are leaving the region, simply insert the
+clipped point. If you are entering, insert the clipped point, and the point
+inside the region. Classifying whether you are entering or leaving a region
+can be done using comparions of the two points against the clipping
+boundary.
+
+The Clipping Calculation
+
+The calculation in itself is easy enough to do. Its linked to rays. A ray is
+defined as:
+
+Origin + t*Direction
+
+Origin will be point 1 on our line, Direction will be (Point2 - Point1). t
+is a parameter that specifies a point on the line. For this code, t will be
+in the range 0..1.
+
+t is easy enough to calculate. Firstly, we find the distance travelled in
+the same axis as we want to clip, for example if we are clipping against Z,
+then we find Dz, distance-Z. The same could be done for X or Y. Now, if this
+value is zero, then t is equal to clipping-limit - point1. For example
+zminclip - point1.z. If dz is not zero, then we take zminclip - point1.z,
+and divide it by the distance-z. So t now tells us the position of the line
+we are clipping against, the amount of the line that is behind the clipping
+limit.
+
+Now calculate similar distance values for x and y. So dx = p2.x - p1.x, and
+the same for y. Recall the equation for a ray:
+
+Origin + t*Direction
+
+Its now a piece of cake to calculate the missing values! Simply write:
+
+NewX = p1.x + t*dx
+NewY = p1.y + t*dy
+
+And theres your clipped point! You can perform similar clippings for u,v,
+gouraud colour, phong lighting map co-ordinates, anything. But one word of
+warning: Beware of 1/n values. They can easily underflow. So clip in n
+values, then take the reciprocal of them. I found this out the hard way,
+with perspective texturing. After a certain point, the texture would just go
+mad, swimming and sliding and distorting all over the place. Clipping to u,
+v then taking 1/u, 1/v solved this problem
+
+The above code will work fine for straight clipping boundaries. But in 3D
+engines, where we use a perspective projection, the view volume is not flat.
+It's sloped. This is a problem. Theres two ways around it:
+
+  1. Calculate the 3D x and y limits for a given Z. Done by rearranging your
+     perspective projection. Then you plug these values into a 'straight'
+     clipper.
+  2. Clipping against the planes, by finding the intersection of a line and
+     a plane.
+
+No. 1 is easier to code. If your perspective projection is (for x):
+
+i = xd
+    -- + xcentre
+    z
+
+Then your clipping limit for a given z would be:
+
+(+/- xcentre)*z
+---------------
+       d
+
+A similar thing can be done for Y. But, this is a less elegant solution; we
+have made special cases, which makes our code more complex, and harder to
+maintain/code/debug. What we need is a general solution, to clip a line
+against any arbitrary plane. And such a thing can be done!
+
+Clipping Against An Arbitrary Plane
+
+If you don't yet know, the equation for a plane is:
+
+Ax + By + Cz + D = 0
+
+Where A B C D are the co-efficients of the plane, and xyz is a point on the
+plane. Recalling that the equation of a ray is:
+
+Origin + t*Direction
+
+It becomes a case of substituting in the ray equation for x y and z, then
+re-arranging to give t. The solution is:
+
+      (A*origin.x + B*origin.y + C*origin.z + D)
+t = - ------------------------------------------
+            (A*dir.x + B*dir.y + C*dir.z)
+
+If the denominator (lower half) of the above equation is zero, then the line
+and plane are parallel; they never touch. Obviously, don't try to clip
+parallel lines and planes. Your code shouldn't even try to do that. So now
+we have t, ready to calculate the point of intersection
+
+But how do I find what side of a plane a point is one? Easy! The plane
+equation. Feed the points points X Y and Z into the equation
+
+Ax + By + Cz + D
+
+(yes, the plane equation). If the value is zero, the point is one the plane.
+If the value is > zero, then the point is on the side of the plane pointed
+to by the planes normal. If the value is < 0, then the point is on the other
+side. Ok, to visualise this, do the following. Go into your back garden. Get
+a pole, a stick, whatever, and stick it in the ground. This is your plane
+normal. Imagine that is points to the sun. Now, the sky is the area pointed
+to by the planes normal. Say this plane is your lower Y clipping limit (the
+bottom of the screen). So if your value is > 0, then you're inside the view
+volume. If you value is < 0, you're outside, and need to be clipped. Simple
+eh?
+
+Putting it all together
+
+Now you're ready to code it. The following pseudo-code should explain how to
+implement the algorithm:
+
+void ClipToPlane(POLYGON polyin, POLYGON polyout, PLANE plane)
+{
+        curvert = 0
+        vert1 = polyin.numpoints - 1
+
+        for(vert2 = 0 to polyon.numpoints) {
+                classify vert1 and vert2 with respect to plane
+
+                if(both are inside) {
+                        insert(vert2) in polyout[curvert]
+                        curvert++
+                }
+
+                if(entering) {
+                        Calculate t
+                        Calculate new vertex
+                        insert(newvertex) in polyout[curvert]
+                        curvert++
+                }
+
+                if(leaving) {
+                        Calculate t
+                        Calculate new vertex
+                        insert(newvertex) in polyout[curvert]
+                        curvert++
+                        insert(vert2) in polyout[curvert]
+                        curvert++
+                }
+
+                vert1 = vert2
+        }
+
+        polyout.numpoints = curvert
+        polyout.points[curvert] = polyout.points[0]
+}
+
+You'll need to fill in the blanks. Then, you could store a set of clipping
+planes in an array, then just feed the planes to the above code one after
+the other.
+
+My 3D clipping algorithm
+
+Seems a lot of you were puzzled when I told you my clipping system didn't
+need to allocate memory on fly, make new polygons etc... well, to clarify
+how I do it, I'll briefly describe the way its done in my engine.
+
+Firstly, some notes: this system doesn't generate extra triangles to be
+sorted, it doesn't allocate memory at runtime, and it projects triangles
+*before* clipping. Heres how it works:
+
+  1. At init-time, allocate a buffer of vertices, say 50. These will be used
+     to store the temporary polygon that results after clipping. This saves
+     allocating data at render time.
+  2. Do you usual transforms etc...
+  3. When rendering, first tag all vertices as invisible. Then, check each
+     vertex against the frustum. If it is inside, mark it as visible. This
+     flag will later be used to check for projection, lighting etc...
+  4. Now its time to check, cull, accept/reject triangles. If a triangle is
+     fully within the frustum, *and* is front-facing, mark it as "visible"
+     and "no clip". Determining whether or not it is inside the frustum can
+     be done using the flags you set up for the vertices. If a triangle is
+     front facing and intersects the frustum, mark it as "visible" and
+     "clip". Mark which planes you need to clip against, using a byte, and a
+     bit for each plane, eg:
+
+     Bit # | Plane
+     ------+------
+         0 | Front
+         1 | Back
+         2 | Left
+         3 | Right
+         4 | Top
+         5 | Bottom
+
+You don't need to use this exact scheme, anything will do -- but bear in
+mind that this will be used in a Sutherland-Cohen style marker. You have 1
+byte for each edge of the triangle, and using logical ORs and ANDs, you can
+determine whether or not the triangle is within frustum. Look into line
+clipping algorithms for more info on this. Key points are:
+
+  1. Backface tris are rejected with no checking against frustum
+  2. Frontface tris are checked against frustum by a sutherland-cohen test:
+        o If inside, mark as "visible" and "no clip"
+        o If outside, reject
+        o If intersects, mark as "visible" and "clip". Set up a byte which
+          tells you which planes to clip against.
+
+When this is done, insert visible triangles into a buffer of pointers to
+triangles: Triangle *tribuffer[MAXTRI] or as I use it Triangle **tribuffer,
+and tribuffer is allocated at init-time:
+
+tribuffer = (Triangle *) malloc(sizeof(Triangle *) * max_tris_in_scene);
+
+This buffer is then sorted back->front or front->back, and then passes each
+triangle to a rendering function. Now I project all my vertices, perform
+lighting etc..
+
+Time to render it
+
+The rendering function is not called directly; instead I have a global
+function pointer, which points to the current routine to use, for the
+current rendering system. This way I can switch rendering types on the fly,
+without having things like switch(rendertype) or big if--then trees. Quite
+nice...
+
+Firstly this copies in data that may be needed to render the triangle, such
+as uv co-ords etc into a structure which is passed to the triangle painter.
+The structure is just Vertex[3], same structure as is used for object verts.
+Just my uv co-ords etc are stored in triangle structure, so they need to be
+copied. Also u/z v/z are calculated: u/z = u*(vert->1/z) etc...
+
+Anyway the render function just checks the clip flag: if no clipping, it
+just calls DrawTriangle(blah) or something, depends on your routine + engine
+
+If it does need to be clipped however, it calls a clipping routine, for the
+related rendering mode. Eg if rendering for texture, it calls ClipTexture,
+for gouraud, it calls ClipGouraud, and so on. This routine looks something
+like:
+
+void ClipTriangle(Triangle *tri)
+{
+        PlaneClip(tri);
+        for(n=0; n<numclipvert-2; n++)
+                DrawTriangle(outvert[0], outvert[n+1], outvert[n+2])
+}
+
+PlaneClip is just a standard Sutherland-Hodgman plane clipper. It is used
+for all clipping of triangles. "Wait a minute", I hear you say. Thats
+inefficient, you're clipping gouraud, texture etc, when you might not need
+it. Wrong. PlaneClip relies on *another* function pointer, which points to a
+routine that calculates a new point, given two endpoints of a line, and t,
+point on line. It writes to a pointer that is also passed to it. Clipfunc
+just looks something like:
+
+void ClipLine(Vertex *vert1, Vertex *vert2, Vertex *outvert, Real t)
+{
+        *outvert = vert1 + t*(vert2 - vert1)
+        ProjectVertex(outvert)  // project to 2D
+}
+
+Obviously I don't have a function call to project the vertex to 2d inside
+ClipLine, thats done inline. Y'see this allows me to project new vertices as
+they are created, without having to malloc new ones as I go along, or have a
+big pass where I project them all. [Tip] when projecting your vertices, and
+you're sitting waiting for fdiv to complete, try pre-warming your cache.
+Works very nicely...
+
+Also I can now use one routine to do all my clipping, by using function
+pointers I can create a psuedo-self-modifying-code type system. All these
+pointers are set beforehand, with a function called something like
+SetRenderType, eg SetRenderType(RENDER_GOURAUD_TEXTURE).
+
+Understand now? Its quite a complex system, very difficult for me to
+explain, difficult for you to understand. To really understand this, you
+need to be able to see my whole rendering pipeline, which I'm not going to
+give away right now ...
+
+Rejecting polygons that are not inside the frustum is easy enough to do. If
+you place a bounding sphere around a polygon, or indeed a polyhedron, or any
+polytope in 3D, you can do a simple check to see whether or not it is inside
+the viewing frustum. What you do is simple: Find the distance from the plane
+to the centre of the sphere. Now, if this distance is < 0, and greater than
+the radius of the sphere, ie (dist > -radius), then you can chuck the volume
+out. It only needs to be outside of one plane to be discarded. Bounding
+boxes are also pretty easy to do. You can just check the 8 vertices of the
+box, and see if at least one of them is on the positive side of the plane.
+Or, you can check the diagonally opposite corners, eg the top left and
+bottom right corners, etc. That way you can get away with less checks, if
+you're clever.
+
+I hope this web page has provided you with enough information for clipping
+polygons against planes, specifically the viewing frustum. If you have any
+questions, mail me. [References: Computer Graphics, Principles + Practice]
+
+                    Tom Hammersley, tomh@globalnet.co.uk
+                                  [Image]

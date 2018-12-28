@@ -1,0 +1,1834 @@
+This file contains source code and technical data sampled from the 2.00
+release of ARJ.
+
+    ARJ TECHNICAL INFORMATION                            March 1991
+
+
+    Modification history:
+    Date      Description of modification:
+    03/11/91  Added test_dirtype().  Added directory file type.
+    02/23/91  Added more comments.
+    02/19/91  Added get_line() function.
+    01/21/91  Added get_recd_size() function.
+    01/10/91  Corrected timestamp description and header order of file mode.
+    10/30/90  Corrected values of flags in ARJ flags.
+
+
+    ARJ archives contains two types of header blocks:
+
+       Archive main header - This is located at the head of the archive
+       Local file header   - This is located before each archived file
+
+    Structure of archive block (low order byte first):
+
+    Bytes Description
+    ----- -------------------------------------------------------------------
+      2   header id (main and local file) = 0xEA60 or 60000U
+      2   basic header size (from 'first_hdr_size' thru 'comment' below)
+                = first_hdr_size + strlen(filename) + 1 + strlen(comment) + 1
+                = 0 if end of archive
+
+      1   first_hdr_size (size up to and including 'extra data')
+      1   archiver version number
+      1   minimum archiver version to extract
+      1   host OS   (0 = MSDOS, 1 = PRIMOS, 2 = UNIX, 3 = AMIGA, 4 = MACDOS)
+      1   arj flags (0x01 = GARBLED_FLAG) indicates passworded file
+                    (0x02 = RESERVED)
+                    (0x04 = VOLUME_FLAG)  indicates continued file to next
+                                          volume
+                    (0x08 = EXTFILE_FLAG) indicates file starting position field
+                    (0x10 = PATHSYM_FLAG) indicates path translated
+                                          ("\" changed to "/")
+      1   method    (0 = stored, 1 = compressed most ... 4 compressed fastest)
+      1   file type (0 = binary, 1 = 7-bit text, 2 = comment header)
+                    (3 = directory)
+      1   reserved
+      4   date time modified
+      4   compressed size
+      4   original size (this will be different for text mode compression)
+      4   original file's CRC
+      2   filespec position in filename
+      2   file access mode
+      2   host data (currently not used)
+      ?   extra data
+          4 bytes for extended file position when used
+          (this is present when EXTFILE_FLAG is set)
+
+      ?   filename (null-terminated string)
+      ?   comment  (null-terminated string)
+
+      4   basic header CRC
+
+      2   1st extended header size (0 if none)
+      ?   1st extended header (not currently used)
+      4   1st extended header's CRC
+      ...
+      ?   compressed file
+
+
+    Time stamp format:
+
+       31 30 29 28 27 26 25 24 23 22 21 20 19 18 17 16
+      |<---- year-1980 --->|<- month ->|<--- day ---->|
+
+       15 14 13 12 11 10  9  8  7  6  5  4  3  2  1  0
+      |<--- hour --->|<---- minute --->|<- second/2 ->|
+
+
+
+    Compression methods:
+
+
+    ARJ methods 1 to 3 use Lempel-Ziv 77 sliding window with static Huffman
+    encoding.
+
+    ARJ method 4 uses Lempel-Ziv 77 sliding window with pointer/length
+    unary encoding.
+
+    There is one decoder for methods 1 to 3 and one decoder for method 4.
+
+
+
+    Encryption technology:
+
+
+    ARJ does NOT use DES encryption algorithms.  It uses a combination of
+    simple exclusive-or operations.
+
+
+
+    Source code description:
+
+
+    ARJ is written in ANSI C using only ANSI C library calls.  All machine
+    dependent routines are located in an environment module. Simplified
+    versions allow porting to other operating systems with some loss of
+    functionality.  The current version has been compiled with TURBO C++
+    1.0.
+
+    Data is stored in low-byte order first and read back the same way to
+    avoid the "endia" issue.
+
+
+
+    The environment routines are:
+
+
+    case_path()       Uppercase pathname if case is not significant for OS
+    file_exists()     Check for file existence
+    fix_path()        Clean up file pathname (remove drive and root)
+    get_archive()     Get state of archive bit
+    get_disk_avail()  Get disk space availability
+    get_line()        Get STDIN line of text.
+    get_recd_size()   Get minimum disk record size
+    get_fsize()       Get file size (return -1 if getting size is too
+                      expensive)
+    get_ftime()       Get file date-time modified
+    get_fmode()       Get file access mode
+    get_mode_str()    Convert access mode to displayable text (A--W)
+    match_wild()      Provide filename component matching
+    reset_archive()   Reset archive bit
+    set_fmode()       Set file access mode
+    set_ftime()       Set file date-time modified
+    set_stream()      Set stream file translation mode.
+    test_ftype()      Test the output file type for valid flat file
+    test_dirtype()    Test the file for the directory type.
+    test_dir()        Test if file path exist.  If not, create it with
+                      permission.
+    wild_list()       Expand wildnames and recurse subdirectories if necessary
+
+
+    end of document
+
+[ENVIRON.C follows]
+
+/* ENVIRON.C, UNARJ, R JUNG, 04/09/91
+/* Implementation dependent routines
+/* Copyright (c) 1991 by Robert K Jung.  All rights reserved.
+/*
+/*   This code may be freely used in programs that are NOT archivers.
+/*
+/* Modification history:
+/* Date      Programmer  Description of modification.
+/* 04/09/91  R. Jung     Rewrote code.
+/*
+ */
+
+#include "unarj.h"
+
+#ifdef __TURBOC__
+
+#define SUBS_DEFINED
+
+#include <string.h>
+#include <dos.h>
+#include <io.h>
+#include <fcntl.h>
+
+void
+case_path(char *name)
+{
+    strupper(name);
+}
+
+int
+file_exists(char *name)
+{
+    return (access(name, 0) == 0);
+}
+
+int
+fix_path(char *to_name, char *fr_name)
+{
+    char *p;
+
+    p = fr_name;
+    if (p[0] && p[1] == ':')        /* get rid of drive */
+        p += 2;
+    if (p[0] == '.')
+    {
+        if (p[1] == '.' && p[2] == '\\')
+           p += 2;
+        else if (p[1] == '\\')
+            p++;
+    }
+    if (p[0] == '\\')               /* get rid of root dir */
+        p++;
+    if (to_name != NULL)
+    {
+        strcpy(to_name, p);
+        strupper(p);
+    }
+    return (int)(p - fr_name);
+}
+
+int
+set_fmode(char *name, ushort attribute)
+{
+    if (_chmod(name, 1, attribute) == -1)
+        return -1;
+    return 0;
+}
+
+int
+set_ftime(char *name, ulong tstamp)
+{
+    FILE *fd;
+    int code;
+
+    if ((fd = fopen(name, "rb")) == NULL)
+	return -1;
+    code = setftime(fileno(fd), (struct ftime *) &tstamp);
+    fclose(fd);
+    return code;
+}
+
+#endif
+
+#ifdef _QC
+
+#define SUBS_DEFINED
+
+#include <string.h>
+#include <dos.h>
+#include <io.h>
+#include <fcntl.h>
+
+void
+case_path(char *name)
+{
+    strupper(name);
+}
+
+int
+file_exists(char *name)
+{
+    return (access(name, 0) == 0);
+}
+
+int
+fix_path(char *to_name, char *fr_name)
+{
+    char *p;
+
+    p = fr_name;
+    if (p[0] && p[1] == ':')        /* get rid of drive */
+        p += 2;
+    if (p[0] == '\\')               /* get rid of root dir */
+        p++;
+    if (to_name != NULL)
+    {
+        strcpy(to_name, p);
+        strupper(p);
+    }
+    return (int)(p - fr_name);
+}
+
+int
+set_fmode(char *name, ushort attribute)
+{
+    return _dos_setfileattr(name, (uint)attribute);
+}
+
+int
+set_ftime(char *name, ulong tstamp)
+{
+    FILE *fd;
+    int code;
+    uint date_stamp, time_stamp;
+                             
+    date_stamp = (uint)(tstamp >> 16);
+    time_stamp = (uint)(tstamp & 0xFFFF);
+    if ((fd = fopen(name, "rb")) == NULL)
+	return -1;
+    code = _dos_setftime(fileno(fd), date_stamp, time_stamp);
+    fclose(fd);
+    return code;
+}
+
+#endif
+
+#ifndef SUBS_DEFINED       /* vanilla version for other compilers */
+
+#include <string.h>
+
+void
+case_path(char *name)
+{
+}
+
+int
+file_exists(char *name)
+{
+    FILE *fd;
+
+    if ((fd = fopen(name, "rb")) == NULL)
+	return 0;
+    fclose(fd);
+    return 1;
+}
+
+int
+fix_path(char *to_name, char *fr_name)
+{
+    strcpy(to_name, fr_name);
+    return 0;
+}
+
+int
+set_fmode(char *name, ushort attribute)
+{
+    return 0;
+}
+
+int
+set_ftime(char *name, ulong tstamp)
+{
+    return 0;
+}
+
+#endif  /* end of vanilla section */
+
+/* end ENVIRON.C */
+
+[ARJ.H follows]
+
+/* UNARJ.H, UNARJ, R JUNG, 04/05/91
+/* Include file
+/* Copyright (c) 1990 by Robert K Jung.  All rights reserved.
+/*
+/*   This code may be freely used in programs that are NOT archivers.
+/*
+/* Modification history:
+/* Date      Programmer  Description of modification.
+/* 04/05/91  R. Jung     Rewrote code.
+/*
+ */
+
+#ifndef _ARH_DEF_
+#define _ARH_DEF_
+
+#include <stdio.h>
+#include <limits.h>
+
+typedef unsigned char  uchar;	/*  8 bits or more */
+typedef unsigned int   uint;	/* 16 - 32 bits or more */
+typedef unsigned short ushort;	/* 16 bits or more */
+typedef unsigned long  ulong;	/* 32 bits or more */
+
+#define USHRT_BIT   (CHAR_BIT * sizeof(ushort))
+
+/* ********************************************************* */
+/* Environment definitions (implementation dependent)        */
+/* ********************************************************* */
+
+#ifdef _QC
+#define __MSDOS__
+#endif
+
+#ifdef __MSDOS__
+#define OS		    0
+#define WILDSTRING	    "?*"
+#define WILD_COMPONENT	    '*'
+#define WILD_CHAR	    '?'
+#define WILD_ANY	    "*.*"
+#define PATH_SEPARATORS     "\\:"
+#define PATH_CHAR           '\\'
+#define SWITCH_CHARS        "-/"
+#define MAXSFX              25000L
+#endif
+
+#ifdef __CI
+#define PRIME               1
+#define OS                  1
+#define WILDSTRING          "@+^"
+#define WILD_COMPONENT      '@'
+#define WILD_CHAR           '+'
+#define WILD_ANY            "@@"
+#define PATH_SEPARATORS     ">"
+#define PATH_CHAR           '>'
+#define ARJ_ENVSTR          ".ARJ_SW"
+#define LINES_PER_PAGE      24
+#define FIX_PARITY(c)       c |= ~ASCII_MASK
+#define DEFAULT_DIR         "*>"
+#endif
+
+/* Error levels */
+
+#ifndef ERROR_DEFINES
+
+#define ERROR_OK        0       /* success */
+#define ERROR_WARN      1       /* minor problem (file not found) */
+#define ERROR_FAIL      2       /* fatal error */
+#define ERROR_CRC       3       /* CRC error */
+#define ERROR_SECURE    4       /* ARJ security invalid or not found */
+#define ERROR_WRITE     5       /* disk full */
+#define ERROR_OPEN      6       /* can't open file */
+#define ERROR_USER      7       /* user specified bad parameters */
+#define ERROR_MEMORY    8       /* not enough memory */
+
+#endif
+
+#ifndef MAXSFX		    /* size of self-extracting prefix */
+#define MAXSFX		    500000L
+#endif
+#ifndef FNAME_MAX
+#define FNAME_MAX	    512
+#endif
+#ifndef SWITCH_CHARS
+#define SWITCH_CHARS        "-"
+#endif
+#ifndef FIX_PARITY
+#define FIX_PARITY(c)	    c &= ASCII_MASK
+#endif
+#ifndef ARJ_SUFFIX
+#define ARJ_SUFFIX	    ".ARJ"
+#endif
+#ifndef BAK_SUFFIX
+#define BAK_SUFFIX	    ".BAK"
+#endif
+#ifndef ARJ_TEMP
+#define ARJ_TEMP            "ARJTEMP.$??"
+#endif
+#ifndef ARJ_TEMPLATE
+#define ARJ_TEMPLATE        "ARJTEMP.$%02d"     /* related to ARJ_TEMP */
+#endif
+#ifndef ARJSORT_TEMP
+#define ARJSORT_TEMP        "ARJSORT.$$$"
+#endif
+#ifndef ARJ_ENVSTR
+#define ARJ_ENVSTR	    "ARJ_SW"
+#endif
+#ifndef ARJ_DOT
+#define ARJ_DOT 	    '.'
+#endif
+#ifndef ARCHIVE_SUFFIXES
+#define ARCHIVE_SUFFIXES    ".ARJ.ZIP.PAK.ARC.LZH"
+#endif
+#ifndef LINES_PER_PAGE
+#define LINES_PER_PAGE	    24
+#endif
+#ifndef WILDSTRING
+#define WILDSTRING	    "?*"
+#endif
+#ifndef WILD_COMPONENT
+#define WILD_COMPONENT	    '*'
+#endif
+#ifndef WILD_CHAR
+#define WILD_CHAR	    '?'
+#endif
+#ifndef WILD_ANY
+#define WILD_ANY	    "*.*"
+#endif
+#ifndef NOT_MATCH_ANY
+#define NOT_MATCH_ANY       "..."
+#endif
+#ifndef LIST_CHAR
+#define LIST_CHAR	    '!'
+#endif
+#ifndef DEFAULT_DIR
+#define DEFAULT_DIR	    ""
+#endif
+
+/* ********************************************************* */
+/* end of environmental defines                              */
+/* ********************************************************* */
+
+/* ********************************************************* */
+/*
+/* Structure of archive block (low order byte first):
+/*
+/*  2  header id (comment and local file) = 0xEA60 or 60000U
+/*  2  basic header size (from 'first_hdr_size' thru 'comment' below)
+/*	     = first_hdr_size + strlen(filename) + 1 + strlen(comment) + 1
+/*	     = 0 if end of archive
+/*
+/*  1  first_hdr_size (size up to 'extra data')
+/*  1  archiver version number
+/*  1  minimum archiver version to extract
+/*  1  host OS	 (0 = MSDOS, 1 = PRIMOS, 2 = UNIX, 3 = AMIGA, 4 = MACDOS)
+/*  1  arj flags (0x01 = GARBLED_FLAG, 0x02 = RESERVED)
+/*               (0x04 = VOLUME_FLAG,  0x08 = EXTFILE_FLAG)
+/*               (0x10 = PATHSYM_FLAG)
+/*  1  method    (0 = stored, 1 = compressed most ... 4 compressed fastest)
+/*  1  file type (0 = binary, 1 = text, 2 = comment header)
+/*  1  garble password modifier
+/*  4  date time stamp modified
+/*  4  compressed size
+/*  4  original size
+/*  4  original file's CRC
+/*  2  entryname position in filename
+/*  2  file access mode
+/*  2  host data
+/*  ?  extra data
+/*     4 bytes for extended file position
+/*
+/*  ?  filename (null-terminated)
+/*  ?  comment	(null-terminated)
+/*
+/*  4  basic header CRC
+/*
+/*  2  1st extended header size (0 if none)
+/*  ?  1st extended header
+/*  4  1st extended header's CRC
+/*  ...
+/*  ?  compressed file
+/*
+/* ********************************************************* */
+
+/* ********************************************************* */
+/*							     */
+/*     Time stamp format:				     */
+/*							     */
+/*	31 30 29 28 27 26 25 24 23 22 21 20 19 18 17 16      */
+/*     |<---- year-1980 --->|<- month ->|<--- day ---->|     */
+/*							     */
+/*	15 14 13 12 11 10  9  8  7  6  5  4  3	2  1  0      */
+/*     |<--- hour --->|<---- minute --->|<- second/2 ->|     */
+/*							     */
+/* ********************************************************* */
+
+#define CODE_BIT          16
+
+#define NULL_CHAR	'\0'
+#define MAXMETHOD	   4
+
+#define ARJ_VERSION        3
+#define ARJ_X_VERSION      3    /* decoder version */
+#define ARJ_X1_VERSION     1
+#define DEFAULT_METHOD	   1
+#define DEFAULT_TYPE       0    /* if type_sw is selected */
+#define HEADER_ID     0xEA60U
+#define HEADER_ID_HI    0xEA
+#define HEADER_ID_LO    0x60
+#define FIRST_HDR_SIZE	  30
+#define FIRST_HDR_SIZE_V  34
+#define COMMENT_MAX     2048
+#define HEADERSIZE_MAX	 (FIRST_HDR_SIZE + 10 + FNAME_MAX + COMMENT_MAX)
+#define BINARY_TYPE	   0	/* This must line up with binary/text strings */
+#define TEXT_TYPE	   1
+#define COMMENT_TYPE	   2
+#define DIR_TYPE           3
+
+#define GARBLE_FLAG     0x01
+#define VOLUME_FLAG	0x04
+#define EXTFILE_FLAG	0x08
+#define PATHSYM_FLAG    0x10
+
+typedef ulong UCRC;	/* CRC-32 */
+
+#define CRC_MASK        0xFFFFFFFFUL
+
+#define ARJ_PATH_CHAR   '/'
+
+/* Timestamp macros */
+
+#define get_tstamp(yy, mm, dd, hr, mn, sc) \
+    ( (((ulong)(yy - 1980)) << 25) + ((ulong)mm << 21) + ((ulong)dd << 16) + \
+    ((ulong)hr << 11) + (mn << 5) + (sc / 2) )
+
+#define ts_year(ts)  ((uint)((ts >> 25) & 0x7f) + 1980)
+#define ts_month(ts) ((uint)(ts >> 21) & 0x0f)	    /* 1..12 means Jan..Dec */
+#define ts_day(ts)   ((uint)(ts >> 16) & 0x1f)	    /* 1..31 means 1st..31st */
+#define ts_hour(ts)  ((uint)(ts >> 11) & 0x1f)
+#define ts_min(ts)   ((uint)(ts >> 5) & 0x3f)
+#define ts_sec(ts)   ((uint)((ts & 0x1f) * 2))
+
+/* unarj.c */
+
+extern long origsize;
+extern long compsize;
+
+extern UCRC crc;
+
+extern FILE *arcfile;
+extern FILE *outfile;
+
+extern ushort bitbuf;
+
+extern uchar subbitbuf;
+extern uchar header[HEADERSIZE_MAX];
+
+extern char arc_name[FNAME_MAX];
+
+extern int bitcount;
+extern int file_type;
+extern int error_count;
+
+void   strupper(char *str);
+void   *malloc_msg(size_t size);
+void   error(char *fmt, ...);
+void   fillbuf(int n);
+ushort getbits(int n);
+void   fwrite_txt_crc(uchar *p, uint n);
+void   init_getbits(void);
+
+/* environ.c */
+
+void   case_path(char *name);
+int    file_exists(char *name);
+int    fix_path(char *to_name, char *fr_name);
+int    set_ftime(char *name, ulong timestamp);
+int    set_fmode(char *name, ushort fmode);
+
+/* decode.c */
+
+void    decode(void);
+void    decode_f(void);
+
+/* Message strings */
+
+extern char M_VERSION [];
+extern char M_USAGE   [];
+
+extern char M_ARCDATE [];
+extern char M_BADCOMNT[];
+extern char M_BADHEADR[];
+extern char M_BADTABLE[];
+extern char M_CANTOPEN[];
+extern char M_CANTREAD[];
+extern char M_CANTWRIT[];
+extern char M_CRCERROR[];
+extern char M_CRCOK   [];
+extern char M_DIFFHOST[];
+extern char M_DIR     [];
+extern char M_ENCRYPT [];
+extern char M_ERRORCNT[];
+extern char M_EXTRACT [];
+extern char M_FEXISTS [];
+extern char M_HEADRCRC[];
+extern char M_NBRFILES[];
+extern char M_NOMEMORY[];
+extern char M_NOTARJ  [];
+extern char M_PROCARC [];
+extern char M_SKIPPED [];
+extern char M_SUFFIX  [];
+extern char M_TESTING [];
+extern char M_UNKNMETH[];
+extern char M_UNKNTYPE[];
+extern char M_UNKNVERS[];
+extern char M_UNSTORE [];
+
+#endif
+
+/* end UNARJ.H */
+
+[ARJ.C follows]
+
+/* UNARJ.C, UNARJ, R JUNG, 04/05/91
+/* Main Extractor routine
+/* Copyright (c) 1991 by Robert K Jung.  All rights reserved.
+/*
+/*   This code may be freely used in programs that are NOT archivers.
+/*
+/* Modification history:
+/* Date      Programmer  Description of modification.
+/* 04/05/91  R. Jung     Rewrote code.
+/*
+ */
+
+#include "unarj.h"
+
+#include <stdlib.h>
+#include <stdarg.h>
+#include <string.h>
+#include <ctype.h>
+
+/* Global variables */
+
+UCRC   crc;
+FILE   *arcfile;
+FILE   *outfile;
+ushort bitbuf;
+long   compsize;
+long   origsize;
+uchar  subbitbuf;
+uchar  header[HEADERSIZE_MAX];
+char   arc_name[FNAME_MAX];
+int    bitcount;
+int    file_type;
+int    error_count;
+
+/* Messages */
+
+char M_VERSION [] = "UNARJ 2.00 Copyright (c) 1991 Robert K Jung\n\n";
+char M_USAGE   [] = "Usage:  UNARJ archive[.arj] [NUL]\n";
+
+char M_ARCDATE [] = "Archive date      : %s\n";
+char M_BADCOMNT[] = "Invalid comment header";
+char M_BADHEADR[] = "Bad header";
+char M_BADTABLE[] = "Bad Huffman code (%d)";
+char M_CANTOPEN[] = "Can't open %s";
+char M_CANTREAD[] = "Can't read file or unexpected end of file";
+char M_CANTWRIT[] = "Can't write file. Disk full?";
+char M_CRCERROR[] = "CRC error!\n";
+char M_CRCOK   [] = "CRC OK\n";
+char M_DIFFHOST[] = ", Warning! Binary file from a different OS";
+char M_DIR     [] = "directory ";
+char M_ENCRYPT [] = "File is password encrypted, ";
+char M_ERRORCNT[] = "Found %5d error(s)!";
+char M_EXTRACT [] = "Extracting %-12s";
+char M_FEXISTS [] = "%-12s exists, ";
+char M_HEADRCRC[] = "Header CRC error!";
+char M_NBRFILES[] = "%5d file(s)\n";
+char M_NOMEMORY[] = "Out of memory";
+char M_NOTARJ  [] = "%s is not an ARJ archive";
+char M_PROCARC [] = "Processing archive: %s\n";
+char M_SKIPPED [] = "Skipped %s\n";
+char M_SUFFIX  [] = ARJ_SUFFIX;
+char M_TESTING [] = "Testing    %-12s";
+char M_UNKNMETH[] = "Unknown method: %d, ";
+char M_UNKNTYPE[] = "Unknown file type: %d, ";
+char M_UNKNVERS[] = "Unknown version: %d, ";
+char M_UNSTORE [] = "Unstoring         ";
+
+#define get_crc()	get_longword()
+#define fget_crc(f)	fget_longword(f)
+
+#define setup_get(PTR)	(get_ptr = (PTR))
+#define get_byte()      ((uchar)(*get_ptr++ & 0xff))
+
+#define BUFFERSIZE      4096
+
+#define ASCII_MASK      0x7F
+
+#define CRCPOLY         0xEDB88320UL
+
+#if CHAR_BIT == 8
+#define UPDATE_CRC(crc, c)  \
+        crc = crctable[(uchar)crc ^ (uchar)(c)] ^ (crc >> CHAR_BIT)
+#else
+#define UPDATE_CRC(crc, c)  \
+        crc = crctable[((uchar)(crc) ^ (uchar)(c)) & 0xFF] ^ (crc >> CHAR_BIT)
+#endif
+
+/* Local variables */
+
+static char   filename[FNAME_MAX];
+static char   comment[COMMENT_MAX];
+static char   *hdr_filename;
+static char   *hdr_comment;
+
+static ushort headersize;
+static uchar  first_hdr_size;
+static uchar  arj_nbr;
+static uchar  arj_x_nbr;
+static uchar  host_os;
+static uchar  arj_flags;
+static short  method;
+static ushort file_mode;
+static ulong  time_stamp;
+static short  entry_pos;
+static ushort host_data;
+static uchar  *get_ptr;
+static UCRC   file_crc;
+static UCRC   header_crc;
+
+static long   first_hdr_pos;
+static int    no_output;
+
+static char   *writemode[2]  = { "wb",	"w" };
+
+static UCRC   crctable[UCHAR_MAX + 1];
+
+/* Functions */
+
+static void
+make_crctable(void)
+{
+    uint i, j;
+    UCRC r;
+
+    for (i = 0; i <= UCHAR_MAX; i++)
+    {
+        r = i;
+        for (j = CHAR_BIT; j > 0; j--)
+        {
+            if (r & 1)
+                r = (r >> 1) ^ CRCPOLY;
+            else
+                r >>= 1;
+        }
+        crctable[i] = r;
+    }
+}
+
+static void
+crc_buf(char *str, uint len)
+{
+    while (len--)
+        UPDATE_CRC(crc, *str++);
+}
+
+void
+error(char *fmt,...)
+{
+    va_list args;
+
+    va_start(args, fmt);
+    putc('\n', stdout);
+    vprintf(fmt, args);
+    putc('\n', stdout);
+    va_end(args);
+    exit(EXIT_FAILURE);
+}
+
+static void
+strparity(uchar *p)
+{
+    while (*p)
+    {
+        FIX_PARITY(*p);
+        p++;
+    }
+}
+
+static FILE *
+fopen_msg(char *name, char *mode)
+{
+    FILE *fd;
+
+    fd = fopen(name, mode);
+    if (fd == NULL)
+        error(M_CANTOPEN, name);
+    return fd;
+}
+
+static int
+fget_byte(FILE *f)
+{
+    int c;
+
+    if ((c = getc(f)) == EOF)
+        error(M_CANTREAD);
+    return c & 0xFF;
+}
+
+static uint
+fget_word(FILE *f)
+{
+    uint b0, b1;
+
+    b0 = fget_byte(f);
+    b1 = fget_byte(f);
+    return (b1 << 8) + b0;
+}
+
+static ulong
+fget_longword(FILE *f)
+{
+    ulong b0, b1, b2, b3;
+
+    b0 = fget_byte(f);
+    b1 = fget_byte(f);
+    b2 = fget_byte(f);
+    b3 = fget_byte(f);
+    return (b3 << 24) + (b2 << 16) + (b1 << 8) + b0;
+}
+
+static uint
+fread_crc(uchar *p, uint n, FILE *f)
+{
+    n = fread(p, 1, n, f);
+    origsize += n;
+    crc_buf((char *)p, n);
+    return n;
+}
+
+void
+fwrite_txt_crc(uchar *p, uint n)
+{
+    uchar c;
+
+    crc_buf((char *)p, n);
+    if (no_output)
+        return;
+
+    if (file_type == TEXT_TYPE)
+    {
+        while (n--)
+        {
+            c = *p++;
+            FIX_PARITY(c);
+            if (putc(c, outfile) == EOF)
+                error(M_CANTWRIT);
+        }
+    }
+    else
+    {
+        if (fwrite(p, 1, n, outfile) != n)
+            error(M_CANTWRIT);
+    }
+}
+
+void
+init_getbits(void)
+{
+    bitbuf = 0;
+    subbitbuf = 0;
+    bitcount = 0;
+    fillbuf(2 * CHAR_BIT);
+}
+
+void
+fillbuf(int n)                /* Shift bitbuf n bits left, read n bits */
+{
+    bitbuf <<= n;
+    while (n > bitcount)
+    {
+	bitbuf |= subbitbuf << (n -= bitcount);
+	if (compsize != 0)
+	{
+	    compsize--;
+	    subbitbuf = (uchar) getc(arcfile);
+	}
+	else
+	    subbitbuf = 0;
+	bitcount = CHAR_BIT;
+    }
+    bitbuf |= subbitbuf >> (bitcount -= n);
+}
+
+ushort
+getbits(int n)
+{
+    ushort x;
+
+    x = bitbuf >> (2 * CHAR_BIT - n);
+    fillbuf(n);
+    return x;
+}
+
+static int
+decode_path(char *name)
+{
+    for ( ; *name; name++)
+    {
+        if (*name == ARJ_PATH_CHAR)
+            *name = PATH_CHAR;
+    }
+    return 1;
+}
+
+static void
+get_date_str(char *str, ulong tstamp)
+{
+    sprintf(str, "%04u-%02u-%02u %02u:%02u:%02u",
+           ts_year(tstamp), ts_month(tstamp), ts_day(tstamp),
+	   ts_hour(tstamp), ts_min(tstamp), ts_sec(tstamp));
+}
+
+static int
+parse_path(char *pathname, char *path, char *entry)
+{
+    char *cptr, *ptr, *fptr;
+    short pos;
+
+    fptr = NULL;
+    for (cptr = PATH_SEPARATORS; *cptr; cptr++)
+    {
+	if ((ptr = strrchr(pathname, *cptr)) != NULL &&
+		(fptr == NULL || ptr > fptr))
+	    fptr = ptr;
+    }
+    if (fptr == NULL)
+	pos = 0;
+    else
+	pos = fptr + 1 - pathname;
+    if (path != NULL)
+    {
+       strncpy(path, pathname, pos);
+       path[pos] = NULL_CHAR;
+    }
+    if (entry != NULL)
+       strcpy(entry, &pathname[pos]);
+    return pos;
+}
+
+static void
+strncopy(char *to, char *from, int len)
+{
+    int i;
+
+    for (i = 1; i < len && *from; i++)
+        *to++ = *from++;
+    *to = NULL_CHAR;
+}
+
+void
+strupper(char *s)
+{
+    while (*s)
+    {
+	*s = (char)toupper(*s);
+	s++;
+    }
+}
+
+void *
+malloc_msg(size_t size)
+{
+    char *p;
+
+    if ((p = (char *)malloc(size)) == NULL)
+        error(M_NOMEMORY);
+    return (void *)p;
+}
+
+static uint
+get_word(void)
+{
+    uint b0, b1;
+
+    b0 = get_byte();
+    b1 = get_byte();
+    return (b1 << 8) + b0;
+}
+
+static ulong
+get_longword(void)
+{
+    ulong b0, b1, b2, b3;
+
+    b0 = get_byte();
+    b1 = get_byte();
+    b2 = get_byte();
+    b3 = get_byte();
+    return (b3 << 24) + (b2 << 16) + (b1 << 8) + b0;
+}
+
+static long
+find_header(FILE *fd, char *name)
+{
+    long arcpos;
+    int c;
+
+    for (arcpos = ftell(fd); arcpos < MAXSFX; arcpos++)
+    {
+        fseek(fd, arcpos, SEEK_SET);
+        c = fget_byte(fd);
+        while (arcpos < MAXSFX)
+	{
+            if (c != HEADER_ID_LO)  /* low order first */
+                c = fget_byte(fd);
+            else if ((c = fget_byte(fd)) == HEADER_ID_HI)
+		break;
+	    arcpos++;
+	}
+        if ((headersize = fget_word(fd)) <= HEADERSIZE_MAX)
+        {
+            crc = CRC_MASK;
+            fread_crc(header, headersize, fd);
+            if ((crc ^ CRC_MASK) == fget_crc(fd))
+            {
+                fseek(fd, arcpos, SEEK_SET);
+                return arcpos;
+            }
+        }
+    }
+    error(M_NOTARJ, name);
+    return 0;
+}
+
+static int
+read_header(int first, FILE *fd, char *name)
+{
+    ushort extheadersize, header_id;
+
+    header_id = fget_word(fd);
+    if (header_id != HEADER_ID)
+    {
+	if (first)
+            error(M_NOTARJ, name);
+	else
+	    error(M_BADHEADR);
+    }
+
+    headersize = fget_word(fd);
+    if (headersize == 0)
+	return 0;		/* end of archive */
+    if (headersize > HEADERSIZE_MAX)
+	error(M_BADHEADR);
+
+    crc = CRC_MASK;
+    fread_crc(header, headersize, fd);
+    header_crc = fget_crc(fd);
+    if ((crc ^ CRC_MASK) != header_crc)
+	error(M_HEADRCRC);
+
+    setup_get(header);
+    first_hdr_size = get_byte();
+    arj_nbr = get_byte();
+    arj_x_nbr = get_byte();
+    host_os = get_byte();
+    arj_flags = get_byte();
+    method = get_byte();
+    file_type = get_byte();
+    (void)get_byte();
+    time_stamp = get_longword();
+    compsize = get_longword();
+    origsize = get_longword();
+    file_crc = get_crc();
+    entry_pos = get_word();
+    file_mode = get_word();
+    host_data = get_word();
+
+    hdr_filename = (char *)&header[first_hdr_size];
+    strncopy(filename, hdr_filename, sizeof(filename));
+    if (host_os != OS)
+        strparity((uchar *)filename);
+    if ((arj_flags & PATHSYM_FLAG) != 0)
+        decode_path(filename);
+
+    hdr_comment = (char *)&header[first_hdr_size + strlen(hdr_filename) + 1];
+    strncopy(comment, hdr_comment, sizeof(comment));
+    if (host_os != OS)
+        strparity((uchar *)comment);
+
+    while ((extheadersize = fget_word(fd)) != 0)
+	fseek(fd, extheadersize + 2, SEEK_CUR);
+
+    return 1;			/* success */
+}
+
+static void
+skip(void)
+{
+    fseek(arcfile, compsize, SEEK_CUR);
+}
+
+static void
+unstore(void)
+{
+    uint n;
+    long pos;
+    char *buffer;
+
+    buffer = (char *)malloc_msg(BUFFERSIZE);
+    pos = ftell(arcfile);
+    n = (uint)(BUFFERSIZE - (pos % BUFFERSIZE));
+    n = compsize > (long)n ? n : (uint)compsize;
+    while (compsize > 0)
+    {
+	if (fread(buffer, 1, n, arcfile) != n)
+            error(M_CANTREAD);
+        putc('.', stdout);
+	compsize -= n;
+        fwrite_txt_crc((uchar *)buffer, n);
+        n = compsize > BUFFERSIZE ? BUFFERSIZE : (uint)compsize;
+    }
+    free(buffer);
+}
+
+static int
+check_flags(void)
+{
+    if (arj_x_nbr > ARJ_X_VERSION)
+    {
+        printf(M_UNKNVERS, arj_x_nbr);
+        printf(M_SKIPPED, filename);
+	skip();
+	return -1;
+    }
+    if ((arj_flags & GARBLE_FLAG) != 0)
+    {
+        printf(M_ENCRYPT);
+        printf(M_SKIPPED, filename);
+	skip();
+	return -1;
+    }
+    if (method < 0 || method > MAXMETHOD || (method == 4 && arj_nbr == 1))
+    {
+        printf(M_UNKNMETH, method);
+        printf(M_SKIPPED, filename);
+	skip();
+	return -1;
+    }
+    if (file_type != BINARY_TYPE && file_type != TEXT_TYPE)
+    {
+        printf(M_UNKNTYPE, file_type);
+        printf(M_SKIPPED, filename);
+	skip();
+	return -1;
+    }
+    return 0;
+}
+
+static int
+extract(void)
+{
+    if (check_flags())
+        return 0;
+
+    if (no_output)
+        printf(M_TESTING, filename);
+    else
+    {
+        if (file_exists(filename))
+        {
+            printf(M_FEXISTS, filename);
+            printf(M_SKIPPED, filename);
+            skip();
+            return 0;
+        }
+        outfile = fopen(filename, writemode[file_type & 1]);
+        if (outfile == NULL)
+        {
+            printf(M_CANTOPEN, filename);
+            putchar('\n');
+            skip();
+            return 0;
+        }
+        printf(M_EXTRACT, filename);
+        if (host_os != OS && file_type == BINARY_TYPE)
+            printf(M_DIFFHOST);
+    }
+
+    printf("  ");
+
+    crc = CRC_MASK;
+    if (file_type == BINARY_TYPE || file_type == TEXT_TYPE)
+    {
+        if (method == 0)
+            unstore();
+        else if (method == 1 || method == 2 || method == 3)
+            decode();
+        else if (method == 4)
+            decode_f();
+    }
+
+    if (no_output == 0)
+    {
+        if (file_type == BINARY_TYPE || file_type == TEXT_TYPE)
+            fclose(outfile);
+        if (host_os == OS)
+            set_fmode(filename, file_mode);
+        set_ftime(filename, time_stamp);
+    }
+
+    if ((crc ^ CRC_MASK) == file_crc)
+        printf(M_CRCOK);
+    else
+    {
+        printf(M_CRCERROR);
+	error_count++;
+    }
+    return 1;
+}
+
+static void
+execute_cmd(void)
+{
+    int file_count;
+    char date_str[22];
+
+    first_hdr_pos = 0;
+    time_stamp = 0;
+    first_hdr_size = FIRST_HDR_SIZE;
+
+    arcfile = fopen_msg(arc_name, "rb");
+
+    printf(M_PROCARC, arc_name);
+
+    first_hdr_pos = find_header(arcfile, arc_name);
+    fseek(arcfile, first_hdr_pos, SEEK_SET);
+    if (!read_header(1, arcfile, arc_name))
+        error(M_BADCOMNT);
+    get_date_str(date_str, time_stamp);
+    printf(M_ARCDATE, date_str);
+
+    file_count = 0;
+    while (read_header(0, arcfile, arc_name))
+    {
+        if (extract())
+            file_count++;
+    }
+
+    printf(M_NBRFILES, file_count);
+
+    fclose(arcfile);
+}
+
+int
+main(int argc, char *argv[])
+{
+    int i, j, lastc;
+
+    printf(M_VERSION);
+
+    no_output = 0;
+    if (argc == 3 && strcmp(argv[2], "NUL") == 0)
+    {
+        no_output = 1;
+    }
+    else if (argc != 2)
+    {
+        printf(M_USAGE);
+        return EXIT_SUCCESS;
+    }
+
+    strncopy(arc_name, argv[1], FNAME_MAX);
+    case_path(arc_name);
+    i = strlen(arc_name);
+    j = parse_path(arc_name, NULL, NULL);
+    lastc = arc_name[i - 1];
+    if (lastc == ARJ_DOT)
+        arc_name[i - 1] = NULL_CHAR;
+    else if (strchr(&arc_name[j], ARJ_DOT) == NULL)
+        strcat(arc_name, M_SUFFIX);
+
+    make_crctable();
+
+    error_count = 0;
+    arcfile = NULL;
+    outfile = NULL;
+
+    execute_cmd();
+
+    if (error_count > 0)
+	error(M_ERRORCNT, error_count);
+
+    return EXIT_SUCCESS;
+}
+
+/* end UNARJ.C */
+
+[DECODE.C follows]
+
+/* DECODE.C, UNARJ, R JUNG, 04/05/91
+/* Decode ARJ archive
+/* Copyright (c) 1991 by Robert K Jung.  All rights reserved.
+/*
+/*   This code may be freely used in programs that are NOT archivers.
+/*
+/* Modification history:
+/* Date      Programmer  Description of modification.
+/* 04/05/91  R. Jung     Rewrote code.
+/*
+ */
+
+#include "unarj.h"
+
+#include <stdlib.h>
+#include <string.h>
+
+#define THRESHOLD    3
+#define DDICSIZ      26624
+#define MAXDICBIT   16
+#define MATCHBIT     8
+#define MAXMATCH   256	    /* not more than UCHAR_MAX + 1 */
+#define NC	    (UCHAR_MAX + MAXMATCH + 2 - THRESHOLD)
+#define NP          (MAXDICBIT + 1)
+#define CBIT         9
+#define NT          (CODE_BIT + 3)
+#define PBIT         5      /* smallest integer such that (1U << PBIT) > NP */
+#define TBIT         5      /* smallest integer such that (1U << TBIT) > NT */
+
+#if NT > NP
+#define NPT NT
+#else
+#define NPT NP
+#endif
+
+#define CTABLESIZE  4096
+
+#define STRTP          9
+#define STOPP         13
+
+#define STRTL          0
+#define STOPL          7
+
+/* Local variables */
+
+static short  getlen;
+static short  getbuf;
+
+static ushort left[2 * NC - 1];
+static ushort right[2 * NC - 1];
+static uchar  c_len[NC];
+static uchar  pt_len[NPT];
+
+static ushort c_table[CTABLESIZE];
+static ushort pt_table[256];
+static ushort blocksize;
+
+/* Huffman decode routines */
+
+static void
+make_table(int nchar, uchar bitlen[], int tablebits, ushort table[])
+{
+    ushort count[17], weight[17], start[18], *p;
+    uint i, k, len, ch, jutbits, avail, nextcode, mask;
+
+    for (i = 1; i <= 16; i++)
+	count[i] = 0;
+    for (i = 0; (int)i < nchar; i++)
+	count[bitlen[i]]++;
+
+    start[1] = 0;
+    for (i = 1; i <= 16; i++)
+	start[i + 1] = start[i] + (count[i] << (16 - i));
+    if (start[17] != (ushort) (1U << 16))
+        error(M_BADTABLE, 0);
+
+    jutbits = 16 - tablebits;
+    for (i = 1; (int)i <= tablebits; i++)
+    {
+	start[i] >>= jutbits;
+	weight[i] = 1U << (tablebits - i);
+    }
+    while (i <= 16)
+	weight[i++] = 1U << (16 - i);
+
+    i = start[tablebits + 1] >> jutbits;
+    if (i != (ushort) (1U << 16))
+    {
+	k = 1U << tablebits;
+	while (i != k)
+	    table[i++] = 0;
+    }
+
+    avail = nchar;
+    mask = 1U << (15 - tablebits);
+    for (ch = 0; (int)ch < nchar; ch++)
+    {
+	if ((len = bitlen[ch]) == 0)
+	    continue;
+	nextcode = start[len] + weight[len];
+        if ((int)len <= tablebits)
+	{
+	    for (i = start[len]; i < nextcode; i++)
+		table[i] = ch;
+	}
+	else
+	{
+	    k = start[len];
+	    p = &table[k >> jutbits];
+	    i = len - tablebits;
+	    while (i != 0)
+	    {
+		if (*p == 0)
+		{
+		    right[avail] = left[avail] = 0;
+		    *p = avail++;
+		}
+		if (k & mask)
+		    p = &right[*p];
+		else
+		    p = &left[*p];
+		k <<= 1;
+		i--;
+	    }
+	    *p = ch;
+	}
+	start[len] = nextcode;
+    }
+}
+
+static void
+read_pt_len(short nn, short nbit, short i_special)
+{
+    short i, c, n;
+    ushort mask;
+
+    n = getbits(nbit);
+    if (n == 0)
+    {
+        c = getbits(nbit);
+        for (i = 0; i < nn; i++)
+            pt_len[i] = 0;
+        for (i = 0; i < 256; i++)
+            pt_table[i] = c;
+    }
+    else
+    {
+        i = 0;
+        while (i < n)
+        {
+            c = bitbuf >> (16 - 3);
+            if (c == 7)
+            {
+		mask = 1U << (16 - 4);
+		while (mask & bitbuf)
+                {
+                    mask >>= 1;
+                    c++;
+                }
+            }
+            fillbuf((c < 7) ? 3 : c - 3);
+	    pt_len[i++] = (uchar)c;
+            if (i == i_special)
+            {
+                c = getbits(2);
+                while (--c >= 0)
+                    pt_len[i++] = 0;
+            }
+        }
+        while (i < nn)
+            pt_len[i++] = 0;
+        make_table(nn, pt_len, 8, pt_table);
+    }
+}
+
+static void
+read_c_len(void)
+{
+    short i, c, n;
+    ushort mask;
+
+    n = getbits(CBIT);
+    if (n == 0)
+    {
+        c = getbits(CBIT);
+        for (i = 0; i < NC; i++)
+            c_len[i] = 0;
+        for (i = 0; i < CTABLESIZE; i++)
+            c_table[i] = c;
+    }
+    else
+    {
+        i = 0;
+        while (i < n)
+        {
+            c = pt_table[bitbuf >> (16 - 8)];
+            if (c >= NT)
+            {
+		mask = 1U << (16 - 9);
+		do
+                {
+                    if (bitbuf & mask)
+                        c = right[c];
+                    else
+                        c = left[c];
+                    mask >>= 1;
+                } while (c >= NT);
+            }
+            fillbuf(pt_len[c]);
+            if (c <= 2)
+            {
+                if (c == 0)
+                    c = 1;
+                else if (c == 1)
+                    c = getbits(4) + 3;
+                else
+                    c = getbits(CBIT) + 20;
+                while (--c >= 0)
+                    c_len[i++] = 0;
+            }
+            else
+		c_len[i++] = (uchar)(c - 2);
+        }
+        while (i < NC)
+            c_len[i++] = 0;
+        make_table(NC, c_len, 12, c_table);
+    }
+}
+
+static ushort
+decode_c(void)
+{
+    ushort j, mask;
+
+    if (blocksize == 0)
+    {
+        blocksize = getbits(16);
+        read_pt_len(NT, TBIT, 3);
+        read_c_len();
+        read_pt_len(NP, PBIT, -1);
+    }
+    blocksize--;
+    j = c_table[bitbuf >> 4];
+    if (j >= NC)
+    {
+        mask = 1U << (16 - 1 - 12);
+	do
+	{
+	    if (bitbuf & mask)
+		j = right[j];
+	    else
+		j = left[j];
+	    mask >>= 1;
+	} while (j >= NC);
+    }
+    fillbuf(c_len[j]);
+    return j;
+}
+
+static ushort
+decode_p(void)
+{
+    ushort j, mask;
+
+    j = pt_table[bitbuf >> (16 - 8)];
+    if (j >= NP)
+    {
+        mask = 1U << (16 - 1 - 8);
+	do
+	{
+	    if (bitbuf & mask)
+		j = right[j];
+	    else
+		j = left[j];
+	    mask >>= 1;
+	} while (j >= NP);
+    }
+    fillbuf(pt_len[j]);
+    if (j != 0)
+    {
+        j--;
+        j = (1U << j) + getbits(j);
+    }
+    return j;
+}
+
+static void
+decode_start(void)
+{
+    blocksize = 0;
+    init_getbits();
+}
+
+void
+decode(void)
+{
+    short i;
+    short j;
+    short c;
+    short r;
+    uchar *text;
+    long count;
+
+    text = (uchar *)malloc_msg(DDICSIZ);
+
+    decode_start();
+    count = 0;
+    r = 0;
+
+    while (count < origsize)
+    {
+        if ((c = decode_c()) <= UCHAR_MAX)
+        {
+	    text[r] = (uchar) c;
+            count++;
+            if (++r >= DDICSIZ)
+            {
+                r = 0;
+                putc('.', stdout);
+                fwrite_txt_crc(text, DDICSIZ);
+            }
+        }
+        else
+        {
+            j = c - (UCHAR_MAX + 1 - THRESHOLD);
+            count += j;
+            i = decode_p();
+            if ((i = r - i - 1) < 0)
+                i += DDICSIZ;
+            if (r > i && r < DDICSIZ - MAXMATCH - 1)
+            {
+                while (--j >= 0)
+                    text[r++] = text[i++];
+            }
+            else
+            {
+                while (--j >= 0)
+                {
+                    text[r] = text[i];
+                    if (++r >= DDICSIZ)
+                    {
+                        r = 0;
+                        putc('.', stdout);
+                        fwrite_txt_crc(text, DDICSIZ);
+                    }
+                    if (++i >= DDICSIZ)
+                        i = 0;
+                }
+            }
+        }
+    }
+    if (r != 0)
+        fwrite_txt_crc(text, r);
+
+exit:
+    free(text);
+}
+
+/* Macros */
+
+#define GETBIT(c)                       \
+{                                       \
+    if (getlen <= 0)                    \
+    {                                   \
+        getbuf |= bitbuf >> getlen;     \
+        fillbuf(CODE_BIT-getlen);       \
+        getlen = CODE_BIT;              \
+    }                                   \
+    c = getbuf < 0;                     \
+    getbuf <<= 1;                       \
+    getlen--;                           \
+}
+
+#define GETBITS(c, len)                 \
+{                                       \
+    if (getlen < (len))                 \
+    {                                   \
+        getbuf |= bitbuf >> getlen;     \
+        fillbuf(CODE_BIT-getlen);       \
+        getlen = CODE_BIT;              \
+    }                                   \
+    c = (ushort)getbuf>>(CODE_BIT-(len));\
+    getbuf <<= (len);                   \
+    getlen -= (len);                    \
+}
+
+static short
+decode_ptr(void)
+{
+    short c;
+    short width;
+    short plus;
+    short pwr;
+
+    plus = 0;
+    pwr = 1 << (STRTP);
+    for (width = (STRTP); width < (STOPP) ; width++)
+    {
+        GETBIT(c);
+        if (c == 0)
+            break;
+        plus += pwr;
+        pwr <<= 1;
+    }
+    if (width != 0)
+        GETBITS(c, width);
+    c += plus;
+    return c;
+}
+
+static short
+decode_len(void)
+{
+    short c;
+    short width;
+    short plus;
+    short pwr;
+
+    plus = 0;
+    pwr = 1 << (STRTL);
+    for (width = (STRTL); width < (STOPL) ; width++)
+    {
+        GETBIT(c);
+        if (c == 0)
+            break;
+        plus += pwr;
+        pwr <<= 1;
+    }
+    if (width != 0)
+        GETBITS(c, width);
+    c += plus;
+    return c;
+}
+
+void
+decode_f(void)
+{
+    short i;
+    short j;
+    short c;
+    short r;
+    short pos;
+    long count;
+    uchar *text;
+
+    text = (uchar *)malloc_msg(DDICSIZ);
+
+    init_getbits();
+    getlen = getbuf = 0;
+    count = 0;
+    r = 0;
+
+    while (count < origsize)
+    {
+        c = decode_len();
+        if (c == 0)
+        {
+            GETBITS(c, CHAR_BIT);
+	    text[r] = (uchar)c;
+            count++;
+            if (++r >= DDICSIZ)
+            {
+                r = 0;
+                putc('.', stdout);
+                fwrite_txt_crc(text, DDICSIZ);
+            }
+        }
+        else
+        {
+            j = c - 1 + THRESHOLD;
+            count += j;
+            pos = decode_ptr();
+            if ((i = r - pos - 1) < 0)
+                i += DDICSIZ;
+            while (j-- > 0)
+            {
+                text[r] = text[i];
+                if (++r >= DDICSIZ)
+                {
+                    r = 0;
+                    putc('.', stdout);
+                    fwrite_txt_crc(text, DDICSIZ);
+                }
+                if (++i >= DDICSIZ)
+                    i = 0;
+            }
+        }
+    }
+    if (r != 0)
+        fwrite_txt_crc(text, r);
+
+exit:
+    free(text);
+}
+
+/* end DECODE.C */
+

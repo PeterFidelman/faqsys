@@ -1,0 +1,75 @@
+Here are a few lines about the "BIFF" file format, the format used in
+the XITE system. XITE - X-based Image processing Tools and Environment
+- is a free system from dept. of informatics, university of Oslo,
+Norway.  The format is quite simple, and I see no point in describing
+it in detail, but I would like to mention a few features that we are
+satisfied with.
+
+First of all, the format is only 3D (unfortunately, it should be
+N-dim.).  It defines an image to be a sequence of 2D bands. Every band
+may have its own size and pixel type, which even allows the pyramide
+representation to be used. There are also separate parameters for
+positioning and magnification of each band. Any amount of ascii text
+may also be stored on the same file.  The whole structure is read from
+file in one call, and represented in one data structure, something
+like (in C):
+
+  IMAGE i;
+  i = read_image(filename);
+
+Then the image i may be asked for number of bands:
+
+  fprintf("Number of bands: %d\n", nbands(i));
+
+It may also be indexed:
+
+  fprintf("Pixel value: %d\n", i[band][y][x]);
+
+The bands may be handled separately:
+
+  BAND b;
+  b = i[1];  /* pointer to first band */
+  fprintf("Size of band: %d x %d\n", xsize(b), ysize(b));
+  fprintf("Pixel value: %d\n", b[y][x]);
+
+The data structures represent pixel values as well as corresponding
+information, thus only one parameter must be transferred to functions.
+
+The format defines a number of pixel types, but most functions are
+only implemented for the byte pixel type. The function can test the
+arriving band to see if it has correct pixel type, something like:
+
+  if (pixeltype(b) != unsigned_byte) ...
+
+A final feature is the sub-band mechanism. A sub-band is a _pointer_
+to a rectangular subset of a band. When transferred to a function, the
+function does not have to distingwish between "normal" bands, and
+sub-bands. To negate some rectangular part of a band b1:
+
+  BAND b2;
+  b2 = sub-band(b1, x1, x2, y1, y2); /* define the rectangular subset of b1 */
+  negate(b2, b2);   /* two parameters because in general different  
+                       input and output are used, in this case
+                       identical parameters are allowed.
+                       If b1 is now displayed, we see that the subset
+                       is negated. */ 
+
+
+
+To conclude: the file format allows some important flexibility
+(different size and pixel type in each band), and it is very easy to
+write programs using the format, as a "memory-format" is, defined and
+the neccessary functions are written.
+
+I will be glad to answer any questions.
+
+Sincerely,
+Tor Lonnestad
+Dept. of Informatics
+University of Oslo
+Norway
+e-mail: tor@ifi.uio.no
+
+
+
+

@@ -1,0 +1,867 @@
+LightWave 3D Object File Format 
+Oct 16, 1996 
+
+
+INTRODUCTION	1
+TYPES AND STRUCTURES	1
+OBJECT FILE CHUNKS	3
+SURFACE SUB-CHUNKS	5
+BASIC SURFACE PARAMETERS	5
+TEXTURE DEFINITIONS	7
+PLUG-IN SHADERS	9
+IMAGE FILENAMES AND OPTIONS	9
+OBJECT FILE EXAMPLE	10
+
+Introduction 
+
+LightWaveFeil! Bokmerket er ikke definert. 3D objects are stored on disk as 3D meshes 
+consistsing of points, polygons (which can be faces, curves or patches), and surfaces. Files can contain a 
+single connected mesh or several disjoint meshes describing a single logical object. An object file may also 
+contain one or more surface definitions with no mesh. 
+
+This document describes the high-level format of the file, and describes in detail all the elements 
+of the file. There is a sample file at the end displayed as an annotated dump. 
+
+Types and Structures 
+
+LightWave 3D object files are binary files composed of a series of bytes in the range of 0 to 255. 
+The format conforms to the IFF ("Interchange File Format") specification with a FORM-type of LWOB. 
+The full IFF format specification can be found in "EA IFF 85 Standard for Interchange Format Files," but a 
+simplified description is included here. 
+
+The atomic (or lowest-level) types in the file are listed below along with their type name (I2, F4, 
+etc.). These are used interpret sequences of bytes in the file. 
+
+ID Tag 			ID4 
+An ID tag is a sequence of 4 bytes interpreted as 7-bit ASCII values, usually upper-case. These 
+tags are used to identify the type of data which follows. FORM, SURF, POLS, and LWOB are all examples 
+of ID tags. 
+
+Signed Integer		I1, I2, I4 
+Unsigned Integer		I1, I2, I4 
+Integers can have 1, 2 or 4 bytes and can be signed or unsigned. The most significant byte comes 
+first in the file, so bytes read into memory should be reversed before being interpreted on Intel and 
+compatible CPUs. 
+
+Float			F4
+Floats are written as 4 byte IEEE floating-point values. The bytes should generally be reversed 
+before being interpreted on Intel and compatible CPUs.
+
+String			S0
+Names or other character strings are written as a series of ASCII character values followed by a 
+zero (or null) byte. If the length of the string plus the null terminating byte is odd, an extra null is added to 
+make the total length even. 
+
+The basic structural element in an IFF file is the Chunk. This is given by the structure:
+
+CHUNK ::= tag[ID4], length[U4], data[...], pad[U1] ?
+
+Each chunk starts with an ID tag which indicates the type of chunk, and an unsigned four-byte 
+integer which indicates the length of the data. After that follows length bytes of data and an optional pad 
+byte if length is odd. The pad byte, if included, should have a value of zero.
+
+LightWave objects also have the Sub-chunk (or mini-chunkFeil! Bokmerket er ikke definert.) 
+structural element which is just like a chunk except that the length is given by a two-byte unsigned integer. 
+Sub-chunks are specific to LightWave objects, not general IFF files.
+
+SUB-CHUNK ::= tag[ID4], length[U2], data[...], pad[U1] ?
+
+For the purposes of this document, chunks and sub-chunks are written as "id-tag { data }". The 
+entire file can be an example of this notation, since it is itself a FORM chunk containing the ID tag LWOB 
+and a series of data chunks.
+
+FORM { 'LWOB'[ID4], data[CHUNK] * }
+
+Very roughly, object files start with the four bytes "FORM" followed by a four-byte integer giving 
+the length of the file (not including the first 8 bytes) and the four bytes of the FORM-type, "LWOB". The 
+remainder of the data is a series of chunks, each given by a four-character type and a four-byte length for 
+the data which follows.  The contents of each chunk is determined by its type.
+
+The chunks can occur in any order except when the data in a chunk depends on knowing the values 
+in previous chunks, in which case the dependant chunk must occur after the chunk it depends upon. The 
+Layout and Modeler portions of LightWave 3D write their chunks in slightly different orders, so it is 
+important for parsers to support order-independence. 
+
+The LightWave format has some composite datatypes that is uses consistently which are built from 
+the fundamental types. 
+
+	Color			COL4 ::= red[U1], green[U1], blue[U1], pad[U1] 
+
+A color is written as an RGB triple, with each color component being in the range of 0 to 255. 
+0,0,0 is full black and 255,255,255 is full white and the total number of possible colors is 16,777,216. 
+Colors are written with a pad byte to make the length even which is currently unused and should always be 
+zero.
+
+Coordinate		VEC12 ::= X[F4], Y[F4], Z[F4]
+
+3D coordinates are written as an XYZ vector in floating point format. The values are distances 
+along the X, Y, and Z axes. 
+
+Integer Percentage	IP2 ::= scaled-value[I2]
+
+Percentages can be written as a fixed-point integer value, where 0 is equal to 0% and 256 is equal 
+to 100%. 
+
+Floating Point Percentage	FP4 ::= fractional-value[F4]
+
+Percentages can also be written as a floating point value, where 0.0 is equal to 0% and 1.0 is equal 
+to 100%. 
+
+
+Angle			DEG4 ::= degrees[F4]
+
+Angles are specified as floating point values expressed in degrees. 
+
+Filename 		FNAM0 ::= name[S0]
+
+Filenames (such as the names of images) are written as strings. They are interpreted as filenames 
+on the host system directly, except for the automatic conversion of forward-slashes into backslashes on 
+DOS systems, and backslashes into forward-slashes on Unix systems. 
+
+
+Object File Chunks 
+
+The following section describes all the chunks that can be found in a LightWave object file. Their 
+order here is not important, except that chunks which define values in other chunks are listed first. 
+
+Point List 
+PNTS { point-location[VEC12] * } 
+
+This chunk contains a list of the X, Y, and Z coordinates of all the points in an object. Since each 
+coordinate has three components, and each component is stored as a four byte floating point number, the 
+number of points in an object can be determined by dividing the size in bytes of the PNTS chunk by 12. 
+
+By convention, the +X direction is to the right or east, the +Y direction is upward, and the +Z 
+direction is forward or north. For models of real-world objects, the unit size is usually considered to be one 
+meter. The coordinates are specified relative to an object's pivot point. See the LightWave Modeler manual 
+for more information about LightWave 3D's geometric conventions. 
+
+Points in the PNTS chunk are numbered in the order they occur, starting with zero. This index is 
+then used by polygons to define their vertices. The PNTS chunk must be before the POLS, CRVS, and 
+PCHS chunks in the file. 
+
+Surface List 
+SRFS { surf-name[S0] * } 
+
+This chunk contains a list of the names of all the surfaces in an object. Each surface name appears 
+as a null-terminated character string. If the length of the string (including the null) is odd, an extra null byte 
+is added. Surface names should be read from the file until as many bytes as the chunk size specifies have 
+been read. 
+
+In LightWave 3D terminology, a "surface" is defined as a named set of shading attributes. Each 
+polygon contains a reference to the surface used to color the polygon. The names as listed in the SRFS 
+chunk are numbered in the order they occur, starting from 1, and this index is used by polygons to define 
+their surface. The SRFS chunk must be before the POLS, CRVS, and PCHS chunks in the file. 
+
+Face List 
+POLS { ( numvert[U2], vert[U2] # numvert, surf[I2] )* } 
+
+This chunk contains a list of all the polygons in an object. Each entry consists of a short integer 
+specifying the number of vertices in the polygon followed by that many short integers specifying the 
+vertices themselves (as indices into the points list) followed by a short integer specifying which surface is 
+used by the polygon (as an index into the surfaces list). The number of vertices in a polygon currently may 
+vary from one to 200. The vertex list for each polygon should begin at a convex vertex and proceed 
+clockwise as seen from the visible side of the polygon (LightWave 3D polygons are single-sided, except for 
+those whose surfaces have the double- sided flag set). Polygons should be read from the file until as many 
+bytes as the chunk size specifies have been read. 
+
+Since the points in the PNTS chunk are referenced using two-byte integers, the effective maximum 
+number of points in a LightWave object file is 65,536. This is an inherient limitation of this current format. 
+
+A negative surface number for a polygon indicates that the polygon has detail polygons (which are 
+drawn on top of the main polygon and may be coplanar with it). In this case, the next number in the file is a 
+short integer specifying how many detail polygons belong to the current polygon. This is followed by a list 
+of those detail polygons, where each entry is of the same format as described above for regular polygons 
+(except that the detail polygons cannot have details of their own). The list of regular polygons then resumes. 
+To determine which surface is used by a polygon with a negative surface number, the absolute value of that 
+number should be used. Note, however, that detail polygons are mostly obsolete so even though they may 
+be recognized by LightWave and old files contain them, they should be ignored. 
+
+	Curve List 
+CRVS { ( numvert[U2], vert[U2] # numvert, surf[I2], flags[U2] )* } 
+
+This chunk contains a list of all the spline curves in an object. Each entry consists of a short integer 
+specifying the number of vertices in a curve followed by that many short integers specifying the vertices 
+themselves in sequential order, followed by a short integer specifying which surface is used by the
+curve, followed by another short integer specifying bit-flags associated with the curve. If bit zero is set then 
+the first point is a continuity control point, and if bit one is set then the last point is. The point and surface 
+indices are as they are in the POLS chunk, except that curves cannot have details. Curves should be read 
+from the file until as many bytes as the chunk size specifies have been read. 
+
+	Patch List 
+PCHS { ( numvert[U2], vert[U2] # numvert, surf[I2] )* } 
+
+This chunk contains a list of all the MetaNURBS(tm) patches in an object. The entries are the 
+same as the POLS chunk, except that patches cannot have details. Patches should be read from the file until 
+as many bytes as the chunk size specifies have been read. 
+
+MetaNURBS patches are currently limited to four vertices. Other numbers of vertices will load and 
+save but will not display. MetaNURBS patches are also limited to Modeler only and do not display in 
+Layout or render. 
+
+Surface Definition 
+SURF { name[S0], attributes[SUB-CHUNK] * } 
+
+Each SURF chunk describes the surface attributes of a particular surface. These chunks begin with 
+the name of the surface being described. Following  the name is a series of sub-chunks, which are like 
+normal IFF chunks except that their sizes are specified by short integers instead of longs. It is likely that the 
+variety of sub-chunks will grow as new surface attributes are added to the program, but any unknown sub-
+chunks may be skipped over by using the size. Sub-chunks should be read from the file until as many bytes 
+as the chunk size specifies have been read. 
+
+Surface Sub-chunks 
+
+The SURF surface sub-chunks create a simple but varied language for describing surface 
+parameters of LightWave objects. These chunks mostly correspond to the settings in the program's 
+interface, so a complete understanding of the program is very useful for interpreting these chunks. 
+
+Basic Surface Parameters 
+
+The following surface sub-chunks define the base characteristics of a surface. These are values that 
+are independent of texturing and correspond roughly to the main Surface control panel in Layout. Even if 
+the effects of textures and shaders overrides these settings completely in final rendering, as many of these 
+should still be specified as possible since they are also used for previewing and real-time rendering. 
+
+	Base Color 
+COLRFeil! Bokmerket er ikke definert. { base-color[COL4] } 
+
+This defines the base color of the surface, which is the color that lies under all the other texturing  
+attributes. 
+
+Surface State Flags 
+FLAG { flags[U2] } 
+
+Surface flags are stored in a short integer whose bits specify various options for the current 
+surface. Currently only the nine least significant bits are used. The options that set bits indicate are (starting 
+with the least significant bit): Luminous, Outline, Smoothing, Color Highlights, Color Filter, Opaque Edge, 
+Transparent Edge, Sharp Terminator, Double Sided, Additive, and Shadow Alpha. 
+
+The two edge transparency bits should not both be set. The luminous bit has been superceded by 
+the LUMI and VLUM chunks which specify an explicit luminosity percentage. If no explicit luminosity is 
+specified, the Luminous bit sets the luminosity to 100%. 
+
+	Base Shading Values 
+LUMI, DIFF, SPEC, REFL, TRAN { percentage[IP2] }
+VLUM, VDIF, VSPC, VRFL, VTRN { percentage[FP4] } 
+
+These sub-chunks specify the base level of the surface's luminosity, diffuse, specular, reflection, or 
+transparency settings. Each setting has a fixed-point and a floating-point form, but if both are present the 
+floating-point form should take precedence. The fixed-point value should be rounded to the nearest half 
+percent. Even though the floating-point form is prefered, the convention is to write both sub-chunks to a 
+surface description to support older  parsers. If any of these sub-chunks are absent for a surface, a value of 
+zero is assumed. The LUMI or VLUM sub-chunk overrides the Luminous bit of the FLAG sub-chunk. 
+
+REFL and SPEC sub-chunks may have an incorrect length of 4 instead of 2. Even though that bug 
+has been fixed, there may still be object files around with this error. 
+
+	Specular Glossiness 
+GLOS { glossiness[I2] } 
+
+Glossiness is stored as a short integer and is only needed if the specular setting in the SPEC or 
+VSPC sub-chunk is non-zero. A value of 16 indicates low glossiness, 64 indicates medium glossiness, 256 
+indicates high glossiness, and 1024 indicates maximum glossiness. This parameter is related to the
+"specular exponent" used in many lighting models. 
+
+GLOS sub-chunks may have have an incorrect length of 4 instead of 2. Even though that bug has 
+been fixed, there may still be object files around with this error. 
+
+Reflection Mode 
+RFLT { reflection-mode[U2] } 
+
+The reflection mode is a numeric code that describes how reflections are handled for this surface 
+and is only meaningful if the reflectivity of the surface is non-zero. If the mode is 0, then only the backdrop 
+colors in the scene are reflected. If the mode is 1, it is the same as 0 except that raytracing is used for 
+objects in the scene when it is enabled. If the mode is 2 and an image is provided by the RIMG sub-chunk, 
+then the image wrapped spherically around the scene is reflected. If the mode is 3, it is the same as 2 except 
+that raytracing is used when enabled. If there is no RFLT sub-chunk, a value of 3 is assumed. 
+
+Reflection Map Image 
+RIMG { image-file[FNAM0] } 
+
+The reflection image is wrapped around the scene and is used for reflection mapping if the RFLT 
+mode is set to use an image and the reflectivity of the surface is non-zero. If the RFLT mode setting expects 
+an image and there is no RIMG chunk, then the backdrop colors are reflected. See the section on Image 
+Options for more on specifying image names.
+
+Reflection Map Image Seam Angle 
+RSAN { seam-angle[DEG4] } 
+
+This angle is the heading angle of the reflection map seam. If missing, a value of zero is assumed. 
+
+Refractive Index 
+RIND { refractive-index[F4] } 
+
+The surface's refractive index is defined as the ratio of the speed of light in a vacuum to the speed 
+of light in the material. Since light is fastest in a vacuum, this value should therefore be greater than or 
+equal to 1.0. 
+
+Edge Transparency Threshold 
+EDGE { edge-trans[F4] } 
+
+The edge transparency threshold of the current surface should lie between 0.0 and 1.0. 
+
+	Max Smoothing Angle 
+SMAN { max-smoothing-angle[DEG4] } 
+
+This specifies the maximum angle between two adjacent polygons that can be smooth shaded. 
+Polygons with a greater angle between them will appear to meet at a sharp seam. 
+
+Texture Definitions 
+
+Surface textures in LightWave correspond closely to the Textures panel accessed though the 
+Surfaces panel. They are algorithmic or image-based modulations of one of the shading parameters. Any 
+number of textures may be used and their effect is cumulative. 
+
+	Start Texture Definition 
+CTEX, DTEX, STEX, RTEX, TTEX, LTEX, BTEX { texture-type[S0] } 
+
+The presence of one of these sub-chunks indicates that the current surface has a color, diffuse, 
+specular, reflection, transparency, luminosity, or bump texture. The contents of the sub-chunk is a character 
+string specifying the texture type as shown on the control panel. Once one of these sub-chunks is 
+encountered within a SURF chunk, all subsequent texture-related sub-chunks are considered to pertain to 
+the current texture, until another one of these texture strating sub-chunks is read. There may be any number 
+of  textures for each parameter, and the textures are layered in the order they are read. 
+
+	Texture Flags 
+TFLG { texture-flags[U2] } 
+
+This short integer has bits which specify various options for the current texture. Currently only the 
+seven least significant bits are used. The options that set bits indicate are (starting with the least significant 
+bit): X Axis, Y Axis, Z Axis, World Coords, Negative Image, Pixel Blending, and Antialiasing.  Note that 
+only one of the three axis bits should be set. 
+
+	Location and Size 
+TSIZ, TCTR, TFAL, TVEL { vector[VEC12] } 
+
+These sub-chunks each consist of a vector for the current texture's size, center, falloff, or velocity. 
+If missing, the center, falloff and velocity are assumed to be zero. The size should always be specified for 
+any texture. 
+
+	Texture Color 
+TCLR { texture-color[COL4] } 
+
+This specifies the modifying color used by a CTEX texture. 
+
+Texture Value 
+TVAL { texture-value[IP2] } 
+
+This specifies the modifying value of a DTEX, STEX, RTEX, TTEX, or LTEX texture as a fixed-
+point percentage. 
+
+Bump Texture Amplitude 
+TAMP { bump-amplitude[FP4] } 
+
+This specifies the amplitude of the current BTEX bump texture as a floating-point percentage. 
+
+Algorithmic Texture Parameters 
+TFP0, TFP1, TFP2, ... { float-parameter[F4] }
+TIP0, TIP1, TIP2, ... { integer-parameter[I2] }
+
+TSP0, TSP1, TSP2 { float-parameter[F4] }
+TFRQ { noise-freq[U2] } 
+
+The TFPn sub-chunks each contain a floating point number that specifies one of the special texture 
+type-specific parameters (such as Contrast, Turbulence, Wavelength, etc). The TIPn sub-chunks are similar 
+but are used for integer parameters (such as number of Frequencies, Wave Sources, etc). Which sub-chunk 
+is used to record a particular parameter depends on the order in which that parameter's button appears on 
+the control panel.
+
+The total number of possible sub-chunks may increase in the future, but the totals for 5.0 are 4 
+floating-point and 1 integer. 
+
+The TSPn sub-chunks are an obsolete form of the TFPn sub-chunks. The TFRQ sub-chunk is an 
+obsolete form of TIP0 from a time when the number of fractal noise frequencies or number of wave sources 
+was the only integer algorithmic parameter. LightWave will still parse these older sub-chunks but it no 
+longer writes them. 
+
+Image Map 
+TIMG { texture-image[FNAM0] } 
+
+This specifies an image name to be used for image texture mapping. See the section on Image Options for 
+more on specifying image names. 
+
+	Image Alpha 
+TALP { texture-alpha[FNAM0] } 
+
+This specifies an image name to be used as the alpha map for this texture. See the section on Image 
+Options for more on specifying image names. 
+
+Image Wrap Options 
+TWRP { width-wrap[U2], height-wrap[U2] } 
+
+This specifies how image-based textures will interpret the color of areas outside the image. If the 
+mode is 0, then outside the image is considered to be black. If the mode is 1, areas outside the image are 
+clamped to the closest image edge value. If the mode is 2, then the image repeats outside the image area 
+resulting in a uniform tiling. If the mode is 3, then the image repeats but with mirroring, so that each each 
+adjacent repetition is reversed. If no wrap options are specified, 2 is assumed. 
+
+	Antialiasing Strength 
+TAAS { antialising-strength[FP4] } 
+
+This specifies the strength of antialiasing used for the texture. If the Antialiasing bit is set in the 
+TFLG sub-chunk and this sub-chunk is missing, 100% is assumed. This setting currently only affects image-
+based textures. 
+
+Texture Opacity 
+TOPC { texture-opacity[FP4] } 
+
+This specifies how opaque this texture is with respect to the textures before it. If no opacity is 
+specified, 100% is assumed. 
+
+Plug-in Shaders 
+
+Plug-in shaders are applied to a surface after all built-in textures. They are evaluated in the order 
+specified in the surface description and there can currently be up to four. 
+
+	Shader Plug-in 
+SHDR { name[S0] } 
+
+Plug-in shaders are identified by their server name, which is stored in this sub-chunk. 
+
+	Shader Data 
+SDAT { shader-data[...] } 
+
+A shader can store up to 65,535 bytes of data to describe its settings, and these are stored directly 
+in this sub-chunk without modification. The length and contents of this chunk will depend completely on the 
+shader specified by the previous SHDR chunk. 
+
+Image Filenames and Options 
+
+Images are specified, either by the RIMG, TIMG, or TALP sub-chunks, as a filename string. If this 
+is a simple filename, then it represents a still image. However, if the last part of the string is " (sequence)", 
+then the first part of the string specifies the prefix of an image sequence and the actual filename is generated 
+by appending the three digit frame number to the prefix when loading the image file for each frame. If the 
+last part of the string is " (clip)", then the string is the name of a Flyer clip. 
+
+The following sub-chunks may be used to set options for images. Each of these sub-chunks refers 
+to image immediately preceeding it in the SURF data. 
+
+	Sequence Options 
+IMSQ { offset[U2], flags[U2], loop-length[U2] } 
+
+This only applies if the image is a sequence. The offset is added to the frame number to get the 
+image number for that frame. The loop-length is the number of frames before the sequence starts at the 
+beginning again. The least significant flag bit indicates that the sequence does loop, and the next bit 
+indicates that the images are interlaced and should be treated as fields. 
+
+Flyer Clip Options 
+FLYR { begin[U4], end[U4] } 
+
+This only applies if the image is a Flyer clip. The two values are the clip endpoints stored in Flyer 
+timecode format. 
+
+	Color Cycle Options 
+ IMCC { cycle-speed[U2], low-index[U2], high-index[U2] } 
+
+Only color-mapped images can use color cycling. The cycle-speed can be +1, -1 or 0, but 0 means 
+the sub-chunk can be ignored. The low-index and high-index give the color table range to cycle through 
+while rendering. 
+
+Object File Example 
+
+A simple object (with somewhat complex surfaces) is listed below to illustrate some of the features 
+of a FORM LWOB. The object is an image-mapped square polygon and a transparent, reflective, bumpy 
+yellow triangle. They are made from 5 points in the XY plane. The annotations are laid out like a 
+disassembly, with left collumn showing the binary file data listed as two hexadecimal digits per byte, the 
+center collumn showing a symbolic breakdown of the file, and the far right showing commentary on each 
+line. 
+
+The file starts with the standard simple form IFF header. It is just a chunk of type FORM which 
+identifies this file as an IFF. The first four bytes in the main outer chunk are the ID LWOB which specifies 
+this is a LightWave Object File IFF. 
+
+464f524d 000001fe	FORM {			IFF file header; FORM chunk
+file length is 510 + 8 bytes
+4c574f42		LWOB			FORM type ID for LW OBjects
+
+The first data chunk in this file is the PNTS chunk. The chunk length is 60, so we know there are 5 
+points. We just read X, Y, and Z triples until we get them all. The points are numbered starting from zero 
+for indexing later. 
+
+504e5453 0000003c	PNTS {			60 bytes / 12 = 5 points
+
+00000000 3f800000 00000000	  		0.0,  1.0, 0.0	point 0
+
+40200000 3f800000 00000000	  		2.5,  1.0, 0.0	point 1
+
+40200000 bf800000 00000000	  		2.5, -1.0, 0.0	point 2
+
+00000000 bf800000 00000000	  		0.0, -1.0, 0.0	point 3
+
+c0000000 00000000 00000000	 		-2.0,  0.0, 0.0	point 4
+
+	}
+
+Next is the SRFS chunk which lists the surfaces used by the polygons. The surface names are 
+numbered from 1. Note the double-nulls to make string lengths even. 
+
+53524653 00000012		SRFS {
+
+54 72 69 61 6e 67 6c 65 00 00	"Triangle"	surface 1
+
+53 71 75 61 72 65 00 00		"Square"	surface 2
+
+				}
+
+
+Now that we have points and surfaces indexed, we can read the POLS chunk. Polygon descriptions 
+are variable-length, but we keep reading until we have consumed the 22 bytes listed in the chunk header. 
+Note that vertex indices are 0 to 4, but surface indices are 1 to 2. A negative surface index would flag detail 
+polygons. 
+
+504f4c53 00000016		POLS {
+
+00033 						polygon 1 has 3 vertices
+
+	0003 0004 0000			3, 4, 0  		polygon 1 vertex list
+
+	0001				1 polygon	1 uses "Triangle" surface
+
+0004				4 		polygon 2 has 4 vertices
+
+	0000 0001 0002 0003		0, 1, 2, 3	polygon 2 vertex list
+
+	0002	 			2 		polygon 2 uses "Square" surface
+
+}
+
+The complete geometry has been read, so the rest of the file is dedicated to surface definitions. The 
+following SURF chunk describes the "Triangle" surface. It is a double-sided, glossy, transparent yellow 
+surface with a fractal bump map. The chunk contains sub-chunks which have a two-byte length instead of 
+the four bytes used by the main data chunks. Note that there is a fixed-point and floating-point value for 
+each shading parameter, like DIFF and VDIF. The fixed-point form is included by LightWave when writing 
+objects in order to assure backward compatibility. When writing objects for 4.0 LightWave or higher, only 
+the floating-point forms need to be used. 
+
+53555246 000000c8		SURF {		start defintion of "Triangle"
+
+54 72 69 61 6e 67 6c 65 00 00	"Triangle"	surface settings
+
+434f4c52 0004	  		COLR {   	base color is yellow
+
+f0 b4 00 00  240, 180, 0
+
+	}
+
+464c4147 0002			FLAG {		surface is double-sided
+
+0100				[00100000000]
+
+	}
+
+44494646 0002			DIFF {		fixed 60% diffuse
+
+009a				154
+
+	}
+
+56444946 0004			VDIF {		float 60% diffuse
+
+3f19999a			0.6
+
+	}
+
+53504543 0002			SPEC {		fixed 80% specular
+
+00cd				205
+
+	}
+
+56535043 0004			VSPC {		float 80% specular
+
+3f4ccccd				0.8
+
+	}
+
+474c4f53 0002			GLOS {		"High" glossiness
+
+0100				256
+
+	}
+
+5245464c 0002			REFL {		fixed 20% reflective
+
+003				351
+
+	}
+
+5652464c 0004			VRFL {		float 20% reflective
+
+3e4ccccd			0.2
+
+	}
+
+52464c54 0002			RFLT {		reflect backdrop colors and
+
+0001				1		raytraced objects
+
+	}
+
+5452414e 0002			TRAN {		fixed 40% transparent
+
+0066				102
+
+	}
+
+5654524e 0004			VTRN {		float 40% transparent
+
+3ecccccd			0.4
+
+	}
+
+52494e44 0004			RIND {		refractive index
+
+3f800000			1.2		1.2
+
+					}
+
+
+42544558 000e			BTEX {		start bump map
+
+46 72 61 63 74 61 6c 20				using "Fractal Bumps" algorithm
+
+42 75 6d 70 73 00		"Fractal Bumps"
+
+}
+
+54464c47 0002			TFLG {		Y-axis; world-coords;
+
+006a				[1101010]	pixel blending; antialiasing
+
+					}
+
+	5453495a 000c			TSIZ {		texture size
+
+	3dcccccd 3dcccccd 3dcccccd	0.1, 0.1, 0.1
+
+	}
+
+	54414153 0004			TAAS {		texture antializing strength
+
+	3f800000	1.0    100%
+
+	}
+
+	54414d50 0004			TAMP {		bump amplitude
+
+	3f000000			1.5		150%
+
+	}
+
+	54495030 0002			TIP0 {		first integer parameter
+
+	0003				3		3 fractal noise frequences
+
+					}
+
+				} end of SURF chunk
+
+Last is the SURF chunk for the "Square" surface. It is a single-sided surface with a color map from 
+an image. Even though both surfaces have only one texture each, they could either of them have no textures, 
+or an unlimited number. They would be applied in the order they were read from the surface definition. 
+
+53555246 000000a6			SURF {		start definition of "Square"
+
+53 71 75 61 72 65 00 00			"Square"	surface settings
+
+434f4c52 0004				COLR {		base color is white
+
+c8 c8 c8 00				200, 200, 200
+
+	}
+
+464c4147 0002	  			FLAG {		all surface flags clear
+
+0000[000000000]
+
+}
+
+44494646 0002				DIFF {		fixed 100% diffuse
+
+0100					256
+
+}
+
+56444946 0004				VDIF {		float 100% diffuse
+
+3f800000				1.0
+
+					}
+
+43544558 0012				CTEX {		start color map using
+
+50 6c 61 6e 61 72 20 49 6d		"Planar Image Map" algorithm
+
+61 67 65 20 4d 61 70 00 00		"Planar Image Map"
+
+	}
+
+54494d47 0012				TIMG {		static image used for mapping
+
+49 6d 61 67 65 73 5c 6d 69  
+
+72 61 67 65 2e 69 66 66 00		"Images\mirage.iff"
+
+	}
+
+54575250 0004				TWRP {		image will tile in both directions
+
+0002 0002    				2, 2
+
+	}
+
+54464c47 0002				TFLG {		Z-axis; pixel blending;
+
+0064					[1100100]	antialiasing
+
+	}
+
+5453495a 000c				TSIZ {		image size (only X and Y matter)
+
+40200000 40000000 3f800000		2.5, 2.0, 1.0
+
+	}
+
+54435452 000c				TCTR {		image center (only X and Y matter)
+
+3fa00000 00000000 00000000		1.25, 0.0, 0.0
+
+	}
+
+54414153 0004				TAAS {		texture antialiasing strength
+
+3f800000				1.0		100%
+
+	}
+
+54434c52 0004				TCLR {		texture color is black (unused)
+
+00 00 00 00  				0, 0, 0
+
+	}
+
+	} end of SURF chunk
+
+ }   end of FORM chunk and file
+
+LAYERED OBJECT FILE FORMAT (last revised 10/4/95) (Taken from the file LWLO.html)
+Introduction
+
+The "Layered Object" LWLO file format is used by Modeler to save an editing session which includes 
+multiple layers of data, some active and some in the background.  This IFF format file is nearly identical to 
+the normal LWOB format object file, so this document assumes that the reader is familiar with the LWOB 
+format.
+
+The IFF form-type is LWLO for "LightWave Layered Object" and it contains the same PNTS, SRFS, 
+POLS, CRVS and SURF chunks as LWOB files.  Unlike the LWOB format, however, the LWLO file may 
+contain any number of PNTS, POLS and CRVS chunks, with each one describing the contents of a single 
+layer.  Layers are described by the LAYR chunk.
+
+LAYR Chunk
+
+A LAYR chunk must precede each set of PNTS, POLS and CRVS data chunks and indicates to which layer 
+those data belong.  A LAYR chunk consists of two unsigned short values and a string.  The first is the layer 
+number which should be from 1 to 10 to operate correctly in Modeler.  This restriction may be lifted in 
+future versions of the format.  The second value is a bitfield where only the lowest order bit is defined and 
+all others should be zero.  This bit is one if this is an active layer and zero if it is a background layer.  The 
+string which follows is the name of the layer and should be null-terminated and padded to even length.
+
+Schematic Example
+
+The file is read just like any LWOB format file except that each time a LAYR chunk is encountered, the 
+subsequent PNTS, POLS and CRVS data chunks are redirected to the indicated layer.  The SRFS and 
+SURF chunks are read normally.  Below is a simplified example which shows a typical file and the order of 
+reading.
+
+FORM LWLO 	-- tag identifies file type and size
+SRFS ...		-- surface name chunk gives name mappings for subsequent POLS chunks
+LAYR		-- first layer starts
+0003  layer 3 which is active and called "noname"
+0001
+6E 6F 6E 61 6D 65 00 00
+PNTS ...		-- data in layer 3
+POLS ...
+LAYR		-- second layer starts
+0006  layer 6, background, called "Foo"
+0000
+46 6F 6F 00
+PNTS ...		-- data in layer 6
+POLS ...
+CRVS ...
+SURF ...		-- surface description
+end implied by file length
+
+
+
+B
+Base Color	5
+Base Shading Values	5
+BTEX	8
+C
+Chunk	2
+COL4	2
+color cycling	10
+COLR	5
+CTEX	7
+Curve List	4
+D
+DEG4	3, 6, 7
+DIFF	5, 11, 14
+DTEX	7
+E
+EDGE	6
+Edge Transparency Threshold	6
+F
+F4	1, 2, 3, 6, 8
+Face List	4
+FLAG	5, 6, 11, 14
+Flyer Clip Options	9
+FLYR	9
+FNAM0	3, 6, 8
+FORM	1, 2, 10, 15, 16
+Format Header	10
+FP4	3, 5, 7, 8
+G
+GLOS	6, 12
+I
+I1		1
+I2		1, 3, 4, 6, 8
+I4		1
+ID4	1, 2
+IMCC	9
+IMSQ	9
+IP2	3, 5, 7, 8
+L
+LTEX	7
+LUMI	5, 6
+LWOB	1, 2, 10, 15, 16
+M
+Max Smoothing Angle	7
+mini-chunk	2
+P
+Patch List	4
+Plug-in Shaders	1, 9
+Point List	3
+R
+REFL	5, 6, 12
+Reflection Map Image	6
+Reflection Map Seam Angle	6
+Reflection Mode	6
+refractive index	6, 12
+RFLT	6, 12
+RIMG	6, 9
+RIND	6, 12
+RSAN	6
+RTEX	7
+S
+S0	2, 3, 5, 7, 9
+SDAT	9
+Sequence Options	9
+
+
+
+1
+
+1
+
+

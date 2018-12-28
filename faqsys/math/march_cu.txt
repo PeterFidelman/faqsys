@@ -1,0 +1,118 @@
+Overview of the Marching Cubes Algorithm
+
+Matthew Ward, WPI CS Department
+
+Summary
+
+Marching Cubes is an algorithm for rendering isosurfaces in volumetric
+data. The basic notion is that we can define a voxel(cube) by the pixel
+values at the eight corners of the cube. If one or more pixels of a cube
+have values less than the user-specified isovalue, and one or more have
+values greater than this value, we know the voxel must contribute some
+component of the isosurface. By determining which edges of the cube are
+intersected by the isosurface, we can create triangular patches which
+divide the cube between regions within the isosurface and regions outside.
+By connecting the patches from all cubes on the isosurface boundary, we get
+a surface representation.
+
+Algorithm Details
+
+There are two major components of this algorithm. The first is deciding how
+to define the section or sections of surface which chop up an individual
+cube. If we classify each corner as either being below or above the
+isovalue, there are 256 possible configurations of corner classifications.
+Two of these are trivial; where all points are inside or outside the cube
+does not contribute to the isosurface. For all other configurations we need
+to determine where, along each cube edge, the isosurface crosses, and use
+these edge intersection points to create one or more triangular patches for
+the isosurface.
+
+If you account for symmetries, there are really only 14 unique
+configurations in the remaining 254 possibilities. When there is only one
+corner less than the isovalue, this forms a single triangle which
+intersects the edges which meet at this corner, with the patch normal
+facing away from the corner. Obviously there are 8 related configurations
+of this sort (e.g. for configuration 2 - you may need to tweak the colormap
+to see the plane between the spheres/pixels). By reversing the normal we
+get 8 configurations which have 7 corners less than the isovalue. We don't
+consider these really unique, however. For configurations with 2 corners
+less than the isovalue, there are 3 unique configurations (e.g. for
+configuration 12), depending on whether the corners belong to the same
+edge, belong the same face of the cube, or are diagonally positioned
+relative to each other. For configurations with 3 corners less than the
+isovalue there are again 3 unique configurations (e.g. for configuration
+14), depending on whether there are 0, 1, or 2 shared edges (2 shared edges
+gives you an 'L' shape). There are 7 unique configurations when you have 4
+corners less than the isovalue, depending on whether there are 0, 2, 3 (3
+variants on this one), or 4 shared edges (e.g. for configuration 30 - again
+you may need to tweak the colors to see the triangle for the isolated (far)
+inside sphere/pixel).
+
+Each of the non-trivial configurations results in between 1 and 4 triangles
+being added to the isosurface. The actual vertices themselves can be
+computed by interpolation along edges, or, as I did, default their location
+to the middle of the edge. The interpolated locations will obviously give
+you better shading calculations and smoother surfaces.
+
+Now that we can create surface patches for a single voxel, we can apply
+this process to the entire volume. We can process the volume in slabs,
+where each slab is comprised of 2 slices of pixels. We can either treat
+each cube independently, or we can propogate edge intersections between
+cubes which share the edges. This sharing can also be done between adjacent
+slabs, which increases storage and complexity a bit, but saves in
+computation time. The sharing of edge/vertex information also results in a
+more compact model, and one that is more amenable to interpolated shading.
+
+Implementation
+
+Students in CS563 can find my implementation of this algorithm in
+/cs/courses/cs563/software/march_cubes [NOTE TO OTHERS: THIS CODE IS NOT
+AVAILABLE FOR GENERAL DISTRIBUTION - I WILL IGNORE ALL REQUESTS FOR COPIES
+OF THE CODE]. It is loosely based on the description presented in the text
+by Watt and Watt (see below). The file cube.new contains 1 row of
+information for each of 256 configurations. The first number gives the
+configuration ID, which is simply an 8-bit number based on which of 8
+corners are inside the isosurface. The numbers after that are triplets,
+identifying the edges which contain the vertices for each triangle patch to
+be used for that configuration (terminated by a -1). The file hydrogen.dat
+is a sample volume file which is distributed with AVS. The first three
+bytes give the dimensions, and the rest is just row-major, 1 byte per data
+point.
+
+The program mcube.c accepts a data file and an isovalue, reads the
+configuration table, and "marches" through the volume, classifying cubes
+and outputing triangles as it goes (each row of output is the number 3,
+followed by 3 sets of 3-D floating point coordinates). No attempt is made
+to share vertices or edges between triangles, which leads to pretty large
+output files. The program tri_inventor.c takes this output and creates a
+scene graph that can be imported into IRIS Inventor or Open Inventor. This
+can make a REALY large file, based on your data set and isovalue (press
+here for some sample output).
+
+Problems and Alternatives
+
+One obvious problem with marching cubes is the amount of memory needed to
+store the resulting surface. As each boundary cube can generate up to 4
+sub-pixel facets, the result is quite large. We can reduce this somewhat by
+sharing vertices and edges, or even merging coplanar patches into larger
+facets. Another solution might be to try and fit parametric surfaces to
+groups of boundary points, though this may be difficult for complex surface
+geometries.
+
+Another problem arises when you don't have a filled space of voxels.
+Depending on how the volume data was acquired there may be voids which need
+to be assigned values or circumnavigated in the surface generation
+algorithm. Any interpolated value used may reduce the validity of the
+resulting surface.
+
+A final alternate strategy would be to ray trace the original volume data,
+which may be the topic of a future presentation.
+
+References
+
+Lorensen, W.E. and Cline, H.E., "Marching Cubes: a high resolution 3D
+surface reconstruction algorithm," Computer Graphics, Vol. 21, No. 4, pp
+163-169 (Proc. of SIGGRAPH), 1987. Watt, Alan, and Watt, Mark, Advanced
+Animation and Rendering Techniques, Addison-Wesley, 1992.
+
+matt@owl.WPI.EDU

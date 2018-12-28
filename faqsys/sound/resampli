@@ -1,0 +1,270 @@
+From: lou@caber.valid.com (Louis K. Scheffer)
+Subject: Re: 48k to 44.1k sample rate conversion
+Date: 18 May 91 08:06:35 GMT
+
+joe@media-lab.media.mit.edu.MEDIA.MIT.EDU (Joe Chung) writes:
+
+
+>In the digital audio world, a lot of sound is recorded at a 48k sample
+>rate. A CD, however, is at 44.1k. As we all know, the classic
+>technique of sample rate conversion would have us upsample to the
+>lowest common multiple, low-pass filter, and downsample to the desired
+>rate. The only problem is that the LCM of 44.1k and 48k is 21.168 Meg!
+>A 4 minute stereo soundfile at 48k takes up about 50 megabytes, which
+>means that it's 21.168M upsampled version would be over 22 gigabytes!
+
+>Obviously, sample rate converters don't store the entire intermediate,
+>upsampled version, but I was wondering if anyone has a good idea of 
+>what sorts of schemes they do use. Do they do some sort of overlap-
+>save method akin to block convolution? Does anyone have any code
+>to do this?
+
+The most straightforward way is as follows:  You interpolate 146 zeros
+between every sample to get a data rate of 7.056 MHz.  You then
+design a digital filter to low-pass this to 20 KHz.  This can be an
+FIR filter with perfect phase and arbitrarily good frequency response,
+subject only to the limits of your computing power.  One DSP chip
+will easily get you +-0.05 db.  You then discard 159 of every 160
+samples to get 44.1 KHz.  Since there is no content above 22.05 KHz,
+this loses nothing.  Assuming you have done all high-precision math up to this
+point, then the last step, rounding back to 16 bits, is the only
+one that introduces any error.  This error will most likely appear
+as white noise spread over the whole spectrum (just like the noise
+introduced on the first A/D conversion).  The level should be very
+low (-96 db, more or less).
+
+Computationally, you never store the interpolated 0s, and you never
+compute the samples that will be discarded.  Say the FIR filter with
+a 7 MHz rate and a 20KHz cutoff has 20000 coefficients (just a guess).
+Since 146/147 of the data are 0, you must do 20000/147 = 136 multiplies
+to get each output point.  Hence you keep the last 136 samples at
+48 KHz, and multiply by 136 coefficients (spaced 147 apart) from the
+FIR filter.  Since all possible phases between the two signals are
+present (otherwise you did not have the least common multiple) you must
+keep all 20000 coefficients.  Each output point uses a different 136
+element subset up to the 147th output point, which uses the same
+coefficients as the first output point, and the cycle repeats.
+
+So the only question is computing the coefficients to use in the FIR
+filter.  This is conceptually straightforward (See, for example, the
+fortran program in Rabiner and Gold, "Theory and Application of
+Digital Signal Processing") but such a long filter may stress the
+limits of computer arithmetic.  Since you only need to compute it
+once, however, it should be simple to adapt the algorithm to higher
+precision arithmetic.
+
+I have the coefficients lying around somewhere for 48.0 -> 44.0 KHz
+conversion (an easier problem) but not for 48.0 -> 44.1.  If someone
+computes them, or has them, maybe they could post a message saying
+where they can be found.
+
+Hope this helps,
+ Lou Scheffer
+
+From: parks@bennett.berkeley.edu (Tom Parks)
+Subject: Re: 48k to 44.1k sample rate conversion
+Date: 26 May 91 22:15:01 GMT
+
+
+In article <498@valid.valid.com>, lou@caber.valid.com (Louis K. Scheffer) writes:
+|> True, but you only design it once (and it's done already, I've got the
+|> coefficients for those who want them).  It takes about 10 CPU hours on a fast
+|> machine to design the filter (using Remez exchange, anyway).  It takes 14000
+|> coefficients to get +- 0.05 db passband, 104 db rejection stopband.
+
+Ok, I went ahead and did a design for converting from 48 kHz to 44.1 kHz.
+I cascaded 3 FIR filters to do this.  Their sample rate conversion ratios were 3:2, 7:5, and 7:16 and they required 147, 75, and 53 taps respectively.  Each filter had a pass band ripple of less than 0.05 dB and stop band rejection of over 100 dB.  It took me less than an hour of my time to design these filters, and it took less than 1 minute of CPU time on a SPARCstation.
+
+|> Agreed, but you only design it once, and the program source is published in
+|> "Theory and Application of Digital Signal Processing" by Rabiner and Gold.
+|> (Actually, you need to tune it up a little for such large filters, but that's
+|> only a few days work.)
+
+You only have to design this set of filters once, too, and I didn't have to spend any time tuning up any software.
+
+|> This appraoch will work, but it's not clear the computational requirement is
+|> any less.  Direct convolution by the 14000 tap filter takes about 95 multiply
+|> adds per output point (since 146/147 of the input samples are 0).  In your
+|> example, the very first filter does:
+|> 
+|> 	increase by 3
+|> 	decrease by 2 at 144 KHz  (but 2/3 inputs are 0)
+|> 	throw away 1 of 2, rate now 72 KHz.
+|> 
+|> This filter looks like a 3x oversampling filter, and will require
+|> about 130 coefficients, for a 130/3 = 43 multiplies per output sample (and
+|> output is at a 72 KHz rate, so this implies 43 * 72/44.1  = 70 multiplies per
+|> (44.1 KHz) output sample.
+
+The first filter requires 49 macs per 72 kHz sample, or 3528000 macs/second.
+The second filter requires 10.7 macs per 100.8 kHz sample, or 1080000 macs/sec.
+The third filter requires 7.6 macs per 44.1 kHz sample, or 333900 macs/second.
+The total is 4941900 macs to produce 44100 samples, or 112 macs/sample.
+So this is comparable to the 14000 tap filter implementation as far as macs/second are concerned.
+
+|> Thus if you implement the filters by multiply/adds, this takes more operations,
+|> plus the book-keeping is *much* more complex.  The direct approach is a one
+|> or two instruction loop on most DSP chips, for 100 or 200 cycles per output
+|> point.  I doubt you can do the bookkeeping alone in less than 100 cycles
+|> per output point for the method above.
+|>
+
+Since the three filters are cascaded, there isn't really any additional
+overhead.  Each filter is a one or two instruction loop, and there's one of
+these loops for each filter.
+
+So my implementation requires 112 multiply-accumulates per output sample
+(compared to 95), storage for 275 filter taps (compared to 14000), and
+takes less than a minute of CPU time to design (compared to 10 hours).
+
+Tom Parks
+
+From: lou@caber.valid.com (Louis K. Scheffer)
+Subject: Programs for 44.1<->48 conversion available
+Date: 15 Oct 91 04:38:50 GMT
+
+I've got some filters and programs to convert 44.1 KHz sampled data to
+48 KHz sampled data and vice versa.  This includes the filter programs
+themselves, programs to generate test data, programs to test the
+output via FFTs, programs to test the FFT program, and so on.
+
+These are demo programs only; they read a file of numbers (in ascii) and
+produces another file of numbers.
+
+One caveat: the theory is correct, and the numbers look fine, but I've
+never listened to the results.  (I don't have the necessary I/O, nor
+a 48 KHz DAT player.)
+
+Here is the README file - if you want the stuff send me email.  It's
+about 62 Kbytes.
+
+  -Lou Scheffer-
+
+**** The README file from the 'resample' directory. **********
+Here is some software to convert between 44.1 and 48 KHz rates.
+
+Theory of operation:
+44.1 and 48 are in the ratio 147/160.  To convert from 44.1 to
+48, for example, we (conceptually):
+    1) interpolate 159 zeros between every input sample.  This
+       raises that data rate to 7.056 MHz.  Since it is
+       equivalent to reconstructing with delta functions, it
+       also creates images of frequency f at 44.1-f, 44.1+f,
+       88.2-f, 88.2+f, ...
+    2) We remove these with an FIR digital filter, leaving a
+       signal containing only 0-20 KHz information, but still
+       sampled at a rate of 7.056 MHz.
+    3) We discard 146 of every 147 output samples.  It does not hurt
+       to do so since we have no content above 24 KHz.  In
+       practice, of course, we never compute the values of the
+       samples we will throw out.
+
+So we need to design an FIR filter that is flat to 20 KHz, and
+down at least X db at 24 KHz.  How big does X need to be?  You
+might think about 100 db, since the max signal size is roughly
++-32767, and the input quantization +- 1/2, so we know the input
+had a signal to broadband noise ratio of 98 db at most.  However,
+the noise in the stopband (20KHz-3.5MHz) is all folded into the
+passband by the decimation in step 3, so we need another 22 db
+(that's 160 in db) to account for the noise folding.  Thus 120 db
+rejection yields a broadband noise equal to the original quantizing
+noise.  If you are a fanatic, you can shoot for 130 db to make the
+original quantizing errors dominate, and a 22.05 KHz cutoff to
+eliminate even ultrasonic aliasing.  You will pay for your
+fanaticism with a penance of more taps, however.
+
+I've designed 3 filters - one minimal (but better, I suspect, than
+many commercial products for this purpose), one a good compromise,
+and one for fanatics.
+
+Most of this code is in double precision for testing purposes.  If
+you convert to single precision or integers, watch your step!
+
+resample.c - source of conversion program.
+gencos.c   - generates cosine test cases.
+full.c     - generates a 32767 height sin wave, rounded to integers,
+	     for testing the FFT program.  We pick this because the
+	     correct answer is known analytically.
+fft.f      - reads data, does an FFT on it, and computes signal to
+	     noise metrics.  Note - this program does NOT do any
+	     windowing on the input data, so the results are only
+	     correct if the signal to be measured repeats exactly
+	     during one fft cycle (256 samples).  The test cases
+	     are picked that way.
+resp.f     - computes responses of digital filters.  Slow but very
+	     accurate.
+makefile   - compiles programs and makes test cases.  Compiles
+	     the Fortan programs fft and resp with the xlf command,
+	     which is for the IBM machine.  Substitute your
+	     machine's fortran compile command.  "make clean"
+	     removes files that can be easily recreated from the
+	     source files.
+
+coeff.9000 - A minimal set of coefficients.  Flat +- 0.012 db to
+	     20KHz, down 119 db by 24KHz, 96.5 db signal to noise
+	     ratio.  (For comparison, input quantization to ideal
+	     16 bits is 98 db).
+coeff.12500  A better set of coefficents.  Flat +- 0.009 db to
+	     20KHz, down 123 db by 23KHz, 100 db signal to noise
+	     ratio.
+coeff.21500  A fanatic set of coefficients.  Flat to better than
+	     +- 0.001 db from 0 to 20 KHz.  Down 130 db at 22.05
+	     KHz, wideband S/N >108 db.
+
+Compiled programs:
+
+44.1to48   - conversion program for 44.1 to 48 conversion.
+48to44.1   - conversion program for other direction.
+gencos     - cosine test data (double precision)
+full	   - full size test data (integer)
+fft	   - program for looking at results
+
+Test cases generated by makefile:
+
+11025at48	11025 Hz signal sampled at 48 KHz.
+   Convert this to 44.1, then test using fft.
+12000at48	12000 Hz signal sampled at 48 KHz.
+   Check the noise floor of the FFT with this.
+23000at48	23000 Hz signal sampled at 48 KHz.
+   Check the filter rejection.
+689at48		689.0625 Hz signal sampled at 48 KHz.
+   Convert this to 44.1, then test using fft.
+750at44.1	11025 Hz signal sampled at 48 KHz.
+   Convert this to 48, then test using fft.
+750at48		750 Hz signal sampled at 48 KHz.
+   Another test of the FFT.
+dc		dc signal
+   Sanity check
+full_height	32767 height sin wave, quantized to integers
+   Should (in theory) give 98 db signal to noise ratio from the fft.
+
+You use
+   resp <coefficients
+to test the filter for flatness in the passband and rejection
+in the stopband.
+
+You use
+   fft <full_height
+to check the fft program.  Theory says
+this particular signal should have a signal power of 32767^2/2,
+and a noise power of 1/12.  This leads to a signal to noise
+ratio of 98.09 db.  We measure something quite close; the error
+is probably due to the single precision FFT.
+
+You use the sequence
+   44.1to48 coefficients <750at44.1 >tmp
+   fft <tmp
+to check the completed filter.  Note that 750 Hz = 48Khz/64, so the
+FFT program can analyze this accurately.  Should give the signal
+to noise ratios quoted above.  Other examples are similar.  The
+FFT of the DC results gives unreasonably good answers, probably due
+to the fft, which is done in single precision.
+
+   -Lou Scheffer-
+
+Literature:
+
+J. O. Smith and P. Gossett, "A Flexible Sampling-Rate Conversion Method,"
+Proceedings of the IEEE Conference on Acoustics, Speech, and Signal Processing,
+San Diego, CA, March, 1984.
+

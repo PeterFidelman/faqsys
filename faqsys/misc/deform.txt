@@ -1,0 +1,47 @@
+
+>   Hi,
+> 
+>     I'm looking for information on realtime deformation algorithims.
+>   What I'd like to do is have some 3-D object like a sphere composed
+>   of polygonal faces and be able to interactively prod the sphere
+>   and see it deform proportionally to the applied force.
+> 
+>     Has anyone out there done anything similiar to this, or know of
+>   any good articles that might address this problem ?  I'd even be
+>   intested in 2-D versions of this problem (i.e. deformation of a
+>   series of connected line segments).  Please respond by internet
+>   mail if possible and I'll summarize the responses if there is enough
+>   interest.
+> 
+> 
+>   Steve Berger (sb@onripx.neuro.emory.edu)
+
+
+I know a simple algorythm, i already use to perform 3D objects transformations :
+
+Use two array ( or equivalent) : 
+	- the first one contains the source point ( in 2D or in 3D ) - named S -
+	- the second one contains the destination coordinates - named D -
+
+Then use one ( or two or tree coef ) - named co1 co2 co3 ( from 0 to .. 1 ) -
+	and display all points like that :
+
+	    x = S.x[ii] * co1  +  ( D.x[ii] * ( 1 - co1 );
+	    y = S.y[ii] * co2  +  ( D.y[ii] * ( 1 - co2 );
+	    z = S.z ..... co3 ....... z ........... co3
+
+	And then increment co1, co2, co3 ( step .001 ) for example.
+
+It's not very efficient but it's a great idea to start ... No ?
+
+
+				Bye ... all your comments will be welcome
+
+-- 
+____________________________________________________________________________
+
+JOLY Thomas
+University of PARIS VII ( Jussieu )
+Licence Informatique
+mail : joly@amertume.ufr-info-p7.ibp.fr
+____________________________________________________________________________

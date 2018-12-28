@@ -1,0 +1,198 @@
+3D Texture Mapping
+
+Sixth part of The 3D Coding Blackhole tutorial series
+
+Home at http://3Dblackhole.base.org
+
+NOTE: Some part of functions and some members of structures are not
+explained here, but we'll discuss them in other tutorials of the series.
+They're usually displayed in totality for the sake of similarity between
+the different tutorials and with the complete 3D engine.
+---------------------------------------------------------------------------
+
+   * Overview
+   * The Magic Numbers
+   * Perspective Correct Texture Mapping
+
+Overview
+
+The first things you must think about when doing texture mapping, is having
+an array of textures and initializing 3D texture coordinates. The textures
+will be stored in:
+
+#define MAXTEXTURES 16
+bitmap_t Textures[MAXTEXTURES];
+
+We will allocate and load them from PCX files. I chosed to make all of them
+64x64. We will use the texture coordinates of the polygon_t structure:
+
+vertex_t P,M,N;
+
+We will initialize them in a function that we will called after creating
+the polygons. P is the origin of the texture, M the horizontal end of the
+texture, and N the vertical end.
+
+void TEX_Setup(Polygon_t * Polygon, Object_t *Object)
+{
+   Polygon->P.Local=P3D(Vert(1).Local.x,
+                        Vert(1).Local.y,
+                        Vert(1).Local.z);
+   Polygon->M.Local=P3D(Vert(0).Local.x,
+                        Vert(0).Local.y,
+                        Vert(0).Local.z);
+   Polygon->N.Local=P3D(Vert(2).Local.x,
+                        Vert(2).Local.y,
+                        Vert(2).Local.z);
+}
+
+We need to transform them like any other vertices of the object, so we will
+create a world transforming and an align transforming function right now:
+
+void TR_Object(Object_t *Object, float matrix[4][4])
+{
+   int v,p;
+   for(v=0; v<Object->VertexCount; v++)
+      VEC_MultMatrix(&Object->Vertex[v].Local,matrix,&Object->Vertex[v].World);
+   for(p=0; p<Object->PolygonCount; p++)
+   {
+      VEC_MultMatrix(&Object->Polygon[p].P.Local,matrix,&Object->Polygon[p].P.World);
+      VEC_MultMatrix(&Object->Polygon[p].M.Local,matrix,&Object->Polygon[p].M.World);
+      VEC_MultMatrix(&Object->Polygon[p].N.Local,matrix,&Object->Polygon[p].N.World);
+   }
+}
+void TR_AlignObject(Object_t *Object, float matrix[4][4])
+{
+   int v,p;
+   for(v=0; v<Object->VertexCount; v++)
+      VEC_MultMatrix(&Object->Vertex[v].World,matrix,&Object->Vertex[v].Aligned);
+   for(p=0; p<Object->PolygonCount; p++)
+   {
+      VEC_MultMatrix(&Object->Polygon[p].P.World,matrix,&Object->Polygon[p].P.Aligned);
+      VEC_MultMatrix(&Object->Polygon[p].M.World,matrix,&Object->Polygon[p].M.Aligned);
+      VEC_MultMatrix(&Object->Polygon[p].N.World,matrix,&Object->Polygon[p].N.Aligned);
+   }
+}
+
+The Magic Numbers
+
+Now that we have the transformed texture coordinates, our objective is to
+find what is the horizontal and the vertical coordinates of the pixel in
+the texture bitmap that should be drawn on the screen. These texture
+coordinates will be called u and v. And the equations that will give us
+these coordinates are:
+                          u = a * TEXTURE_SIZE / c
+and
+                          v = b * TEXTURE_SIZE / c
+Now these magic coordinates have equations for themselves:
+                            a = Ox + Vx j + Hx i
+                            b = Oy + Vy j + Hy i
+                            c = Oz + Vz j + Hz i
+These O, H, V numbers are the magic numbers. They are computed from the
+texture coordinates in the following way:
+                              Ox = NxPy - NyPx
+                              Hx = NyPz - NzPy
+                              Vx = NzPx - NxPz
+                              Oy = MxPy - MyPx
+                              Hy = MyPz - MzPy
+                              Vy = MzPx - MxPz
+                              Oz = MyNx - MxNy
+                              Hz = MzNy - MyNz
+                              Vz = MxNz - MzNx
+
+I don't really know why it works, but it does! It seems to be some strange
+cross product... Anyway, now that you have the equations, let's implement
+the code!
+
+Perspective Correct Texture Mapping
+
+The computation of the O, H, V numbers requires some modifications, so we
+will add the following to ENG3D_SetPlane:
+
+   //Used to fix errors that happen when the numbers get too big
+   #define FIX_FACTOR 1/640
+
+   //Initialize texture vectors
+   P=Polygon->P.Aligned;
+   M=VEC_Difference(Polygon->M.Aligned,Polygon->P.Aligned);
+   N=VEC_Difference(Polygon->N.Aligned,Polygon->P.Aligned);
+
+   P.x*=Focal_Distance;
+   P.y*=Focal_Distance;
+
+   M.x*=Focal_Distance;
+   M.y*=Focal_Distance;
+
+   N.x*=Focal_Distance;
+   N.y*=Focal_Distance;
+
+And here is the implementation of VEC_Difference (Not extremely
+complex...):
+
+_3D VEC_Difference(_3D Vector1, _3D Vector2)
+{
+    return
+P3D(Vector1.x-Vector2.x,Vector1.y-Vector2.y,Vector1.z-Vector2.z);
+}
+
+Then we can compute them.
+
+_3D O, H, V;
+
+In ENG3D_SetPlane:
+
+   H.x=(N.y*P.z-N.z*P.y)*FIX_FACTOR;
+   V.x=(N.z*P.x-N.x*P.z)*FIX_FACTOR;
+   O.x=(N.x*P.y-N.y*P.x)*FIX_FACTOR;
+
+   H.z=(M.z*N.y-M.y*N.z)*FIX_FACTOR;
+   V.z=(M.x*N.z-M.z*N.x)*FIX_FACTOR;
+   O.z=(M.y*N.x-M.x*N.y)*FIX_FACTOR;
+
+   H.y=(M.y*P.z-M.z*P.y)*FIX_FACTOR;
+   V.y=(M.z*P.x-M.x*P.z)*FIX_FACTOR;
+   O.y=(M.x*P.y-M.y*P.x)*FIX_FACTOR;
+
+Now it's time to change our VID_HLine for a TEX_HLine so that it uses
+texture mapping (the tough part). We must at first initialize our magic
+coordinates:
+
+   a=-((long)O.x+((long)V.x*(long)j)+((long)H.x*(long)i))*64L;
+   b= ((long)O.y+((long)V.y*(long)j)+((long)H.y*(long)i))*64L;
+   c= ((long)O.z+((long)V.z*(long)j)+((long)H.z*(long)i));
+   long Hx,Hy,Hz;
+   int u,v;
+   BYTE color=0;
+   BYTE *mapping=Textures[texture].Picture;
+
+Then we multiply H.x and H.y by 64 so we don't have to do it for every
+pixel. We use long variables instead of floats too:
+
+   Hx=H.x*-64;
+   Hy=H.y*64;
+   Hz=H.z;
+
+Then for each pixel, change the last parameter for texture and instead of
+plotting the old one do:
+
+         if(c)
+         {
+            u=a/c;
+            v=b/c;
+            color=mapping[((v&63)<<6)+(u&63)];
+            if(color)
+            {
+               zbuffer[offset]=z;
+               SCREENBUFFER[offset]=LightTable[light][color];
+            }
+         }
+         a+=Hx;
+         b+=Hy;
+         c+=Hz;
+
+And we've got ourselves a texture mapper!
+---------------------------------------------------------------------------
+E-mail me at jerstlouis@videotron.ca
+Back to Jerome St-Louis's Homepage
+Back to The 3D Coding BlackHole
+
+                                                  Last Updated: 08-24-1997

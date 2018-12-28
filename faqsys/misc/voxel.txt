@@ -1,0 +1,261 @@
+From rc1.vub.ac.be!ub4b!EU.net!uknet!pipex!howland.reston.ans.net!news.intercon.com!digex.net!digex.net!not-for-mail Thu Mar 10 10:07:04 1994
+Path: rc1.vub.ac.be!ub4b!EU.net!uknet!pipex!howland.reston.ans.net!news.intercon.com!digex.net!digex.net!not-for-mail
+From: kmccorm@access1.digex.net (Kevin McCormick)
+Newsgroups: comp.sys.ibm.pc.demos
+Subject: How in the world did they do MARS.EXE?
+Date: 28 Feb 1994 20:16:05 -0500
+Organization: Express Access Online Communications, Greenbelt, MD USA
+Lines: 35
+Message-ID: <2ku50l$9lo@access1.digex.net>
+NNTP-Posting-Host: access1.digex.net
+
+Whew!  After downloading and running MARS.EXE, I find myself stunned by how
+fast it worked and how realistic it looked....
+
+I'm into programming my own demo now with a couple of friends.  Our new group
+is called Mindware, and our demo should be finished within the next month or
+so.  (No name yet)  I'm now fairly experienced with graphics manipulation (3d,
+X-mode, VGA registers, etc.), but I still am amazed how smooth MARS is.
+
+Now I've pondered quite a bit how it's done.  My first impression would be a
+ray-tracing like algorithm, where a ray is traced (quickly, of course) from the
+viewpoint, through the screen, and over the heightfield, testing for
+intersections along the way.  But this seems like it would be far too slow for
+practical use (but it would certainly deal with the smoothness of the landscape
+and the order of mountains).
+
+My next impression was a polygon subdivision algorithm.  Take four points from
+the heightfield that form a square, and draw that polygon.  Go from front to
+back on the heightfield, drawing only if that area hasn't been drawn on before.
+But this seems like too much time would be spent on calculating the edges of
+the polygon and filling it.
+
+My final idea again involves going from front to back on the heightfield, but
+instead of drawing accurate polygons, just draw a rectangular region from the
+current point to the next point, with a flat top, descending down until the
+non-filled area ends.  (This is probably not a very good explanation. :)
+
+So... any ideas anyone?  Tell me if my ideas are really naive :)  I might try
+coding some of these things to see if they work.
+
+Thanks in advance, and watch for our forthcoming demo!
+-- 
+Kevin McCormick                           | "The more we try to control, the
+kmccorm@access.digex.net                  |  less we are really in control."
+IRC: Xenophon                             |        - Robert J. Oppenheimer
+This message is costing the net hundreds if not thousands of dollars to send.
+
+From rc1.vub.ac.be!ub4b!EU.net!sun4nl!wtrlnd!tess!postmaster Tue Mar 15 11:23:54 1994
+Path: rc1.vub.ac.be!ub4b!EU.net!sun4nl!wtrlnd!tess!postmaster
+From: michiel@tess.wlink.nl (Michiel Ouwehand)
+Newsgroups: comp.sys.ibm.pc.demos
+Subject: Mars.uue (1/1)
+Message-ID: <762760829.AA03471@tess.wlink.nl>
+Date: Wed, 02 Mar 1994 09:12:01
+Sender: postmaster@tess.wlink.nl
+Lines: 19
+
+Hello M.D.Griffiths!
+
+[Äùú 28 Feb 94, M.D.Griffiths wrote to All: úùÄ]
+
+ MDG> Yes it is a much more difficult proposition, since as it stands,
+ MDG> no rotation is done, you simply move left or right. I would
+ MDG> imagine that rotation would complicate things somewhat, perhaps
+ MDG> the original algorithm might not be applicable? It makes a nice
+ MDG> demo though :-). Would the author like to comment?
+
+I am not hte author, but I would like to comment. What the author is doing (as I
+see it) is calculate a fractal (this will be the height map) and calculate
+light-rays over it (this will be the colour map). Then, when drawing, each point
+on the screen is an interpollated version ofmore of the heights and colours in
+the map. Rotating will take some time, but isn't impossible as I see it.
+
+Groetjes,   _    (Icarus / TùRùIùAùL)   InterNet: michiel@tess.wlink.nl
+)\/(ichiel (_)uwehand                    FreeNet: 2:2802/108.11
+
+
+From rc1.vub.ac.be!ub4b!EU.net!sunic!news.funet.fi!network.cc.jyu.fi!network.cc.jyu.fi!not-for-mail Thu Mar 10 10:07:29 1994
+Path: rc1.vub.ac.be!ub4b!EU.net!sunic!news.funet.fi!network.cc.jyu.fi!network.cc.jyu.fi!not-for-mail
+From: ap@network.cc.jyu.fi (Patrick Aalto)
+Newsgroups: comp.sys.ibm.pc.demos
+Subject: Re: How in the world did they do MARS.EXE?
+Date: 1 Mar 1994 14:28:59 +0200
+Organization: University of Jyvaskyla, Finland
+Lines: 171
+Message-ID: <2kvceb$rjr@tukki.cc.jyu.fi>
+References: <2ku50l$9lo@access1.digex.net>
+NNTP-Posting-Host: tukki.cc.jyu.fi
+
+In article <2ku50l$9lo@access1.digex.net> kmccorm@access1.digex.net (Kevin McCormick) writes:
+>Now I've pondered quite a bit how it's done.
+
+	Why bother pondering, since the person who created the demo was
+	kind enough to post a description of the mothod, too. He did
+	this at least in the 'rec.games.programming' and 'comp.graphics.
+	algorithms' newsgroups. I think it might be a good idea for all
+	the readers of this conference to visit those two, too (at least
+	I do that).
+
+	In any case, here's the description. I hope Tim Clarke don't mind...
+
+	Patrick Aalto
+	ap@jyu.fi
+
+--------
+
+		Voxel landscapes and How I did it
+		---------------------------------
+
+ This document describes the method I used in my demo of a Martian terrain,
+which can be found at garbo.uwasa.fi:/pc/demo/mars10.zip.
+ It's similar to a floating horizon hidden line removal algorithm, so you'll
+find discussion of the salient points in many computer graphics books. The
+difference is the vertical line interpolation.
+
+
+First, some general points:
+---------------------------
+
+ The map is a 256x256 grid of points, each having and 8-bit integer height
+and a colour. The map wraps round such that, calling w(u,v) the height at
+(u,v), then w(0,0)=w(256,0)=w(0,256)=w(256,256). w(1,1)=w(257,257), etc.
+
+ Map co-ords: (u,v) co-ordinates that describe a position on the map. The
+map can be thought of as a height function w=f(u,v) sampled discretely.
+
+ Screen co-ords: (x,y) co-ordinates for a pixel on the screen.
+
+
+To generate the map:
+--------------------
+
+ This is a recursive subdivision, or plasma, fractal. You start of with
+a random height at (0,0) and therefore also at (256,0), (0,256), (256,256).
+Call a routine that takes as input the size and position of a square, in the
+first case the entire map.
+ This routine get the heights from the corners of the square it gets given.
+Across each edge (if the map has not been written to at the point halfway
+along that edge), it takes the average of the heights of the 2 corners on that
+edge, applies some noise proportional to the length of the edge, and writes
+the result into the map at a position halfway along the edge. The centre of
+the square is the average of the four corners+noise.
+ The routine then calls itself recursively, splitting each square into four
+quadrants, calling itself for each quadrant until the length of the side is
+2 pixels.
+ This is probably old-hat to many people, but the map is made more realistic
+by blurring:
+
+     w(u,v)=k1*w(u,v)+k2*w(u+3,v-2)+k3*w(u-2,v+4) or something.
+
+ Choose k1,k2,k3 such that k1+k2+k3=1. The points at which the map is sampled
+for the blurring filter do not really matter - they give different effects,
+and you don't need any theoretical reason to choose one lot as long as it
+looks good. Of course do everything in fixed point integer arithmetic.
+ The colours are done so that the sun is on the horizon to the East:
+
+     Colour=A*[ w(u+1,v)-w(u,v) ]+B
+
+with A and B chosen so that the full range of the palette is used.
+ The sky is a similar fractal but without the colour transformation.
+
+
+How to draw each frame
+----------------------
+
+ First, draw the sky, and blank off about 50 or so scan lines below the
+horizon since the routine may not write to all of them (eg. if you are on top
+of a high mountain looking onto a flat plane, the plane will not go to the
+horizon).
+ Now, down to business. The screen is as follows:
+
+     ---------------------------
+     |                         |
+     |                         |
+     |           Sky           |
+     |                         |
+     |                         |
+     |a------------------------| Horizon
+     |                         |
+     |                         |    Point (a)=screen co-ords (0,0)
+     |          Ground         |     x increases horizontally
+     |                         |     y increases downwards
+     |                         |
+     ---------------------------
+
+ Imagine the viewpoint is at a position (p,q,r) where (p,q) are the (u,v)
+map co-ordinates and r is the altitude. Now, for each horizontal (constant v)
+line of map from v=r+100 (say) down to v=r, do this:
+
+	1. Calculate the y co-ordinate of map co-ord (p,v,0) (perspective transform)
+
+	2. Calculate scale factor f which is how many screen pixels high a mountain
+of constant height would be if at distance v from q. Therefore, f is small
+for map co-ords far away (v>>r) and gets bigger as v comes down towards r.
+
+	3. Work out the map u co-ord corresponding to (0,y). v is constant along
+each line.
+
+	4. Starting at the calculated (u,v), traverse the screen, incrementing the
+x co-ordinate and adding on a constant, c, to u such that (u+c,v) are the map
+co-ords corresponding to the screen co-ords (1,y). You then have 256 map
+co-ords along a line of constant v. Get the height, w, at each map co-ord and
+draw a spot at (x,y-w*f) for all x.
+
+ Sorry, but that probably doesn't make much sense. Here's an example:
+Imagine sometime in the middle of drawing the frame, everything behind a
+point (say v=q+50) will have been drawn:
+
+		 ---------------------------
+		 |                         |
+		 |                         |
+		 |                         |
+		 |           ****          |
+		 |        *********        | <- A mountain half-drawn.
+		 |-----**************------|
+		 |*************************|
+		 |*********       *********|
+		 |******             ******|
+		 |.........................| <- The row of dots is at screen co-ord y
+		 |                         |   corresponding to an altitude of 0 for that
+		 ---------------------------   particular distance v.
+
+ Now the screen-scanning routine will get called for v=q+50. It draws in a
+point for every x corresponding to heights at map positions (u,v) where u
+goes from p-something to p+something, v constant. The routine would put points
+at these positions: (ignoring what was there before)
+
+     ---------------------------
+     |                         |
+     |                         |
+     |                         |
+     |                         |
+     |                         |
+     |-------------------------|
+     |          *****          |
+     |       ***     ***       |
+     |*******           *******|
+     |.........................|
+     |                         |
+     ---------------------------
+
+ So, you can see that the screen gets drawn from the back, one vertical
+section after another. In fact, there's more to it than drawing one pixel
+at every x during the scan - you need to draw a vertical line between
+(x,y old) to (x,y new), so you have to have a buffer containing the y values
+for every x that were calculated in the previous pass. You interpolate
+along this line (Gouraud style) from the old colour to the new colour also,
+so you have to keep a buffer of the colours done in the last pass.
+ Only draw the vertical lines if they are visible (ie. going down,
+y new>y old). The screen is drawn from the back so that objects can be drawn
+inbetween drawing each vertical section at the appropriate time.
+
+ If you need further information or details, mail me or post here... Posting
+will allow others to benefit from your points and my replies, though.
+
+ Thank you for the response I have received since uploading this program.
+
+ Tim Clarke, tjc1005@hermes.cam.ac.uk
+
+
+

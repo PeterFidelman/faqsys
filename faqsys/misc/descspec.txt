@@ -1,0 +1,326 @@
+Descent Level and Mission Format 0.20 <-- Note the version number!
+------- ----- --- ------- ------ ----
+
+Legal Notice
+----- ------
+
+All material in this document, and the attached source code, is copyright
+Parallax Software, 1995.  It is released solely for the purpose of enabling
+legitimate owners of the registered version of Descent to create levels and
+missions to be used with Descent.  The release of this information should
+in no way be construed as implying that copyrights, patents, trademarks or
+trade secrets of Descent, owned by Parallax or Interplay, are weakened or
+invalidated.
+
+
+Description
+-----------
+
+This document describes the level and mission format for the registered
+version of Descent.  It is hoped that this information will help people
+create their own levels and missions for use with Descent.  This document
+is not complete without the attached source code.
+
+The source code is available at:
+
+  wuarchive.wustl.edu   pub/MSDOS_UPLOADS/descent/lvlinfo.zip
+
+
+Notes About Version 0.20
+----- ----- ------- ----
+
+This document, as you might guess from the version number, is not
+considered complete.  It is released under the assumption that it's
+marginally better than nothing.
+
+It will still be difficult for anyone to create an editor to create
+Descent levels.  It will be very difficult to create levels that contain
+all the features of a complete Descent level, such as keyed doors, locked
+doors, a control center which triggers doors, robots containing objects,
+materialization centers, etc.  However, it will be a lot easier with this
+document than without it.
+
+This document, and the attached source code, should be enough to enable
+people to create anarchy levels and missions without unbearable difficulty.
+There is much information about objects which is not explained.  This will
+be released in a future update.  If you're real curious now, a good way to
+figure out this information is to disassemble an existing "rdl" file.
+
+Improved versions of this document will be posted here on an irregular
+basis.  I hope a significantly better version will be posted within a
+couple weeks.
+
+If you find errors in this document, and you will probably find many if
+you try to use it, please post them in alt.games.descent.  Put some
+identifying information in the Subject, such as "Level Info Error: Hog
+File Format Bogus" or whatever.
+
+Please read the section "About the Included Source Code".  This document
+should not be considered anywhere near complete without constant reference
+to the source code, particularly the header files.
+
+Good luck!  All of us at Parallax are looking forward to seeing new levels!
+
+-- Mike Kulas, March 17, 1995
+   Revised June 21, 1995
+
+
+Plea for Peace
+---- --- -----
+
+Please do not contact Parallax or Interplay with questions regarding
+information in this document.  We do not have the resources to answer
+questions pertaining to level design.  We have several people who read
+alt.games.descent and comp.sys.ibm.pc.games.action every day.  If you
+have questions, please post in these newsgroups and we will answer them
+as best we can.
+
+
+About the Included Source Code
+----- --- -------- ------ ----
+
+The source code included with this document is provided as a document
+of the level format.  Although it started as actual source code from
+Descent, it is no longer compilable, and much has been removed from
+the provided functions, including some comments.  However, the portions
+which pertain to loading level data are most likely accurate and
+complete.  In cases in which this document contradicts the source code,
+
+the source code should be considered complete.
+
+The header files contain data structure definitions.  Some of them
+describe the internal representation of a level, which is very different
+from the format stored in an "rdl" file.  They are provided as a reference
+to help understand the source code which reads an "rdl" file.
+
+Related source code and this document available at:
+  wuarchive.wustl.edu   pub/MSDOS_UPLOADS/descent/lvlinfo.zip
+
+
+Overview of Level-Related Files
+-------- -- ------------- -----
+
+A Descent level is wholly contained in one file.  These files have the
+extension "rdl" for Registered Descent Level.
+
+The "rdl" files which are part of Regsitered Descent are all included in
+the file "descent.hog".  There are, by default, no "rdl" files present
+in the Descent directory.  However, if there _were_ an "rdl" file, and
+it were specified in the "msn" file, it would get loaded, taking precedence
+over the version of the level in the "hog" file.  So, if you wanted to
+create a new level 1, you would name it "level01.rdl" and place it in the
+Descent directory.  It would get loaded in favor of the level01.rdl in the
+hog file.
+
+
+Format of RDL File
+------ -- --- ----
+
+[Before proceeding with writing an editor, I would strongly encourage
+ anyone to write a level ("rdl" file) disassembler.  That should
+ demonstrate whether the information in this document is correct, in
+ addition to providing necessary expertise.  Before disassembling level
+ files, you will need to disassemble the "hog" file.  That will be the
+ easiest part.  See the section "Format of the Hog File".]
+
+The function load_level(), which is included in the partial source code,
+reads a level file from disk.
+
+load_level calls load_mine_data_compiled and load_game_data.
+load_mine_data_compiled loads mine (level structure) data.  load_game_data
+loads other things which are part of a mine, such as objects (robots,
+powerups, etc.), initial player position information, etc.
+
+Beginning at location 0 in the RDL file:
+int	sig			// signature bytes == 'PLVL' (in order 'L' 'V' 'L' 'P')
+int	version			// set this to 1
+int	minedata_offset		// offset in file of start of mine data
+int	gamedata_offset		// offset in file of start of game data
+int	unused			// unused
+
+From location minedata_offset:
+byte	version			always = 0
+short	Num_vertices		number of vertices in this mine
+short	Num_segments		number of segments in this mine
+
+Num_vertices vertex structs.
+
+  A vertex struct is defined as three fixed point numbers.  A fix
+  is 32 bits.  The low 16 bits is fractional, the high 16 bits is
+  the integer.
+
+Num_segments segment structs.
+
+  A segment is a variable size structure.  To understand the format, it
+  is necessary to read the source code included with this document.
+  The function load_mine_data_compiled_new reads a variable sized segment
+  from the "rdl" file and stores it in the internal segment struct.
+  The internal segment struct is described in another section below.
+
+
+From location gamedata_offset:
+short	signature		// bytes 05h, 67h
+short	version			// 0019h (we're at version 25 for release...)
+int	game_fileinfo_size	// 0077h
+char    mine_filename[15];	// for example, "Lunar Outpost"
+int     level;
+int     player_offset;
+int     player_sizeof;
+int     object_offset;
+int     object_howmany;       
+int     object_sizeof;  
+int     walls_offset;
+int     walls_howmany;
+int     walls_sizeof;
+int     doors_offset;
+int     doors_howmany;
+int     doors_sizeof;
+int     triggers_offset;
+int     triggers_howmany;
+int     triggers_sizeof;
+int     links_offset;
+
+int     links_howmany;
+int     links_sizeof;
+int     control_offset;
+int     control_howmany;
+int     control_sizeof;
+int     matcen_offset;
+int     matcen_howmany;
+int     matcen_sizeof;
+
+short	Num_pofs		number of Polygon Object Files
+char	Pof_names[Num_pofs][13]	name of each pof file
+	
+From object_offset (read above):
+object	Objects[object_howmany]	static object info for each object.  See object struct.
+
+From walls_offset (read above):
+wall	Walls[walls_howmany]	static wall info.  See wall struct.
+
+From doors_offset (read above):
+active_door ActiveDoors[doors_howmany]	See active_door struct.
+
+From triggers_offset (read above):
+trigger	Triggers[triggers_howmany]
+
+From control_offset (read above):
+control_center_trigger	Control_center_triggers[control_howmany]
+
+From matcen_offset (read above):
+matcen_info	RobotCenters[matcen_howmany]
+
+
+Internal Segment Struct
+-------- ------- ------
+
+typedef long fix;
+
+typedef struct vms_vector {
+   fix x, y, z;
+} vms_vector;
+
+typedef struct uvl {
+   fix u,v,l;
+} uvl;
+
+typedef struct side {
+   byte   type;                // tri_edge: 1 = quad, 2 = 0:2 triangulation, 3 = 1:3 triangulation
+   ubyte  pad;                 // keep us longword alligned
+   short  wall_num;            // Index into Walls array, which wall (probably door) is on this side
+   short  tmap_num;            // Index into array of textures specified in bitmaps.bin
+   short  tmap_num2;           // Index, as above, texture which gets overlaid on tmap_num
+   uvl    uvls[4];             // uvl coordinates at each point
+   vms_vector   normals[2];    // 2 normals, if quadrilateral, both the same.
+} side;
+
+typedef struct segment {
+   side    sides[6];          // 6 sides
+   short   children[6];       // indices of 6 children segments, front, left, top, right, bottom, back
+   short   verts[8];          // vertex ids of 4 front and 4 back vertices
+   short   objects;           // index of objects in this segment
+   ubyte   special;           // special property of a segment (such as damaging, trigger, etc.)
+   byte    matcen_num;        // which center segment is associated with, high bit set
+   short   value;             // matcens: bitmask of producable robots, fuelcenters: energy given? --MK, 3/15/95
+   fix     static_light;      // average static light in segment
+   short   pad;               // make structure longword aligned [Too bad we didn't put this before static_light...MK, 3/15/95]
+} segment;
+
+The 8 vertex indices in the verts array define the 6 sides of the segment.
+The following shows which vertices form which side.  Vertices are oriented
+counter-clockwise looking at the side from the outside of the segment.
+
+left	7,6,2,3
+top	0,4,7,3
+right	0,1,5,4
+bottom	2,6,5,1
+back	4,5,6,7
+front	3,2,1,0
+
+So, for example, if the verts array = 10, 11, 12, 13, 14, 15, 16, 17
+then the right side is made up of the vertices 10, 11, 15, 14.  These
+vertices (10, 11, 15, 14) are indices into the global Vertices array.
+
+Format of Mission Files
+------ -- ------- -----
+
+Levels are organized into missions which are specified in a "msn" file.
+(The default mission, "Descent: First Strike" is built into the executable
+and does not have a corresponding mission file.)  The file "chaos.msn"
+defines the five level anarchy mission which is part of the registered
+version.  Here is the complete text of the file "chaos.msn":
+
+name = Total Chaos    ;any name you want
+type = anarchy        ;can be "normal" or "anarchy".  Omitted means normal
+num_levels = 5        ;number of normal levels
+chaos1.rdl            ;level filename 1
+chaos2.rdl            ;level filename 2
+
+chaos3.rdl            ;level filename 3
+chaos4.rdl            ;level filename 4
+chaos5.rdl            ;level filename 5
+
+It should be pretty self-explanatory.  All the "rdl" files are present in
+the file "chaos.hog".
+
+Here's a more interesting mission.  Note that it contains a secret level
+named "levels1.rdl" which is attached to level 10.
+
+name = Destination Saturn    ;any name you want
+type = normal                ;can be "normal" or "anarchy".  Omitted = normal
+num_levels = 15              ;number of normal levels
+level01.rdl                  ;level filename 1
+level02.rdl                  ;level filename 2
+level03.rdl                  ;level filename 3
+level04.rdl                  ;level filename 4
+level05.rdl                  ;level filename 5
+level06.rdl                  ;level filename 6
+level07.rdl                  ;level filename 7
+level08.rdl                  ;level filename 8
+level09.rdl                  ;level filename 9
+level10.rdl                  ;level filename 10
+level11.rdl                  ;level filename 11
+level12.rdl                  ;level filename 12
+level13.rdl                  ;level filename 13
+level14.rdl                  ;level filename 14
+saturn15.rdl                 ;level filename 15
+num_secrets = 1              ;number of secret levels
+levels1.rdl,10               ;get to first secret level from level 10
+
+
+Format of the Hog File
+------ -- --- --- ----
+
+A hog file has the following format:
+
+  <header>   The constant bytes: 44h, 48h, 46h
+
+Following the header are zero or more files in the following format:
+
+  <name>     13 bytes, terminated by 0, padded, if necessary, to 13 bytes
+  <size>     4 byte size
+  <data>     <size> bytes of data comprising the file
+
+  <name>     next file in the hog file
+  etc.
+

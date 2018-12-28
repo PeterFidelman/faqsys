@@ -1,0 +1,287 @@
+The Insert Counting algorithm is the fastest sort algo i've ever seen.
+Read this. This document explains the radix sort algorithm that doesn't
+use linked lists, but rather an index hashtable, or insert counting, which
+makes it mush faster. It also includes some samplecode in pascal.
+Later I may include C++ samplecode aswell. 
+
+Contents:
+
+     What is a radix? 
+     Sort a list by one radix. 
+     Sort a list by n radices. 
+     Optimization. 
+     Pascal samplecode. 
+
+
+
+What da phuck is a radix?
+
+A radix is a position in a value. The value 342 has three radices. The
+value 17 has two radices. So a radix is a number at a position in a
+value. The radices are counted from the least significant number to the
+most significant number in the value. So, in the value 153, 3 would be
+the 1st radix, 5 the second radix and 1 the third radix.
+The radices of a 10 (sedecimal) based value is 1,10,100,1000,
+...etc...
+The radices of a 16 (hexadecimal) based value is 1,16,256,4096,
+...etc...
+The radices of a 2 (binary) based value is 1,2,4,8,16, ...etc...
+One may also choose a value with the base 256. Such a value would
+have the radices 1,256,65536, ...etc...
+This would make it easy to get each radix out of a value. Since a byte
+has the size 256, each byte is a radix. A word with the base 256
+would then have 2 radices. The lower byte is the 1st and the upper is
+the 2nd. The radixsort algo I'm going to explain in this document sorts
+values by their radices, from least significant to most significant. Byte
+by byte. 
+
+    Unsorted -> 1st radix sorted -> 2nd radix sorted
+      435Fh          5A1Bh               4320h
+      5A36h          4320h               435Fh
+      4320h          5A36h               5A1Bh
+      5A1Bh          435Fh               5A36h
+
+
+
+To sort a list with the entrysize of one byte (one radix to sort by):
+
+We have a sourcelist with the unsorted values. We sort that list into
+a second destinationlist, using a hashtable to reindex the sourcelist
+entries to the right destlist entries. Then we copy the destlist to the
+sourcelist. Since the radixbase is 256 we need a hashtable of the size
+256+1 and each entry must be able to hold the number of entries with
+of that value (hash[0..256] of word will do).
+
+
+Get each value of the entries in sourcelist. Fo every entry, store it
+in index and increase the entry index+1 of the hashtable.
+
+      index = source[entry];
+      inc (hash[index+1]);
+
+A list of the size 0..13 that looks like this. 
+
+      00 01 02 03 04 05 06 07 08 09 10 11 12 13
+      15 01 06 10 04 14 11 13 04 15 03 04 15 11
+
+will make a hashtable[0..15] that looks like this. 
+
+      00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 .. 256
+       0  0  1  0  1  3  0  1  0  0  0  1  2  0  1  1  3  0  0 ..   0
+
+You sorta count the number of 01's in the list and
+store that number in the 02nd entry of the
+hashtable. Then you count the number of 02's in the
+list and store that number into the 03rd entry of
+the hashtable. Then add every hash entry with the
+next hashentry. 
+
+      01th's number is added to 02th's number.
+      02th's number is added to 03th's number.
+
+      hash[entry] = hash[entry] + hash[entry-1];
+
+So the hashtable before the addon looks like this. 
+
+      00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 .. 256
+       0  0  1  0  1  3  0  1  0  0  0  1  2  0  1  1  3  0  0 ..   0
+
+And the hashtable after the addon looks like this. 
+
+      00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 .. 256
+       0  0  1  1  2  5  5  6  6  6  6  7  9  9 10 11 14 14 14 ..  14
+
+It kinda builds a staircase of the hashtable. Now we
+get the index (n'th radix) of each value in the the
+source list. We copy the current value of the source
+list to the entry in the destination list that the
+hashtable at entry index is "pointing" to. We also
+increase the entry in the hashtable, to make it
+"point" on the next entry in the destination list,
+that is to get the same value. 
+
+      index = source[entry];
+      dest[hash[index]] = source[entry];
+      inc (hash[index]);
+
+In a scheme this would look something like this. 
+
+    SourceList
+      00 01 02 03 04 05 06 07 08 09 10 11 12 13
+      15 01 06 10 04 14 11 13 04 15 03 04 15 11
+
+    HashTable
+      00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 .. 256
+       0  0  1  1  2  5  5  6  6  6  6  7  9  9 10 11 14 14 14 ..  14
+          1     2  3     6           7  8    10 11 12
+                   4                    9          13
+                   5                               14
+
+    DestinationList
+      00 01 02 03 04 05 06 07 08 09 10 11 12 13
+      01 03 04 04 04 06 10 11 11 13 14 15 15 15
+
+The number 15 at the first entry of the sourcelist
+will make as an entryindex to the hashtable. At
+entry 15 of the hashtable has the value 11. That
+means that the first entry of the sourcelist is to
+be copied to the 11th entry of the destinationlist.
+Dest[11]=Source[0]; Then the value 11 at the 15th
+entry of the hashtable in increased to 12. The
+number 01 in the sourcelist's second entry refers to
+the value 0 at the 01th entry in the hastable, which
+points to the 00th entry in the destinationlist.
+Therefor the second entry of the sourcelist will be
+copied to the 00th entry of the destinationlist.
+Dest[0]=Source[1]; The value 00 at the 01th entry of
+the hashtable in increased to 01. Note that the
+source and destination lists are nullbased. So when
+I say the first entry of the sourcelist I mean the
+0th entry, or Source[0]. To increase the HashTable
+is nessesary to prevent the next entry in the
+SourceList, that has the same value as this entry,
+to replace this entry. First SourceList[00] has
+value 15 and is copied to DestList[11] according to
+the hashtable[15]. The later SourceList[09] is then
+copied to the DestList[12] since the hashtable[15]
+has been increased. If it hadn't been increase all
+the SourceList entries with the value 15 would have
+copied to the same DestList entry, namely
+DestList[11].
+
+
+Short summary...
+
+Count the number of every present value in the
+sourcelist. Store that number in the hastable at the
+entry of the counted value+1. I say it again. You
+count the times the value n appears in the
+sourcelist and store that count in hash[n+1]. Add
+every entry of the hashtable to the next entry of
+the hashtable. Take every sourcelist-entry and copy
+it to the destinationlist-entry that the
+hashtable-entry of that sourcelist-entry point to.
+Also increase that hashtable-entry so that it later
+points to the next destinationlist-entry, for the
+next sourcelist-entry with the same value to be
+copied to.
+
+
+To sort a list with the entrysize n (n radices to sort
+by):
+
+Sort the least significant radix, just as you sort a
+list with only one-radix-sized values. Then you sort
+the next least significant radix. So the sortalgo
+must be modified slightly to satisfy any number of
+radices. Instead of sorting the 1st byte we change
+it so shift the value radix*8 bits right and and it
+with $FF to get only the first byte, but the wanted
+radix. So, for every radix we do the same algo as
+for one radix but shift+and the value to get the
+right radix out.
+
+
+Optimization
+
+Finally you should have pointers to the lists
+instead of passing the whole list to the procedure
+and not copy the whole destlist to sourcelist but
+rather just swap their pointers in between each
+radix. Destlist must then either be allocated and
+deallocated inside and by the procedure with the
+size of (MaxIndex*IndexSize) or rather allocated
+outside, by you, and then passed to the procedure.
+As soon as you sort more then one or two times you
+gain on allocating and deallocating it outside only
+once instead of every time you enter and leave the
+sorting procedure. Also, this algo should be easy to
+do in assembler, since it's not so very complex.
+
+Btw, thanks to Mikael Kalms who told me about this
+way to do the algo. Also read OTMSort.TXT by
+Voltair/OTM (Zach Mortensen) for other radixsort
+algorithms, such using linked lists.
+
+
+Pascal sample code - One radix (not tested)
+
+  Type
+    tList = Array[0..99] of Byte;
+{---------------------------------------------------------------------------}
+  Procedure RadixSort (Var SourceList: tList);
+    Var
+      Entry    : Byte;
+      Index    : Byte;
+      Hash     : Array[0..256] of Word;
+      DestList : tList;
+    Begin
+      FillChar (Hash,SizeOf(Hash),0);
+      For Entry:=0 to 99 do Begin
+        Index:=SourceList[Entry];
+        Inc (Hash[Index+1]);
+      End;
+      For Entry:=1 to 256 do Hash[Entry]:=Hash[Entry]+Hash[Entry-1];
+      For Entry:=0 to 99 do Begin
+        Index:=SourceList[Entry];
+        DestList[Hash[Index]]:=SourceList[Entry];
+        Inc (Hash[Index]);
+      End;
+      SourceList:=DestList;
+    End;
+{---------------------------------------------------------------------------}
+  Var
+    MyList : tList;
+    Loop   : Byte;
+  Begin
+  { Generate random list values }
+    For Loop:=0 to 99 do MyList[Loop]:=Random(255);
+  { Sort list }
+    RadixSort(MyList);
+  { Display the result }
+    For Loop:=0 to 99 do WriteLn (MyList[Loop]);
+  End.
+
+
+
+Pascal sample code - Four radices (not tested)
+
+  Type
+    tList : Array[0..99] of LongInt;
+{---------------------------------------------------------------------------}
+  Procedure RadixSort (Var SourceList: tList);
+    Var { Preallocate these, instead of every time we enter SortRadix }
+      DestList : tList;
+      Hash     : Array[0..256] of Word;
+{- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -}
+    Procedure SortRadix (Shift: Byte);
+      Var
+        Entry    : Byte;
+        Index    : Byte;
+      Begin
+        FillChar (Hash,SizeOf(Hash),0);
+        For Entry:=0 to 99 do Begin
+          Index:=(SourceList[Entry] Shr Shift) And $FF;
+          Inc (Hash[Index+1]);
+        End;
+        For Entry:=1 to 256 do Hash[Entry]:=Hash[Entry]+Hash[Entry-1];
+        For Entry:=0 to 99 do Begin
+          Index:=(SourceList[Entry] Shr Shift) And $FF;
+          DestList[Hash[Index]]:=SourceList[Entry];
+          Inc (Hash[Index]);
+        End;
+        SourceList:=DestList;
+      End;
+{- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -}
+    Begin
+      For Radix:=0 to 3 do Begin
+        SortRadix (Radix*8);
+      End;
+    End;
+{---------------------------------------------------------------------------}
+  Begin
+    For Loop:=0 to 99 do MyList[Loop]:=Random($FFFF)*$FFFF;
+    RadixSort (MyList);
+    For Loop:=0 to 99 do WriteLn(MyList[Loop]);
+  End.
+

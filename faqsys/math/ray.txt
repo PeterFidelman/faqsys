@@ -1,0 +1,593 @@
+This month there is only one article, Ray-Tracing with Affine Transforms.
+We will be adding the following articles over the next few months. An high
+efficiency single phase motor (Patent No. 5,300,870, granted April 5,
+1994). The IMint interface (Patent applied for). Contouring in Hyperspace.
+Strange Recursion. And many others.
+
+(C)opyright 1995, Seven seas Software Inc., MathVISION Inc.
+---------------------------------------------------------------------------
+
+                     Ray-Tracing with Affine Transforms
+                              Otto J. A. Smith
+                               June 13, 1995
+---------------------------------------------------------------------------
+    For a hard copy version of this paper mail requests to the author at
+                              otto@olympus.net
+       This article is available in post script by anonymous FTP from
+                 pub/sites/7seas under the name CONTAIN.PS
+---------------------------------------------------------------------------
+
+Abstract:
+
+     We derive affine transformations that change the basis of a three
+     dimensional world space. The new basis for this space is chosen in
+     such a manner that many ray-tracing calculations are simplified,
+     particularly when doing z-buffering. We begin with the simple problem
+     of determining whether a point is contained in a triangle and extend
+     our derivation to three space. We present some algorithm optimizations
+     that can make real-world computer programs faster.
+
+---------------------------------------------------------------------------
+
+Triangle Containment:
+
+     Let Tri( v1, v2, v3) be a triangle in 2-space. Each v and x are
+     2-dimensional row vectors. The parameters p1 and p2 are scalars.
+     Figure 1
+
+     Given a point x, determine if x is interior to Tri( v1, v2, v3). In
+     order to make this determination use vectors from the triangle to form
+     a basis for the space, then any point can be represented by a
+     parametric equation:
+
+     (A.) x = v1 + p1( v2 - v1) + p2( v3 - v2)
+
+     Now observe the following:
+
+       1. When p1 = 1 and 0 < p2 < 1 ,then x is on the line segment ( v2 ,
+          v3) .
+       2. When p2 = 0 and 0 < p1 < 1 , then x is on the line segment ( v1 ,
+          v2) .
+       3. When 0 < p1 < 1 and 0 < p2 < 1 and p1 = p2 , then x is on the
+          line segment ( v1 , v3) .
+
+     We constructed equation (A.) in the manner given here in order to
+     insure that the three observations made above were true. Now if p2 <
+     p1 then x is on the same side of the line determined by ( v1, v3) as
+     v2 . If p2 > p1 then x is on the opposite side of the line. In other
+     words, the point x is inside the triangle Tri( v1, v2, v3) when all of
+     the following are true:
+
+       1. p2 < p1
+       2. 0 < p1 < 1
+       3. 0 < p2 < 1
+
+     Given the triangle Tri( v1, v2, v3) and x one can calculate p1 and p2.
+
+     Given the triangle Tri( v1, v2, v3) alone, one can calculate a two by
+     two working matrix W such that ( x - v1) W =[ p1, p2 ] where [ p1, p2
+     ] is a row vector.
+
+     We construct a matrix M and define W = Inv(M) . The notation Inv(M) is
+     used to indicate the matrix that is the inverse of M . That is Inv(M)M
+     = I , where I is the identity matrix.
+
+     x = v1 + p1( v2 - v1) + p2( v3 - v2)
+
+     Let M =
+
+             |   v2 -  v1  |
+
+             |   v3 -  v2  |
+
+     Then:
+       1. [ p1, p2 ] M = x - v1
+       2. [ p1, p2 ] = ( x - v1)Inv(M)
+       3. [ p1, p2 ] = ( x - v1) W
+
+     In applications where many points will be checked against a single
+     triangle this is a fast algorithm. It is fastest if p1 is calculated
+     before p2 and verified against the limits zero and one so the
+     algorithm can terminate prematurely if the point x is not contained in
+     the triangle. If there are many points, the cost of calculating W =
+     Inv( M ) is amortized over many points. W is a feature of the triangle
+     and not the point being checked which is used in a multiplication with
+     the matrix Inv( M ). When M is singular, W does not exist since v1, v2
+     and v3, all lie on a straight line. If this is the case the point is
+     contained in the "triangle" ( line segment ) only if it is on the line
+     defined by any two verticies from v1 , v2 and v3, and in addition has
+     verticies from this set in both a positive and a negative direction.
+
+Discussion of Basic Algorithm:
+
+     I have found no references to the derivation of this technique in the
+literature although the technique presented here produces an algorithm that
+could also be derived starting from barycentric coordinates. A discussion
+of this relationship is included in the appendix for this paper.
+
+Before extending the algorithm to three (and higher dimensional spaces) and
+showing how it can simplify Ray-Tracing, particularly when doing
+z-buffering, we would like to enumerate some of its advantages and
+disadvantages.
+
+One traditional method of determining containment in a triangle, or convex
+polygon, is to generate the equations for the bounding lines and then to
+determine which side of each bounding line the point falls on.
+
+A second technique is based on the Jorden curve theorem. footnote1
+
+I believe there are several reasons why the advantages of the triangle and
+hypertriangle containment algorithms presented here are not commonly used.
+One reason is that most computer 3-D graphics geometry has been based on
+homogeneous footnote7 system of coordinates and transforms taken from the
+theory of projective geometry, rather than affine transformations based in
+the theory of linear algebra.
+
+Another reason is that normally a basis for the space would be constructed
+from the vectors (v2 - v1 ) and (v3 - v1) ( instead of (v3 - v2) ) so that
+hidden advantages of choosing other sets of vectors for the basis of the
+space have not been explored. We will call techniques, such as the one
+presented above, in which the vectors are not constructed from a common
+origin, Free Choice techniques. We will call techniques in which a common
+origin is used, Common Origin techniques. In common origin techniques, one
+point in the triangle, ( or hyper-triangle ) is chosen as the origin. In
+order to generate the set of vectors that form the basis for the new
+coordinate system, the value of this origin is subtracted from the values
+of the remaining points in the triangle.
+
+I posted a common-origin algorithm on the Internet without comment about
+its derivation and recieved a reply from Prof. Dr. Heinrich Giesen pointing
+out that it is equivalent to the Barycentric coordinate technique, which is
+a well known technique. The demonstration of equivalency is included in the
+Appendix .
+
+We will not use the common origin technique in this paper because by using
+free choice techniques, we can customize the results of our basis change to
+give us additional information that is useful and increases the efficiency
+of our algorithms.
+
+Multi Dimensional Extensions:
+
+     The techniques presented above are easily extended to
+multi-deminsional spaces.
+
+Let Tri( v1, v2, ... , vn) be a hypertriangle in (n-1) -space.
+
+Given a point x, determine if x is interior to Tri( v1, v2, ... , vn) .
+
+In order to make this determination use vectors from the hypertriangle
+Tri( v1, v2, ... , vn) to form a basis for the space.
+
+The Free Choice Extension:
+
+     Any point x can be represented by a parametric equation:
+
+     (B.) x = v1 + p1( v2 - v1) + p2( v3 - v2) + ... + pn-1( vn - vn-1)
+
+     When the following conditions are true, the point is contained in the
+     hypertriangle.
+
+       1. 0 < pi < 1
+       2. Given any i , j such that i < j then pi > = pj
+
+Common Origin Extension:
+
+     In the common origin technique represent an arbitrary point x as
+     follows:
+
+     (C.) x = v1 + p1( v2 - v1) + p2( v3 - v1) + ... + pn-1( vn - v1)
+
+     When the following conditions are true, the point is contained in the
+     hypertriangle.
+
+       1. 0 < pi < 1
+       2. p1 + p2 + ... + pn < 1 .
+
+Given the triangle
+Tri( v1, v2, ... , vn) and x we can calculate p1 + ... + pn.
+
+Given the triangle
+Tri( v1, v2, ... , vn) alone we can calculate a working matrix
+W = Inv( M ) such that ( x - v1) W =[p1, p2, ... , pn] .
+
+In this paper we will most frequently use the free choice technique to
+choose vectors with which to calculate the matrix.
+
+Two Perspective Problems:
+
+     There are two perspective problems that are easily solved using
+hypertriangle containment.
+
+The two problems for which we disclose new solutions here are,
+
+  1. The ray tracing perspective projection problem.
+  2. The standard perspective problem.
+
+The Standard Perspective Problem:
+
+     The standard perspective problem is as follows. Figure 4 We are given
+     the following information:
+
+       1. The location of a single point t, in world coordinates in
+          three-space.
+       2. The location of the focal point f, of an eye or a camera in world
+          coordinates in three space.
+       3. The location of the projection plane P in world coordinates in
+          three space. This location is determined by a set of three
+          vectors.
+          P is defined by the set { r1, r2, r3 } . footnote2
+
+     We are asked to determine the point at which a line from the focal
+     point of the eye f to the single point t intersects the projection
+     plane P. If this point of intersection exists, we will call it t'. We
+     are asked to determine the coordinates of t' in the rectangular
+     coordinate system of the projection plane P. The projection plane
+     represents the surface of a video display device, such as a CRT tube
+     and the coordinate system in which we want the information returned is
+     the two dimensional pixel coordinates of the CRT tube.
+
+The Ray Tracing Perspective Problem:
+
+     The ray tracing perspective problem is as follows, Figure 5 We are
+     given the following information:
+
+       1. The location of the focal point, f of an eye or a camera in world
+          coordinates in three space.
+       2. The location of the projection plane P in world coordinates in
+          three space, (this is three points, the origin of the screen, the
+          upper left of the screen and the lower right).
+       3. A point x on P in world coordinates footnote3
+       4. A two dimensional triangle T = Tri( v1, v2, v3 ) in world
+          coordinates. This is a two dimensional triangle embedded in three
+          space, its verticies are vectors with three coordinates. In the
+          real world systems, the triangle is a portion of the surface of
+          an object being ray-traced.
+
+     We are asked to determine two different things:
+
+       1. Does the line starting at the focal point f and passing through
+          the point x, intersect the triangle T? If the intersect exists
+          call it x'.
+       2. If the intersection exists, what is a measure of the distance
+          from the point x to its intersection on the triangle T at x'.
+
+Ray Tracing Problem Solved:
+
+     Let us use the free choice tetrahedron containment algorithm to
+develope a ray tracing perspective technique. If the line starting at the
+focal point f and passing through the point x intersects the triangle T,
+the first item we are asked to determine, is equivalent to asking if the
+point x is contained in the tetrahedron Tri( v1, v2, v3, f) . That is, is x
+contained in the tetrahedron defined by the union of the triangle with the
+focal point.? ( T U f ). The second item we are asked to determine, is a
+measure of the distance from x to its intersection on T.
+
+We use this measure for z-buffering. We get this measure as a side benefit
+when we use the free choice technique of detecting whether x is in Tri( v1,
+v2, v3, f ) . Let the point x be represented as: footnote4
+
+(D.) x = f + p1( v1 - f) + p2( v2 - v1) + p3( v3 - v2)
+
+Calculate the working matrix W = Inv( M ) that transforms a point into the
+new coordinate system represented by the above equation.
+
+The three by three matrix of row vectors vectors M is represented as:
+
+M =
+
+        | v1 -  f  |
+
+        | v2 -  v1  |
+
+        | v3 -  v2  |
+
+from the three by three matrix M calculate W = Inv( M ). Represent W = Inv(
+M ) as a matrix of column vectors.
+
+W =
+
+     | c1   c2   c3 |
+
+
+
+The algorithm to obtain the information we need is then as follows:
+
+  1. Calculate the dot product p1 = ( x - f) * c1 . If this product is
+     greater than one or less than zero the algorithm terminates. Point x
+     is not in the tetrahedron.
+  2. Calculate the dot product p2 = ( x - f) * c2 . If this product is
+     greater than p1 or less than zero the algorithm terminates. Point x is
+     not in the tetrahedron.
+  3. Calculate the dot product p3 = ( x - f) * c3 . If this product is
+     greater than p2 or less than zero the algorithm terminates. Point x is
+     not in the tetrahedron.
+  4. If the algorithm has not terminated, and we reach this step, We can
+     use p1 as a measure of the distance from x to the triangle T since p1
+     is simply the ratio of the length of the line segment ( f, x) to the
+     length of the line segment ( f, x') where x' is the point at which the
+     line intersects T. Since ( f, x) has a fixed length, we can use the
+     ratio as a measure.
+
+In an actual computer system several things must happen in order to perform
+a ray tracing of a world object. First, areas that are not partially
+contained on the screen are clipped. One technique for doing this is
+disclosed as part of the algorithm for the standard perspective technique
+footnote5, then the real world coordinates for each pixel on the display
+screen is generated, then the ray from the focal point through the screen
+pixel is compared against triangles. The value of p1, our measure, is used
+for z-buffering to determine which points are in front of or behind other
+points.
+
+Standard Perspective Problem Solved:
+
+     In the standard perspective problem we are given the following
+information:
+
+  1. The location of a single point t in world coordinates in three-space.
+  2. The location of the focal point f of an eye or a camera in world
+     coordinates in three-space.
+  3. The location of the projection plane P in world coordinates in three
+     space, (this is three points, the origin of the screen, the upper left
+     of the screen and the lower right.).
+
+Let the viewing area of P that we are interested in be represent by three
+coordinates in world-space. P = { r1, r2, r3 } .
+
+That is, P is represented by the set of three vectors { r1, r2, r3 } . In
+"real world" situations, the vectors ( r2 - r1 ) and ( r3 - r1 ) are
+frequently chosen to be orthogonal, simply because the viewing area of the
+CRT is rectangular and has right angle corners. We can think of r1 as the
+lower left hand corner of the CRT, r2 as the lower right hand corner and r3
+as the upper left hand corner. Let t be represented by the equation,
+
+(E.) t = f + p1( v1 - f) + p2( v2 - v1) + p3( v3 - v1)
+
+This equation has been generated differently than any of the above
+equations. It has been constructed this way in order to make two questions
+easy to answer.
+
+  1. Is t a point that can be projected onto P such that t', the projected
+     point is in the rectangle determined by { r1, r2, r3, r2 + ( r3 - r1)
+     } ?
+  2. What are the coordinates of t' in the two dimensional coordinate
+     system determined by P where: footnote6
+       1. r1 is chosen to have the coordinates (0,0)
+       2. r2 is chosen to have the coordinates (1,0)
+       3. r3 is chosen to have the coordinates (0,1)
+
+Now construct W = Inv( M ) from M as determined by equation (E.) above
+where we express M as:
+
+M =
+
+        | v1 -  f  |
+
+        | v2 -  v1  |
+
+        | v3 -  v1  |
+
+We calculate W = Inv( M ) from M and let the columns of W be represented
+as:
+
+W =
+
+       |  c1  c2  c3 |
+
+
+
+Now in order to solve the standard perspective problem we do the following:
+
+  1. Calculate p1 = ( t - f) * c1 . If p1 < 1 then the point t does not
+     project onto the rectangle of interest on P and the algorithm
+     terminates.
+  2. Calculate p2 = ( t - f) * c2 . If p2 < 0 or p2 > 1 then the point t
+     does not project onto the rectangle of interest on P and the algorithm
+     terminates.
+  3. Calculate p3 = ( t - f) * c3. If p3 < 0 or p3 > 1 then the point t
+     does not project onto the rectangle of interest on P and the algorithm
+     terminates.
+  4. If the algorithm has not terminated, then the point t does project
+     onto P in the area of interest and t' has the coordinates t' = (
+     p2/p1, p3/p1 )
+
+Optimizing the algorithm:
+
+     There are several ways in which the algorithm can be optimized.
+Without going into extensive detail we will give several of them here. Some
+properties of the triangles are invarient from different viewpoints. In the
+ray tracing problem only one of the rows of the three by three matrix M
+depends upon the viewpoint when the matrix is generated using the
+free-choice technique. Consequently, two rows of the matrix M are invarient
+and need be calculated only once for all viewpoints. This has the added
+benefit, that if the inversion is done by calculating the determinant by
+expansion of minterms, some of the minterms need be calculated only once
+for all viewpoints. Optimizations similar to the above can be realized for
+triangles that share a common edge.
+
+One can avoid dividing by the determinant when calculating the inverses and
+postpone this computation until the comparisons have been made. In this
+case comparisons are made against the values of the determinant instead of
+one, and the divisions are only made if the containment has been
+established and we need to complete the computation.
+
+Any set of four non-coplanar (non-colinear) points in three space can act
+as a basis for the space. From these four points we can find an affine
+transformation that takes any point in world space into a new coordinate
+system defined by these points. We can also find an inverse transformation
+that takes points from our new coordinate system back into world space.
+
+The affine transformation shares the advantages of the homogeneous
+coordinate system with transforms. In both systems it is possible to
+multiply (concatenate) transforms in order to obtain a new transform
+equivalent to applying the transforms in sequence. Transforms for scaling,
+reflecting, rotating and distorting are easily constructed and combined and
+the inverses of these operations are easily found. This fact is not new,
+and has been mentioned in the literature before. The main arguments in
+favor of using a homogeneous coordinate system have been that, first, it
+reduces the complexity of code. With modern object oriented languages the
+code is only minimally more complex for the basic operations with a great
+increase in simplicity for more complex operations. Secondly, homogeneous
+coordinate systems are used because of the ease of explaining there use and
+for historical reasons.
+
+This paper is an outgrowth of a larger research project in computer
+graphics that began with a 3-D modelling and display program that ran on an
+Apple II-E written around 1983. That system did not use a homogeneous
+system of coordinates and transformations but used affine transforms
+instead to translate points and calculate perspective. The free choice
+algorithms are a recent invention derived from that work. Containment is
+calculated by generating an affine transformation that takes the the point
+we are interested into a space in which simple comparisons can determine
+containment and the new coordinate system contains desirable information.
+
+In that 1983 computer system, "cameras", that is coordinate systems
+associated with a viewpoint were stored or created from four points in
+three space. For orthographic projections the three vectors generated from
+these four points were orthogonal. Each camera could be used to generate an
+affine transformation that would move a vector from world space to camera
+space. Perspective transforms were done as they are traditionally done
+rather than as presented herein above. Transforms could be convolved into
+new transforms as they are in systems using homogeneous coordinates.
+Inverses of transforms could also be calculated to take a vector from
+camera space to world space. Transforms could also be converted back to
+cameras.
+
+The system provided a simple language in which sequences of transforms and
+objects could be generated mathematically.
+
+Some major advantages of the system were.
+
+  1. It was significantly faster than equivalent systems on the same
+     machine.
+  2. Planes and lines did not need to be expressed in their cartesian form
+     since they were easily expressed simply as two points or three points
+     respectively.
+  3. Projections onto polygons were simplified.
+  4. The 30% overhead associated with storage of homogeneous coordinate
+     system matricies was avoided.
+  5. Transformations from any camera (coordinate system) to any other
+     camera in the system was easily and simply achieved.
+
+On a completely biased note, I prefer the kind of system presented here not
+only because it is fast, but because the Mathematics of what is happening
+appears to me to be simpler and more transparent to a user of the system.
+
+---------------------------------------------------------------------------
+
+Appendix:
+
+The Barycentric Coordinate Technique
+
+     Represent an arbitrary point x using the equation:
+
+     (F.) x = v1 + p1( v2 - v1) + p2( v3 - v1)
+
+     Now the point x is contained in the triangle only when all of the
+     following conditions hold:
+
+       1. When 0 < p2 and
+       2. When 0 < p1 and
+       3. When p1 + p2 < 1 .
+
+     We call this technique, the common origin technique. Figure 3 This is
+     based upon a traditional convention that when calculating a new basis
+     for a space, the origin of the vectors originate from a common point.
+
+     This is equivalent to the using barycentric coordinates. Barycentric
+     coordinates are based upon the fact that any point can be represented
+     as the sum of the verticies of a triangle times a weight, where the
+     sum of the weights equals one.
+
+     (G.)
+       1. x = p0v1 + p1v2 + p2v3
+       2. p0 + p1 + p2 = 1
+     Let p0 = 1 - p1 - p2, then (G.)-1 above becomes
+
+     x = (1 - p1 - p2) v1 + p1v2 + p2v3 x = v1 + p1( v2 - v1) + p2( v3 -
+     v1)
+
+     This is identical to (F.) above.
+     Return to referance to appendix
+
+---------------------------------------------------------------------------
+
+                                 Foot Notes
+
+   * footnote 1, Triangle Containment Techniques Compared
+
+     Several of these techniques are compared by Eric Haines in Volume 5,
+     Number 3, September 2, 1992, of the Ray Tracing News, an internet
+     electronic journal. For triangles, his version of the barycentric
+     coordinate system algorithm worked best for triangles, but the
+     advantages were rapidly lost for polygons with more than three sides.
+     We have some optimizations of the algorithm that drastically speed up
+     these calculations.
+     Return to place document
+
+   * footnote 2, Coordinates of CRT
+
+     That is, the three points { r1, r2, r3 } determine a rectalinear area
+     in three space that we are interested in, possibly the origin, the
+     upper left hand corner and the lower right hand corner of a CRT tube.
+     Return to place document
+
+   * footnote 3, Translating pixel to world coordinates.
+
+     Translating pixel coordinates to world coordinates is easily
+     accomplished. Let w0 be the world space coordinate of the origin of
+     the screen at pixel coordinates (0,0) , let w1 be the world space
+     coordinates of the top left of the screen at pixel coordinates (0,399)
+     , let w2 be the world space coordinates of the bottom right of the
+     screen at pixel coordinates (639,0) . .
+
+     The world space coordinates of (X,Y) is then
+
+     w0 + Y( w1 - w0 )/399 + X( w2 - w0 )/639.
+
+     Generate 640 values for x and 400 values for y and access them by
+     their indicies to avoid frequent recalculations when generating scan
+     lines.
+     Return to place document
+
+   * footnote 4, Other free choice vector constructs
+
+     It is also possible to substitute a representation as in equation (E.)
+     below for equation (D.) and change some of the checking conditions.
+     This may be desirable in some real world programs.
+     Return to place document
+
+   * footnote5, Other algorithms for clipping are known.
+
+     There are other more effective ways of doing this clipping when using
+     BSD trees and other data structures that partition the world space,
+     rather than depending on the algorithms presented here alone.
+     Return to place document
+
+   * footnote6, Coordinates for projection plane should match CRT
+
+     This coordinate system is used to make reading this paper easy. In
+     "real world" computer applications, the coordinates would be chosen to
+     represent pixel coordinates on a CRT tube.
+
+     In otherwords, for a full screen 400 X 640 VGA system appropriate
+     coordinates might be r1=(0,0), r2=(640,0), r3=(0,400).
+     Return to place document
+
+   * footnote7, Definition of homogeneous
+
+     "homogenous", as used here does NOT mean a homogeneous system of
+     equations, but derives from a projective geometry construct.
+     Homogeneous coordinates are used in computer graphics as a redundant
+     method of storing vectors. That is in 3-space a vector of length 4 is
+     used to store a coordinate. The fourth coordinate is used to scale the
+     first three coordinates. For example (12, 8, 4, 4), and (9, 6, 3, 3)
+     both represent the coordinate (3, 2, 1).
+
+     In a homogenous system of coordinates, the equivalent of a matrix
+     multiply, combined with a vector addition, is stored in a four by four
+     matrix.
+     Return to place document
+
+---------------------------------------------------------------------------
+       To MathVision Inc., (formerly 7seas software) Corporate page.
+

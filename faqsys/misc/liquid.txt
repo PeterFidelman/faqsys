@@ -1,0 +1,62 @@
+From: Robert Templeman <mbcaprt@mphhpd.ph.man.ac.uk>
+Newsgroups: comp.graphics.algorithms
+Subject: Re: liquid motions
+Date: 8 Sep 1995 14:21:23 GMT
+Organization: home watching TV
+Mime-Version: 1.0
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Message-ID: <42pjh3$k98@yama.mcc.ac.uk>
+References: <8AE6546.01310022D6.uuout@triplex.fipnet.fi>
+
+janne.sinivirta@triplex.fipnet.fi (JANNE SINIVIRTA) wrote:
+>        hi!
+>
+>    i'd need some help with liquids like water. I'm trying to
+>create an algo to animate water or something like it to be poured
+>from a bottle to sink, so the water spreads all over the sink and
+>then goes to the hole.
+>
+>thanks in advance,
+>        vertex /TDC
+
+I've written a nice water 'simulator' (2D, but easily extended to 3D) essentially i use about 10000
+particles, each is convieniently 1 pixel square!, and i process them as follows;
+
+(1) position all the liquid particles at the same point (crucial this bit).  For your bottle you
+could put all the particles in the top inside of the bottle, let them flow to fill the rest of the
+bottle & then open the top (bottom, hehe) to allow them to flow out.
+  This 'relaxation' stage is cruicial because it correctly orders the paricles so that the lowest
+particles are the 1st updated.  This has the effect of bubbles of air bubbling upwards when the
+fluid displaces empty screen space, which looks totally realistic (to the untrained eye!)
+
+(2) To move the fluid do the following;
+
+    Loop over all the fluid particles;
+      If there is a free space below a particle move it down one pixel
+      If there isnt a free space below it randomly check to the left or
+      the right of the particle and move it correspondingly.
+
+      If the fluid particle has been in free fall for more than 2 iterations
+      randomly move it from left to right with a low probability (this is for
+      a nice spreading effect)
+    endloop
+
+And thats it.  This gives the impression of a fluid with a high Reynolds no. (obviously its not a
+very good physical simulation, no pressure actually exists)
+
+Ways to make it look awesome are (for water this is) when the fluid moves sideways randomly change
+its colour to lighter shades of blue for 1 iteration & when its in free fall randomly change to even
+lighter shades of blue.  When the fluid skits sideways in freefall change its colour to white for an
+iteration, also do this when the fluid moves from freefall to stationary.
+  I've tried this with 20000 water 'molecules' on a 1000x500 ish display and it looks absolutely
+awesome, especially when it cascades from one object to another.
+  Other things to try are moving the liquid further in one iteration, this alters the fluids
+'viscosity' quite nicely.
+  This is easily extended to 3D but you would need a fearsomly large no. of particles for a voxel
+like image, better would be to have the particles finite size cubiods and do the comparisons in a
+vector like fashion (obviously your plughole would need to be big enough for a rectangle to flow
+down it!)
+
+ Robert Templeman
+

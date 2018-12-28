@@ -1,0 +1,58 @@
+From pdxgate!usenet.ee.pdx.edu!reed!henson!news.u.washington.edu!usenet.coe.montana.edu!caen!uunet!mcsun!sun4nl!bsoatr!bskewe!kewe Tue Mar  2 15:21:37 PST 1993
+
+
+In article <C2M846.9FI@boi.hp.com> douglasg@gr.hp.com writes:
+
+  > 
+  > I'm looking for an algorithm which determines if a point
+  > falls within an arbitrary (convex or concave) polygon.
+  > 
+  > Thanks,
+  > 
+  > Douglas Gennetten
+  > Hewlett-Packard
+  > 
+  > 
+  >
+
+BOOLEAN PointInsideOfPolygon ( POLYGOON *P, VECTOR2D *p )
+  {
+  VECTOR2D o, v, w;
+  INDEX    ncross, N, n;
+
+  ncros             = 0;
+  N                 = PolygonLength(P);   /* Number of vertices */
+  GivePolygonVertex ( P, N, &o );
+
+  for ( n=1; n<=N; n++ )
+    {
+    GivePolygonVertex ( P, n, &v );
+
+    if ( o.x >= p->x && v.x <  p->x ||
+	 o.x <  p->x && v.x >= p->x  )
+      {
+      w.x = p->x;
+      LinearInterpolation ( &o, &v, &w );
+
+      if ( w.x == p->x && w.y == p->y )
+	return(TRUE);
+      else if ( w.y > p->y )
+	ncross++;
+      }
+
+    CopyVector2d ( &v, &o );
+    }
+
+  if ( ncross%2 == 0 )
+    return(FALSE);
+  else
+    return(TRUE);
+  }
+
+Cornelis Wessels
+kewe@bskewe.atr.bso.nl
+
+Krommenoord 14
+3079 ZT  ROTTERDAM
+The Netherlands
++31 - 10 - 4826394

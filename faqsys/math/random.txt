@@ -1,0 +1,55 @@
+From - Wed Jun 10 16:50:16 1998
+Path: ifi.uio.no!news-feed.ifi.uio.no!howland.erols.net!feed2.news.erols.com!erols!not-for-mail
+From: Andy <jedidiah@linctel.net>
+Newsgroups: comp.lang.asm.x86
+Subject: Re: random function
+Date: 9 Jun 1998 22:59:03 GMT
+Organization: LincTel
+Lines: 31
+Approved: <johnfine@erols.com>
+Message-ID: <6lkenn$4ap$1@winter.news.erols.com>
+References: <6kmvdq$4rq$1@winter.news.erols.com>
+Reply-To: AndyL@antisocial.com
+NNTP-Posting-Host: 207-172-240-114.s51.as2.bsd.erols.com
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-Trace: winter.news.erols.com 897433143 4441 207.172.240.114 (9 Jun 1998 22:59:03 GMT)
+X-Complaints-To: abuse@erols.com
+X-Mailer: Mozilla 3.03 (Win16; I)
+X-UIDL: 7e6d2ec1ce
+Content-Length: 1138
+X-Mozilla-Status: 0801
+Xref: ifi.uio.no comp.lang.asm.x86:69115
+
+This is a pretty simple algorithm I think (although it is using the mul
+instruction).
+I picked it up in some old assembler tutorial, unfortunately I forogt
+the name, sorry.
+
+Seed      DW 3749h                     ; The seed value, and half of my
+                                       ; phone number - not in hex
+though. :)
+
+; This procedure was picked up from comp.lang.asm.x86 - many thanks to
+the
+; unknown author.
+
+Random           PROC
+   MOV   AX, Seed                      ; Move the seed value into AX
+   MOV   DX, 8405H                     ; Move 8405H into DX
+   MUL   DX                            ; Put 8405H x Seed into DX:AX
+   INC   AX                            ; Increment AX
+   MOV   Seed, AX                      ; We have a new seed
+   RET
+Random           ENDP
+
+Julien Antoine wrote:
+> 
+>     I search an algorithme, which produce random number. This algorithme
+> must be as small as possible, because I want to use it in a microprocessor.
+> I don't search a perfect algorithme. I want a simple pseudo-random algorithm
+> (a combination of OR,AND, XOR, ADD, SUB if possible).
+> 
+> Thanks
+

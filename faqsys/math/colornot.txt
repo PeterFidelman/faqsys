@@ -1,0 +1,148 @@
+From: mmt@dciem.UUCP (Martin Taylor)
+Newsgroups: comp.graphics
+Subject: Re: Advanced Dither Needed
+Date: 21 Jan 88 23:30:55 GMT
+Organization: D.C.I.E.M., Toronto, Canada
+
+
+>A comment on dither - the "quick and dirty" approach to uniform division of
+>the color space (so that R, G and B can be treated separably) very often
+>slices up 8 bit pixels as 3 bits for red and green, 2 bits for blue (where
+>the eye is least sensitive).
+>
+>This is an unnecessary oversimplification that leaves blue with only two
+>mid-range intensities. 
+>[There follows a discussion of coding colour tables]
+
+It is not strictly true that the eye is least sensitive to colour
+variation in the neighbourhood of blue.  In fact, the MacAdam discrimninatio
+ellipses are smallest near blue and largest near green.  What IS true
+is that the eye does not discriminate blue-yellow contrasts in small
+areas, nor does it have any blue-yellow edge detectors.  Hence, blue
+is a good candidate for colour dither.  I have never tried this, having
+not been associated with colour display since about 12 years ago, but the
+following seems like a good idea, based on visual function:
+
+Give as much colour resolution per pixel as you can to red-green contrast,
+and minimize dither in that part of the colour space.  For blue,
+which dominates the blue-yellow contrast of most regions, use either
+1 or 2 bits, but average over substantial regions by dithering.  If one
+dithers over a 4X4 region with 1 bit, one has 16 blue levels over regions
+that probably are not far from the resolution limit of the eye for
+blue-yellow contrast.  Unfortunately, this will not be the whole story,
+because the blue phosphor contributes more to brightness than does a
+good central blue, but it should be a reasonable approximation.  As a
+practical matter, I suspect that the traditional 3+3+2 red-green-blue
+distribution of bits is not bad if one dithers red and green on a
+3-pixel region, and blue on a 9-pixel region.  The 3-pixel regions
+would be L-shaped or inverted-L-shaped, interlocking for either red or
+green, with the interlock column offset 1-pixel between red and green.
+At discrete edges in the image, don't dither, but use the best per-pixel
+value.  The existence of the edge will mask any subtle colour error.
+
+These are untested ideas, but off-hand I can't see why they would not
+give good subtle shading in a colour space of 9x9x18 (red-blue-green)
+over gradually varying regions of a picture, plus good edge resolution
+in other regions.  You actually want better blue colour resolution
+and worse blue spatial resolution than for red and green, which is
+what this scheme would give you.  But I have no idea how computationally
+expensive it would be to have these non-rectangular dither areas which
+had different boundaries for all three primary colours.
+
+If anyone tries this, I would like to know how it works (and to get
+credit if it is magnificent!).
+-- 
+
+Martin Taylor
+{allegra,linus,ihnp4,floyd,ubc-vision}!utzoo!dciem!mmt
+{uw-beaver,qucis,watmath}!utcsri!dciem!mmt
+mmt@zorac.arpa
+
+-----------------------------------------------------------
+
+From: awpaeth@watcgl.waterloo.edu (Alan W. Paeth)
+Newsgroups: comp.graphics
+Subject: Re: Advanced Dither Needed
+Date: 25 Jan 88 19:37:22 GMT
+Organization: U. of Waterloo, Ontario
+
+The discussion was a follow-on to my previous posting, in which I suggest
+splitting 256 color map entries as a Cartesian product of RGB in which the
+Green had the greatest precision, because of the eye's sensitivity to green.
+
+>It is not strictly true that the eye is least sensitive to colour
+>variation in the neighbourhood of blue.  In fact, the MacAdam discrimninatio
+>ellipses are smallest near blue and largest near green.  What IS true
+>is that the eye does not discriminate blue-yellow contrasts in small
+>areas, nor does it have any blue-yellow edge detectors.  Hence, blue
+>is a good candidate for colour dither...
+
+(discussion of some possible dithering techniques)
+
+>...You actually want better blue colour resolution
+>and worse blue spatial resolution than for red and green, which is
+>what this scheme would give you.  But I have no idea how computationally
+>expensive it would be to have these non-rectangular dither areas which
+>had different boundaries for all three primary colours.
+
+In reverse order:
+
+[2] This really hits the nail on the head. The preliminary design of the
+"Dandelion" by Butler Lampson at Xerox PARC in the late 70's went for a
+video chain which had r3g3b2 precision, but the b2 channel was clocked in
+such a fashion so as to produce pixels of four bits resolution (in pixel
+quantization), but of double the width, thus losing some spatial resolution.
+This makes sense, as the eye not only has better contrast discernment on the
+red-green channel (as was pointed out), but cannot even focus well on blue,
+being from -1D to -2D out as the wavelength decreases, owing to chromatic
+aberration. Such a viedo design wouldn't be that hard a retrofit for many
+systems, as the total number of blue bits clocked per scanline (and thus, per
+screen) remains unchanged -- just a two bit buffer is needed to build up the
+full blue pixel from the memory "subpixels", plus some logic gates. 
+
+[1] Yes, the MacAdam ellipses (and those by Stiles) demonstrate empirically
+that hue changes are most discernable for BRG, in that order, even when
+the perceptual hue non-linearities of the CIE x'y' chart (on which the ellipses
+are often drawn) are taken into account. When dithering a subject of largely
+varying blue, we choose this order of bit allocation -- as for instance when
+doing a sunset against a blue sky. In general, though, the high blue precision
+is most relevant only when a strictly blue color is to be rendered; the extra
+bits might not allow for a large perceptual color shift when the other two
+primaries are active.
+
+The real problem here stems from treating the creation of a suitable color
+space. The previous posting suggests an opponent space. I've tried Floyd-
+Steinberg techniques in this space, as well as LUV, YIQ and HSV with varying
+(and noticeably distinct) results. These spaces are largely a change in basis,
+or straight-forward non-linear transformation of RGB. As such, they are highly
+symmetric, so forcing a degree of high precision to some corner of the space
+by bit allocation almost always gives rise to a "conjugate" space of increased
+precision in an area which is uninteresting (the precision increase in this
+conjugate area is not very perceptual and is thus wasted).
+
+What is really needed is a Floyd-Steinburg algorithm which dithers against
+a candidate list of target output colors. These colors would be defined to
+be either perceptually "equidistant", or alternately they would be derived
+from the input image by using a more general histogramming technique (cluster
+analysis), which would not treat the input primaries as separate channels.
+Although this potentially means histogramming against 2^24 bins, note that
+most images seldom exceed 2^20 pixels in size, a reduction of 16:1.
+
+The real difficulty with such a program is doing the "nearest colored pixel"
+function, given, say, an input of r8g8b8 data and an output of 256 distinct
+pixels. For small output (eg, 16 colors for dithering onto a PC), one can
+search the output pixel space in linear fashion. For output pixels of large
+precision, say, 16 bits, a r5g6b5 separable Floyd scheme with equalization
+(Heckbert, SIGGRAPH '80) is more than adequate.
+
+The interesting case is when the output device is of intermediate size --
+in practice this is also the most common case, as when the output device has
+an upper limit of 256 output pixel colors. This size is too large for linear
+brute force, but small enough that sublinear algorithms with asymptotically
+better bounds (probably involving 3D Voroni diagrams) are large and not
+necessarily faster given the expense in building and probing the colorspace
+datastructure. They are also a royal pain to code.
+
+    /Alan Paeth
+    University of Waterloo
+    Computer Graphics Laboratory

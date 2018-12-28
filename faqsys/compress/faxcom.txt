@@ -1,0 +1,776 @@
+*****************************************************
+****                                             ****
+****   Faxdecod.c                                ****
+****                                             ****
+*****************************************************
+
+/***************************************************************************
+
+   Faxdecoder : Usage faxdecoder <compressed_fax >uncompressed.fax
+
+   This program compresses a fax using a model based on an order 16 model.
+   Context is as follows : C = Context bits, P = bit being predicted
+
+	  			   x
+				xxxxxx
+				xxxxxx
+				xxxP
+
+   Variable names beginning with capital letters are arithmetic coding
+   variables used by the arithmetic coding routines.
+
+			-------------------------------
+
+   Copyright Raymond P. Wilson 1989.
+
+   This program is a shareware program. If you use it then credit must be
+   given to the author (me). If you find this program useful please send
+   whatever you think it is worth ($25 is suggested) to :
+
+			Raymond P. Wilson
+			38 Paremata St
+			Atawhai
+			Nelson
+			New Zealand
+
+ **************************************************************************/
+ 
+#include <stdio.h>
+#include <sys/time.h>
+#include <sys/resource.h>
+#include "coderdef.i"	    /* My faxcoder definitions etc... */
+#include "arithdec.i" /* Arithmetic decoding functions and defs ... */
+
+/*************************************************************************
+
+   Function   : Initialise_model
+   Parameters : None
+   Returns    : Nothing
+
+   Initialise_model sets up all the structures and initialisation
+ required by the fax coder. 
+
+ ************************************************************************/
+
+void initialise_model()
+{
+   int i;
+
+   /* Initialise context bits and saved context arrays */
+  
+   for (i = 0;i < CONTEXT_WINDOW_BPL;i++)
+      saved[i] = 0;
+
+   /* Initialise context information array */
+  
+   for (i = 0;i < NUM_CONTEXTS;i++)
+   {
+      contexts[i].zero_count = 1;
+      contexts[i].sum = 2;   /* No explicit count of ones is kept */      
+   }			     /* as this is implicit in the sum	  */
+}
+
+/************************************************************************
+ 
+   Function   : Decompress
+   Parameters : None
+   Returns    : Nothing
+   
+   Decompress decompresses a fax file read in from std input.
+   
+ ***********************************************************************/
+ 
+void decompress()
+{
+   register codevalue	S_low=0, S_high=0;
+ 		    /* Arithmetic decoder vars high and low of range */
+   register int 
+      context,      /* Context at predicted bit */
+      bitnum,       /* Bit being compressed on current line */
+      S_bitstogo,   /* Arithmetic decoder var - used in inputting bits */
+      H = half,     /* Arithmetic decoder var - contains constant half */
+      last,         /* Shifting three bit field of last three bits read in */
+      bitsleft = 8, /* Mask for getting bit out of byte */
+      byte = 0;     /* Byte read in from  */
+
+   startinputingbits();
+   startdecoding();
+
+   for (line = 0;line < NUM_LINES;line++)
+   {
+      last = 0;   /* Clear shifting temporary storage for incoming bits */
+
+    /* Start iterating over bits in line - start in from edge of 'sheet'
+       to give white space at edge for context */
+
+      for (bitnum = CONTEXT_SIDE_BITS;
+           bitnum < (CONTEXT_SIDE_BITS + BITS_PER_LINE);bitnum++)
+      {
+
+   /* Work out context that precedes bit being predicted */
+
+         context = saved[bitnum] | (last >> 3);
+
+    /* Store that part of the context that will be used on the next line */ 
+ 
+         saved[bitnum] = (context & CONTEXT_MASK) << 6;
+    
+    /* Decode the bit currently being decompressed and update the model */
+    /* Call arithmetic_decode_target to get position in range */
+        
+         if (arithmetic_decode_target(contexts[context].sum) 
+               < contexts[context].zero_count)
+         {  
+            /* Decode a zero bit */
+            arithmetic_decode_zero(contexts[context].zero_count,
+                                   contexts[context].sum);
+                                   
+            contexts[context].zero_count++; /* Increment zero bit count */
+            write_decoded0;                 /* Output a decoded zero */
+
+       /* Add a zero bit to shifting storage and add this to previously
+          stored context from two bits back */
+           
+            saved[bitnum-2] |= (last = (last << 1) & 0x38);            
+         }
+         else
+         {
+            /* 'Decode' a one bit */
+            arithmetic_decode_one(contexts[context].zero_count,
+                                  contexts[context].sum);
+                                  
+            write_decoded1; /* Write out a decoded ont bit */
+
+       /* Add a zero bit to shifting storage and add this to previously
+          stored context from two bits back */
+ 
+            saved[bitnum-2] |= (last = ((last << 1) | 0x8) & 0x38);
+         }                                                         
+
+       /* Increment sum count and check to see if counts need halving */
+       
+         if ((++contexts[context].sum) == HALVE_LIMIT)  
+         {
+            contexts[context].zero_count = (contexts[context].zero_count >> 2) + 1;
+            contexts[context].sum = (contexts[context].sum >> 2) + 2;
+         }
+      }
+   }
+}
+
+/*************************************************************************
+
+                                 Main program.
+   
+ ************************************************************************/
+ 
+main(argc,argv)
+int argc;
+char **argv;
+{
+   initialise_model();
+   fprintf(stderr,"Decompressing file, please wait.\n");
+   start_time = get_time();              /* Get starting time */
+   decompress();			 
+   total_time = get_time() - start_time; /* Get total time from difference */  
+   fprintf(stderr,"%s: Decompressed fax in %.3f seconds.\n",argv[0],total_time);
+   exit(0);
+}
+
+
+
+
+*****************************************************
+****                                             ****
+****   Faxcoder.c                                ****
+****                                             ****
+*****************************************************
+
+/***************************************************************************
+
+    Faxcoder : Usage faxcoder <fax_file.fax >output
+
+    This program compresses a fax using a model based on an order 16 model.
+    Context is as follows : x = Context bits, P = bit being predicted
+   
+	  			   x
+				xxxxxx
+				xxxxxx
+				xxxP
+ 
+   Variable names beginning with capital letters are arithmetic coding
+   variables used by the arithmetic coding routines.
+
+			-------------------------------
+
+   Copyright Raymond P. Wilson 1989.
+
+   This program is a shareware program. If you use it then credit must be
+   given to the author (me). If you find this program useful please send
+   whatever you think it is worth ($25 is suggested) to :
+
+			Raymond P. Wilson
+			38 Paremata St
+			Atawhai
+			Nelson
+			New Zealand
+
+    If you want to use this or parts of this program in a commercial product
+ then the authors permission is required.
+
+ **************************************************************************/
+ 
+#include <stdio.h>
+#include <sys/time.h>
+#include <sys/resource.h>
+#include "coderdef.i"	    /* My faxcoder definitions etc... */
+#include "arithcod.i"	/* Arithmetic coding functions and defs... */
+
+/*************************************************************************
+
+   Function   : Initialise_model
+   Parameters : None
+   Returns    : Nothing
+
+   Initialise_model sets up all the structures and initialisation
+ required by the fax coder. 
+
+ ************************************************************************/
+
+void initialise_model()
+{
+   int i;
+
+   /* Initialise context bits and saved context arrays */
+  
+   for (i = 0;i < CONTEXT_WINDOW_BPL;i++)
+      saved[i] = 0;
+
+   /* Initialise context information array */
+  
+   for (i = 0;i < NUM_CONTEXTS;i++)
+   {
+      contexts[i].zero_count = 1;
+      contexts[i].sum = 2;
+   }
+}
+
+/************************************************************************
+
+   Function   : Compress
+   Parameters : None
+   Returns    : Nothing
+   
+   Compress compresses a fax file read in from std input.
+   
+ ***********************************************************************/
+ 
+void compress()
+{
+   register codevalue	S_low=0, S_high=0;
+ 		    /* Arithmetic coder vars high and low of range */
+   register int 
+      context,      /* Context at predicted bit */
+      bitnum,       /* Bit being compressed on current line */
+      S_bitstogo,   /* Arithmetic coder var - used in inputting bits */
+      H = half,     /* Arithmetic coder var - contains constant half */
+      last,         /* Shifting three bit field of last three bits read in */
+      mask = 0,     /* Mask for getting bit out of byte */
+      byte = 0;     /* Byte read in from  */
+      
+   startoutputingbits();
+   startencoding();
+  
+   for (line = 0;line < NUM_LINES;line++)
+   {
+      last = 0;   /* Clear shifting temporary storage for incoming bits */
+
+    /* Start iterating over bits in line - start in from edge of 'sheet'
+       to give white space at edge for context */
+       
+      for (bitnum = CONTEXT_SIDE_BITS;
+           bitnum < (CONTEXT_SIDE_BITS + BITS_PER_LINE);bitnum++)
+      {
+      
+    /* Work out context that precedes bit being predicted */
+   
+         context = saved[bitnum] | (last >> 3);
+                   
+    /* Store that part of the context that will be used on to the next line */ 
+ 
+         saved[bitnum] = (context & CONTEXT_MASK) << 6;
+    
+     /* Get the bit that is to be compressed */
+    
+         getabit()
+         
+    /* Code the bit currently being compressed and update the model */
+   	
+         if (byte & mask)
+         {
+            arithmetic_encode_one(contexts[context].zero_count,
+                                  contexts[context].sum)
+                                  
+       /* Add a one bit to shifting storage and add this to previously
+          stored context from two bits back */
+                                        
+            saved[bitnum-2] |= (last = ((last << 1) | 0x8) & 0x38);
+         }
+         else
+         {
+            arithmetic_encode_zero(contexts[context].zero_count,
+                                   contexts[context].sum);
+
+       /* Add a zero bit to shifting storage and add this to previously
+          stored context from two bits back */
+
+            saved[bitnum-2] |= (last = (last << 1) & 0x38);
+            
+            contexts[context].zero_count++; /* Increment zero bit count */
+         }
+
+       /* Increment sum count and check to see if counts need halving */
+       
+         if ((++contexts[context].sum) == HALVE_LIMIT)  
+         {
+            contexts[context].zero_count = (contexts[context].zero_count >> 2) + 1;
+            contexts[context].sum = (contexts[context].sum >> 2) + 2;
+         }
+      }
+   }
+   /* Finish up encoding and finishing outputting bits */
+   doneencoding();
+   doneoutputingbits();
+}
+
+/*************************************************************************
+
+                                 Main program.
+   
+ ************************************************************************/
+ 
+main(argc, argv)
+int argc;
+char **argv;
+{
+   initialise_model();
+   fprintf(stderr,"Compressing file, please wait...\n\n");
+   start_time = get_time();             /* Get starting time */
+   compress();
+   total_time = get_time() - start_time; /* Get total time from difference */
+   fprintf(stderr,"%s: compression %4.2f bpc (%4.2f : 1) in %.3f seconds.\n",
+                  argv[0], (8 * cmpbytes)/(double)FAX_SIZE,
+                  FAX_SIZE/(float)cmpbytes, total_time);
+   exit(0);
+}
+
+
+
+*****************************************************
+****                                             ****
+****   Coderdef.i                                ****
+****                                             ****
+*****************************************************
+
+
+/*********************************************************************
+
+   FAXCOM Copyright Raymond P. Wilson 1989.
+
+   This program is a shareware program. If you use it then credit must be
+   given to the author (me). If you find this program useful please send
+   ($25 is suggested) or whatever you think it is worth to :
+
+			Raymond P. Wilson
+			38 Paremata St
+			Atawhai
+			Nelson
+			New Zealand
+
+If you wish to use this, or parts of this, program in a commercial product then the authors permission is required.
+
+**********************************************************************/
+/* This file contains variable and macro definitions common to the
+   faxcoder and faxdecoder */
+
+#define NUM_LINES          2376    /* Number of lines in the fax */
+#define BYTES_PER_LINE     216     /* Bytes per line in fax */
+#define BITS_PER_LINE      (8 * BYTES_PER_LINE)
+				   /* Bits on a fax line */
+#define FAX_SIZE           (NUM_LINES * BYTES_PER_LINE)
+				   /* Size (in bytes) of a fax file */
+#define MODEL_ORDER        16      /* Number of bits of context */
+#define NUM_CONTEXTS       (1 << MODEL_ORDER)
+#define HALVE_LIMIT        16383   /* Halve counts when sum reaches this */
+
+#define CONTEXT_MASK       0x3ff /* This masks out unwanted portions of the
+                                    context from the bit immediately above */
+                                    
+#define CONTEXT_SIDE_BITS  3 /* Number bits to side of fax page to allow
+				for context spilling over sides */
+                              
+#define CONTEXT_WINDOW_BPL (BITS_PER_LINE + 2 * CONTEXT_SIDE_BITS)
+			     /* Bits per line for context bits array */
+
+int cmpbytes = 0,   /* Number of compressed bytes outputted */
+    line,           /* Line currently on in fax file */
+    saved[CONTEXT_WINDOW_BPL];
+                    /* Array that holds saved pieces of context */
+
+struct context_type    /* This structure holds the counts for zeros and the */
+{		       /* sum of zeros and ones for a context               */
+   int zero_count, sum;
+} contexts[NUM_CONTEXTS]; /* The array that holds context information */
+
+/* Get a bit from the input file */
+
+#define getabit() 	\
+   if ((mask>>=1) ==0)	\
+   {			\
+      byte=getchar();	\
+      mask=0x80;	\
+   }
+
+/* Write a zero bit out to the output file */
+
+#define write_decoded0       \
+{                            \
+   byte <<= 1 ;              \
+   bitsleft-- ;              \
+   if (bitsleft==0)          \
+   {                         \
+      putc(byte, stdout) ;   \
+      bitsleft = 8 ;         \
+   }                         \
+}
+
+/* Write a one bit out to the output file */
+
+#define write_decoded1       \
+{                            \
+   byte = (byte << 1) | 0x1; \
+   bitsleft-- ;              \
+   if (bitsleft==0)          \
+   {                         \
+      putc(byte, stdout) ;   \
+      bitsleft = 8 ;         \
+   }                         \
+}
+
+#ifdef UNIX
+float start_time,total_time;
+/*
+ * get_time()
+ *
+ * return amount of CPU time in seconds used since starting
+ */
+
+float get_time()
+{
+        struct rusage rusage;
+
+	getrusage(RUSAGE_SELF,&rusage);
+        return(rusage.ru_utime.tv_sec +
+	       rusage.ru_utime.tv_usec/1000000.0 +
+	       rusage.ru_stime.tv_sec +
+	       rusage.ru_stime.tv_usec/1000000.0) ;
+}
+#endif
+
+
+
+*****************************************************
+****                                             ****
+****   Arithdec.i                                ****
+****                                             ****
+*****************************************************
+
+
+/*************************************************************************
+
+   This program is shareware. If you use it and find it useful please
+   send ($25 is suggested) or whatever you think it is worth to :
+
+			 Raymond P. Wilson
+			 38 Paremata St.
+			 Atawhai
+			 Nelson
+			 New Zealand
+
+   If you wish to use this program or parts of this program in a
+commercial the authors permission is required.
+
+Copyright Raymond P. Wilson 1989
+
+**************************************************************************/
+
+/* arithmetic coding routines */
+
+/* Most of the functions here have been converted to macro definitions
+   to speed them up and have been customised for a binary alphabet */
+
+#define codevaluebits 16
+typedef long codevalue ;
+
+#define topvalue (((long)1<<codevaluebits)-1)
+
+#define firstqtr (topvalue/4+1)
+#define half     (2*firstqtr)
+#define thirdqtr (3*firstqtr)
+
+codevalue	S_value=0 ;
+int		S_buffer=0;
+
+/* Macro definition for call to get number in range when decoding files */
+#define	arithmetic_decode_target(totl)	\
+       (  (((long)(S_value-S_low)+1)*(totl)-1)/ ((long)(S_high -S_low)+1)  )
+
+/*==================================*/
+
+#define addnextinputbit(v) 	\
+  { S_bitstogo--;		\
+    if (S_bitstogo<0) 		\
+      { S_buffer = getc(stdin) ;\
+        S_bitstogo = 7 ; 	\
+      } 			\
+    v += (S_buffer & 1) ; 	\
+    S_buffer >>= 1 ; 		\
+  } 
+
+/*==================================*/
+
+#define arithmetic_decode_zero(hbnd, totl) 				\
+{									\
+   S_high = S_low  +  (((long)(S_high-S_low)+1) * hbnd)/totl - 1 ;	\
+   									\
+   for (;;)								\
+     { if (S_high<H) 							\
+         { /* nothing */						\
+         }								\
+       else								\
+       if (S_low>=H) 							\
+         { S_value -= H ;						\
+           S_low -= H ;							\
+           S_high -= H ;						\
+         }								\
+       else								\
+       if (S_low>=firstqtr && S_high<thirdqtr)				\
+         { S_value -= firstqtr ;					\
+           S_low -= firstqtr ;						\
+           S_high -= firstqtr ;						\
+         }								\
+       else break ;							\
+       S_low <<= 1;							\
+       S_high = (S_high << 1) | 1;					\
+       S_value <<= 1 ;							\
+       addnextinputbit(S_value) ;					\
+    }									\
+ }
+
+/*======================================================================*/
+
+#define arithmetic_decode_one(lbnd, totl)  				\
+{ 									\
+   S_low  +=  (((long)(S_high-S_low)+1)*lbnd)/totl ; 			\
+   for (;;) 								\
+   { if (S_high<H)  							\
+       { /* nothing */ 							\
+       } 								\
+     else 								\
+       if (S_low>=H)  							\
+         { S_value -= H ; 						\
+           S_low -= H ; 						\
+           S_high -= H ; 						\
+         } 								\
+       else 								\
+       if (S_low>=firstqtr && S_high<thirdqtr) 				\
+         { S_value -= firstqtr ; 					\
+           S_low -= firstqtr ; 						\
+           S_high -= firstqtr ; 					\
+         } 								\
+       else break ; 							\
+       S_low <<= 1; 							\
+       S_high = (S_high << 1) | 1; 					\
+       S_value <<= 1; 							\
+       addnextinputbit(S_value) ; 					\
+    } 									\
+ }
+
+/*==================================*/
+
+#define startdecoding()			\
+  { register int i ;			\
+    S_value = 0 ;			\
+    for (i=1; i<=codevaluebits; i++)	\
+      { S_value += S_value ;		\
+        addnextinputbit(S_value) ;	\
+      }					\
+    S_low = 0 ;				\
+    S_high = topvalue ;			\
+  }					\
+
+#define startinputingbits()		\
+S_bitstogo = 0 ;
+
+
+
+*****************************************************
+****                                             ****
+****   ArithCod.i                                ****
+****                                             ****
+*****************************************************
+
+/*************************************************************************
+
+   This program is shareware. If you use it and find it useful please
+   send ($25 is suggested) or whatever you think it is worth to :
+
+			 Raymond P. Wilson
+			 38 Paremata St.
+			 Atawhai
+			 Nelson
+			 New Zealand
+
+   If you wish to use this program or parts of this program in a
+commercial the authors permission is required.
+
+Copyright Raymond P. Wilson 1989
+
+**************************************************************************/
+
+/* arithmetic coding routines */
+
+/* Most of the functions here have been converted to macro definitions
+   to speed them up and customised bor a binary alphabet  */
+
+#define codevaluebits 16
+typedef long codevalue ;
+
+#define topvalue (((long)1<<codevaluebits)-1)
+
+#define firstqtr (topvalue/4+1)
+#define half     (2*firstqtr)
+#define thirdqtr (3*firstqtr)
+
+long		S_bitstofollow=0 ;
+int		S_buffer=0;
+
+/*==================================*/
+
+#define bitplusfollow0            \
+    { outputbit0 ;                \
+      while (S_bitstofollow>0)    \
+        { outputbit1 ;            \
+          S_bitstofollow--;       \
+        }                         \
+    }
+
+#define bitplusfollow1            \
+    { outputbit1 ;                \
+      while (S_bitstofollow>0)    \
+        { outputbit0 ;            \
+          S_bitstofollow--;       \
+        }                         \
+    }
+
+#define outputbit0                \
+    { S_buffer >>= 1;		  \
+      S_bitstogo--;               \
+      if (S_bitstogo==0)          \
+        { putc(S_buffer, stdout) ;\
+          S_bitstogo = 8 ;        \
+          cmpbytes++ ;            \
+        }                         \
+    }
+
+#define outputbit1                \
+    { S_buffer = (S_buffer >> 1) | 0x80;            \
+      S_bitstogo--;               \
+      if (S_bitstogo==0)          \
+        { putc(S_buffer, stdout) ;\
+          S_bitstogo = 8 ;        \
+          cmpbytes++ ;            \
+        }                         \
+    }
+
+/*==================================*/
+
+#define arithmetic_encode_zero(hbnd, totl)				\
+{									\
+   S_high = S_low  +  (((long)(S_high-S_low)+1) * hbnd)/totl - 1 ;	\
+									\
+   for (;;)								\
+     { if (S_high<H) 							\
+         { bitplusfollow0 ;						\
+         }								\
+       else								\
+       if (S_low>=H) 							\
+         { bitplusfollow1 ;						\
+           S_low -= H ;							\
+           S_high -= H ;						\
+         }								\
+       else								\
+       if (S_low>=firstqtr && S_high<thirdqtr)				\
+         { S_bitstofollow++ ;						\
+           S_low -= firstqtr ;						\
+           S_high -= firstqtr ;						\
+         }								\
+       else break ;							\
+       S_low <<= 1;							\
+       S_high = (S_high << 1) | 1;					\
+     }									\
+  }
+
+/*=====================================================================*/
+
+#define arithmetic_encode_one(lbnd, totl)				\
+{									\
+   S_low  += ((((long)(S_high-S_low)+1) * lbnd)/totl) ;			\
+									\
+   for (;;)								\
+     { if (S_high<H) 							\
+         { bitplusfollow0 ;						\
+         }								\
+       else								\
+       if (S_low>=H) 							\
+         { bitplusfollow1 ;						\
+           S_low -= H ;							\
+           S_high -= H ;						\
+         }								\
+       else								\
+       if (S_low>=firstqtr && S_high<thirdqtr)				\
+         { S_bitstofollow++ ;						\
+           S_low -= firstqtr ;						\
+           S_high -= firstqtr ;						\
+         }								\
+       else break ;							\
+       S_low <<= 1; ;							\
+       S_high = (S_high << 1) | 1;					\
+     }									\
+  }									
+
+/*==================================*/
+
+#define startencoding() 		\
+    S_high = topvalue ;
+
+#define doneencoding()			\
+  { 					\
+    S_bitstofollow++;			\
+    if (S_low<firstqtr)			\
+{       bitplusfollow0;}		\
+    else				\
+{       bitplusfollow1; }		\
+  }
+
+#define startoutputingbits()		\
+    S_bitstogo = 8 ;
+
+#define doneoutputingbits()		\
+  { putc(S_buffer>>S_bitstogo, stdout) ;\
+    cmpbytes++;				\
+  }
+
+
+
+

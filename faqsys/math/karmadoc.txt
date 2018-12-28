@@ -1,0 +1,611 @@
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³       Previous notes:                                                        ³
+³       -The author assume no responsability for any effects/damage            ³
+³        this file can produce.                                                ³
+³       -This file cannot be modified without the author's permission.         ³
+³       -This file can be (and must be !) freely distributed                   ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+
+================================================================================
+        MORE ABOUT SHADING, Z-BUFFER, AND TEXTURES
+================================================================================
+
+
+        I heard not so long ago talking about method of shading called
+        Gouraud shading, mainly based on the interpolation of the
+        light intensity along the edge of the polygon and then along
+        each scanline of it.
+        The book in wich I read it was saying: "very approximative but
+        very fast, this method is often used in real-time applications,
+        because of its low cost in calculation time"(or sumthin like that..).
+        After, I've seen it in many demos, and didn't understand how
+        a so slow and uncomfortable algorithm could be used for animating
+        thousand of vectors at a reasonnable frame-rate on my computer.
+        It's only a few months ago I realized how fast and comfortable
+        This method was and how many doors in the domain of 3d animation
+        it opened to me.
+        It's the principle of interpolating values along a polygon using
+        fixed point math that is the key of many other algorithms,
+        such as:
+                - the degenerated Gouraud's: Z-gouraud, distance-based Gouraud
+                - Phong shading
+                - Z-buffer
+                - texture mapping
+                - many other more advanced techniques like:
+                        - environment/reflection mapping
+                        - bump mapping
+                        - A-buffer
+                - and much more I expect you'll find and write to me !..
+
+       ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+       ³1) The first step: Gouraud shading ³
+       ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+        I won't repeat here what many other docs already told,
+        but just make a brief recapitulation.
+        Here's your polygon:
+
+                  I ->          * At each vertice constituing the poly,
+                  I N1          you can compute a normal vector,
+                 /\             (preferably precalculated and rotated
+                /  \            like the other vertices).
+               /    \           using this normal vector, you can
+              /      \--->      find the light intensity, which is
+             /       /->        simply the cosine of the angle between
+        <---/       / N2        the normal vector and the light vector,
+        ->  \      /            given by:
+        N4   \    /                       ->  ->
+              \  /               cos a = (N . L)/[L]*[N]
+               \/
+               I                where N and L are respectively the
+               I                normal and the light vector and
+               I ->             [N] and [L] are the length of these two
+               v N3             vectors.
+
+        It's obvious that these two lengths should value 1.
+        The intensity is then just the dot product of the two vectors.
+
+        * The next step is to know, or just approximate, the intensity
+        at each point of the poly. to do this, just IN-TER-PO-LA-TE !!
+        For example: we just compute the intensity at each point of the
+        poly nicely drawed above, you got for ex. the values a1 and a2
+        corresponding to the two vectors N1 and N2.
+        The value of the intensity at the point x,y of the first right
+        edge is given by:
+
+                         a = a1 + (y - y1)*((a2 - a1)/(y2 - y1))
+
+        where a1 and a2 are the intensity of the points 1 and 2
+              y1 and y2 are the y-coord ON THE SCREEN of these two points.
+
+        You got now all the values of the intensity along each edge
+        of the poly. the second part of the algorithm concern
+        the interpolation of these values along each scanline
+        of the poly, thus obtaining the intensity at each pixel...
+        This is done using the same scheme:
+
+                         a = a1 + (x - x1)*((a2 - a1)/(x2 - x1))
+
+        where a1 and a2 are the intensity of the points 1 and 2
+              x1 and x2 are the x-coord   "    "        "     "
+
+
+                          /\
+                         /  \
+                        /    \
+                       /      \
+                      /        \
+                   a1<__________>a2   <--- scanline
+                    /    <--a--> \
+                   /              \
+                  /                \
+                 /                  \
+                 \                  /
+                  \                /
+                   \              /
+                    \            /
+                     \          /
+                      \        /
+                       \      /
+                        \    /
+                         \  /
+                          \/
+
+
+        Of coz it shouldn't be done using one MUL and one DIV per
+        pixel ! The values (for ex. in the last formula) :
+            (a2-a1) and (x2-x1) are precalculated for each scanline,
+            and so is the value (a2-a1)/(x2-x1)...
+        Then you set the first 'a' at the value a1 and the only
+        operation you'll have to do for each pixel is just an addition
+        between two fixed-point values. (a and (a2-a1)/(x2-x1))
+
+        A brief example for the implementation :
+            for each point of the scanline do:
+
+            {asm code}              {pseudo-code}
+
+            MOV     AL,DH       ; al = a shr 8
+            ADD     DX,BP       ; a = a+((a2-a1)/(x2-x1))
+            STOSB               ; es:[di] = a ; di = di+1
+
+
+
+        'GoT It ??
+
+       ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+       ³2) The next step : Z-Gouraud and Z-buffer ³
+       ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+        So now you got the code (how that 'not yet !!' ??) for
+        interpolate one single value along a polygon.
+
+        you can interpolate this famous intensity, as in the
+        most classic Gourauds, but there is much more amusing:
+        just approximate the Z component of each point of the
+        polygon, using the same method.
+
+        If you plot the intensity corresponding to this value
+        you'll have some kind of 'depth shading' effect.
+        (also known as 'Z-Gouraud', which is quite comprehensible!)
+
+        Having the Z component of each point is very interesting
+        when you have two faces intersecting each other.
+        (f.e. when two objx are colliding !..)
+
+        Just set up a huge (320*200 is good) buffer in your mem, where
+        you put the Z-value of every pixel on the screen.
+        when you try to write a pixel, first ask yourself:
+            'ain't there any point recovering the one I wanna write ?'
+        In computer language, this is called a 'test'!:
+        It just means : look if the Z-value of the current point
+        is greater than the corresponding value in the Z_buffer.
+        If it is, don't write it ! if not, you can write it
+        on the screen (or in a screen-equivalent buffer..) and
+        write its Z value in the Z-buffer !
+
+        This method is -let's be reasonnable- very slow, it means
+        one test per pixel, plus the refreshment of the Z_buffer
+        (all points should be set to (-infiny) at every frame !),
+        and a writing operation two times slower than the Gouraud
+        shading one...
+        But it is also the most realistic and impressive method
+        for intersecting objects, Z-clipping (which can be done
+        automatically using an unsigned test..),it allows
+        immediate depth-shading, etc...
+
+        If you didn't understood everything, these littal schemas
+        are gonna help you:
+
+        Z-buff:                  screen:
+
+        ÚÄÄÄÄÄÄÄÄÄÄÄÄ¿           ÚÄÄÄÄÄÄÄÄÄÄÄÄ¿
+        ³            ³           ³            ³   ° poly #1
+        ³            ³           ³            ³
+        ³  1111      ³           ³  °°°°      ³   ± poly #2
+        ³ 2222       ³           ³ °°°°       ³
+        ³334444      ³           ³°°±±±±      ³   Û poly #3
+        ³   5555     ³           ³   ±±±±     ³
+        ³ 2366766    ³           ³ ÛÛ±±Û±±    ³
+        ³ 23457      ³           ³ ÛÛÛÛÛ      ³
+        ³ 23457      ³           ³ ÛÛÛÛÛ      ³
+        ³ 23457      ³           ³ ÛÛÛÛÛ      ³
+        ³ 23457      ³           ³ ÛÛÛÛÛ      ³
+        ÀÄÄÄÄÄÄÄÄÄÄÄÄÙ           ÀÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+        The poly #3 is intersecting the poly #2, which is itself
+        recovering the poly #1...
+
+        WARNING !!  these drawings assume that the Z-axis is
+                    pointing towards the observer.
+                    (the greater is the nearer..)
+
+        And of coz, again a tiny example of the main loop
+        implementation: (the rasterizer)
+        (in 386 assembler, quite more easy than 8088..)
+
+        @@:
+            SHRD    EBX,EDX,24          ; ebx = edx shr 8
+            ADD     EDX,EBP             ; compute the Z value
+            CMP     BX,Z_BUFF[EDI*2]    ; Z > z_buff[di] ??
+            JG      PLOT_IT             ; yes ..
+            INC     EDI                 ; no: nothing
+            LOOP    @B
+
+            JMP     @F
+
+        PLOT_IT:
+            MOV     SCREEN[EDI],AL      ; store the color..
+            MOV     Z_BUFF[EDI*2],BX    ; store the Z-value
+            INC     EDI                 ; next one!...
+            LOOP    @B
+
+        @@:
+
+        Again, don't forget to reverse the test if you are using another
+        orientation..
+
+       ÚÄÄÄÄÄÄÄÄÄÄÄÄ¿
+       ³3) Textures ³
+       ÀÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+        So now you passed two months trying to understand this shit,
+        you got it, nicely shaded polys rotating around each other and
+        intersecting,and so on...
+        But what about mapping?
+        It just means put a bitmap onto a polygon, just as if
+        the bitmap was itself rotating in the space.
+        (I'm sure you've already seen that somewhere...)
+
+        How to do it?
+        we'll pass over the boring 'it's-not-possible-to-do-free-direction-
+        texture-mapping-in-real-time-so-I'll-just-show-you-how-to-make-
+        floors'
+        real-time free direction texture-mapping IS possible and I'm
+        gonna show you how...
+
+        You know how to interpolate one value along a polygon:
+        free distorsion/linear mapping , which are the true names
+        of the method I use,only consists in interpolating
+        TWO values instead of one.
+        These two values are just the coordinates (UVs or IJs) of the point in
+        the texture-map corresponding to the point on the poly.
+
+        Well, just consider the poly we used in the Gouraud shading example:
+
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³                   iB,jB                   ³                                  ³
+³                 /\                        ³<--- on the screen, it looks like:³
+³                /  \                       ³                                  ³
+³               /    \                      ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´
+³              /      \                     ³                                  ³
+³       i1,j1 /        \ i2,j2              ³                                  ³
+³            <---------->       <-- scanline³   in the texture, it looks like: ³
+³           /  <-i,j->   \                  ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´
+³          /              \                 ³                                  ³
+³         /                \                ³               i1,j1              ³
+³        /                  \               ³  iA,jA <-------+-----> iB,jB     ³
+³  iA,jA \                  /               ³     ÚÄÄÄÄÄÄÄÄÄÄÄ\ÄÄÄÄÄÄ¿         ³
+³         \                /                ³     ³            \     ³         ³
+³          \              /                 ³     ³  B   I  T  -\    ³         ³
+³           \            /                  ³     ³              \   ³         ³
+³            \          /                   ³     ³               \  ³         ³
+³             \        /                    ³     ³    -  M  A  P  \ ³         ³
+³              \      /                     ³     ³                 \+ i2,j2   ³
+³               \    /                      ³     ³                  ³         ³
+³                \  /                       ³     ³                  ³         ³
+³                 \/                        ³     ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ         ³
+³                                           ³                                  ³
+³                                           ³                                  ³
+³                                           ³                                  ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+        As you can see, there are two interpolations, and, for each point, you
+        got to find the offset corresponding to the two interpolated
+        coordinates.
+
+        The pseudo-code looks like:
+
+        for each point on the scanline:
+        {   i=i+inc_i ;
+            j=j+inc_j ;
+            c=texture[i,j] ;
+            plot (c) ;
+        }
+
+        The main difficulty is to code it in assembler, and using the less
+        instructions as possible.
+        I think it is possible to do it in six instructions per pixel.
+        Has anybody got better ?
+
+        code sample:
+        (assuming a 256*X bit-map)
+        ; EDX and ESI     are the shifted coord.
+        ; EBP and INC_J   are the corresponding shifted increments.
+        ; ECX is the nb. of points on the scanline
+        ; EDI is the offset in the screen
+
+        @@:
+        MOV     BX,SI           ; bx <- l2 shl 8
+        MOV     BL,DH           ; bx <- l2 shl 8 + l1
+        MOV     AL,TEXTURE[BX]  ; get the pixel in the bitmap
+        STOSB                   ; aff. le pixel
+        ADD     EDX,EBP         ; incr. i
+        ADD     ESI,INC_J       ; incr. j
+        LOOP    @B
+
+        (I'll tell you later how to get rid of the 'INC_J' var...
+        asm fans don't worry ! cf. tricks&tips: unrolled loops )
+
+        Well, OK, this is not true texture-mapping (As I said, this
+        is only free-disto), but the illusion works, and the method
+        is fast.
+        (the game DESCENT implements true texture-mapping, if
+        there is a guy somewhere who knows how: please tell me !!)
+
+       ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+       ³4) A word about Phong shading ³
+       ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+        Well, I ain't gonna give here THE method for Phong-shade
+        your polys, I don't know wich is the fastest one, but
+        I am able to tell you some tricks I collected here and there..
+        (Usenet discussions,f.e..).
+        First you should know that many Phong that you've seen in
+        demos or other are fakes, I mean they are just modified
+        Gouraud shading. We can demonstrate that with a sufficient amount
+        of polygons and using the Phong illumination model
+        ( the shadings in the palette are non-linear ), the differences
+        between G-shading and P-shading are very small (but they do exist..).
+
+        The main principle is that instead of interpolating intensities, like
+        in Gouraud, just interpolate normal vectors along your scanlines..
+        It means three values to compute for every pixel (x,y and z coords).
+        Then, when you've got your normal vector for each point, you gotta
+        renormalise it,it means divide each coordinate by the current length
+        of your interpolated vector. It must be done to compute properly the dot
+        product between this vector and the light vector, then you've got your
+        intensity !..
+
+        A little drawing ?:           x
+                                     /  light src
+                                    /
+                                   /
+
+
+                      ..... N ....
+                 .....      :     ....
+          N1  ...           :         ....  N2
+            ................:...............
+            \               I              /
+             \              I             /
+              \             I            /
+               \____________I___________/
+                                            <-- scanline
+
+        N1 and N2 are the start-and-end vectors,
+        N is the interpolated vector,
+        the part of the N vector in  ':' is the result of the renormalisation..
+
+        As you can expect, this is impossible to compute in real-time..
+        (using this algorithm, I mean!..)
+        you've got to update 3 values (the coordinates of the
+        interpolated vector), find the length, divide
+        the coords by this length and then compute a dot product...
+        It takes something like 3 ADDs, 3 DIVs and 6 MULs per pixel !!
+
+        There are some speed-up tech.. I'm gonna make here a brief overview.
+
+        First: don't compute every pixel: you can easily display three
+        pixels of the same color together, or better: compute the true
+        values every 4 pixels and interpolate between them...
+        (I already told ya: 'interpolation' is THE word..)
+
+        next: linear approximation is good, but quadratic is better !
+        I've read a very interesting article in IMPHOBIA mag Nø10,
+        written by .. mhh .. don't remember .. (greetingz!),
+        talking about QUAD-ADDERS : a very efficient method for
+        interpolating between three values using a parabolic curve.
+        It only takes 2 ADD's per pixel !
+        you just have to compute three values on your scanline (with kewl
+        MUL's and DIV's !!), and then interpolate (again!) between 'em.
+        Just read this article, coz the development is too long for this txt...
+
+        another one: 'FAST PHONG' by Mister Bishop (??), using taylor
+        approximations... I didn't read it. :/
+        see ACM computer graphics 20(4) pp.103-106  '1986
+
+        Some other methods were developped, using angular or bi-angular
+        interpolations.. (see f.e. 'faster Phong shading via angular interpo-
+        -lation', Kujik & Blake, computer graphics forum 8 (1989)).
+
+        Also think about spherical coordinates and look-up tables.. ;)
+
+       ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+       ³5) Tricks and tips ³
+       ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+        a)- fixed-point maths
+        ---------------------
+
+        For those who didn't understand how I was doing my incrementations,
+        here's a brief recap of the fixed-point principle:
+
+        We assume the values you're computing are made of two parts:
+        the integer part and the decimal part, the one after the point.
+        these two parts are contained in one number and you can decide
+        which bits are significant for the int. or dec. part.
+        It's very easy to implement : You just have to shift your numbers
+        of n bits, meaning you multiply them by 2^n. When you want your
+        integer approx., just 'de-shift' them by the right number of bits.
+
+        It's even more easier when you shift your values of 8 bits.
+        The 80X88 architecture allows you to split your regs in two
+        8-bits parts. So if you've got your shifted value in AX,
+        the integer approximation will be contained in AH.
+        If you work with 16 bits values, for ex. in AX, your shifted
+        val should be in EAX, so that the extended part contains the
+        integer.(You can even work with 24 bits values, easy to implement
+        when smartly using the SHLD/SHRD 386 instr.)
+
+
+        b)- single bytes suckz
+        ----------------------
+
+        All the main-loops examples I wrote only write one byte at each loop.
+        It's much more efficient -when possible- to write two bytes (also
+        called a word huhu!) at the same time.
+        For example, here's the new Gouraud main loop :
+        (5 inst. for two pixels!)
+
+        SHR     ECX,1
+        @@:
+        MOV     AL,DH
+        ADD     EDX,EBP
+        MOV     AH,DH
+        STOSW
+        ADD     EDX,EBP
+        LOOP    @B
+
+        But warning ! This only works when you are writing at even offsets.
+        Otherwise it won't speed up much, because when the CPU write a word on
+        a byte border, it's as slow as writing two bytes 'manually'.
+        So you'll have to check - before entering the loop - the parity
+        of your first offset, first write one byte if it's odd, and the same
+        when the loop is finished...
+
+        c)- about the 'loop' instruction
+        --------------------------------
+
+        A word about the 'loop' instruction: I used it for clarity in my codes,
+        but the fastest method for looping is the following:
+
+        instead of:     use:
+        LOOP @B         DEC     ECX
+                        JNZ     @B
+
+        The result is the same but it works much more faster !
+        (Perhaps no more on P5, ..must be verified..)
+
+        d)- unrolled loops
+        ------------------
+
+        The last tip is fine but the real fastest method for looping
+        is ... not to loop !
+        Don't you guess ?
+        The trick is to 'unroll' your loop, I mean when you know the
+        maximum number of times you may loop (usually 320 for a scanline ,
+        let's say MAX) you write all the instruction one after one.
+        When you enter your loop just jump at the offset LABEL+(MAX-ECX)*N,
+        where N is the number of bytes of the instr. constituing your loop.
+        Of coz you gotta use the 'REPEAT MAX (...) ENDM' macro-inst for
+        writing the code, which induces a space loss, but it's really
+        worth it.
+        For the Gouraud:
+
+            JMP     ...         ; do it yourself, big boy !
+
+            REPEAT  320
+            MOV     AL,DH       ; al = a shr 8
+            ADD     DX,BP       ; a = a+((a2-a1)/(x2-x1))
+            STOSB               ; es:[di] = a ; di = di+1
+            ENDM
+
+        I said when talking about the texture mapping that it was possible
+        to get rid of the var : just replace it by ECX which is not used
+        anymore in the loop !
+
+                        ***** last minute *****
+        It seems that the unrolled loops are not so efficient
+        -if not less- on the new pipe-lined/"RISC" architecture of the Pentium..
+        I am not a hardware freak, but so many people told me that
+        I think I just have to believe it !
+        It's your matter to know wich config your prodz should work on..
+        And one way to know is TESTING.
+
+        e)- Z-buffer optimizations
+        --------------------------
+
+        Yes, there are many !
+        DO you know what a depth-sort is ?
+        Well, it's just an implementation of the famous painter's algorithm:
+        sort your polygons 'back-to-front', so that the nearest polys are
+        recovering the furthest.
+        For Z-buffer, just reverse : sort your polys 'front-to-back',
+        so that -with a bit of luck- you just write the necessary pixels
+        on the screen, and not the one which are going to be recovered.
+
+        John De Goes - creditz ! - told me some other trickz too:
+        f.e:
+        - you normally don't have to clear your Z-buffer every frame
+        - in some special cases, you don't have to test every pixel
+          on your scanline
+        - You should be careful too on the Pentium branch-prediction
+          chip(see 'last-minute' above): if most of the pixel of the
+          poly will be written,execute the jump only if the current
+          point is not written..
+        - I heard talking about 'fuzzy' algorithms wich may be helpful
+          (just heard..)
+
+        (see 'Zbuffinf.txt', kewl doc)
+
+       ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+       ³6)- conclusion words³
+       ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+        I hope this doc will be helpful for beginners in 3d coding.
+        It's the kind of help I would have appreciated when I was
+        beginning one year ago.
+        It perhaps seems a bit confused and the level of each part
+        may be variable, but I didn't write it in one time, so
+        if some explanations are not clear, don't hesitate to ask me..
+        (Sorry for the bad english. I speak french, so be indulgent..)
+
+        I still have much to do in 3d coding:
+        - implement a TRUE texture-mapping algo,
+          not a linear distorsion.
+        - I will probably releaze a txt about Phong shading,
+          including a (more or less) efficient implementation.
+        - BSP trees and/or Z-buffer for a 3d virtual world.
+        - The use of extended VESA/SVGA graphic modes such as
+          Hi-color or 8bits-Hi-rez modes.
+        - Pentium optimizations trix.
+        any help is appreciated..!
+
+       ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+       ³7)- Credits and greetingz ³
+       ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+        Doc written by :
+        ----------------
+                            KARMA    [ Tfl/TdV = The Flamoots/The Dark Vision ]
+                            (Jean Cardinal)
+        CONTACT ME !!
+        for anything: discussion,advices,remarks,flaming,collaboration...
+        E-mail:
+                            jcardin@is1.ulb.ac.be
+
+        Thanx &/or greetingz to:
+        ------------------------
+
+                            MORFLAME        [TfL/TdV]
+                                -we gonna do good work together!
+
+                            JOHN DE GOES    [on Compuserve]
+                                -Cool docs !
+
+                            ALL THE MEMBS OF MY CREW :
+                                    type one,sam,cybersurfer,
+                                    fred,bismarck,gopi,fly,zoltan,Rod...
+
+                            IMPHOBIA
+                                -'nice' is the word
+
+                            and everyone I forgot...
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

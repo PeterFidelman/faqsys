@@ -1,0 +1,906 @@
+Article: 15801 of comp.sys.hp48
+From: charliep@hpcvra.cv.hp.com (Charles Patton)
+Date: Wed, 15 Dec 1993 17:35:59 GMT
+Subject: 3D Graphics (SIRDS / RDA)
+Message-ID: <-218869982@hpcvra.cv.hp.com>
+Organization: Hewlett-Packard Co., Corvallis, OR, USA
+Path: kth.se!sunic!pipex!howland.reston.ans.net!usc!sdd.hp.com!hplabs!hp-cv!hp-pcd!hpcvra!charliep
+Newsgroups: comp.sys.hp48
+Lines: 870
+
+Hi all,
+
+I've included, below, an ascii encoded HP48 directory with the
+random-dot autostereogram stuff in it for your visualization pleasure.
+The directory contains five things.
+
+EXAMP1 & EXAMP2
+are standard-sized grobs with simple stereograms on which to
+practice your viewing.
+
+RDAFUN
+is the main program. It takes a user-defined function of two variables
+and generates the stereogram on the '48 screen. It takes a while but I
+have found that you can begin seeing the 3-D effect after it's about 1/3
+done.
+
+The user-defined function should take screen coordinates 
+( [1,131]X[1,64] ) and return an INTEGER (!!!) between 0 and 8. This
+upper limit was experimentally determined as the useful dynamic range
+- but try messing around yourself.
+
+ONEPIX
+is the routine to "color" a single pixel based on the past history and
+current function value.
+
+RNDLST
+is a utility to generate a random sequence of 0's and 1's.
+
+Beyond the end of the directory, I've included an FAQ regarding RDAs from
+a usenet notes group.
+
+*******************************************************
+** Charles M. Patton                                 **
+**                                                   **
+** charliep@cv.hp.com                                **
+**      the usual disclaimers apply                  **
+*******************************************************
+
+
+@--------------------begin RDA.DIR------------------------------------------------------------@
+%%HP: T(3)A(D)F(.);
+DIR
+  EXAMP2
+GROB 131 64 0F1007300CD200E61007B00C710CB0071040B3446F019B788CD344EE01DD11DE4850AD09AD12A6F015B788AD34A678C674AD000317072C1C11E0E80707481C103C181700044D08863044B102AD001D204A504D20202D192A35A8D925CE49267A88D519DA4650E8D4613399899CC89166CC891B1B1D8620D4AB59CE6946739467B42BB294719A3440941519645843A4843A44A15096A0925440302D30A47105A7105A7182D70AA706D140088A203A6181B6181B61C85303B60B5140847029D109CE009CE0096700AD10AD0820850A1B08E8508E8508E81047608E604B10802A0988484C8484C848464229942948407543E21D0790D0790
+
+
+852E0527410A63245D81AAC81AAC81AA6C0BA91AAC8203901762C8332C8332C83326CD888F84C3011023200911009110091108C400950841038C064270322703227032A389860B82820F13CE5C46F2C46F2C46F242BF096F05B306D38C4F0466F0466F0466F02BD34ED1A70A83851E0CA2E0CA2E0CA2E06583C283E00328B780CD380CD380CD380EE128D32CE00D27CBBC3EDAC3EDAC3EDAC1F627ED23F3083D31F4F98E4F98E4F98E4F443D983D46066C4C81626816268162681213682664110228A5804D2804D2804D28086120C2206008F001F3080F3080F3080F3048F080F0440397A74E3DB4E3DB4E3DB4EBE58FCB87E20A149570BC270BC270B
+
+
+91CD21C64058A6A0A5350A5350A5350A99286258291032607882838828388283882C12A8326C005675A9DA259DA259DA259D69A6B356F910E067C38B3E38B3E38B3E38F1F1E3E1E1700405001820018200182001410403048100A549561AC261AC261AC26166158D25C64082080A0140A0140A0140A012034403024003A21C8598C8598C8598C8944268822420A47243D31A2D31A2D31A2D905470A430206744DC11A6C11A6C11A6C115374A670550011004400044000440004400011001104022AC4A8462B8462B8462B82392A6A26B204C93827A1437A1437A1437D0AC51CCB0300503061810718107181071C0850185806018CA202751027510275
+
+
+86518A200A0F941C74A0C74A0C74A0C321074203A0005CC0213609136091360991346664623106494C05236842368423682911A032A8900D985A3263D1163D1163D10B9604370AD10340460101380013800130088000110840034D4685333CA333CA3334D9905331D9500233266C84336943369431B4A4C8444401059019214C4906C4906C44036116C1137003C06783853C1453C1453E0AE834D83A360A20D2544B822AB822AB411D354A750D510809401221801908019048840129018440006220C480062400624003120C040C0201041DE42AA3115D988AE4445311B60153420620A640AA1305D818A6C04B13861347C006EAA6C59A1FA4D875A6C
+
+
+41F26C50855E89AC3665E13B2F895936E2766999204903411605C03826814134054805044100863986622A9111DC8886622AD40A528A403B0B2B169C60B463852B169C3C8C162340
+  EXAMP1
+GROB 131 64 0A8490A8490A8490A8490A8490A8490A002C6C12C6C12C6C12C6C12C6C12C6C12C60855D2855D2855D2855D2855D2855D28550A8C55A8C55A8C55A8C55A8C55A8C55A84078260782607826078260782607826078201CD221CD221CD221CD221CD221CD221C50C07B4C07B4C07B4C07B4C07B4C07B4C070C8384C8384C8384C8384C8384C8384C8306881068810688106881068810688106800D0E20D0E20D0E20D0E20D0E20D0E20D0606D5106D5106D5106D5106D5106D5106D505D10C5D10C5D10C5D10C5D10C5D10C5D10270AF270AF270AF270AF270AF270AF2700064FC064FC064FC064FC064FC064FC0640596D4596D4596D459
+
+
+D4596D45960061340613406134061340613406134061000301003010030100301003010030100304953949539495394953949539495394950017B4017B4017B4017B4017B4017B401703B7143B7143B7143B7143B7143B7143B706C8C06C8C06C8C06C8C06C8C06C8C06C005738657386573865738657386573865730862F1862F1862F1862F1862F1862F186201279A1279A1279A1279A1279A1279A127035A0135A0135A0C44A0C44A0C44A0C44202B5682B5682B52ACC52ACC52ACC52ACC501B4641B4641B405CE405CE405CE405CE40C2903C2903C29C0BC9C0BC9C0BC9C0BC10A2988A2988A292AA482AA482AA482AA40008C8908C8908C620AC
+
+
+20AC620A4010A7810A7810A1608A1608A1608A160820977949779497725ED625ED625ED625ED60710B0710B07102C5802C5802C5802C58000185901859018524085240852408524000D8299D8299D826632366323663236632302946529465294494244942449424494240B4D98B4D98B4D3E29D3E29D3E29D3E2950340E4340E43402D0502D0502D0502D0500488FC488FC488F3188F3188F3188F3180080A0080A0080A0080A0080A0080A008020672B8672B8672B8672B8672B8672B86720E7797E7797E7797E7797E7797E7797E7701416314163141631416314163141631410B3B94B3B94B3B94B3B94B3B94B3B94B3302385923859238592385
+
+
+238592300E5546E5546E5546E5546E5546E5546E55006E8E06E8E06E8E06E8E06E8E06E8E06600A8490A8490A8490A8490A8490A8490A002C6C12C6C12C6C12C6C12C6C12C6C12C60855D2855D2855D2855D2855D2855D28550A8C55A8C55A8C55A8C55A8C55A8C55A84078260782607826078260782607826078201CD221CD221CD221CD221CD221CD221C50C07B4C07B4C07B4C07B4C07B4C07B4C070C8384C8384C8384C8384C8384C8384C8306881068810688106881068810688106800D0E20D0E20D0E20D0E20D0E20D0E20D0606D5106D5106D5106D5106D5106D5106D505D10C5D10C5D10C5D10C5D10C5D10C5D10270AF270AF270AF270AF
+
+
+70AF2700064FC064FC064FC064FC064FC064FC0640596D4596D4596D4596D4596D4596D4596006134061340613406134061340613406100030100301003010030100301003010030
+  FUNRDA
+    \<< \-> FFF
+      \<< PICT PURGE
+{ # 0d # 0d } PVIEW
+1 64
+        FOR YY 20
+RNDLST 0 # 0d YY 1
+- R\->B 1 YY 1 FFF 0
+0
+          DO ONEPIX
+          UNTIL 6
+PICK 132 ==
+          END 11
+DROPN
+        NEXT
+      \>>
+    \>>
+  ONEPIX
+    \<< \-> LST LSTLEN
+IDX PX PY X Y DX F
+OLD NEW
+      \<<
+        CASE OLD
+NEW ==
+          THEN
+            IF 'LST
+(IDX+1)' EVAL
+            THEN PX
+PY 2 \->LIST PIXON
+            END LST
+LSTLEN IDX 1 +
+LSTLEN MOD PX 1 +
+PY X DX + Y DUP2 F
+EVAL DX F NEW 4
+ROLL
+          END NEW
+OLD >
+          THEN LST
+OBJ\-> IDX - ROLL
+DROP LSTLEN 1 - DUP
+'LSTLEN' STO IDX
+OVER MOD 'IDX' STO
+\->LIST 'LST' STO LST
+LSTLEN IDX PX PY X
+Y DX F OLD 1 + NEW
+          END LST
+OBJ\-> IDX - 1 + RAND
+.6 > SWAP ROLLD
+LSTLEN 1 + DUP
+'LSTLEN' STO \->LIST
+LSTLEN IDX PX PY X
+Y DX F OLD 1 - NEW
+        END
+      \>>
+    \>>
+  RNDLST
+    \<< \-> L
+      \<< 1 L
+        START RAND
+.6 >
+        NEXT L
+\->LIST L
+      \>>
+    \>>
+END
+@--------------------end RDA.DIR------------------------------------------------------------@
+Here's the FAQ from alt.3d, complete with credits/advertisements at the bottom
+and code examples in the middle:
+
+--
+Ken Corey   exukenc@exu.ericsson.com  214/907-5841  Speaking for everyone...
+ God may be subtle, but He isn't plain mean.
+ 		-- Albert Einstein
+
+The following is a smattering of info I've collected about SIRDS.  It is not 
+too well organized, nor complete, but it answers a lot of FAQs out there.  
+Please submit any updates/changes to me at thale@novell.com.
+
+The following sections are covered herein:
+
+   SIRDS terminology
+   SIRDS FTP Sites
+   Commercial SIRDS Software
+   HOW STEREOGRAMS WORK         <-- By popular demand!
+   Stereogram Algorithm         <-- Also new (and rough)
+   SIRDS Publications
+   Sample TEXT Stereograms
+   C Code to Generate SIRTS
+   Hope for the Hopeless
+   Commercial SIRDS Posters
+
+
+
+-----------------------------------------------------------------------
+----- SIRDS TERMINOLOGY -----------------------------------------------
+-----------------------------------------------------------------------
+
+SIRDS       Single Image Random Dot Stereogram
+SIRD        Single Image Random Dot (not much to view in a dot; used by 
+            newbies)
+SIRTS       Single Image Random TEXT Stereogram, also called ascii 
+            stereograms
+Stereogram  general, simplified term for SIRDS and SIRTS and even
+            stereo-pairs (occasionally)
+Autostereogram, RDS, Auto RDS
+            equivalent to a SIRDS
+RLS         Random Line stereograms, instructional in learning stereogram
+            concepts (see Slinker and Burton publication)
+
+Wall-eyed viewing   Viewing stereograms by focusing past the actual image
+Cross-eyed viewing  Viewing stereograms by focusing in front of the image
+Focus to infinity   Forcing your eyes' lines of sight into parallel, NOT
+                    necessary for wall-eyeing SIRDS!
+
+
+-----------------------------------------------------------------------
+----- SIRDS FTP SITES -------------------------------------------------
+-----------------------------------------------------------------------
+
+Submissions from E.Thompson@newcastle.ac.uk, kbaum@novell.com, s
+ftp.uwp.edu
+  /pub/incoming/graphics/rdsdraw.zip
+    EXCELLENT SIRDS painting/generating program.  CHECK IT OUT!
+wuarchive.wustl.edu (128.252.135.4) 
+  /mirrors/msdos/graphics/mindim20.zip
+    Several SIRDS (~32) in an RLE format with versatile viewer.  GET IT!
+  /pub/MSDOS_UPLOADS/demos/sirdsani.zip
+    Lets you load a 3d object, position it, then generates an animated rotation
+    within stereograms.
+  /pub/xpgs/xpgs.?.?
+    Xwindows stereogram utilities; generator, viewer, mindim rle viewer...
+  /pub/MSDOS_UPLOADS/graphics/dynamic.exe
+    Animated SIRDS (page flipping)
+  /graphics/graphics/mirrors/sugrfx.acs.syr.edu/3d/randot/3drandot.zoo
+    Converts color GIF to SIRDS on screen
+  /mirrors/msdos/graphics/perspect.zip
+    Simple SIRDS paint/view program
+sunsite.unc.edu
+  /pub/academic/computer-science/virtual-reality/3d/
+    alt.3d.Z        Older archive of the alt.3d newgroups  
+    mindimage       Stereogram Viewing package, rle images
+    randot          Various programs to make random dot stereograms 
+    red_blue        Graphic files for viewing with Red/Blue glasses
+    stereograms     Graphic and Text files of steroegrams 
+ftp.cs.waikato.ac.nz
+  /pub/papers/???.tar.Z
+    Research paper describing sirds, with several improvements
+(archive??)
+  shimmer.exe
+    Flips through several SIRDS of the same image to create a shimmering effect
+    (related to above research paper)
+
+
+-----------------------------------------------------------------------
+----- COMMERCIAL SIRDS SOFTWARE ---------------------------------------
+-----------------------------------------------------------------------
+
+STW_DEMO.EXE: the full package will allow RDS creation
+   Approx 40$
+   N.E.Thing Enterprises
+   P.O. Box 1827
+   Cambridge, MA 02139
+
+I know there are more!  SEND MORE INFO!
+
+
+-----------------------------------------------------------------------
+----- How Stereograms Work --------------------------------------------
+-----------------------------------------------------------------------
+
+Let's start with a simple repeating pattern.  First we'll examine viewing
+stereograms wall-eyed (focusing beyond the picture).
+
+              Adam
+Adam                       Adam          <-- PERCEIVED IMAGE (3D)
+  \ 
+   \ \
+    \   \
+    Adam  Adam   Adam  Adam              <-- ACTUAL PICTURE (Flat, 2D)
+     \       \
+      \         \                        <-- LINES OF SIGHT FROM EACH EYE
+       \           \
+       (*)           (*)                 <-- EYES
+
+As shown in the above graphic, the lines of sight go through different
+(but identical) words.  The eyes must be directed to just the right level
+behind the picture to get the two "Adams" to line up.  When they do line 
+up, a single "Adam" appears at the level shown behind the picture.  
+
+This is why it is easiest for some people to look at stereograms behind
+glass.  You simply look at your reflection, which appears to be behind
+the glass at about the same level as the 3d stereogram image.  More on
+this later.
+
+So, why is the second "Adam" in the above image "deeper" than the other
+two?  Since the next two "Adams" that line up are FARTHER apart than the
+first two, your eyes must diverge a little more to get them to line up.  
+As the eyes diverge, their lines of sight meet a little further away.
+This causes the next "Adam" to appear deeper in the image.
+
+              Adam
+Adam           |           Adam          <-- PERCEIVED IMAGE (3D)
+              / \
+             /   \
+            /     \
+    Adam  Adam   Adam  Adam              <-- ACTUAL PICTURE (Flat, 2D)
+           /       \
+          /         \                    <-- LINES OF SIGHT FROM EACH EYE
+         /           \
+       (*)           (*)                 <-- EYES
+
+The above graphic was crammed into 10 lines of text.  If we moved the 
+eyes back (to a more realistic distance), the whole 3d image would 
+appear deeper, and not so spread out.
+
+Cross-eyed viewing follows the same principles, but brings the focal point
+up front of the picture and inverts the image.  I'll use the same eyes and
+picture, but move the eyes back for room to illustrate.
+
+    Adam  Adam   Adam  Adam              <-- ACTUAL PICTURE (Flat, 2D)
+       \   |
+         \|
+         Adam                            <-- PERCEIVED IMAGE (3D)
+         |   \
+         |     \
+        |         \                      <-- LINES OF SIGHT FROM EACH EYE
+        |           \
+       (*)           (*)                 <-- EYES
+
+Now for the inverse part.  Since the next two "Adams" are farther apart,
+you must cross your eyes MORE (converge instead of diverge your eyes) to
+get the "Adams" to overlap.  This causes the next "Adam" in the image to
+appear closer than the first one.
+
+    Adam  Adam    Adam  Adam             <-- ACTUAL PICTURE (Flat, 2D)
+           \      /
+            \    /
+         Adam\ / Adam                    <-- PERCEIVED IMAGE (3D)
+             Adam
+             /  \
+           /      \                      <-- LINES OF SIGHT FROM EACH EYE
+         /          \
+       (*)           (*)                 <-- EYES
+
+Whew.  Ascii graphics are a bit too tight to be very technical.  By the
+way, each letter (or pixel) in the 3D image comes from two letters in
+the picture.  Stereograms have blurry edges (right and left edges) 
+because the line of sight from the one eye passes through the picture, 
+but the line of sight from the other eye is off the picture.  Examine
+the wall-eyed example below.
+
+                     Adam
+       Adam                       Adam     <-- PERCEIVED IMAGE (3D)
+\               
+  \ \
+    \   \
+       \   Adam  Adam   Adam  Adam         <-- ACTUAL PICTURE (Flat, 2D)
+         \     \
+            \       \                      <-- LINES OF SIGHT
+              \           \          
+              (*)           (*)            <-- EYES
+
+Here, the line of sight for the right eye goes through first "Adam" 
+in the picture, and the line of sight for the left eye is off the
+picture.  (Everything to the left of the first "Adam" in the IMAGE 
+is blurry.)
+
+
+HOW TO GENERATE STEREOGRAMS
+
+Random stereograms work the same way; they simple repeat random text or
+pixels, instead of words like the "Adam" used above.  Below, the pattern, 
+"ASDFGHJK", is repeated four times in each line.  (I duplicated it for
+easier viewing.)
+
+         ASDFGHJKASDFGHJKASDFGHJKASDFGHJK
+         ASDFGHJKASDFGHJKASDFGHJKASDFGHJK
+         ASDFGHJKASDFGHJKASDFGHJKASDFGHJK
+
+As you might guess, the image consists of THREE repetitions of the 
+pattern, set back behind the picture (wall-eyed).  To add some varying
+depth to the image, we can simple add a space in the middle; or better,
+we'll add a different letter, the letter Q.  I've also dropped the K
+off the end to keep it suitable for framing. :-)
+
+         ASDFGHJKASDFGHJKASDFGHJKASDFGHJK
+         ASDFGHJKASDFGHJKASQDFGHJKASDFGHJ
+         ASDFGHJKASDFGHJKASDFGHJKASDFGHJK
+
+Adding the Q has the same effect as adding the space between "Adams"
+in the previous example.  Here it is again for comparison.
+
+         Adam Adam Adam Adam Adam Adam
+         Adam Adam Adam  Adam Adam Ada
+         Adam Adam Adam Adam Adam Adam
+
+These two stereograms demonstrate going down a level (deeper, for wall-
+eyed viewers) by adding a new letter where you want to go down.  The
+image returns back to the original level because the added letter was
+not repeated down the line; it was essentially deleted again.  Hence,
+deleting a letter causes the image to come forward one level.  Lets 
+look at this by deleting a letter before adding any.
+
+         ASDFGHJKASDFGHJKASDFGHJKASDFGHJK
+         ASDFGHJKASDFGJKASDFGHJKASDFGHJKA
+         ASDFGHJKASDFGHJKASDFGHJKASDFGHJK
+
+I deleted an H from the middle row, and added an A on the end to make
+it flush again.  This causes the image to come up a level where the H
+was deleted, then go back down where the H returns to the pattern.
+
+To fully control the ups and downs of stereogram generation, you simply
+keep track of what's repeating and add and delete letters when needed.
+For example, start with the pattern ASDFGHJK.  If the input for the 3D
+stereogram image is 00000000000011111222221111111110000, where the 
+numbers represent the levels of the 3D image, you simply delete a letter
+from the pattern when you go up a level (0 to 1, or 1 to 2), and add a
+letter to the pattern when you go down a level (2 to 1, or 1 to 0).
+
+If you want to go up multiple levels, e.g., from level 1 to 3, delete
+2 letters from your pattern.  Adding two letters to the pattern likewise
+causes a two level drop in the image.
+
+Start each line by dumping the whole pattern before you start creating
+the image.  Recall that in the examples above, four "Adams" in the 
+picture creates three "Adams" in the image.  By dumping the pattern to
+start, we are simple providing the first "Adam" to build the 3D image
+from.  Now, we start building the 3D image.
+
+        ASDFGHJK
+
+Since the first 12 levels are at level 0, we do no adding nor deleting;
+just dump 12 more letters from the pattern in order.
+
+        ASDFGHJKASDFGHJKASDF
+                ^image starts here
+
+We now have our first transition, from level 0 to 1.  Which letter do we
+delete?  Delete the next one in the pattern.  
+
+        ASDFGHJK
+            ^the next letter in the pattern
+
+Since G is next, we delete it.  Our new pattern is ASDFHJK, and H is the
+next letter to be used in the image.
+
+        ASDFHJK
+            ^the next letter to use in the image
+
+Forget about the G.  Consider it gone forever.  The input now indicates 
+five letters at level 1.  Since we made the transition to level one by 
+deleting the G, we simply copy the next 5 letters from the pattern into
+the image.  The next 5 letters in the pattern are HJKAS.  (You've noticed
+by now that we wrap around when we get to the end of the pattern.) I'll 
+lay the input next to our image to make it easier to see where we're at.
+
+                00000000000011111222221111111110000
+        ASDFGHJKASDFGHJKASDFHJKAS
+        {      }{          }{   }
+        initial  level 0    level
+        pattern             1
+
+To jump up to level 2 from level 1, we delete the next letter in the 
+pattern, the letter D.  The new pattern is shown below.
+
+        ASFHJK
+          ^the next letter to use
+
+We have 5 letters at level 2, so we copy the next 5 letters from the 
+pattern, FHJKA, to the image.
+
+                00000000000011111222221111111110000
+        ASDFGHJKASDFGHJKASDFHJKASFHJKA
+        {      }{          }{   }{   }
+        initial  level 0    lev  level
+        pattern             1    2
+
+We must now move down a level, from 2 to 1, by ADDING a letter to our
+pattern.  Where do we add it?  Add it as the next letter to use.  Let's
+add an X (randomly chosen letters work better than previously used 
+letters).  Since A was the last letter used, S is the next to be used.
+
+        ASFHJK
+         ^add X here
+
+        AXSFHJK
+         ^next letter to use
+
+Since there are nine letters at level 1, we must copy nine letters 
+from the pattern to the image (XSFHJKAXS).
+
+                00000000000011111222221111111110000
+        ASDFGHJKASDFGHJKASDFHJKASFHJKAXSFHJKAXS
+        {      }{          }{   }{   }{       }
+        initial  level 0    lev  level level 1
+        pattern             1    2
+
+Drop another level, from 1 to 0, by adding another letter to the pattern
+at the current position.
+
+        AXSFHJK
+           ^add random letter (M) here
+
+        AXSMFHJK
+           ^next letter to use
+
+Since there are four letters at level 0, we copy four letters from the
+pattern to the image (MFHJ).
+
+                00000000000011111222221111111110000
+        ASDFGHJKASDFGHJKASDFHJKASFHJKAXSFHJKAXSMFHJ
+        {      }{          }{   }{   }{       }{  }
+        initial  level 0    lev  level level   lev
+        pattern             1    2     1       0
+
+WE'RE DONE.  Kinda anti-climatic, huh?  Let's duplicate the image line
+to make it easier to view.
+
+        ASDFGHJKASDFGHJKASDFHJKASFHJKAXSFHJKAXSMFHJ
+        ASDFGHJKASDFGHJKASDFHJKASFHJKAXSFHJKAXSMFHJ
+        ASDFGHJKASDFGHJKASDFHJKASFHJKAXSFHJKAXSMFHJ
+        ASDFGHJKASDFGHJKASDFHJKASFHJKAXSFHJKAXSMFHJ
+        ASDFGHJKASDFGHJKASDFHJKASFHJKAXSFHJKAXSMFHJ
+
+For each new line in the image, start with a new random pattern, and
+follow the steps above.  So, how are graphics stereograms made?  The
+same way, using colored pixel values for input.  3drandot uses RED as
+the color deepest in the image, with GREEN in the middle, and BLUE as
+the highest color.
+
+The pseudocode below follows this algorithm.  If you have any questions,
+post them in the newsgroup.  Let me know if you are interested in C code 
+that follows this algorithm.  The C code here in the FAQ follows a 
+different algorithm, the "lookback" algorithm.
+
+Enjoy!!
+thale@novell.com
+
+
+-----------------------------------------------------------------------
+----- STEREOGRAM ALGORITHM --------------------------------------------
+-----------------------------------------------------------------------
+
+The following is an algorithm I developed for SIRDS generation.  It is 
+functionally equivalent to the look back algorithms, without looking back. 
+It can be used for graphic stereograms, as well as the text stereograms. 
+It simply stores in PATTERN the values we would look back at.  The input 
+file is depth data, or a z-buffer (see example input below).  The levels 
+available in a picture are the maximum pattern size divided by two minus 
+one.  Maximum pattern size should be equivalent to half the distance 
+between the eyes (for easy viewing), which is about 1 1/4 inches.  So, for 
+typical text stereograms on an 80 char display, that's about 10 characters 
+for the maximum pattern size and 4 or 5 levels available.  However, since 
+4 or 5 levels is unreasonable, we push the max pattern size to 16 (still 
+less that the 20 character distance between the eyes).  This gives us about 
+7 or 8 levels.
+
+If we do allow more than 7 levels when the max pattern size is 16, the 
+repeating pattern (of size max pattern - current level) grows so small that 
+four of them in a row (e.g., of size 7) would also create two double 
+patterns in a row (of size 14), causing floaties (aliasing).  
+
+I hope I'm making some sense.  I'll try to spend some time rewriting this. 
+In addition, I'll integrate answers to any questions that come as a result 
+of this mess!  In addition to the information here, we need to add a good 
+description of how they work (that is not covered here).
+
+
+PL : Previous Level value
+NL : Next Level value
+
+INITIAL LEVEL SETTING
+PL = 0
+
+OPEN INPUT FILE FOR READING
+WHILE NOT EOF (Y DIMENSION: FOR EACH LINE)
+
+   GENERATE NEW PATTERN
+   SET PATTERN PTR TO BEGINNING OF PATTERN
+   OUTPUT FULL PATTERN
+
+   WHILE NOT EOL (X DIMENSION: FOR EACH POSITION)
+
+      NL = NEXT INPUT LEVEL VALUE
+      IF NL != PL (IF WE'RE CHANGING LEVELS)
+
+         IF NL > PL (IF WE'RE MOVING UP)
+            DELETE NEXT NL-PL BITS IN PATTERN FROM PTR FORWARD
+            (IF GOING FROM LEVEL 0 TO 2, DELETE 2 BITS IN PATTERN)
+
+         ELSE (IF MOVING DOWN, AWAY)
+            INSERT PL-NL RANDOM BITS INTO PATTERN AT PTR POSITION
+            (IF GOING FROM LEVEL 3 TO 2, INSERT 1 BIT INTO PATTERN)
+
+         PL = NL (UPDATE PL)
+         OUTPUT NEXT VALUE IN PATTERN
+
+      ELSE
+         OUTPUT NEXT VALUE IN PATTERN
+
+      ADVANCE PATTERN PTR (CIRCULAR PATTERN)
+      ADVANCE INPUT PTR
+            
+
+(Redundancy exists to simplify readability.)
+
+Assuming spaces translate to level 0, input like this (thanks, Dave 
+Thomas):
+
+
+   22222222222222222          11111111111111111111111
+   2222222222222222222        11111111111111111111111
+   22222222222222222222       11111111111111111111111
+   22222          22222                11111
+   22222          22222                11111
+   22222          22222                11111
+   22222          22222                11111
+   22222          22222                11111
+   22222          22222                11111
+   22222222222222222222                11111
+   2222222222222222222                 11111
+   22222222222222222                   11111
+                                                                	
+                                                                	
+Yields output like this:
+
+Co6&`R(D(v"i`<$$Co6&`R(D(v"i`<$$Co6&`R(D(v"i`<$$Co6&`R(D(v"i`<$$Co6&`R(D
+mwBy&>`,QFdZ<$wamwBy&>`,QFdZ<$wamwBy&>`,QFdZ<$wamwBy&>`,QFdZ<$wamwBy&>`,
+7Z,o:.sw5[rHt&{:7Z,osw5[rHt&{:7Z,osw505[rHt&{:7Zosw505[rHt&{:7Zosw505[rR
+g"EzQy{lW_3C&B[8g"Ez{lW_3C&B[8g"Ez{lW_3S3C&B[8g"z{lW_3S3C&B[8g"z{lW_3S3y
+yiQ?fiVF!G{TAtrJyiQ?VF!G{TAtrJyiQ?VF!G{T]TAtrJyi?VF!G{T]TAtrJyi?VF!G{T]s
+1`I|r?FLoB#<sf!Q1`I|FLoB#T#<sf!Q1`ILoB#TaT#<sf!Q1`ILoB#Ta#<sf!#Q1`ILoB#T
+m$LuSD0hh7\qy5:nm$Lu0hh7\x\qy5:nm$Lhh7\x"x\qy5:nm$Lhh7\x"\qy5:-nm$Lhh7\x
+[#7hrqKUm`/<bic$[#7hKUm`/7/<bic$[#7Um`/7r7/<bic$[#7Um`/7r/<bick$[#7Um`/7
+L,'O)X\L&Xu)ZUw(L,'O\L&Xu|u)ZUw(L,'L&Xu|y|u)ZUw(L,'L&Xu|yu)ZUwy(L,'L&Xu|
+3`#YPTdg:,;rmy9`3`#Ydg:,;(;rmy9`3`#g:,;(7(;rmy9`3`#g:,;(7;rmy94`3`#g:,;(
+1w^N7d;f964U,yml1w^N;f964&4U,yml1w^f964&;&4U,yml1w^f964&;4U,ym{l1w^f964&
+<>Y8igID(]?"A0+;<>Y8ID(]?"A0+;<>Y8ID(]?"?"A0+;<>Y8ID(]?"?A0+;<O>Y8ID(]?"
+eRl5hfJx.cD0tscheRl5Jx.cD0tscheRl5Jx.cDeD0tscheRl5Jx.cDeDtscheiRl5Jx.cDe
+v,r7f6%<)R-AaV^hv,r7%<)R-AaV^hv,r7%<)p)R-AaV^hv,r7%<)p)R-aV^hv>,r7%<)p)R
+VbWqd^]qi(IRW)ytVbWqd^]qi(IRW)ytVbWqd^]qi(IRW)ytVbWqd^]qi(IRW)ytVbWqd^]q
+`^Y-z8v=[gBX(Aqq`^Y-z8v=[gBX(Aqq`^Y-z8v=[gBX(Aqq`^Y-z8v=[gBX(Aqq`^Y-z8v=
+
+
+This uses 16 as the Max pattern size.  Notice on the third line of the 
+output (the first line with level changes), the pattern is "7Z ... &{:".
+When we go from level 0 to level 2, we lose two characters (i.e., ":.").
+When we go from level 2 back to level 0, we insert two new characters 
+(i.e., "05" after the "osw5").
+
+Any questions?  Or better yet, what did I leave out??  I do hope this helps 
+someone!?!
+
+
+-----------------------------------------------------------------------
+----- SIRDS PUBLICATIONS ----------------------------------------------
+-----------------------------------------------------------------------
+
+Search library databases with these keywords: Stereogram, Autostereogram, 
+SIRDS (Single ImageRandom Dot Stereogram), RDS.
+
+>From E.Thompson@ncl.ac.uk
+
+An excellent source of information (sample RDS and source code)
+is contained in Andrew A.Kinsman - Random Dot Stereograms
+ISBN 0-9630142-1-8  $13.95 U.S.  Published by Kinsman Physics, 
+P.O. Box 22682, Rochester, N.Y. 14692-2682
+
+See the following periodicals:
+Journal of Imaging Science and Technology, May/June 1992, Vol 36, #3.
+   Slinker & Burton
+
+SEND MORE REFERENCES!
+
+
+
+-----------------------------------------------------------------------
+----- SAMPLE TEXT Stereograms (Not random) ----------------------------
+-----------------------------------------------------------------------
+
+From: dthomas@bbx.basis.com (Dave Thomas)
+                                                                        
+                            O   O
+n   n   n   n   n   n   n   n   n   n   n   n   n   n   n  n
+f    f    f    f    f    f    f    f    f    f    f    f   f
+e   e   e   e   e   e   e   e   e   e   e   e   e   e   e  e
+a    a    a    a    a    a    a    a    a    a    a    a   a
+a   a   a   a   a   a   a   a   a   a   a   a   a   a   a  a
+r    r    r    r    r    r    r    r    r    r    r    r   r
+r   r   r   r   r   r   r   r   r   r   r   r   r   r   r  r
+        
+
+
+g  g  g  g  g  g  g  g  g  g  g  g  g  g  g  g  g  g  g  g  g  g  g  g  g
+r   r   r   r   r   r   r   r   r   r   r   r   r   r   r   r   r   r   r
+ e    e    e    e    e    e    e    e    e    e    e    e    e    e    e
+a     a     a     a     a     a     a     a     a     a     a     a     a
+ t      t      t      t      t      t      t      t      t      t      t
+<<<<>>>><<<<>>>><<<<>>>><<<<>>>><<<<>>>><<<<>>>><<<<>>>><<<<>>>><<<<>>>>
+ d      d      d      d      d      d      d      d      d      d      d
+e     e     e     e     e     e     e     e     e     e     e     e     e
+ p    p    p    p    p    p    p    p    p    p    p    p    p    p    p
+t   t   t   t   t   t   t   t   t   t   t   t   t   t   t   t   t   t   t
+h  h  h  h  h  h  h  h  h  h  h  h  h  h  h  h  h  h  h  h  h  h  h  h  h
+
+
+One more from ... well ... YOU figure it out!
+
+_-~-_-~-_-~-_-~-_-~-_-~-_-~-_-~-_-~-_-~-_-~-_-~-_-~-_-~-_-~-_-~-_-~-_-~-_-~
+!   Adam      Adam      Adam      Adam      Adam      Adam   ! "Lawn       !
+!Spragg   Spragg   Spragg   Spragg   Spragg   Spragg   Spragg!   service!" !
+!   Adam      Adam      Adam      Adam      Adam      Adam   !       -Stup !
+!Spragg   Spragg   Spragg   Spragg   Spragg   Spragg   Spragg!             !
+!   Adam      Adam      Adam      Adam      Adam      Adam   !  atspragg@  !
+!Spragg   Spragg   Spragg   Spragg   Spragg   Spragg   Spragg! ucdavis.edu !
+!   Adam      Adam      Adam      Adam      Adam      Adam   !   GO AGS!   !
+_-~-_-~-_-~-_-~-_-~-_-~-_-~-_-~-_-~-_-~-_-~-_-~-_-~-_-~-_-~-_-~-_-~-_-~-_-~
+
+
+
+-----------------------------------------------------------------------
+----- C CODE TO GENERATE TEXT STEREOGRAMS -----------------------------
+-----------------------------------------------------------------------
+
+Also from Dave Thomas:
+
+Now here's a hack of a hack I found on the net.  Basically it generates
+stereograms from ascii diagrams.  Here's the program first:
+
+#define DEPTH0  16
+#define COLS    79
+
+#include <stdio.h>
+
+main()
+   {
+   long now;
+   int col;
+   char m[COLS+1],s[COLS+1];
+   int i,e,c;
+
+   /* seed random number generator */
+   time (&now);
+   srand (now);
+
+   /* print fusion X's */
+   for (col = 0; COLS - col >= DEPTH0; col += DEPTH0)
+      {
+      for (i = 0; i < DEPTH0-1; ++i)
+         putchar (' ');
+      putchar ('X');
+      }
+   putchar ('\n');
+
+   /* process input image */
+   while (memset(m,'\0',COLS+1),fgets (m, COLS+1, stdin))
+      {
+      e = 0;
+      s[COLS] = 0;
+      for(i=0; i<COLS; )
+         {
+         e = 0;
+         while (i >= DEPTH0 && i < COLS && 
+            (c = m[i - DEPTH0]) >= '0' && c <= '9')
+            {
+            e = 1;
+            s[i] = s[i-DEPTH0+c-'0'];
+            ++i;
+            }
+         s[i++] = (e || i < DEPTH0) ? randasc() : s[i-DEPTH0];
+         }
+      puts (s);
+      }
+}
+
+randasc()
+{
+   /* large set of random characters */
+   return ('!'+rand()%92);
+
+   /* lowercase random letters */
+   /* return ('a'+rand()%26); */
+}
+
+
+Try passing it this file as the standard input:
+                                
+           22222222222222222           11111111111111111111111
+           2222222222222222222         11111111111111111111111
+           22222222222222222222        11111111111111111111111
+           22222          22222                 11111
+           22222          22222                 11111
+           22222          22222                 11111
+           22222          22222                 11111
+           22222          22222                 11111
+           22222          22222                 11111
+           22222222222222222222                 11111
+           2222222222222222222                  11111
+           22222222222222222                    11111
+                                                                        
+                                                                        
+You'll get output like this:
+
+               X               X               X              X
+"i`<$$Co6&`R(D(v"i`<$$Co6&`R(D(v"i`<$$Co6&`R(D(v"i`<$$Co6&`R(D(v"i`<$$Co6&`R(D
+dZ<$wamwBy&>`,QFdZ<$wamwBy&>`,QFdZ<$wamwBy&>`,QFdZ<$wamwBy&>`,QFdZ<$wamwBy&>`,
+rHt&{:7Z,o:.sw5[rHt&{:7Z,osw5[rHt&{:7Z,osw505[rHt&{:7Zosw505[rHt&{:7Zosw505[rR
+3C&B[8g"EzQy{lW_3C&B[8g"Ez{lW_3C&B[8g"Ez{lW_3S3C&B[8g"z{lW_3S3C&B[8g"z{lW_3S3y
+{TAtrJyiQ?fiVF!G{TAtrJyiQ?VF!G{TAtrJyiQ?VF!G{T]TAtrJyi?VF!G{T]TAtrJyi?VF!G{T]s
+#<sf!Q1`I|r?FLoB#<sf!Q1`I|FLoB#T#<sf!Q1`ILoB#TaT#<sf!Q1`ILoB#Ta#<sf!#Q1`ILoB#T
+\qy5:nm$LuSD0hh7\qy5:nm$Lu0hh7\x\qy5:nm$Lhh7\x"x\qy5:nm$Lhh7\x"\qy5:-nm$Lhh7\x
+/<bic$[#7hrqKUm`/<bic$[#7hKUm`/7/<bic$[#7Um`/7r7/<bic$[#7Um`/7r/<bick$[#7Um`/7
+u)ZUw(L,'O)X\L&Xu)ZUw(L,'O\L&Xu|u)ZUw(L,'L&Xu|y|u)ZUw(L,'L&Xu|yu)ZUwy(L,'L&Xu|
+;rmy9`3`#YPTdg:,;rmy9`3`#Ydg:,;(;rmy9`3`#g:,;(7(;rmy9`3`#g:,;(7;rmy94`3`#g:,;(
+4U,yml1w^N7d;f964U,yml1w^N;f964&4U,yml1w^f964&;&4U,yml1w^f964&;4U,ym{l1w^f964&
+?"A0+;<>Y8igID(]?"A0+;<>Y8ID(]?"A0+;<>Y8ID(]?"?"A0+;<>Y8ID(]?"?A0+;<O>Y8ID(]?"
+D0tscheRl5hfJx.cD0tscheRl5Jx.cD0tscheRl5Jx.cDeD0tscheRl5Jx.cDeDtscheiRl5Jx.cDe
+-AaV^hv,r7f6%<)R-AaV^hv,r7%<)R-AaV^hv,r7%<)p)R-AaV^hv,r7%<)p)R-aV^hv>,r7%<)p)R
+IRW)ytVbWqd^]qi(IRW)ytVbWqd^]qi(IRW)ytVbWqd^]qi(IRW)ytVbWqd^]qi(IRW)ytVbWqd^]q
+BX(Aqq`^Y-z8v=[gBX(Aqq`^Y-z8v=[gBX(Aqq`^Y-z8v=[gBX(Aqq`^Y-z8v=[gBX(Aqq`^Y-z8v=
+
+
+
+-----------------------------------------------------------------------
+----- HOPE FOR THE HOPELESS :-) ---------------------------------------
+-----------------------------------------------------------------------
+
+From: wchaga@vela.acs.oakland.edu (William C. Haga)
+
+Being one who has used wide-eyed vision on chain link fences ever
+since I was a kid, I was able to see the images in SIRDS right
+away. But I've had difficulty explaining the technique to 
+friends. Today I had the latest Games magazine with me at my parents
+house. Games is running another contest using SIRDS, so there are
+three in the latest issue. This time I thought of the reflection
+idea. So I opened mom's china cabinet, put the magazine against the
+glass in the door, and told mom to keep looking at her own reflection
+in the glass until the image appeared.
+
+It took less than thirty seconds.
+
+When she saw the 3d train engines, I was subjected to a squeal of
+delight that I hadn't heard from her for a long time. "EEK! IT'S
+COMING OUT AT ME! IS THIS EVER NEAT!".  Dad tried for about a minute
+but gave up.
+
+About an hour later, mom and I heard a shout. We went to
+the dining area, and there was dad with the magazine against the
+glass in the door. "Isn't that just the most amazing thing!", said he.
+
+Later they were making jokes about teaching old dogs new tricks.
+
+
+-----------------------------------------------------------------------
+----- COMMERCIAL SIRDS Posters ----------------------------------------
+-----------------------------------------------------------------------
+
+From: thale@novell.com (Todd D. Hale)
+
+For those who do not have a local SIRDS distributor (i.e., the poster
+cart at the mall), here is one company you can order them from.  The 
+following posters are all certifiably cool with lots of great details,
+and come in nice colors.  They are (I believe) designed by NVision, or 
+something like that, and distributed here by Axis Corp.
+
+Posters:$25 Dinosaurs
+        $25 Discovery (Space shuttle and planet)
+        $25 Lady Liberty (U.S. Statue of Liberty)
+        $25 B-2 Stealth Bomber
+        $25 F-117 Bomber
+        $25 Nature's Majesty (Eagle with fish in talons, pine trees in bkgrd)
+        $30 Calypso Reef (Ocean Scene--new design, more detail)
+        Many more now, including small, $15 posters.
+
+Address:Axis Corp.
+        1732 S. 790 W.
+        Salt Lake City, UT 84104
+        USA
+Phone:  (801)977-8816
+
+You must include $5 for shipping and a poster tube.  (The guy quoted me
+that price for shipping to Australia.)  Or, you can pay $17 for a tube
+in a box.  Although they haven't had any problems shipping in the poster
+tubes, they only guarantee safe delivery in a well-packed box.
+
+Since I'm writing from the U.S., all currency mentioned here is in U.S.
+dollars.
+
+And, by no means am I associated with these guys at all, except I spend a
+lot of time enjoying their posters!  (i.e., this is not an ad, but a 
+response to a request for SIRDS access.)
+
+
+ANOTHER SUPPLIER:
+
+Infix Technologies
+PO Box 381
+Orem, UT 84057-0381
+(801) 221-9233
+
+Shipping now:
+18x24 Earth (mercator projection of the Earth's altitudes)
+18x24 Salt Lake LDS Temple Centennial
+
+Later this week?:
+18x24 Beethoven
+
+(others are coming soon, too.)
+
+Retail price for the 18x24 inch prints is $20 plus $3 s/h.  Utah residents
+add 6.25% sales tax.  Wholesale and distributor discounts are available.
+Quotes for custom work are also available.  Cost and minimum order varies, 
+based on content.
+
+John M. Olsen
+jolsen@nyx.cs.du.edu
+
+
+Todd D. Hale
+thale@novell.com
+halet@ernie.cs.byu.edu
+---------------------------------          _  /X\     ------------------
+Unofficially speaking, of course.     :^/_/__// \\_    relax!
+----------------------------------------- \__ --------------------------
+
+

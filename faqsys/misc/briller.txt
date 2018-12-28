@@ -1,0 +1,73 @@
+Hvordan lage 3D bilder.
+-----------------------
+
+Du trenger:
+-----------
+
+3D briller. (Rødt filter på venstre, Grønt på høyre.)(RødtVenstre,BlåttHøyre)
+Tegneprogram.
+Bildebehandlings prog. (feks. PixMate,Digipaint(AMIGA) eller PhotoShop(PC)
+
+Start med å åpne to like store bilder. Oppløsningen må vare 640x256 eller
+bedre.
+
+Skriv Venstre på det en bildet og Høyre på de andre.
+
+I dette eksempelet gjør vi regning med at du har en sammling av 'brush'er
+som du har klippet ut. (Du kan også bruke et RayTracing prog. men da må du
+forskyve kamera når du rendrer bildet fra høyre. 'Du slipper dette med å
+forskyve brushene')
+
+Hent en brush, (begynn med dem som skal være lengst vekk) f.eks et hus som
+står helt i bakgrunnen. På bildet til 'venstre' plaserer du brushen, skift
+så til 'høyre' og forskyv brushen f.eks 5 pixels i forhold til den på
+'venstre'. Nå er brushene plasert på samme plass bare de er forskjøvet 5
+pixler.
+
+Hent en ny brush, f.eks et tre som står litt foran huset.
+
+Stor avstand: Forskyves til høyre
+Den gjenstanden som er i fokus skal ikke forskyves.
+Liten avstand: Forskyves til venstre
+
+Fortsett slik til alle brushene er plasert.
+
+Lagre bildene som henholdsvis Bilde.V og Bilde.H
+
+Start PixMate/PhotoShop:
+
+Hent inn Bilde.H
+Bruk SUBTRACT RED (PhotoShop: Split Channels, lagre Bilde.R)
+Bildet lagres som: Bilde.R
+
+Hent inn Bilde.V
+Bruk SUBTRACT GREEN (PhotoShop: Split Channels, lagre Bilde.G)
+Bildet lagres som: Bilde.G
+
+Hent inn Bilde.V
+Bruk SUBTRACT BLUE (PhotoShop: Split Channels, lagre Bilde.B)
+Bildet lagres som: Bilde.B
+
+Nå gjenstår det bare å MERGE de 3 bildene.
+
+Pixmate: Hent inn Bilde.R
+         Meny: COLOR
+               Merge RGB..
+               To 32 eller To HAM
+
+PhotoShop:
+Hent inn ALLE bildene. Bilde.R Bilde.G Bilde.G
+Merge channels (RGB) 
+
+
+Prøv brillene, hvis ikke alt blir OK så må du kanskje forskyve brushene
+mindre. Vanlighvis går det bra opptil 13pixler
+
+
+
+Kai Gunter Brandt
+Michael Krohnsgt 37c
+5037 SOLHEIMSVIKEN
+BERGEN :-)
+
+

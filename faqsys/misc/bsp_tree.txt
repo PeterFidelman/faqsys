@@ -1,0 +1,279 @@
+Date: Mon, 28 Nov 94 17:30:41 GMT
+From: ee@datcon.co.uk (Eddie Edwards)
+
+BSP Trees
+---------
+
+This article explains how BSP (binary space partitioning) trees can be used in 
+a game such as DOOM as part of the rendering pipeline to perform back-face
+culling, partial Z-ordering and hidden surface removal.
+
+To explain the use of BSP trees, it is best to start with an example. Consider
+a very simple DOOM level.
+
+     A---------------------------------a----------------------------------B
+  |  |                                                                    |  |
+  |  |                                            y                       |  |
+  d1 |                                                                    |  b1
+  |  |                               f'                                   |  |
+  |  |                                                                    |  |
+     |          C--------------------f-----------------------D            | 
+  |  |          |                                            |            |  |
+  |  |          |                    f"                      |            |  |
+  |  d          |                                            |            b  |
+  |  |          |                                            |            |  |
+  |  |       e" e  e'                                     g' g  g"        |  |
+  d2 |          |                                            |            |  b2
+  |  |          |                                            |            |  |
+  |  |          |                                            |            |  |
+  |  |          E                                            F            |  |
+  |  |                              x                                     |  |
+  |  |                                                                    |  |
+     G---------------------------------c----------------------------------H
+                                                              
+      ----c1---- ----------------------c2-------------------- -----c3-----    
+
+
+
+The level consists of a room within a room. The player cannot go outside of the
+area within the square ABHG.
+
+First some definitions (sorry :-)
+
+The _vertices_ are marked A-H, the _faces_ are marked a-g.
+
+We define a _line_ by using an ordered pair of vertices, so that
+
+      a = (A,B)  e = (E,C)  f = (C,D)  g = (F,D)
+
+We say a point is to the _left_ of a line if it is to the left of the vector
+between its two vertices, taken in order.
+
+So, in the above example, nothing is to the left of line a; everything is to
+the right of it. Note that this depends upon our defintion of line a, and if
+we had defined a = (B,A) then everything would be to the left of line a.
+
+A _face_ is a side of a line which is visible to the player. Wall e above, for
+example, has two faces (marked e' and e"). Not all walls have two faces - if 
+the player can never see one side of a wall it only has one.
+
+A face is fully defined by an ordered pair of vertices and an ordered pair of
+faces - a left face and a right face.
+
+The BSP tree for the example above might look like this:
+
+
+                     f 
+                    / \
+                   /   \ 
+                  /     \
+           a,d1,b1       e
+                        / \
+                       /   \
+                      /     \
+                 d2,c1       g
+                            / \
+                           /   \
+                          /     \
+                        c2       c3,b2
+
+
+Each node contains a line. Everything to the left of that line is in the left
+subtree, and everything to the right of that line is in the right subtree.
+
+Note that face d is neither completely to the right of nor to the left of face
+f. To accomodate this, we split it up into two halves, and put one half into
+the left subtree and one half into the right subtree. Thus, we have to generate
+new faces in order to build the BSP tree.
+
+I will explain how the BSP tree is created later. Firstly, I will give the
+algorithm used to render a picture using the tree.
+
+Suppose the player is standing at position 'x', and looking North.
+
+We start at the top of the tree at line f. We are standing to the right of line
+f, so we go down the LEFT of the tree. This is because we want the furthest
+polygons first.
+
+We come to the left-hand-most terminating node. We write down the faces here
+in our notepad. "a,d1,b1".
+
+Since we've come to a terminator, we back up a level. Back to the top, but we
+have to go down the right subtree yet. Firstly, though, we look at face f - the
+deciding face for this node. We've got everything behind it in our list, we've
+yet to look at anything in front of it, but we must put it into our list.
+Note that face f has two sides - f' and f". Since we already know we're on the
+right of line f, we know that we can only see its right side - so we write 
+f" in our notepad. It now says a,d1,b1,f".
+
+Note, though, that if we were looking south (i.e. our line-of-sight vector
+points away from face f) then we could not see either face f or anything on
+the other side of face f - in this case, we just don't bother going any further
+down the tree.
+
+Now we go down the subtree and come to node e. We are on the right of e, so we
+go down the left subtree and get a terminal node - we just write d2,c1 in our
+notepad. 
+
+Back up, decide on which side of e to put in. We decide e'. The notepad now 
+says a,d1,b1,f",d2,c1,e'.
+
+Down the right subtree to node g. We're on the left, so down the right subtree
+to c3,b2, up, check g (we're on the left = g'), back down to the final node,
+get c2, up, up, up, and we're done.
+
+The notepad ends up saying:
+
+a d1 b1 f" d2 c1 e' c3 b2 g' c2
+
+If we draw these walls, in this order, then we will get the correct scene. I
+would recommend using a one-dimensional Z-buffer to get finer granularity than
+the painter's algorithm provides, before plotting the walls. Note also that
+some walls are behind you - however, since you need to calculate their z
+coordinates for the perspective transform, you can merely discard faces with
+negative z values.
+
+Creating the BSP tree
+---------------------
+
+The BSP tree almost creates itself. The only difficulty is knowing when to stop
+recursing. Notice that the terminal nodes are just put into the list - so a
+sufficient condition for a group of faces to form a terminal node is that they
+can be drawn in a set order without any mistakes occuring in the drawing. That
+is, if wherever the player can stand, the group of walls will never obscure
+each other. 
+
+So let us begin: Choose face f (the choice is fairly arbitrary - it is best
+to choose faces which don't split many other faces up. However, in this case
+it is unavoidable). Split up faces d and b, because they straddle the line f.
+(The line you are splitting along is known as the _nodeline_ in DOOM-speak).
+
+Then put everything to the left of f in the left subtree, and vice-versa:
+
+
+                            f
+                           / \
+                          /   \
+                         /     \
+                  a,d1,b1       b2,c,d2,e,g
+
+We can terminate the left node - because walls a,d1 and b1 form a convex
+shape, they can never overlap each other from any point of view. However, on
+the other side, face e can obscure face d2 from certain viewpoints (our example
+viewpoint above, for one) so we divide along side e. This causes side c to be
+split, but side a is not split because it's not in our current list of sides.
+
+The next level is:
+
+                            f
+                           / \
+                          /   \
+                         /     \
+                  a,d1,b1       e
+                               / \
+                              /   \ 
+                             /     \
+                        d2,c1       b2,c2,g
+
+Now, c1 and d2 never overlap, so we have another terminal node. We next divide
+along line g, splitting c2 into c2 and c3, and the last nodes are terminals
+(a node with one face in is always terminal :-).
+
+This is the basic idea behind a BSP tree - to give an example how effective it
+is, consider standing at point y and looking North. Because you're looking
+away from face f, you don't bother recursing down the entire left subtree. This
+then very quickly gives you the ordered list of faces: a,d1,b1. 
+
+Refinements
+-----------
+
+If at each node we define a bounding box for each subtree, such that every line
+in a subtree is contained by its corresponding bounding box, then we can cut
+some invisible polygons (ones which lie to the left or right of the screen) out
+by comparing each bounding box with the cone of vision - if they don't
+intersect, then you don't go down the whole subtree. DOOM does this, allowing
+it to store an *entire* level in one huge BSP tree.
+
+Here's some pseudo-code to traverse the tree. The function left() returns TRUE
+if the second input vector is to the left of the first input vector. This is
+a simple dot product, and by pre-calculating the slope of the nodeline can be
+done with one multiply and one subtract. 
+
+vector  player                         ; player's map position
+vector  left_sightline                 ; vector representing a ray cast through
+                                       ; the left-most pixel of the screen
+vector  right_sightline                ; the right-most pixel of the screen
+
+structure node 
+{
+  vector vertex1
+  vector vertex2
+  node   left_subtree
+  node   right_subtree
+  face   left_face
+  face   right_face
+  box    bounding_box
+  bool   terminal_node
+  face   terminal_node_faces[lots]
+} 
+
+recurse(node input)
+
+if (cone defined by left and right sightlines does not intersect the node's
+    bounding box)
+  return
+fi
+
+if node.terminal_node
+  ; terminal node - add faces to list
+  add(node.terminal_node_faces)
+  return
+fi
+
+if left(vertex2-vertex1,player-vertex1)
+  ; player is to the left of the nodeline
+  if not left(vertex2-vertex1,right_sightline)
+    ; sight points right - we are looking at the face
+    recurse(node.right_subtree)
+    add(node.left_face)
+  fi
+  ; now go down the left subtree
+  recurse(node.left_subtree)
+else
+  ; player is to the right of the nodeline
+  if left(vertex2-vertex1,left_sightline)
+    ; sight points left - we are looking at the face
+    recurse(node.left_subtree)
+    add(node.right_face)
+  fi
+  ; now go down the right subtree
+  recurse(node.right_subtree)
+fi
+
+return                                                                         
+
+end recurse
+
+This isn't anywhere near a decent implementation - the data structures, for
+example, leave a *lot* to be desired :-)
+
+It should be possible to encode all the functions inline; in fact, it would be
+feasible to take a BSP tree and hard-code it into some run-time generated code
+which you just call to recurse the tree ... but I'm just a hacker at heart ;-)
+
+Anyway, I hope this helps answer some peoples' questions on this subject. If
+you have any more questions, please don't hesitate to email me.
+
+Catch you later,
+
+Eddie xxx
+
+ee@datcon.co.uk
+
+
+===========================================================================
+Official Archimedes convertor of : Hear and remember, see and understand,
+Wolfenstein 3D and proud of it!! : do and forget.
+=================================: Something like that, anyway.
+         ee@datcon.co.uk         ==========================================
+

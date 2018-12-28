@@ -1,0 +1,170 @@
+Subject: Re: Texture mapping sources wanted 
+ 
+This is not a source file, but rather a short document containing what 
+little I know about texture mapping arbitrarily positioned and rotated 
+prallellograms in 3D space.  It also contains a GIF file which probably 
+is needed to understand what is going on.  I know one person who has 
+used the formulas presented to implement correct texture mapping 
+of 3D triangles. 
+ 
+Concerning Digital Image Warping:  on the subjects of texture mapping, 
+it contains little more than what you can read below.  It does provide 
+some faster approximations though, but they don't look to good in the  
+general case. 
+ 
+---------------------------------------------- use a chainsaw here 
+ 
+                   My idea of texture mapping 
+           Mapping a 2D bitmap to a 3D parallellogram 
+ 
+   by Robert Schmidt (robert@alkymi.unit.no) of Ztiff Zox Softwear 
+ 
+ 
+This is an introductory text which might not be particularly useful, but it 
+might get you started, and might be the start of some good (I mean FAST!) 
+public domain source code for texture mapping.  No source code is 
+included, but a 640x480 B&W GIF-sketch is appended uuencoded at the 
+end of this text. 
+ 
+See the accompanying IDEA.GIF when you get bewildered.  I'll use lower 
+case letters for scalars, and capital letters for vectors in this text. 
+I drew the image before trying to incorporate underlining in this ASCII 
+text... :-)  Thus: 
+ 
+In this text: 
+  a is a scalar, 
+  A is a vector (NOT a matrix). 
+In the drawing: 
+  a is a scalar, 
+  a-underlined is the vector. 
+ 
+ 
+Assume the following: 
+ 
+o The origo (0,0,0) of our world is positioned right in your eye. 
+  (Ouch!)  Choose left or right yourself.  The x axis points right of 
+  your head, the y axis points up, and the z axis points straight ahead 
+  of you. 
+ 
+o A four sided parallellogram, is spanned out in 3D space by two vectors  
+  U and V.  The common base of the two vectors is given by the base vector 
+  B. 
+ 
+o Your computer screen is positioned a fixed distance from your 
+  eye/origo.  The origo of the screen is at (0,0,zs).  The xy-plane of 
+  your screen is parallell to the world xy-plane. 
+ 
+o Stored somewhere else is a bitmap, which is to be mapped onto the 
+  parallellogram, so that the base of the bitmap coincides with the base 
+  (B) of the parallellogram, and the edges of the two fall together. 
+ 
+Now our goal is made up of two smaller goals: 
+ 
+1) Map the bitmap to the parallellogram. 
+2) Map the parallellogram to the screen. 
+ 
+I assume you are familiar with drawing a 3D polygon on screen, i.e. 
+performing a perspective transform of the coordinates and rasterizing  
+the edges.  This process, i.e. goal 2, isn't really the issue here. 
+ 
+The idea is that for each point S=<xs,ys,zs> on the screen that is 
+contained in the polygon, we have to find the coordinates (u,v) along 
+the vectors (U,V).  The corresponding point in space is given by 
+ 
+P = B + uU + vV 
+ 
+u and v will be in the interval [0,1] if P is within the polygon.  This 
+is crucial. 
+ 
+Now if the 3D point P is to map to the screen pixel S, the vectors P and 
+S have to be parallell.  Moreover, since they both are based in origo, 
+they lie on the same line in space, thus: 
+ 
+P = tS 
+ 
+for some constant t.  Thus: 
+ 
+tS = B + uU + vV 
+ 
+Now we have 3 equations in 3 unknowns, t, u and v: 
+ 
+t sx = bx + u ux + v vx 
+t sy = by + u uy + v vy 
+t sz = bz + u uz + v vz 
+ 
+t is of no interest to us, so I'll just show the solutions for u and v: 
+ 
+    d sx + e sy + f sz 
+u = ------------------ 
+    a sx + b sy + c sz 
+                                (1) 
+    g sx + h sy + i sz 
+v = ------------------ 
+    a sx + b sy + c sz 
+ 
+where a,b,c,d,e,f,g,h,i are all constants which are calculated once each 
+time the bitmap is moved/redrawn: 
+ 
+a = uy vz - vy uz 
+b = vx uz - ux vz 
+c = ux vy - vx uy 
+ 
+d = vy bz - by vz 
+e = bx vz - vx bz 
+f = vx by - bx vy 
+ 
+g = by uz - uy bz 
+h = ux bz - bx uz 
+i = bx uy - ux by 
+ 
+The straightforward algorithm to draw the bitmap is as follows: 
+ 
+for (ys=0; ys<200; ys++) 
+  for (xs=0; xs<320; xs++) 
+    calculate u,v from (1) 
+    if (u in [0,1) and v in [0,1) 
+      putpixel (xs, ys, bitmap[u*xsize, v*ysize]) 
+ 
+This will scan through each pixel on the screen, check wether the pixel 
+is mapped inside the bitmap, and plot the bitmap pixel to the screen 
+if it is. 
+ 
+Calculating (1) for each pixel is time consuming, but there are facts to 
+exploit for significant speed gains: 
+ 
+1) sz (the eye z-coordinate of the screen pixel) is constant, so all  
+   products involving sz can be calculated outside all loops. 
+ 
+2) sy is constant on each raster line, so the products involving sy need 
+   be calculated only once per line, i.e. outside the xs loop. 
+ 
+3) Scan convert the polygon (parallellogram) to screen coordinates, and 
+   calculate (u,v) only for pixels inside the polygon.  I'm not going to 
+   say more about this, but it's the obvious way to go! 
+ 
+4) The denominators in (1) are equal for u and v, so it need only be 
+   evaluated once for each pixel. 
+ 
+5) Try to incrementalize.  Instead of calculating (d sx) when x 
+   increases, just add d to the previous value, for example. 
+ 
+ 
+The problem is I still can't get away with less than 1 divsion and 2 
+multiplications per pixel, alternatively 2 divisions.  There are ways to 
+approximate this, for example by subdividing the polygon and using first 
+or second degree Taylor polynomials, combined with the use of forward 
+differences.  Third degree polynomials don't give much quality gain over 
+second degree polynomials, and take more initial calculations.  These are 
+all approximations, and will give visible artifacts and errors.   
+Subdividing helps on this, but is expensive. 
+ 
+I'm looking for an incremental algorithm similar to the Bresenham 
+algorithms for drawing straight lines or ellipses.  This would give an  
+exact perspective mapping and *not* an approximation.  At the moment, I'm 
+literaly halfway there, it's just that the second half seems impossible 
+to figure out.  I am able to get it right as long as each and every pixel 
+in the texture bitmap is used at least once.  If one or more bitmap 
+pixels are to be skipped, my algorithm fails.  Interested persons 
+mail me. 
+ 
+Mail any comments and ideas to robert@alkymi.unit.no. 

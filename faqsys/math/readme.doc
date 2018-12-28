@@ -1,0 +1,111 @@
+/****************************************************************************/
+
+                John McCarthy's Constant Slope Texture Mapping
+
+                                  (JTEXTURE)
+
+  Texture mapping coded by:
+
+  Written by: John McCarthy (aka Flynn)
+              1316 Redwood Lane
+              Pickering, Ontario.
+              Canada, Earth, Milky Way (for those out-of-towners)
+              L1X 1C5
+
+  email: BRIANMCC@IDIRECT.COM
+     or: BRIAN.MCCARTHY@CANREM.COM
+     or: RY80@JECALPHA.KA.SUB.ORG
+
+  Home phone,(905) 831-1944 Canada.
+  Work phone, 0721 9203183  Germany.
+
+  Yes, I actually live in Canada, and work in Germany.  I'm always
+  willing to talk but don't call at 2 am ok!
+
+  Send me a postcard from someplace near where you live.
+
+    Wanna help write an Operating System?  Call or write to me today!
+
+/****************************************************************************/
+
+        There are a billion worthless articles about "Can texture mapping
+    be done with constant slope?"  and "How can I do texture mapping?"
+    It is sickening to look at the crap written by Micheal Abrash and
+    actually have people think "Wow, he's smart".  He's a dork, (sorry
+    Micheal).  He writes great sounding titles for his articles, but it
+    takes about the same intellegance to write texture mapping as it
+    does to flush a toilette.
+
+        Ok, to close the issue once and for all. Here is a routine I wrote
+    a while back to demonstrate the simplicity of it all. The routine does
+    not perform the "2 divisions per scanline" crap, but uses the slope of
+    the triangle through the center as the interior texture slope for the
+    entire triangle.
+
+        It's so simple:
+
+        mid = distance across center of triangle:
+
+                              0
+                        "A"  /|
+                            / |
+                           /  |
+                          /___|
+                         1\mid|q
+                           \  |
+                            \ |
+                             \|
+                              2
+
+        slope.right            = (x.2 - x.0) / (y.2 - y.0)
+        mid                    = slope.right * (y.1 - y.0) - x.1
+
+        exteroir.slope.x.right = (tx.2 - tx.0) / (y.2 - y.0)
+        exteroir.tx.q          = tx.0 + exteroir.slope.x.right * (y.1 - y.0)
+        interior.slope.x       = (exteroir.tx.q - tx.1) / mid
+
+        exteroir.slope.y.right = (ty.2 - ty.0) / (y.2 - y.0)
+        exteroir.ty.q          = ty.0 + exteroir.slope.y.right * (y.1 - y.0)
+        interior.slope.y       = (exteroir.ty.q - ty.1) / mid
+
+    The only real things need from the above formulas are:
+
+        exteroir.slope.x.right      interior.slope.x
+        exteroir.slope.y.right      interior.slope.y
+
+    "B" type triangle (see code) have similar formulas, just opposite
+    sides.
+
+    Please excuse the sloppy C code as this was done over a weekend, back
+    when I was new to C.  Please also excuse the use of globals in the .ASM
+    as we all know every piece of code we ever write should never contain
+    a global variable.  (globals = yuk)
+
+    Hope you enjoy the code, and can find it useful, entertaining,
+    or whatever.  This code is provided free, and you may do with it
+    whatever you want.  Destroy it or make DOOM - (yeah right).  If
+    you use it in something cool, like a demo or a game, it would
+    be kind of nice if you sent me a copy - it only costs 1 disk +
+    postage.
+
+    I give this code away, since I now have much better code, with much
+    more flexability and smoothness.  The TEXT.ASM code was just a test
+    program.
+
+    The constant slope method of drawing gouraud shaded triangles, or
+    for texture mapping also works great for perspective texturing. The
+    cube demo I have supplied has no perspective applied to it, and
+    therefore looks quite wobbley, but don't fret - simply by cutting
+    triangles into smaller triangles, (using some sort of tolerance value)
+    makes the triangles look perspectivly correct.  I don't have a fancy
+    demo to show you, maybe next month.  But it looks great.  I don't
+    think there is any real need to perform true perspective texturing
+    after seeing the excellent pseudo perspective effects triangle splitting
+    can give.  Try it - I'll have a demo of this for you next month.
+
+/****************************************************************************/
+
+    Wanna help write an Operating System?   (905) 831-1944, Canada.
+
+/****************************************************************************/
+

@@ -1,0 +1,189 @@
+Hello again. Im continuing searching for ESS hi-speed initialisation.
+Here`s that i`ve got about this from Ilja Naumov (his source was used in
+Cubic player).
+I think it`s my duty to share it with your source collection. It wasn`t
+tested or ever used by me - i`ve just got it.
+It will be good if you try to contact with opencp@gmx.net. It`s email of
+cubic player autor. I`ve got it from
+http://mcl.dnttm.ru/cubic/english/index.html but letters return with error
+to me.
+
+Have a good day! ;)
+
+Erop.
+----------------------------------------------------------------------------
+--------------------------------
+ESS16SD.DRV - 32bit card detect driver (2 useful features) by Ilya Naumov
+
+1st - detects sound card, returns card's base address
+
+int proc151()
+{
+    for( adr = 0x220; adr <= 0x250; adr += 0x10 )
+    {
+        outp( adr+6, 3 );
+        delay();
+        inp( adr+6 );
+        delay();
+        outp( adr+6, 0 );
+        delay();
+        if( inp( adr+0xA ) == 0xAA )                        // SB found
+        {
+            delay();
+            outp( adr+0xC, 0xE7 );
+            delay();
+            if( inp( adr+0xA ) == 0x68 )    return adr;     // ESS found
+        }
+    }
+
+    return 0;       // None of SB or ESS found
+}
+
+2nd - requests information about DMA channel and interrupt
+
+int proc15d()
+{
+    int base = 0;
+
+    base = proc151();
+    if( base )
+    {
+        outp( base+6, 3 );
+        delay();
+        outp( base+6, 0 );
+        delay();
+        inp( base+0xA );        // clearing registers
+
+        outp( base+0xC, 0xC0 );
+        delay();
+        outp( base+0xC, 0xB1 );     // Interrupt info
+        delay();
+        switch( inp( base+0xA ) & 0xC )
+        {
+            case 0xC:   _CH = 0xA;  break;
+            case 0x0:   _CH = 9;    break;
+            case 0x8:   _CH = 7;    break;
+            default:    _CH = 5;
+        }
+
+        outp( base+0xC, 0xC0 );
+        delay();
+        outp( base+0xC, 0xB2 );     // DMA info
+        delay();
+        switch( inp( base+0xA ) & 0xC )
+        {
+            case 0xC:   _CL = 3;    break;
+            case 0x8:   _CL = 1;    break;
+            default:    _CL = 0;
+        }
+    }
+
+    return  base in _AX, int in _CH, dma in _CL
+}
+
+void delay()
+{
+    for( unsigned i = 0; i < 0xFFFF; i++ )  ;
+}
+
+
+ESS16S.DRV - 32bit card API driver (3 useful features)
+
+1st - sound card initalization (I don't understand this procedure, this
+code
+was in the ESS688 driver from one of games)
+
+void proc1ae()
+{
+    int tmp;
+
+    outp( base+0xC, 0xC6 );
+    delay();
+
+    outp( base+0xC, 0xB8 );
+    delay();
+    outp( base+0xC, 0x04 );
+    delay();
+
+    outp( base+0xC, 0xC0 );
+    delay();
+    outp( base+0xC, 0xA8 );
+    delay();
+    tmp = (inp( base+0xA ) & 0xFC) + 1;
+    delay();
+    outp( base+0xC, 0xA8 );
+    delay();
+    outp( base+0xC, tmp  );
+    delay();
+
+    outp( base+0xC, 0xB6 );
+    delay();
+    outp( base+0xC, 0x00 );
+    delay();
+
+    outp( base+0xC, 0xB7 );
+    delay();
+    outp( base+0xC, 0x71 );
+    delay();
+
+    outp( base+0xC, 0xB7 );
+    delay();
+    outp( base+0xC, 0xBC );
+    delay();
+
+    outp( base+0xC, 0xC0 );
+    delay();
+    outp( base+0xC, 0xB2 );
+    delay();
+    tmp = inp( base+0xA ) | 0x50;
+    delay();
+    outp( base+0xC, 0xB2 );
+    delay();
+    outp( base+0xC, tmp  );
+}
+
+2nd - set sample frequency in Hz
+
+void proc41c( int f )
+{
+    outp( base+0xC, 0xA8 );
+    delay();
+    if( f < 22000 )
+        outp( base+0xC, -((0x61184 / f) - 128) );
+    else
+        outp( base+0xC, (-((0xC236C / f) - 256)) | 0x80 );
+}
+
+3rd - DMA setup & start data transfer
+
+void proc4db( long adr, unsigned len )
+{
+    // Setup DMA to address (adr) skipped
+
+    outp( base+0xC, 0xA4 );
+    delay();
+    outp( base+0xC, len >> 8 );         // block lenght high byte
+    delay();
+    outp( base+0xC, 0xA5 );
+    delay();
+    outp( base+0xC, len & 0xFF );       // block lenght low byte
+    delay();
+
+    outp( base+0xC, 0xB8 );
+    delay();
+    outp( base+0xC, 0x00 );
+    delay();
+
+    outp( base+0xC, 0xB8 );
+    delay();
+    outp( base+0xC, 0x05 );
+}
+
+ Appendix :-)
+
+ As I understand,
+
+   cmd    - set parameter
+   C0 cmd - read current setting
+
+

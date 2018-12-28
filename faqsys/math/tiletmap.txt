@@ -1,0 +1,283 @@
+
+              Tiled Texture Mapping for pow2 Texture Sizes
+                        ---------------------
+
+                                 by
+
+                        TheGlide/SpinningKids
+                    Milan, Italy - June 1st, 1998
+
+INTRODUCTION:
+-------------
+
+  I assume here you know the basics of texture mapping, as eplained in
+  fatmap and fatmap2 docs by MRI/Doomsday.
+
+  This doc is about texture mapping using texture maps stored as tiles,
+  namely 8x8 pixels tiles. Storing the maps this way can improve very much
+  cache access. Most of the time we have to traverse the texture through
+  non-horizontal lines, and this causes many cache misses. The worst situation
+  happens when we have to traverse the texture vertically: each texel we access
+  will be on a different row, and this will require, from the processor side,
+  a whole cache line load. And this is very slow.
+
+  Storing the texture in 8x8 tiles ensures that every tile fits in two 32 bytes
+  cache lines (on the pentium), and as we traverse the texture we have a
+  greater chance to read from the same cache line for a longer time.
+
+  Let's assume for the moment that you have 256x256 textures.
+  So the u and v coordinates take up 8 bits.
+
+    u : xxxxxxxx
+    v : xxxxxxxx
+
+TILING - METHOD 1:
+------------------
+
+  The first way to tile the map in 8x8 tiles is this one:
+
+   ---------------------------------
+   |  0 |  1 |  2 |  3 |  4 |  ....
+   ---------------------------------
+   | 32 | 33 | 34 | 35 | 36 |  ....
+   ---------------------------------
+   | 64 | 65 | ....
+   ---------------------------------
+
+  where numbers 0... indicate the order by which the 8x8 tiles are stored in
+  memory.
+
+  This way we can go from the original u v coordinates to the ones in
+  the tiled map with the following:
+
+    u : xxxxxXXX  ->    u' = 00000xxxxx000XXX
+    v : xxxxxXXX  ->    v' = xxxxx00000XXX000
+
+    u' = (u&0x7)|((u<<3)&0x7c0);
+    v' = ((v<<3)&0x38)|((v<<8)&f800);
+
+  That is the lower 3 bits of both u and v (XXX) are used to address the texel
+  inside a single tile, whereas the 5 upper bits are used to select the
+  texture. The C code to convert normal texture coordinates (u,v) to
+  tiled-texture coordinates is the following:
+
+    u' = (u&0x7)|((u<<3)&0x7c0);
+    v' = ((v<<3)&0x38)|((v<<8)&f800);
+
+  This code enables us to convert a straight texture to a tiled texture:
+
+   tiledtmap [u'+v'] = tmap [u+v*256]
+
+TILING - METHOD 2 - THE BETTER METHOD:
+--------------------------------------
+
+  But there's another way to tile a texture map. This one:
+
+   ---------------------------------
+   |  0 | 32 | 64 | 96 | ....
+   ---------------------------------
+   |  1 | 33 | 65 | 97 | ....
+   ---------------------------------
+   |  2 | 34 | ...
+   ---------------------------------
+   |  4 | ....
+   ---------------------------------
+
+  And with this tiling method we get from the u v of the original
+  map to u' v' relative to the tiled map with this method:
+
+    u : xxxxxXXX  ->    u' = xxxxx00000000XXX
+    v : xxxxxXXX  ->    v' = 00000xxxxxXXX000
+
+  The corresponding C code is:
+
+    u' = (u&0x7)|((u<<8)&0xf800);
+    v' = (v<<3);
+
+  and as before it can be readily plugged in a converter from straight
+  textures to tiled textures.
+
+  The code really 'looks better' than the first. It is easier and faster to
+  convert from v to v'. That's why we will choose this second method.
+
+  Now, we could easily get our usual tmap scanline filler, put those relations
+  inside the inner loop, and see the result. Slooow.
+  At the expense of a little overhead, we can get a loop that is really
+  little and optimized. So what can we do to directly use u' and v' in the loop
+  and the corresponding du' and dv', and read from the tiled texture ?
+  We convert all of our starting u and v, and the corresponding deltas (du,dv),
+  that are calculated in the tmapper before entering the inner loop:
+
+    (all quantities in 8.16 fixed point format, xxx is the integer part,
+     XXX is the fractional part):
+
+     u : xxxxxxxx,XXXXXXXXXXXXXXXx ->  u' = xxxxx00000000xxx,0XXXXXXXXXXXXXXX
+     v : xxxxxxxx,XXXXXXXXXXXXXXXx ->  v' = 00000xxxxxxxx000,0XXXXXXXXXXXXXXX
+
+    du : xxxxxxxx,XXXXXXXXXXXXXXXx -> du' = xxxxx11111111xxx,1XXXXXXXXXXXXXXX
+    dv : xxxxxxxx,XXXXXXXXXXXXXXXx -> dv' = 00000xxxxxxxx111,1XXXXXXXXXXXXXXX
+
+  We have to fill the gaps in du'/dv' with 1 because when we add them to the
+  current u'/v' values we must propagate the carry from the lower bits to the
+  bits that lie after the gap. After the addition we must not forget to mask
+  out the 1s from the u'/v' we obtain.
+
+  Of the 16 bit fractional part we keep only the upper 15 bits. There's a
+  valid reason to do this: when calculating the offset to access the texel
+  we add u' and v' and shift left by 16. If we kept all of the fractional
+  bits, an hypotetical carry would propagate to the integer part, thus
+  influencing the offset value. Keeping instead only the upper 15 bits of
+  the fractional part, and putting a 1 bit gap between fractional and integer
+  part the problem gets solved automatically. If this explanation seems
+  harsh, look at the 'picture' of u'/v' above.
+
+  Now, an hypothetical tiled tmap scanline filler would look like:
+
+  void tiledtmapline (int u, int v, int du, int dv,
+      int run, const unsigned char * vid, const unsigned char * tmap) {
+
+    // on entry u,v,du,dv are in 8.16 format
+
+     u = (( u<<8)&0xf8000000)|( u&0x70000)|(( u>>1)&0x7fff);
+    du = ((du<<8)&0xf8000000)|(du&0x70000)|((du>>1)&0x7fff)|0x7f88000;
+     v = (( v<<3)&0x07f80000)|(( v>>1)&0x7fff);
+    dv = ((dv<<3)&0x07f80000)|((dv>>1)&0x7fff)|0x78000;
+
+    vid+=run;
+    for (run=-run;run;run++) {
+      *(vid+run) = tmap [((unsigned int)(u+v)>>16)];
+      u =(u+du)&0xf8077fff;  // addition + masking out the 1s in the gaps
+      v =(v+dv)&0x07f87fff;  // same as above
+    }
+
+EXTENDING TO POW2 TEXTURES:
+---------------------------
+
+  Now comes the cool part. We will extend all the formulas we have developed
+  to other texture dimensions (actually always power of 2). Let's look at the
+  u' and v' formats:
+                           111111
+                           5432109876543210
+    u : xxxxxXXX  ->  u' = xxxxx00000000XXX
+    v : xxxxxXXX  ->  v' = 00000xxxxxXXX000
+
+  bits 0-2 of u' and bits 3-5 of v' are the coordinates in the single
+  8x8 tile. Since we always use 8x8 tiles, those fields wont change in
+  bitwidth. Let's look at the remaining 5 bits of u' (bits 11-16) and
+  v' (bits 6-10). 5 bits are need for 32 tiles.
+
+  So 32tiles*8pixels = 256 pixels.
+
+  It takes a minute to understand that by varying the number of those bits we
+  can account for different texture sizes. With 4 bits we get 16 tiles, that
+  is a 16*8=128 pixels width/height texture. Here are a couple of cases to
+  make everything more clear:
+
+    128x128 tiled map ( = 16tiles x 16 tiles):
+      u' = 00xxxx0000000XXX
+      v' = 000000xxxxXXX000
+
+    64x64 tiled map ( = 8tiles x 8tiles):
+      u' = 0000xxx000000XXX
+      v' = 0000000xxxXXX000
+
+  and so on.
+  So how can we handle all those cases in the formulas we wrote above ? Easy:
+  we simply need a parameter that tells us the number of bits for the
+  'inter-tile' addressing, and the corresponding mask. In formulas this will
+  look like:
+
+    // u,v,du,dv 16.16 fixed point quantities
+    // bits = tile addressing bits
+    // mask = tile addressing bit mask
+
+    ushift = (3+bits);
+    umask  = (mask<<(16+6+bits));
+    vmask  = (mask<<(16+6))|0x380000;
+   dumask  = vmask|0x8000;
+
+     u = (( u<>1)&0x7fff);
+    du = ((du<>1)&0x7fff)|dumask;
+
+     v = (( v<<3)&vmask)|(( v>>1)&0x7fff);
+    dv = ((dv<<3)&vmask)|((dv>>1)&0x7fff)|0x78000;
+
+  and that's all.
+
+  Here are the correct bits & mask values for the different texture sizes:
+
+             bits   mask
+  256x256     5      0x1f
+  128x128     4      0xf
+   64x64      3      0x7
+   32x32      2      0x3
+   16x16      1      0x1
+    8x8       0      0
+
+  The inner loop then looks like:
+
+    innerumask = umask|0x77fff;
+    innervmask = vmask|0x07fff;
+    vid+=run;
+    for (run=-run;run;run++) {
+      *(vid+run) = tmap [((unsigned int)(u+v)>>16)];
+      u =(u+du)&innerumask;
+      v =(v+dv)&innervmask;
+    }
+
+  And you got it! That's a tiled texture mapper ready to handle any power of 2
+  texture size, subdvided in 8x8 tiles. ushift, umask, vmask, innerumask and
+  innervmask do not need to be calculated at each scanline obviously as they
+  depend solely on the dimensions of the texture. But a little overhead still
+  remains; that's true especially when you use this scanline filler in a
+  perspective correct tmapper that linearly interpolates every 16 pixels.
+
+  One last thing to note is that wrapping is still allowed with this method.
+
+MORE EXTENSIONS:
+----------------
+
+  An obvious limit of the method I presented is that you can apply it to
+  textures with a maximum dimension of 256x256 texels. Extending beyond this
+  limit is not a problem: you only have to trade some bits from the fractional
+  part, so they can be used to address more texels :)
+
+GREETS:
+-------
+
+  .MRI / Doomsday:
+     because I was introduced to this subject from his fatmapX docs.
+
+  .Crossbone / Suburban Creations:
+     for patiently beta-testing this doc, since I wrote it even before
+     actually writing the code :)
+
+  .Vipa / Purple
+
+  Some italian greets now :
+
+  .Pan / SpinningKids:
+     vabbe' che il tiling non fa tendenza, pero' fa molto figo :)
+
+  .Junta / SpinningKids:
+     ora' capisci perche' non scrivo mai...sono impegnato a scrivere
+     articoloni sul coding e a far figuracce in giro per il mondo:)
+
+  .Ghe & Blade / Absurd:
+     codate e fatevi sentire!
+
+BYE BYE:
+--------
+
+  I would like to hear your comments, suggestions and, most of all, corrections
+  to this document.
+
+  That's all for now.
+  Ciao,
+
+  <> Luca Gerli
+  <> TheGlide / SpinningKids
+  <> email: gerli@ipeca8.elet.polimi.it
+  <> email: luca.gerli@usa.net (preferred after July '98)
+
+--Enf of Doc--

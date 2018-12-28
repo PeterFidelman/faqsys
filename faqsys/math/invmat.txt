@@ -1,0 +1,54 @@
+From - Mon Apr 13 20:37:55 1998
+Path: ifi.uio.no!news-feed.ifi.uio.no!howland.erols.net!news-peer.sprintlink.net!news-backup-east.sprintlink.net!news-in-east.sprintlink.net!news.sprintlink.net!Sprint!207.217.77.43!newsfeed1.earthlink.net!nntp.earthlink.net!usenet
+From: "Doug Chism" <chismdm@earthlink.net>
+Newsgroups: comp.graphics.algorithms
+Subject: Re: Matrix inverse algo
+Date: Tue, 7 Apr 1998 14:23:20 -0500
+Organization: EarthLink Network, Inc.
+Lines: 39
+Message-ID: <6gducr$mf2@ecuador.earthlink.net>
+References: <352952C2.515E3247@teccart.qc.ca>
+NNTP-Posting-Host: 208.254.191.171
+X-Newsreader: Microsoft Outlook Express 4.72.2106.4
+X-MimeOLE: Produced By Microsoft MimeOLE V4.72.2106.4
+Xref: ifi.uio.no comp.graphics.algorithms:66620
+
+I can help. I have done this in my 3D engine. The idea is to post multiply
+the inverse of the matrix in question every time that objects matrix is
+transformed. For instance in my engine the lowest drawable object is called
+a "node". So when I want to rotate the node I create a temporary inverse
+matrix which is the inverse of the rotational matrix used in the rotation of
+that particular node. I then post multiply the nodes inverse matrix by this
+inverse matrix to get the result of that particular transform on the node's
+inverse matrix. I also keep an inverse rotational matrix around. This helps
+me perform directional lighting very easily. The Inverse matrix is used for
+all point type lights, and for backface culling. The downside is that this
+adds transformation time for complicated heirarchically animated objects.
+The way I solve this problem is to override the rotate functions for these
+objects to use lookup tables for sin and cos. Also I sometimes store
+matricies as animation data for animations that do not need to be
+interpolated ( for objects that are far from the camera).
+
+void node::rotateX( float theta )
+{
+ Matrix invRot;
+
+ myMatrix.rotateX(theta);
+ invRot.rotateX(-theta);
+ myInverseMatrix = myInverseMatrix*invRot;
+ myInverseRotMatrix = myInverseRotMatrix*invRot;
+}
+
+for more help concerning the lighting and culling themselves email me.
+
+
+J-Réginald Louis wrote in message <352952C2.515E3247@teccart.qc.ca>...
+>Can someone here can refer me to some info on how to find the inverse of
+>a matrix?
+>
+>
+>BTw, if you can give me some doc or http on doing lighting abd back face
+>culling on object space.
+>
+
+

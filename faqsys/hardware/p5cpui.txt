@@ -1,0 +1,427 @@
+Example 5-1 is the Intel recommended method of determing the processor type 
+as well as the presence and type of NPX or integrated FPU. This code has been 
+modified from previous versions of Intel's recommended CPU identification 
+code by modularizing the printing functions so that applications not running in 
+a DOS environment can remove or change the print function to conform to the 
+appropriate environment.  
+Example 5-1.  CPU Identification and FPU Detection
+;	Filename:	cpuid32.asm
+;	This program is modularized in two parts:
+;	Part 1: Identifies CPU type in cpu_type:
+;		0=8086 processor
+;		2=80286 processor
+;		3=Intel386TM processor
+;		4=Intel486TM processor
+;		5=P5TM processor
+;		The presence of a floating-point unit is 
+;		indicated in fp_flag (1=present).
+;
+;		The variable infinity is used to determine if
+;		an 80287 (2) is being used with an Intel386 cpu
+;		or an Intel387 (3) is being used.  
+;		
+;	Part 2: Prints out the appropriate message.  This part can
+;		be removed if this program is not used in a DOS-based
+;		system by removing the print_data segment and the
+;		print procedure in the code segment.
+;
+;	This program uses 32-bit instructions and operands.   
+;	For use on 16-bit assemblers, replace 32-bit instructions
+;	with 16-bit and use the operand-size override prefix 66H, 
+;	for example:
+;
+;		Instead of:	POPFD EAX
+;				MOV ECX, EAX
+;
+;		Use:		DB 66H
+;				POPF AX
+;				DB 66H
+;				MOV CX, AX
+
+
+	TITLE	CPUID
+	DOSSEG
+	.model small
+	.stack	100h
+	.486
+
+CPUID MACRO
+	db	0Fh	; Hardcoded opcode for CPUID instruction 
+	db	0a2h
+ENDM
+	
+	.data
+fp_status		dw	?
+saved_cpuid	dd	?
+vendor_id		db	12 dup (?)
+cpu_type		db	?
+model				db	?
+stepping		db	?
+id_flag		db	0
+fpu_present	db	0
+intel_proc	db	0
+infinity		db	0
+;
+; remove the remaining data declarations if not using the DOS-based
+; print procedure
+;
+id_msg  		db	"This system has a$"
+fp_8087		db	" and an 8087 math coprocessor$"
+fp_80287		db	" and an i287tm math coprocessor$"
+fp_80387		db	" and an i387tm math coprocessor$"
+c8086				db	"n 8086/8088 microprocessor$"
+c286				db	"n 80286 microprocessor$"
+c386				db	" i386tm microprocessor$"
+c486				db	" i486tm DX microprocessor or i487tm SX math coprocessor$"
+c486nfp 		db	" i486tm SX microprocessor$"
+P5					db	" P5 microprocessor",13,10,"$"
+intel				db	" This system contains a Genuine Intel processor",13,10,"$"
+modelmsg		db	"Model:            $"
+steppingmsg	db	"Stepping:         $"
+familymsg		db	"Processor Family: $"
+period			db	".",13,10,"$"
+dataCR			db	?,13,10,"$"
+intel_id		db 	"GenuineIntel"
+
+
+;
+;	The purpose of this code is to allow the user the 
+;	ability to identify the processor and coprocessor
+;	that is currently in the system.  The algorithm of 
+;	the program is to first determine the processor 
+;	id.  When that is accomplished, the program continues 
+;	to then identify whether a coprocessor exists
+;	in the system.  If a coprocessor or integrated 
+;	coprocessor exists, the program will identify
+;	the coprocessor id.  The program then prints out
+;	the CPU and floating point presence and type.
+;	
+		.code
+start:	mov	ax,@data
+	mov		ds, ax			; set segment register
+	mov		es, ax			; set segment register
+	mov		ebx, esp		; save current stack pointer to align 
+	and		esp, not 3	; align stack to avoid AC fault
+	pushfd					; save for restoration at end
+	call 	get_cpuid
+	call 	check_fpu
+	call 	print	
+	popfd
+	mov		esp,ebx		; restore original stack pointer
+	mov 	ax,4c00h		; terminate program
+	int 	21h
+
+
+get_cpuid proc
+;
+;	This procedure determines the type of CPU in a system
+;	and sets the cpu_type variable with the appropriate
+;	value.
+;
+;	First check for an 8086 CPU 
+;	Bits 12-15 of the FLAGS register are always set on the 
+;	8086 processor.
+;	
+check_8086:
+	push	ebx
+	push	ecx
+	pushf					; save EFLAGS
+	pop		bx				; store EFLAGS in BX
+	mov		ax,0fffh		; clear bits 12-15
+	and		ax,bx			;	in EFLAGS
+	push	ax				; store new EFLAGS value on stack
+	popf	 				; replace current EFLAGS value
+	pushf					; set new EFLAGS
+	pop		ax				; store new EFLAGS in AX 
+	and		ax,0f000h		; if bits 12-15 are set, then CPU
+	cmp		ax,0f000h		; is an 8086/8088 
+	mov 	cpu_type, 0	; turn on 8086/8088 flag
+	je		end_get_cpuid ; if CPU is 8086/8088, check for 8087
+	
+
+;
+;	80286 CPU check
+;	Bits 12-15 of the FLAGS register are always clear on the 
+;	80286 processor.
+;
+check_80286:
+	or		bx,0f000h				; try to set bits 12-15
+	push 	bx
+	popf
+	pushf
+	pop		ax
+	and		ax,0f000h				; if bits 12-15 are cleared, CPU=80286
+	mov 	cpu_type, 2		  	; turn on 80286 flag
+	jz		end_get_cpuid		; if CPU is 80286, 
+										; check for 80287
+	
+;	i386 CPU check
+;	The AC bit, bit #18, is a new bit introduced in the EFLAGS 
+;	register on the i486 DX CPU to generate alignment faults.  
+;	This bit can not be set on the i386 CPU.
+;
+check_Intel386:
+	pushfd
+	pop		eax					; get original EFLAGS 
+	mov		ecx,eax			; save original EFLAGS
+	xor		eax,40000h		; flip AC bit in EFLAGS
+	push	eax					; save for EFLAGS
+	popfd						; copy to EFLAGS
+	pushfd						; push EFLAGS
+	pop		eax					; get new EFLAGS value
+	xor		eax,ecx			; can't toggle AC bit, CPU=Intel386
+	mov 	cpu_type, 3		; turn on 386 flag
+	je		end_get_cpuid  	; if CPU is i386, now check 
+									; for 80287/80387 MCP
+
+;	i486 DX CPU / i487 SX MCP and i486 SX CPU checking
+;
+;	Checking for ability to set/clear ID flag (Bit 21) in EFLAGS
+;	which indicates the presence of a processor 
+;	with the ability to use the CPUID instruction.
+;
+check_Intel486:
+	mov 	cpu_type, 4		; turn on i486 flag
+	pushfd						; push original EFLAGS
+	pop		eax					; get original EFLAGS in eax
+	mov		ecx,eax			; save original EFLAGS in ecx
+	xor		eax,200000h		; flip ID bit in EFLAGS
+	push	eax					; save for EFLAGS
+	popfd						; copy to EFLAGS
+	pushfd						; push EFLAGS
+	pop		eax					; get new EFLAGS value
+	xor 	eax, ecx			
+	je		end_get_cpuid	; if ID bit cannot be changed, CPU=486
+									; without CPUID instruction functionality
+
+; 	Execute CPUID instruction to determine vendor, family,
+;	model and stepping.  The use of the CPUID instruction used
+;	in this program can be used for B0 and later steppings 
+;	of the P5 processor.
+check_vendor:
+	mov 	id_flag, 1				; set flag indicating use of CPUID 
+	mov 	eax, 0						; set up for CPUID instruction
+	CPUID								; macro for CPUID instruction
+	mov		dword ptr vendor_id, ebx ; Test for "GenuineIntel" 
+	mov		dword ptr vendor_id[+4], edx
+	mov		dword ptr vendor_id[+8], ecx
+	mov		esi, offset vendor_id
+	mov		edi, offset intel_id	
+	mov		ecx, length intel_id
+compare:
+	repe	cmpsb
+	jne		cpuid_data			; if not equal, cpu is not GenuineIntel
+		
+intel_processor:		
+	mov		intel_proc, 1
+
+cpuid_data:
+	mov		eax, 1
+	CPUID 
+	mov		saved_cpuid, eax		; save for future use
+	and		eax, 0F00H			; mask everything but family
+	shr		eax, 8
+	mov		cpu_type, al			; set cpu_type with family
+
+	mov		eax, saved_cpuid		; restore data
+	mov		stepping, al		 	
+	and		stepping, 0FH		; isolate stepping info
+
+	mov 	eax, saved_cpuid
+	mov		model, al		
+	and		model, 0F0H			; isolate model info
+	shr		model, 4
+
+end_get_cpuid:
+	pop 	ecx
+	pop 	ebx
+	ret
+get_cpuid endp
+
+;******************************************************************
+check_fpu proc
+
+;
+;	Co-processor checking begins here for the 
+;	8086/80286/i386 CPUs.  The algorithm is to
+;	determine whether or not the floating-point 
+;	status and control words can be  written to.
+;	If they are not, no coprocessor exists.  If 
+;	the status and control words can be written
+;	to, the correct coprocessor is then determined 
+;	depending on the processor id.  The i386 CPU may 
+;	work with either an 80287 or an 80387.  
+;	The infinity of the coprocessor must be
+;	checked to determine the correct coprocessor id. 
+;
+	push 	eax
+									; check for 8087/80287/80387
+	fninit						; reset FP status word
+	mov 	fp_status,5a5ah	; initialize temp word to 
+									; non-zero value
+	fnstsw fp_status			; save FP status word
+	mov		ax,fp_status		; check FP status word
+	cmp 	al,0				; see if correct status with 
+									; written
+	je		check_control_word
+	mov		fpu_present, 0	; no fpu present
+	jmp		end_check_fpu
+	
+check_control_word:	
+   	fnstcw fp_status			; save FP control word
+   	mov 	ax,fp_status		; check FP control word 
+   	and 	ax,103fh			; see if selected parts looks OK
+   	cmp 	ax,3fh				; check that 1's & 0's 
+									; correctly read
+   	je		set_fpu_present
+   	mov		fpu_present, 0
+	jmp		end_check_fpu
+ set_fpu_present:
+ 	mov		fpu_present, 1
+ 
+;
+;   80287/80387 check for the i386 CPU
+;
+check_infinity:
+	cmp		cpu_type, 3
+	jne		end_check_fpu
+	fld1					; must use default control from FNINIT
+	fldz					; form infinity
+	fdiv					; 8087/80287 says +inf = -inf
+	fld	st					; form negative infinity
+	fchs					; 80387 says +inf <> -inf
+	fcompp					; see if they are the same and remove them
+	fstsw 	fp_status		; look at status from FCOMPP
+	mov		ax,fp_status
+	mov 	infinity, 2	; store 80287 for fpu infinity
+	sahf					; see if infinities matched
+	jz 		end_check_fpu	; jump if 8087/80287 is present
+	mov 	infinity, 3	; store 80387 for fpu infinity
+end_check_fpu:
+	pop 	eax
+	ret
+check_fpu endp
+
+;*******************************************************************
+;
+;	This procedure prints the appropriate cpuid string and
+;	numeric processor presence status.  If the CPUID instruction
+;	was supported, it prints out cpuid info.
+
+print proc
+	push 	eax
+	push	ebx
+	push	ecx
+	push	edx
+	cmp		id_flag, 1			; if set to 1, cpu supported 
+										; CPUID instruction
+										; print detailed CPUID information
+	je		print_cpuid_data
+	
+	mov		dx, offset id_msg 	;print initial message
+	mov		ah, 9h
+	int 	21h	
+
+print_86:
+	cmp		cpu_type, 0
+	jne		print_286
+	mov		dx, offset c8086
+	mov		ah, 9h
+	int 	21h	
+	cmp		fpu_present, 0
+	je		end_print
+	mov		dx, offset fp_8087
+	mov		ah, 9h
+	int 	21h
+	jmp		end_print
+		
+print_286:
+	cmp		cpu_type, 2
+	jne		print_386
+	mov		dx, offset c286
+	mov		ah, 9h
+	int 	21h
+	cmp 	fpu_present, 0
+	je		end_print
+	mov		dx, offset fp_80287
+	mov		ah, 9h
+	int 	21h
+	jmp		end_print
+	
+print_386:
+	cmp		cpu_type, 3
+	jne		print_486
+	mov		dx, offset c386
+	mov		ah, 9h
+	int 	21h
+	cmp		fpu_present, 0
+	je		end_print
+	cmp		infinity, 2
+	jne		print_387
+	mov		dx, offset fp_80287
+	mov		ah, 9h
+	int 	21h
+	jmp		end_print
+
+print_387:
+	mov		dx, offset fp_80387
+	mov		ah, 9h
+	int 	21h
+	jmp		end_print
+	
+print_486:
+	cmp		fpu_present, 0
+	je		print_Intel486sx
+	mov		dx, offset c486
+	mov		ah,9h			 
+	int		21h
+	jmp 	end_print
+        
+print_Intel486sx:	
+	mov		dx, offset c486nfp
+	mov		ah,9h			 
+	int		21h
+	jmp 	end_print
+
+print_cpuid_data:
+	mov 	edx, offset familymsg		; print family msg
+	mov 	ah, 9h
+	int 	21h
+	mov		al, cpu_type
+	mov		byte ptr dataCR, al   
+	add		byte ptr dataCR, 30H		; convert to ASCII 	
+	mov 	edx, offset dataCR			; print family info
+	mov 	ah, 9h
+	int 	21h			
+
+	mov 	edx, offset steppingmsg	; print stepping msg
+	mov 	ah, 9h
+	int 	21h
+	mov		al, stepping
+	mov		byte ptr dataCR, al
+	add		byte ptr dataCR, 30H		; convert to ASCII 	
+	mov 	edx, offset dataCR		; print stepping info
+	mov 	ah, 9h
+	int 	21h			
+
+	mov 	edx, offset modelmsg		; print model msg
+	mov 	ah, 9h
+	int 	21h
+	mov		al, model
+	mov		byte ptr dataCR, al   
+	add		byte ptr dataCR, 30H		; convert to ASCII 	
+	mov 	edx, offset dataCR		; print model info
+	mov 	ah, 9h
+	int 	21h			
+
+end_print:
+	pop 	edx
+	pop		ecx
+	pop		ebx
+	pop		eax
+	ret
+print endp	
+
+	end	start
+
+

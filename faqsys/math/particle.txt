@@ -1,0 +1,221 @@
+Particle Systems
+
+----------------------------------------------------------------------------
+
+Introduction
+
+Particle systems are a technique for modelling things that can't really be
+modelled with other approaches. Things such as explosions fall into this
+category. And this file will be concerned with modelling explosions using
+particle systems
+
+The Basics
+
+A particle system is a collection of independant entities, known as
+particles, which are animated using a set of rules, with the intention of
+modelling some effect. The specific way in which particles are displayed,
+moved, and interact is generally specific to the particle application that
+they are being used for.
+
+A Particle is in general a single point in space. This point is assigned
+some attributes or characteristics, and animated over time. Common
+characteristics for a particle are:
+
+   * Position
+   * Speed
+   * Energy
+   * Direction
+
+As the animation progresses, these characteristics are used, modified, and
+updated. For example, at time = 0, a particle may have a very high velocity,
+and a lot of energy. As time progresses, this velocity and energy will
+decrease, and its path will change.
+
+The general algorithm for a particle will be:
+
+Set up particle
+
+While Animation In Progress
+    If Particle Not Dead Then
+        Add Particle Direction * Speed To Particle Position
+        Add Particle Acceleration To Particle Speed
+        Modify Particles Speed
+        Modify Particles Energy
+
+        If Particles Energy < Threshold Then
+            Mark Particle As Dead
+        End If
+
+        If Particle Hits Object Then
+            Modify Particles Position, Direction, Speed and Energy
+        End If
+
+        Display Particle
+    End If
+End While
+
+When it comes to displaying a particle, we can choose many approaches. We
+can set a particle to be a single pixel. We can scale a particle according
+to its distance from the viewer. We can make a particle illuminate its
+environment. We can even place a sprite in the particles position, or a 3D
+model. My personal favourite is to add the colour of each particle to the
+screen, clipping it into the legal range, then blur the screen afterwards.
+This gives the effect of many close particles illuminating a region, and it
+also smooths out the pixellated effect of the screen. The blur will also
+give a primitive trail to the particles.
+
+Explosions
+
+Explosions are one of the easier, and most impressive things to model using
+particle systems. To do an explosion, we generally set all particles to have
+some common point of origin, either a single, finite point, or randomly
+distributed within some sphere. We set them all to have directions and
+velocities which will shoot them away from the point of explosion. We also
+set them all to have high energy. We then set the system running...
+
+In general, there are two kinds of explosions we can model. These are
+airborne explosions, and explosions at some point of impact. The two
+different kinds behave very differently. In general, an airborne explosions
+particle directions will be distributed in a sphere, centred at the point of
+explosion. An explosion based on a point of explosion will have a particles
+distributed in a hemi-spherical direction, where the sphere is cut by the
+plane where the explosion occured, such as a ground, wall, or model plane.
+The particles will travel generally in the direction of the planes normal,
+but randomly spread out.
+
+Airborne Explosions
+
+For an airborne explosion, we set the point of origin to be the point of
+explosion, perhaps randomly distributed within a sphere. We set all
+directions to be randomly distributed about a sphere. We then normalize the
+directions, and find some random number, which will be our speed. This
+poorly-drawn diagram should help clarify this:
+
+[Image]
+
+To set up the particle, the following pseudo-code will create the particle,
+in 2D space. I use 2D for simplicity of explanation: 3D is just a case of
+adding an extra dimension:
+
+randomvec.x = random(distribution) - distribution / 2
+randomvec.y = random(distribution) - distribution / 2
+Normalize(randomvec)
+dist = random(distribution)
+
+particle.x = explosion-x + randomvec.x * dist
+particle.y = explosion-y + randomvec.y * dist
+
+dir.x = random(width) - width / 2
+dir.y = random(height) - height / 2
+Normalize(dir)
+dist = random(size)
+
+particle.dir.x = dir.x
+particle.dir.y = dir.y;
+particle.speed = dist + 1
+particle.energy = 1.0
+
+This is an adapation of the code that I use. Here, distribution is some
+value used to spread the origins out about the centre of the explosion.
+Width and Height are used to vary the shape of the explosion. If width ==
+height, then a spherical explosion is generated. Else, the explosion is
+elliptical. Elliptical explosions generally look better, in my opinion,
+because they look more natural, random, and less artificial.
+
+Impact Explosions
+
+I'll limit the discussion of these kinds to a simple ground-based type,
+because arbitrary types tend to complicate matters. In general, these kinds
+of explosions work the same as air-based, except for the fact that we are
+confined to one half-space of a plane. In this case, this half-space will be
+space above the ground. Things don't explode underground in solid soil. Our
+code will generally be the same as the first type, except that dir.y will be
+confined to one direction, the positive direction. So all particles will be
+forced to go upwards, though the amount will vary. So our code will look
+nearly the same:
+
+randomvec.x = random(distribution) - distribution / 2
+randomvec.y = random(distribution)
+Normalize(randomvec)
+dist = random(distribution)
+
+particle.x = explosion-x + randomvec.x * dist
+particle.y = explosion-y + randomvec.y * dist
+
+dir.x = random(width) - width / 2
+dir.y = random(height)
+Normalize(dir)
+dist = random(size)
+
+particle.dir.x = dir.x
+particle.dir.y = dir.y;
+particle.speed = dist + 1
+particle.energy = 1.0
+
+Simply note that we don't subtract height / 2 or distribution / 2 from the Y
+components of the vectors.
+
+Running The System
+
+Once you have set up your system, you need to run it through. First, I'll
+discuss the movement of the particle system, then the rendering of it.
+
+Movement
+
+Generally, a basic movement system is all we need. We need to account for
+the following effects:
+
+   * Movement due to particles own individual force
+   * Movement due to gravity
+   * Movement due to collision with objects
+
+We ignore movement due to particles impacting with each other, to keep the
+speed up, and simplify the code. In any case, it wouldn't add much to the
+simulation.
+
+Movement due the particles own force is easy to simulate. We just add the
+particles direction, multiplied by the particles speed, to the particles
+position. You can also decrease the speed at each frame. You have to be
+careful about that though, because if you reduce it too quickly, the
+particle will stop dead, then fall to the floor. The code is simple enough:
+
+Particle.x = Particle.x + Particle.Speed * Particle.Direction.x
+Particle.y = Particle.y + Particle.Speed * Particle.Direction.y
+
+Movement due to gravity is a piece of cake. You simply have to make the
+particle acclerate towards the floor. If I remember rightly, the speed of
+gravity is about 31 feet per second squared. And remember, thats
+*acceleration*, not a constant speed. Thats easy enough to test. Just drop
+some stuff. Objects don't float, they speed up. Though the increase in speed
+is hard to notice because in general objects fall to earth quickly, it is
+present.
+
+Movement due to collision with objects is easy to simulate too. If a
+particle impacts an object, such as the floor, you have to reflect its
+direction about the normal of the object it hit, and reduce its speed. To
+recap, the formula for reflecting a vector is: R = 2.0 * (N * L) * N - L,
+where N is the normal, and L is the negative particle direction. In cases
+such as walls, or the ground, then only one component will be non-zero, such
+as Y for the floors. In this case, you can get away with just negating the Y
+direction. Also, be sure to decrease the particle energy. It makes sense
+that some energy will be absorbed into the ground. If you use blurring, you
+will also notice that you get this strange kind of flame whoosh up into the
+sky when a lot of closely spaced particles bounce off the ground. That looks
+very nice.
+
+Rendering the Particle System
+
+We'll only need two routines here: One to draw the particle, and one to blur
+the screen. The routine to paint a particle is simple enough. Just take the
+colour of the background, add the particles colour, clip to the valid range
+(eg 0..255), and put the pixel back to the screen. This will make areas of
+the screen light up, according to how many particles cover that pixel.
+
+The blur routine is simple enough too. Just take a pixels 4 surrounding
+neighbours, average them, and subtract some damping constant. Because of the
+subtraction, the value may go below zero. No problem, just clip to zero. And
+thats it! Just create the particles, the enter a loop, moving, painting and
+blurring, and you've got an explosion. Set off a new explosion when the
+current one dies out, and thats it. So simple...
+
+Tom Hammersley,tomh@globalnet.co.uk

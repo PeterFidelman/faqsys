@@ -1,0 +1,456 @@
+
+        OTMSORT.TXT - Sorting algorithms for 3d graphics
+
+        released 2-20-95
+        by Voltaire/OTM [Zach Mortensen]
+
+        email -
+        mortens1@nersc.gov
+
+
+INTRODUCTION
+
+                During the past month, I have received many inquiries
+        concerning sorting algorithms used in 3d engines, which are the
+        fastest, etc.  I figured I could save myself some IRC and email
+        writing time by compiling a text on the matter that would
+        explain everything in a concise manner.  In this text, I will
+        describe various sorting algorithms, and the pros and cons of
+        each.  This primarily covers variations of the radix sort,
+        which I have found to be the fastest algorithm.
+
+                A fast sort is critical to a fast 3d engine, perhaps
+        even more critical than a fast poly fill.  In the first version
+        of my 3d engine, I implemented a linear sort (quite a misnomer
+        actually).  When I began optimizing, I found that the sort was
+        a huge bottleneck.  After I switched to a z-buffered drawing
+        scheme which eliminated the sorting algorithm, my code ran
+        about 7 times faster than it had before.
+
+                I quickly discovered that z-buffering was not the
+        fastest method either.  It requires an enormous amount of
+        memory accesses per polygon, which can be very very slow on a
+        machine without a fast bus and writeback cache.  I needed to
+        find an algorithm that would allow me to sort my polygons with
+        the fewest number of memory accesses.
+
+                The radix sort was the answer I had been looking for.
+        The radix sort is adventageous over all other sorting
+        algorithms because its sorting time as a function of the number
+        of data to be sorted is linear.  The sorting time as a function
+        of number of data in most commonly used sorts is exponential,
+        which causes a tremendous slowdown when a large number of
+        polygons are being sorted.
+
+
+THE BUBBLE SORT
+
+        Here is an example of a bubble sort
+
+
+                for (count = 0; count < numData; count++)
+                    for (index = 0; index = numData; index++)
+                        if (data[count] > data[index])
+                            swap(data[count], data[index]);
+
+
+                This is by far the simplest sorting algorithm known to
+        man.  It is also the most inefficient sorting algorithm that
+        could possibly be used, literally.  In the bubble sort, each
+        element of the set is compared with all other elements,
+        yeilding a total of numData * numData iterations through the
+        sorting loops.  As you can see, this is a quadratic function.
+        By doubling the number of data to be sorted with a bubble sort,
+        the sorting time increases FOUR TIMES.  The bubble sort is a
+        definite no no if you are remotely interested in speed.
+
+
+THE "LINEAR" SORT
+
+                The linear sort was taught to me in my High School
+        pascal class.  It was a much faster sort than the bubble sort
+        in our examples which required us to sort a set of not more
+        than 20 numbers, so it was the first sort I implemented in my
+        3d code.  However, a closer look shows that it is nothing more
+        than a slight variation of the bubble sort algorithm, with a
+        slight increase in the performance.
+
+                for (count = 0; count < numData; count++)
+                {
+                    x = count;
+                    for (index = count + 1; index < numData; index++)
+                        if (data[index] > data[x])
+                            x = index;
+
+                    if (x > count)
+                        swap(data[x], data[count]);
+                }
+
+
+                This algorithm yeilds numData iterations through the
+        outer loop, with an average of (numData / 2) iterations through
+        the inner loop per outer loop iteration.  Therefore, the total
+        number of iterations through the inner loop is (numData *
+        numData) / 2.  This total is half the total of the bubble sort,
+        but it is still a quadratic relationship.  By doubling the
+        number of data, the sort time is doubled.  This seems to be a
+        linear increase (hence the name linear sort), but it is not.
+        If the size of the data is increased by a factor of 4, the sort
+        time is increased by a factor of 8 (4 * 4 / 2).  An increase by
+        a factor of 8 in the size of the data will result in the sort
+        time increasing by a factor of 32 (8 * 8 / 2). So, this sort is
+        nearly as bad as the bubble sort when sorting VERY large data
+        sets.
+
+
+THE RADIX SORT
+
+                If you have never heard of the radix sort, you are not
+        alone.  If you learned about the radix sort in a programming
+        class and thought it was totally useless, you are like I was.
+        The way the radix sort is usually taught in classes is
+        efficeint for everything but computers.  This is because the
+        textbooks usually use base 10 (decimal), which is extremely
+        foreign and difficult to implement in a computer.  The idea
+        behind a radix sorting algorithm is to sort the data by each
+        radix, starting with the least significant and moving to the
+        most significant.  This is best illustrated by an example.
+
+                First off, it helps to define radix.  A radix is a
+        'place' in a number.  The base 10 radices have common names (1s
+        place, 10s place, 100s place, etc), but the concept can be
+        extended to numbers of any base.  Consider the base 10 number
+        32768.  The value of the first (least significant) radix is 8,
+        the second is 6, the third is 7, the fourth is 2, and the fifth
+        is 3.  Now consider the base 16 (hexadecimal) number 3f8.  The
+        value of the first radix is 8, the second is f, the third is 3.
+        Now the following example will make a bit more sense.
+
+
+        base 10 radix sort example
+
+
+        data           |first          |second
+        set            |pass           |pass
+        ---------------+---------------+---------------
+                       |               |
+        12             |09             |83
+        65             |38             |73
+        44             |37             |65
+        37             |65             |44
+        03             |44             |38
+        38             |03             |37
+        83             |83             |12
+        09             |73             |09
+        73             |12             |03
+
+
+                The first pass through a radix sorting algorithm deals
+        ONLY with the least significant radix (in base 10, the least
+        significant radix is the one's place).  The data is sorted from
+        greatest to least (or least to greatest depending on the
+        application) based on the least significant radix.  After the
+        first pass, the data with the least significant radix of
+        greatest value is at the top of the list.
+
+                The second pass is similar to the first, with the
+        exception that the resultant data from the first pass is sorted
+        (NOT the original data), and the data is sorted based on the
+        second radix.  It is extremely important to preserve the order
+        of the previous pass, so make sure to traverse the list the
+        same way the original data was traversed in the first pass (in
+        this case, top to bottom).
+
+                Any additional passes to sort additional radices are
+        performed in the same manner, by sorting the data from the
+        previous pass with respect to the radix in question.
+
+                The radix sort has an advantage over the other sorts
+        presented here, because its sort time as a function of number
+        of data is linear.  The number of iterations needed in a radix
+        sort is given by (numData * numRadices) where numRadices is
+        constant for the entire data set.
+
+
+
+THE BIT SORT (BASE 2 RADIX SORT)
+
+                Now that we have an algorithm that gives a linear
+        increase in the number of iterations needed to sort larger sets
+        of data, we need to find a way to make each iteration as fast
+        as possible.  This can be accomplished by changing the base in
+        which the data to be sorted is interpreted.  In base 10, we
+        have to go through each element of the set looking for a 9 in a
+        given radix, then look for an 8, etc.  This is quite slow, and
+        fairly difficult to implement on a computer.  A better approach
+        than using base 10 is to use base 2, where there are a total of
+        2 possible values for each radix (0 or 1).  It is very easy to
+        test whether or not a binary number contains a 1 in a given
+        place, this can be accomplished by an AND or TEST instruction.
+        Since there are only two possible values for a radix of base 2,
+        it is also extremely easy to sort from greatest to least based
+        on a given radix.  Simply put all the '1' radices at the top
+        and all the '0's at the bottom.  Here is some example code for
+        the bit sort applied to 16 bit data:
+
+        // this requires two temporary arrays of [numData] elements,
+        // one for 1s and one for 0s
+
+        short data[];                   // 16 bit data in this example
+        short oneArray[numData];
+        short zeroArray[numData];
+        int numOnes;
+        int numZeros;
+
+        int mask = 1;
+
+        for (count = 0; count < 16; count++)
+        {
+            numOnes = 0;
+            numZeros = 0;
+
+            for (index = 0; index < numData; index++)
+            {
+                if (data[index] & mask)
+                {
+                    oneArray[numOnes] = data[index];
+                    numOnes++;
+                }
+                else
+                {
+                    zeroArray[numZeros] = data[index];
+                    numZeros++;
+                }
+            }
+
+            // put the 1s back in the original data array first
+
+            memcpy(data, oneArray, 2 * numOnes);
+
+            // now put the 0s back
+
+            memcpy(data + (2 * numOnes), zeroArray, 2 * numZeros);
+
+            // mask out the next most significant bit next time through
+
+            mask <<= 1;
+        }
+
+                This code is considerably faster than either the bubble
+        sort or the linear sort.  The inner loop is executed 16 *
+        numData times, and consists of three indirect references, one
+        TEST, one MOV, one INC, and one JZ/JMP (depending on the branch
+        taken) plus loop overhead.  The outer loop is actually more
+        costly than the inner loop because of the two block memory
+        transfers.  However, the outer loop is only executed 16 times
+        in this example.  Even so, this is a lot of iterations through
+        the loop.  If we could somehow find a way to cut down on the 16
+        iterations required per data element while keeping the inner
+        loop very simple, we could get a big increase in performance.
+
+
+
+THE BYTE SORT (BASE 256 RADIX SORT)
+
+
+                The obvious solution to this problem is to increase the
+        base of each radix examined.  The next logical base to use is
+        base 256, which can be represented in a single byte.  If we
+        were to implement the byte sort the same way we implemented the
+        base 10 radix sort in the original radix sort example, we would
+        look for a value of 255 in the least significant byte of each
+        data element, then look for a 254 in each element, etc.  This
+        would yeild (numData * 256 * 2 iterations) of the inner loop if
+        we used 16 bit data.  This would be nowhere near as fast as a
+        bit sort.
+
+                However, we can apply a bit of ingenuity to the byte
+        sort algorithm by taking a hint from the implementation of the
+        bit sort.  In the bit sort, we had a separate array for each
+        possible value of a given radix.  In a base 2 sort, there were
+        two possible values for each radix, therefore we had two
+        arrays.  If we extend this concept to a base 256 sort, we would
+        need 256 arrays, one for each possible value of a radix of base
+        256.  Now, following the bitsort algorithm, we would go through
+        the least significant byte of the data, placing the data in the
+        appropriate array which corresponds to the value of the least
+        significant radix.  We would of course repeat the procedure for
+        the next most significant radix and so on until all radices
+        have been considered.  In the case of 16 bit data, this method
+        would yeild numData * 2 iterations through the inner loop,
+        which is an 8 fold speed increase over the bit sort.
+
+                However, there is a rather large problem in the
+        implementation of the byte sort: memory.  In the implementation 
+        of the bit sort, it is fairly easy to organize code around two 
+        arrays.  However, a byte sort necessitates that the radix being 
+        examined be used as an index to an appropriate array (for 
+        example, a radix of value 4 would need to be placed in the '4s' 
+        array, a radix of value 33 would need to be placed in the '33s' 
+        array, etc).  Therefore, a two dimensional data structure needs 
+        to be used, with one dimension corresponding to the possible 
+        values of radices, and the other index corresponding to the 
+        actual data containing radices of a certain value.
+
+                          <-- RADIX  -->
+
+        ^   |00|01|02|03|04|05|06|07|08|09|0A|0B|0C|0D|0E|..|FC|FD|FE|FF
+        | --|-----------------------------------------------------------  
+          00|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |..|  |  |  |
+        D --|-----------------------------------------------------------
+        A 01|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |..|  |  |  |
+        T --|-----------------------------------------------------------
+        A ..|..|..|..|..|..|..|..|..|..|..|..|..|..|..|..|..|..|..|..|..
+          --|-----------------------------------------------------------
+        | nn|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |..|  |  |  |
+        v --------------------------------------------------------------
+
+                Our dilemma lies in the fact that there is no way 
+        whatsoever to determine the number of data that will contain a 
+        given radix at a given time.  Therefore, there is no way of 
+        knowing how large to make the dimension (nn) when initializing 
+        the data structure.  We could always make 256 arrays of 
+        [numData] elements each, but this would be extremely 
+        inefficient in that we would be allocating 256 times the memory 
+        we really need.
+
+                The solution to this problem lies in dynamic data 
+        structures.  By setting up an array of 256 linked lists, we can 
+        assure that we will not be allocating much more memory than we 
+        need.  The total overhead for a singly linked list is 4 bytes 
+        (the size of the starting list pointer), plus 4 bytes per data 
+        element.  Therefore, the total amount of storage needed for an 
+        array of 256 linked lists containing a total of numData 
+        elements is 4 * (256 + numData), only 1024 bytes more than we 
+        would need to store the data alone.
+
+                Now comes the task of selecting a data structure to fit 
+        our needs.  The two types of singly linked lists that could be 
+        used are stacks and queues.  I have no desire whatsoever to 
+        teach a course in data structures in this file; suffice to say 
+        that a stack is a last in first out (LIFO) structure, and a 
+        queue is a first in first out structure (FIFO).  In other 
+        words, the first value placed on a stack will be the last one 
+        removed, and the first value placed in a queue will be the 
+        first one removed.  I chose stacks because the operations to 
+        place (push) and remove (pop) values on and off the stack are 
+        faster than those for queues, and it is very easy to check to 
+        see if a stack is empty.  The LIFO nature of stacks complicates 
+        things a bit between loops, but within a loop a stack is by far 
+        the speediest option.
+
+
+                Using stacks, the byte sort looks something like this
+
+        typedef struct 
+        {
+            (polygon data goes here)
+
+            ...
+
+            // pointer to next polygon in the stack
+
+            polygon *next;
+
+        } polygon;
+
+
+        polygon *stack1[256], *stack2[256];     // our arrays of stacks
+
+
+        // this is the inner sort loop
+
+        for (count = 0; count < numData; count++)
+        {
+            index = poly[count]->z & 0xFF;      // consider only the 
+                                                // least significant radix
+
+            push(stack1[index], poly[count]);   // put the poly in its 
+                                                // proper place
+        }
+
+                That excruciatingly simple loop will sort the least 
+        significant byte.  Now, sorting the next most significant byte 
+        is a bit more complicated.  You must remember that the radix 
+        sort algorithm states we must sort the previously sorted data 
+        from greatest to least if we want our resultant data to be 
+        sorted from greatest to least.  So we must start with the 
+        highest value for the first radix and count backwards.  That 
+        means we need to start with the data on stack 255 and count 
+        down.
+
+
+        for (count = 255; count >= 0; count--)
+        {
+            while (!empty(stack1[count])
+            {
+                temp = pop(stack1[count]);
+                index = (temp->z & 0xFF00) >> 8; // next radix
+                push(stack2[index], temp);
+            }
+        }
+
+                After this loop, the data will be in stack2[] with the 
+        smallest value at the top of stack2[0], and the largest value 
+        at the bottom of stack2[255].  From here, you can have your 
+        data sorted from least to greatest or greatest to least 
+        depending on how you put it back in the original poly[] array.
+
+
+
+WELL...WHAT NOW?
+
+                If you are experienced with data structures, start 
+        coding.  If you are a bit dilenquent in your knowledge, start 
+        reading.  I recommend that you code the entire sort in 
+        assembler.  If you are smart about the way you set things up, 
+        your code will consist solely of MOV, AND, and SHL 
+        instructions with a JMP thrown in every once in awhile for 
+        good measure, and will occupy about 25 lines.  I have to 
+        confess that the assembler version of my sort is not the most 
+        highly optimized, simply because it is inherently so fast.  As 
+        I said before, my sort takes a whopping 5% of runtime.  Since 
+        the sort time of a radix sort is linear with respect to data 
+        size, this figure is the same whether you are sorting 10 
+        polygons or 10,000.  Before I spend long hours looking for 
+        places to save a cycle or two, I am going over the slower parts 
+        of my code and optimizing them.  However, I am positive I would 
+        have to spend a great deal of time optimizing my sort if I had 
+        used a slower algorithm.
+
+
+
+FINAL WORDS
+
+                I am not interested in doing your coding for you.  I am 
+        happy to answer any questions you may have, but I will not 
+        write your code for you, and I refuse to teach a course in data 
+        structures.  If you don't understand basic stack operations, 
+        please don't ask me to explain them to you.  Any mail 
+        pertaining to this topic will be at best ignored, at worst 
+        returned accompanied by a polemic.
+
+
+GREETS & THANKS
+
+        Siri                    - for being YOU!
+        Hurricane/OTM           - for continuing to give us direction
+        Zilym Limms/OTM         - for BWSB, and asm help
+        Phred/OTM               - 3d coalescence
+        Rest of OTM             - for surviving in the otherwise dead 602 
+        Rich Beerman            - we were going to...make a game? :>
+        Jailcoder               - first mentioned 'byte sort' to me 
+        Darkshade               - taught me the bit sort, many other things 
+        Daredevil and Tran      - pmode/w 
+        Otto Chrons             - for telling me what I am doing wrong 
+        Barry Egerter           - showed me how cool 640x480x256 looks 
+        Jmagic/Complex          - cool intro for TP94 
+        Phantom/Sonic PC        - show us a 3d demo already, will you? :>  
+        StarScream              - I want to see your vector code too :)
+        Kodiak_                 -\
+        ae-                     -  
+        Error                   -  For continued faith in the potential 
+        Omni                    -  of the North American scene 
+        ior                     -/
+
+        Anyone else I forgot    - lame, cliche, copout greet phrase

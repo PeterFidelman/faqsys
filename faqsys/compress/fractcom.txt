@@ -1,0 +1,269 @@
+Fractal Image Compression
+
+Fractal-based compression techniques offer distinct advantages over JPEG image-compression techniques
+
+Louisa F. Anson
+
+
+For several years, many people in the personal computer world have been chasing the Holy Grail of mass-market computing: multimedia. Two obstacles in reaching that goal have been overcome: 16- and 24-bit color printers and scanners are now readily available, and true-color graphics adapters display stunning pictures. But the large size of the image files required for these beautiful images is a huge problem. A single 800- by 600-pixel true-color image requires 1.44 MB of disk space; an uncompressed 10-second video clip with 30 frames per second at 320 by 200 pixels in true color requires an enormous 57.6 MB of disk space.
+
+Clearly, compression is necessary. JPEG is one commonly used compression technique. But you may not be aware of fractal image compression, which combines high compression ratios with fast decompression times.
+
+Compression technologies can be divided into *lossless* and *lossy* methods. A lossless method always produces a decompressed image that is identical, pixel-for-pixel, to the original image. The problem with lossless methods, such as the one used in PKWares's PKZip, is that the attainable compression ratios on images are very small, typically 2 to 1. Lossy compression methods designed for image data can achieve much higher compression ratios.Both the DCT (Discrete Cosine Transform) and fractal-transform image-compression mothods are lossy, but in other respects they are very different.
+
+
+JPEG compression
+
+To understand the value of fractal image compression, you must first understand the status quo. In the world of image compression, that means JPEG. This standard defined by the Joint Photographic Experts Group, describes ways of taking bit-mapped data for color or grayscale continous-tone images and storing it in smaller number of bytes.
+
+The JPEG assembly was first convened in 1986. Its goal was to find the best way method for image compression and to get it adopted as a standard. At press time, many worker-years had resulted in the JPEG recommendations being formally adopted by the CCITT; acceptance by the IOS was expected shortly.
+
+The image-compression technology at the heart of the JPEG standard is DCT. Numerous publications provide and in-depth explanation of DCT and how it is used within the JPEG standard. Here I will provide just enough desciption to highlight the significant differences between DCT and fractal image compression.
+
+
+DCT explained
+
+DCT breaks an image into 8- by 8-pixel blocks and then uses mathematical tricks to decide what image information can be thrown away without damaging the appearance of the image too much. DCT transforms the image data in the 8-by-8 block mathematically from x,y space into frequency space. Instead of viewing the data as an array of 64 values arranged in an 8-by-8 grid, DCT views it as a varying signal that can be approximated by a collection of 64 cosine functions with appropriate amplitudes. Each cosine that DCT uses as a basis function is associated vith a value called the *DCT coefficient*, which determines each cosine function's amplitude.
+
+Most of the important visual information for typical continous-tone images is concentrated in the cosine functions with lower frequencies. Thus, by giving less weight to higher-frequency cosines and approximating small DCT coefficients to zero, compression can be achieved without too much image degradation. Further space savings are possible if you quantize the remaining DCT coefficients to a predefined set of values. With JPEG/DCT, the algorithm is symmetrical: compression and decompression take roughly the same amount of time.
+
+
+JPEG/DCT Limitations
+
+Although the DCT method in the JPEG standard is effective at low compression latios - up to about 25 to 1 - it suffers from serious problems at higher compression ratios. Since the first step in JPEG/DCT is to break the image into 8- by 8-pixel blocks, the compressed file size is roughly proportional to the number of these blocks. Hence, as uncompressed files increase in resolution, JPEG/DCT compressed files either increase in size or decrease in image quality (see the parrot images above [just pretend they're there, ok?]). The middle image of the parrot was compressed by the ratio of 100 to 1 using JPEG/DCT. The blocky nature of the image is typical of JPEG/DCT images at high compression ratios.
+
+The JPEG/DCT assumption that higher frequencies are unimportant does not hold if you have sharp edges in your picture. Attenuating the higher-frequency DCT-basis functions results in artifacts that look like ripples spreading out from the edges. This effect, called *Gibb's phenomenon*, is most noticeable around edges and textures, and is an unavoidable aspect of DCT.
+
+The most serious problem caused by the long-term use of JPEG/DCT compressed images is that they are resolution dependent. Any attempt to display the decompressed image at a higher resolution than the original will result in the blockiness that results from pixel replication. Since graphics cards and printers have increased in resolution every year, resolution dependence results in this year's images needing to be rescanned and recompressed next year to take full advantage of the latest technology.
+
+
+Fractals Defined
+
+For the purposes of this article, a *fractal* is an infinitely magnifiable picture that can be produced by a small set of instructions and data. With a fractal, the more you zoom in on an image, the more detail you see. If you zoom in on a bit-mapped image, however, eventually all you will see is big blocks of the same color. The word *fractal* was coined by Benoit Mandelbrot to mean a fractured structure possessing similar-looking forms at many different sizes. For example, a tree in winter has large branches, small branches, and tiny twigs, all branching off in the same way at different scales.
+
+Traditional, abstract fractals, such as the Mandelbrot set, have become very popular. They tend to be harmonious, delicate, balanced, and pleasing to the eye because they have low information content (in the mathematical sense), which follows from the fact that the program that produces them is finite, even though the picture appears to be infinite. The eye is drawn toward them, and the mind senses their hidden order. Mandelbrot created some of the first pictures of abstract fractals, and he observed that similar mathematical structures lay behind the geometry of such things as clouds, mountains, and forests.
+
+
+Affine Transformations
+
+The concept of an affine transformation is central to fractal image compression. An *affine transformation* is a mathematical function made up from some combination of a rotation, a scaling, a skew, and a translation in n-dimensional space. A simple example in two dimensions would be
+
+W(x,y) = (ax + bx + e, cx + dy + f)
+
+This can be written in matrix notation as the following:
+
+W = / x \ = / a b \ / x \ + / e \ = / ax + by + e \
+    \ y /   \ c d / \ y /   \ f /   \ cx + dy + f /
+
+The matrix
+
+    / a b \
+    \ c d /
+
+determines the rotation, skew, and scaling, and
+
+    / e \
+    \ f /
+
+determines the translation. This transformation moves the point (0,0) to (e,f), the point (1,0) to (a+e,c+f), the point (0,1) to (b+e,d+f), and the point (1,1) to (a+b+e,c+d+f). The values a, b, c, d, e, and f are the affine coefficients for this transformation. Consider the effect of an affine transformation W on a picture of a penguin in the x,y plane ([pretend to] see the figure above [- it's a piccy of mr. big penguin and mr. small, rotated penguin]). Notice how applying W to the big penguin on the left results in the smaller penguin on the right. An affine transformation with this property is said to be *contractive*. Such affine transformations are important to the theory and practice of fractal image compression. Given a two-dimensional image such as the penguin and its affine transformation W, you can solve the six simultaneous equations determined by the x,y location of three points on the big penguin and the corresponding three points on W(big penguin) to find the values of the six coefficients (a, b, c, d, e, and f) that define the affine transformation W.
+
+Affine transformations are not restricted to two dimensions. A gray-scale image can be considered to be a 3-D entity with two spatial dimensions and on intensity dimension. If you apply a 3-D contractive affine transformation to a gray-scale image, then it will become smaller spatially, the brightness will change, and the contrast will decrease.
+
+A collage of an image S is a finite set of N contractive affine transformations W_i with the property that
+
+   W_1(S) U W_2(S) U ... U W_N(S)
+
+[ BTW, underscore signifies subscript in this context ]
+
+is approximately the same as S, where U denotes the union of images.
+
+[.. now here should have been a mathematical description of how a leaf is made up of copies of itself, but since you would need the illustration to understand it, I decided to skip it .. ]
+In "A Better Way to Compress Images" (January 1988, BYTE), Iterated Systems' founder Michael F. Barnsley and Alan D. Sloan show in detail how a collection of affine transformations can be used to re-create a fractal replica of a leaf by using an algorithm called the Chaos Game. In this way, the 12 numbers that define the two transformations can generate an intricate picture of a leaf with infinite detail. The Collage Theorem states that "the more accurately the union of the transformed images approximates the target image, the more accurately the set of transformations provides an encoding of this image".
+
+
+Fractal Image Compression
+
+The Collage Theorem and the Chaos Game were breakthroughs for pictures of fems, but arbitrary real-worlds images could still be encoded only by the tedious process of modeling the image as a collection of fractal segments and finding the right set of affine transformations for each. Before fractal image compression could be used commercially, a method was needed that could be carried out automatically by a computer in a reasonable amount of time and with predictable and accurate results.
+
+While considering this problem, Barnsley made the observation that all real-world images are rich in affine redundancy: that is, under suitable affine transformations, large bits of real-world images look like smaller bits of the same real-world image. This observation, together with the mathematics to the Collage Theorem, led him to the invention of the fractal-transform process for automatic image compression.
+
+The first step in the fractal-transform compression process is to partition the image into nonoverlapping domain regions. Taken together, the set of domain regions must cover the entire image, but they can be any size or shape. Next, the program defines a collection of possible range regions, which must be larger than the domain regions, can overlap, and need not cover the entire image. For each domain region, the program must choose the range region that, after an appropriate 3-D affine transformation is applied, most closely matches the domain region. The affine transformations not only shrink and deform the image within the range region, they also decrease contrast and change brightness in the intensity dimension. Each 3-D affine transformation can be described by its affine coefficients.
+
+A FIF (Fractal Image Format) file is then written. It consists of a header with information about the specific choice of domain regions, followed by a packed list of affine coefficients chosen for each domain region. This process generates a file that is independent of the resolution of the original image; you have found an equation for the picture. Consider a straight line: it can be represented by the equation y = ax + b. If you know the values of the coefficients a and b, then you can draw the line at any resolution. In an analogous way, given the affine coefficients in the FIF file, the decompression process can create a fractal replica, that looks like the original at any resolution. Commercial implementations of the fractal transform face some complex trade-offs when chosing domain regions, range regions, and allowed transformations. The larger the domain regions, the fewer the number of transformations that are needed to model the image, and the smaller the fractal file. However, if a reasonably close match is not found between each of the domain regions and a transformed range region, the quality of the decompressed image is reduced.
+The compressor considers domain regions of various sizes, finds the best range region for each in the time available, and uses a mathematical procedure to assess the optimim set of domain regions for the desired file size. On a region of blue sky, for example, it may be possible to use a large domain region that matches well with an even larger patch of sky. But in another part of the picture, you might have to use a smaller domain region to find a good-enough range region within the available search time.
+
+To keep compression time reasonable, practical limits must be put on the collection of possible range regions and the allowed transformations. In Iterated Systems' Poem ColorBox, for example, the compressor has four possible modes that control the time allowed for searching out the best range region for each domain. In the higher-quality modes, which take the most time, it is possible to extend the class of transformations and the set of possible range regions to achieve better image quality in the same compressed file size.
+
+
+Fractal-Transform Decompression
+
+The decompression process starts when you assign memory for two equal-size images A and B. The size of these images can be smaller or larger than that of the original image before compression, and the initial content is unimportant. It can be data, a picture of your dog, anything [huh huh.. naked people would be cool, Beavis!].
+
+For the first iteration of the decompression process, I refer to image Aas the *range image* and image B as the *domain image*. I partition the domain image into domain regions specified in the FIF file header. For each domain region in the domain image, I read the affine coefficients for this domain from the FIF file, locate the range region specified by this affine transformation in the range image, and map the contents of this range region from the range image to the appropriate domain region in the domain image.
+
+Note that the transformation from the range to the domain is contractive, since I require the range regions to be larger than the domain regions.
+
+When this is done for each domain region, a new image B is created from transformed bits of image A.
+
+For the second iteration, I make the new image B the range image and image A the domain image, and I repeat the process for each domain region. After two iterations, the arbitrary starting data has been mapped from A to B and then from B to A. I repeat this process until th differences between images A and B are indiscernible, and I then display image A.
+
+This simple process creates an image. How closely the decompressed image matches the original depends on how accurately the chosen range regions match the domain regions during the compression process. For a mathematical explanation of why the fractal transform works, see the book Fractal Image Compression (see bibliography).
+
+
+Fractal vs JPEC/DCT
+
+Fractal-transform image compression overcomes many of JPEG/DCT's problems. The fractal-transform process can use much larger and more complex regions when dealing with high-resolution images, so the size of a compressed FIF file does not have to increase in proportion to the number of pixels in the image. Instead of suppressing the higher-frequency data associated with sharp edges, fractal compression predicts edges at higher resolutions from the fractal model determined during compression.
+
+The fractal-transform process is inherently asymmetric; more computation is required for compression than for decompression, so fractal-transform compression is relatively slow, while decompression is fast. Also, compression ratios can be improved by taking more time during compression without any increase in decompression time or decrease in image quality.
+
+For example, in the JPEG version of the parrot in the photo, JPEG software compression and reading/decompression require 41 seconds each on a 386/33. By contrast, the fractal image compressed in 8 minutes, but it was read and decompressed in 7 seconds. Reading the original, uncompressed image required 14 seconds. Fractal compression time can be reduced by using fractal accelerator compression boards or by using a smaller compression ratio.
+
+Decompression speed, resolution independence, and high compression ratios distinguish fractal image compression from JPEG/DCT. Many applications developers may find fractal image compression preferable for multimedia applications where quick access to high-quality images is essential. [Lame] Microsoft, for example, currently uses fractal image compression in its Encarta multimedia encyclopedia.
+
+
+BIBLIOGRAPHY
+Barnsley, Michael F. Fractals Everywhere. 2d ed. San Diego, CA: Academic Press, 1993.
+Barnsley, Michael F., and Lyman P. Hurd. Fractal Image Compression. Wellesley, MA: A. K. Peters, 1993.
+Barnsley, Michael F., and Alan D. Sloan. "A Better Way to Compress Images." BYTE, January 1988.
+Mandelbrot, Benoit B. The Fractal Geometry of Nature. New York: W. H. Freeman, 1977.
+Larson, Gary. The Far Side Gallery 4. Kansas City: Andrews and McHeel, 1993.
+Pennebaker, William B., and Joan Mitchell. JPEG Still Image Compression Standard. New York: Van Nostrand Reinhold, 1993.
+
+Louisa F. Anson is a vice president at Iterated Syetems, Inc. (Norcross, GA), where she has worked closely with Michael F. Barnsley, inventor of the fractal transform, in developing commercial implementations of fractal image compression algorithms. You can reach her on BIX c/o "editors" or on the Internet at editors@bytepb.byte.com.
+
+
+
+APPENDIX: Flow Charts
+
+
+A. The Fractal Image Compression Process:
+
++----------------------------------------------------------+
+| Partition the image into domain regions.                 |
++----------------------------------------------------------+
+                           |
+                           V
++----------------------------------------------------------+
+| Choose a set of allowable range regions.                 |
++----------------------------------------------------------+
+                           |
+                           V
++----------------------------------------------------------+
+| Choose the class of affine transformation that will be   |
+| considered when searching for the "best" range for each  |
+| domain.                                                  |
++----------------------------------------------------------+
+                           |
+                           V
++----------------------------------------------------------+
+| Point to the first domain.                               |
++----------------------------------------------------------+
+                           |
+                           V
++----------------------------------------------------------+
+| Compare the image data in this domain to the transformed |
+| data from each of possible range using each possible     |/__
+| affine transformation.                                   |\  |
++----------------------------------------------------------+   |
+                           |                                   |
+                           V                                   |
+                         _/¯\_                                 |
+                       _/     \_                               |
+                     _/ Is this \_    No   +---------------+   |
+                    /  the last   \________| Point to the  |___|
+                    \   domain?   /        | next domain.  |
+                     ¯\         /¯         +---------------+
+                       ¯\     /¯
+                         ¯\_/¯
+                           |
+                           | Yes
+                           V
++----------------------------------------------------------+
+| Output a fractal image file with information about the   |
+| domain regions, transformation etc. Drink a beer.        |
++----------------------------------------------------------+
+
+
+
+B. The Fractal Image Decompression Process:
+
++----------------------------------------------------------+
+| Read domain partition information information and unpack |
+| affine transformations from the fractal image file.      |
++----------------------------------------------------------+
+                           |
+                           V
++----------------------------------------------------------+
+| Create memory buffers for the domain and range screens.  |
++----------------------------------------------------------+
+                           |
+                           V
++----------------------------------------------------------+
+| Initialize the range screen buffer to an arbitrary       |
+| initial stage.                                           |
++----------------------------------------------------------+
+                           |
+                           V
+  _\+------------------------------------------------------+
+ | /| Point to the first domain.                           |
+ |  +------------------------------------------------------+
+ |                         |
+ |                         V
+ |  +------------------------------------------------------+
+ |  | Replace this domain with the transformed data from   |/__
+ |  | the appropriate range using the affine coefficients  |\  |
+ |  | stored in this domain.                               |   |
+ |  +------------------------------------------------------+   |
+ |                         |                                   |
+ |                         V                                   |
+ |                       _/¯\_                                 |
+ |                     _/     \_                               |
++---------------+    _/ Is this \_    No   +---------------+   |
+| Copy contents |   /  the last   \________| Point to the  |___|
+| of domain     |   \   domain?   /        | next domain.  |
+| screen to     |    ¯\         /¯         +---------------+
+| range screen. |      ¯\     /¯
++---------------+        ¯\_/¯
+       A                   |
+       |                   | Yes
+       |                   V
+       |                 _/¯\_
+       |               _/     \_
+       |   Yes       _/   More  \_
+       |____________/  iterations \
+                    \  required?  /
+                     ¯\         /¯
+                       ¯\     /¯
+                         ¯\_/¯
+                           |
+                           | No
+                           V
++----------------------------------------------------------+
+| Okay. You are done. Did it make you any happier?         |
++----------------------------------------------------------+
+
+
+
+
+[ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ]
+
+This text was typed in for your pleasure by cOMA/bALANCE.
+It was ripped off from a photocopy I "borrowed" from Jones half a year ago, which I guess he ripped off from some magazine, which might have ripped it off from the author in the first place. Oddly enough, the typical scan-a-text error of "m" being replaced with "rn" appeared twice.. which puzzles me, because why didn't she use Internet to transmit it to the mag, if she had an account? Beats me! Anyway, I guess the magazine article dates back to mid-1994, but it's still interesting, huh?
+
+I guess I should mention that text within square brackets is added by yours sincerely, and that the bottom of both flowcharts were somewhat unreadable, so I just kind of figured out what would make sense there.
+
+The text is probably (c) copyrighted, which means copying it is the right thing to do. Also, the FIF format is copyrighted, which is probably just a safeguard against Bill Gates' Empire Of Evil (TM), so you shouldn't worry too much about THAT.
+
+'NUFF SAID! I think you SHOULD consider the prospects of this before messing with JPEG, which is, mainly because of its tie to 8-by-8 bit blocks, a somewhat clumsy solution as far as I care. I haven't actually implemented this in any way, but Jones had a simple implementation, whick took about one trillion years to compress one image (which isn't at all fun when debugging), so instead he was trying to make a (somewhat simpler) 2D-affine transformation for packing audio samples. Don't know if he ever succeded.
+
+The big challenge obviously is:
+[*] How to make good compression within a reasonable time?
+[*] How to improve this or use this in new ways?
+And the advantage:
+[*] Yup, this beats DCT (JPEG) and other FFT-alike techniques big time. Why not use the techniques of TOMORROW already TODAY?
+
+
+					  //	cOMA/bLC
+					\X/	mARCH 1995
+
+[ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ]

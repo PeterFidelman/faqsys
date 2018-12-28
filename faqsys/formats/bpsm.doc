@@ -1,0 +1,23 @@
+-BRIAN POSTMA'S SOUNDMONITOR MODULE STRUCTURE -
+
+Bytes | which data
+------------------------------------------------------------------------
+ 26   | Header = "BPSM (C)1992 BRIAN POSTMA " (kan gebruikt worden voor
+      |                                         module herkenning)
+ 24   | SongName
+ 24   | ComposerName
+  2   | Number of steps * 36 (36 is lengte van 1 step, bespaard tijd)
+  2   | number of instruments * 11 (11 is lengte 1 instrument)
+  8   | nog niet gebruikt : FUTURE
+ 11   | Instrument data, respectievelijk registers 20h,40h,60h,80h,e0h
+      |  23h,43h,63h,83h,e3h,c0h. Dit blok wordt een aantal keer herhaald
+      |  afhankelijk van het aantal instrumenten
+ 9*4  | Steps. Steps bevatten 2 bytes = pattern nummer, 1 byte = note-
+      |  transpose, 1 byte = soundtranspose. Wordt 9 keer herhaald, voor 
+      | alle voices. Deze 36 bytes worden herhaald voor alle steps.
+ 64   | Patterns, begin met pattern 0, allemaal nullen (leeg pattern)
+      | Daarna: 1 byte = note, (0=none, 1=C#1, 2=D-1 etc, FF=key off).
+      | 1 byte = instrument, 1 byte = effect, 1 byte = effect data.
+
+  -=[BRIAN]=-
+

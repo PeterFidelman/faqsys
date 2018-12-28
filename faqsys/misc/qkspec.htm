@@ -1,0 +1,1458 @@
+<html>
+<head>
+
+
+<!-- Start Wayback Rewrite JS Include -->
+<script type="text/javascript" src="/static/js/jwplayer/jwplayer.js" ></script>
+<script type="text/javascript" src="/static/js/video-embed-rewriter.js"></script>
+<script type="text/javascript">
+function initYTVideo(id)
+{
+	_wmVideos_.init("/web/", id);
+}
+</script>
+<!-- End Wayback Rewrite JS Include -->
+<title>Quake Specs v2.2</title>
+<link rev="made" href="mailto:montanuy@dmi.ens.fr"> 
+</head> 
+<body>
+<!-- BEGIN WAYBACK TOOLBAR INSERT -->
+
+<script type="text/javascript" src="/static/js/disclaim-element.js" ></script>
+<script type="text/javascript" src="/static/js/graph-calc.js" ></script>
+<script type="text/javascript" src="/static/jflot/jquery.min.js" ></script>
+<script type="text/javascript">
+//<![CDATA[
+var firstDate = 820454400000;
+var lastDate = 1388534399999;
+var wbPrefix = "/web/";
+var wbCurrentUrl = "http:\/\/thorkildsen.no\/faqsys\/docs\/qkspec.htm";
+
+var curYear = -1;
+var curMonth = -1;
+var yearCount = 18;
+var firstYear = 1996;
+var imgWidth = 450;
+var yearImgWidth = 25;
+var monthImgWidth = 2;
+var trackerVal = "none";
+var displayDay = "12";
+var displayMonth = "Apr";
+var displayYear = "2006";
+var prettyMonths = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+function showTrackers(val) {
+	if(val == trackerVal) {
+		return;
+	}
+	if(val == "inline") {
+		document.getElementById("displayYearEl").style.color = "#ec008c";
+		document.getElementById("displayMonthEl").style.color = "#ec008c";
+		document.getElementById("displayDayEl").style.color = "#ec008c";		
+	} else {
+		document.getElementById("displayYearEl").innerHTML = displayYear;
+		document.getElementById("displayYearEl").style.color = "#ff0";
+		document.getElementById("displayMonthEl").innerHTML = displayMonth;
+		document.getElementById("displayMonthEl").style.color = "#ff0";
+		document.getElementById("displayDayEl").innerHTML = displayDay;
+		document.getElementById("displayDayEl").style.color = "#ff0";
+	}
+   document.getElementById("wbMouseTrackYearImg").style.display = val;
+   document.getElementById("wbMouseTrackMonthImg").style.display = val;
+   trackerVal = val;
+}
+function getElementX2(obj) {
+	var thing = jQuery(obj);
+	if((thing == undefined) 
+			|| (typeof thing == "undefined") 
+			|| (typeof thing.offset == "undefined")) {
+		return getElementX(obj);
+	}
+	return Math.round(thing.offset().left);
+}
+function trackMouseMove(event,element) {
+
+   var eventX = getEventX(event);
+   var elementX = getElementX2(element);
+   var xOff = eventX - elementX;
+	if(xOff < 0) {
+		xOff = 0;
+	} else if(xOff > imgWidth) {
+		xOff = imgWidth;
+	}
+   var monthOff = xOff % yearImgWidth;
+
+   var year = Math.floor(xOff / yearImgWidth);
+	var yearStart = year * yearImgWidth;
+   var monthOfYear = Math.floor(monthOff / monthImgWidth);
+   if(monthOfYear > 11) {
+       monthOfYear = 11;
+   }
+   // 1 extra border pixel at the left edge of the year:
+   var month = (year * 12) + monthOfYear;
+   var day = 1;
+	if(monthOff % 2 == 1) {
+		day = 15;
+	}
+	var dateString = 
+		zeroPad(year + firstYear) + 
+		zeroPad(monthOfYear+1,2) +
+		zeroPad(day,2) + "000000";
+
+	var monthString = prettyMonths[monthOfYear];
+	document.getElementById("displayYearEl").innerHTML = year + 1996;
+	document.getElementById("displayMonthEl").innerHTML = monthString;
+	// looks too jarring when it changes..
+	//document.getElementById("displayDayEl").innerHTML = zeroPad(day,2);
+
+	var url = wbPrefix + dateString + '/' +  wbCurrentUrl;
+	document.getElementById('wm-graph-anchor').href = url;
+
+   //document.getElementById("wmtbURL").value="evX("+eventX+") elX("+elementX+") xO("+xOff+") y("+year+") m("+month+") monthOff("+monthOff+") DS("+dateString+") Moy("+monthOfYear+") ms("+monthString+")";
+   if(curYear != year) {
+       var yrOff = year * yearImgWidth;
+       document.getElementById("wbMouseTrackYearImg").style.left = yrOff + "px";
+       curYear = year;
+   }
+   if(curMonth != month) {
+       var mtOff = year + (month * monthImgWidth) + 1;
+       document.getElementById("wbMouseTrackMonthImg").style.left = mtOff + "px";
+       curMonth = month;
+   }
+}
+//]]>
+</script>
+
+<style type="text/css">body{margin-top:0!important;padding-top:0!important;min-width:800px!important;}#wm-ipp a:hover{text-decoration:underline!important;}</style>
+<div id="wm-ipp" style="display:none; position:relative;padding:0 5px;min-height:70px;min-width:800px; z-index:9000;">
+<div id="wm-ipp-inside" style="position:fixed;padding:0!important;margin:0!important;width:97%;min-width:780px;border:5px solid #000;border-top:none;background-image:url(/static/images/toolbar/wm_tb_bk_trns.png);text-align:center;-moz-box-shadow:1px 1px 3px #333;-webkit-box-shadow:1px 1px 3px #333;box-shadow:1px 1px 3px #333;font-size:11px!important;font-family:'Lucida Grande','Arial',sans-serif!important;">
+   <table style="border-collapse:collapse;margin:0;padding:0;width:100%;"><tbody><tr>
+   <td style="padding:10px;vertical-align:top;min-width:110px;">
+   <a href="/web/" title="Wayback Machine home page" style="background-color:transparent;border:none;"><img src="/static/images/toolbar/wayback-toolbar-logo.png" alt="Wayback Machine" width="110" height="39" border="0"/></a>
+   </td>
+   <td style="padding:0!important;text-align:center;vertical-align:top;width:100%;">
+
+       <table style="border-collapse:collapse;margin:0 auto;padding:0;width:570px;"><tbody><tr>
+       <td style="padding:3px 0;" colspan="2">
+       <form target="_top" method="get" action="/web/form-submit.jsp" name="wmtb" id="wmtb" style="margin:0!important;padding:0!important;"><input type="text" name="url" id="wmtbURL" value="http://thorkildsen.no/faqsys/docs/qkspec.htm" style="width:400px;font-size:11px;font-family:'Lucida Grande','Arial',sans-serif;" onfocus="javascript:this.focus();this.select();" /><input type="hidden" name="type" value="replay" /><input type="hidden" name="date" value="20060412083106" /><input type="submit" value="Go" style="font-size:11px;font-family:'Lucida Grande','Arial',sans-serif;margin-left:5px;" /><span id="wm_tb_options" style="display:block;"></span></form>
+       </td>
+       <td style="vertical-align:bottom;padding:5px 0 0 0!important;" rowspan="2">
+           <table style="border-collapse:collapse;width:110px;color:#99a;font-family:'Helvetica','Lucida Grande','Arial',sans-serif;"><tbody>
+			
+           <!-- NEXT/PREV MONTH NAV AND MONTH INDICATOR -->
+           <tr style="width:110px;height:16px;font-size:10px!important;">
+           	<td style="padding-right:9px;font-size:11px!important;font-weight:bold;text-transform:uppercase;text-align:right;white-space:nowrap;overflow:visible;" nowrap="nowrap">
+               
+		                <a href="/web/20060206225659/http://thorkildsen.no/faqsys/docs/qkspec.htm" style="text-decoration:none;color:#33f;font-weight:bold;background-color:transparent;border:none;" title="6 Feb 2006"><strong>FEB</strong></a>
+		                
+               </td>
+               <td id="displayMonthEl" style="background:#000;color:#ff0;font-size:11px!important;font-weight:bold;text-transform:uppercase;width:34px;height:15px;padding-top:1px;text-align:center;" title="You are here: 8:31:06 Apr 12, 2006">APR</td>
+				<td style="padding-left:9px;font-size:11px!important;font-weight:bold;text-transform:uppercase;white-space:nowrap;overflow:visible;" nowrap="nowrap">
+               
+		                <a href="/web/20061009232331/http://thorkildsen.no/faqsys/docs/qkspec.htm" style="text-decoration:none;color:#33f;font-weight:bold;background-color:transparent;border:none;" title="9 Oct 2006"><strong>OCT</strong></a>
+		                
+               </td>
+           </tr>
+
+           <!-- NEXT/PREV CAPTURE NAV AND DAY OF MONTH INDICATOR -->
+           <tr>
+               <td style="padding-right:9px;white-space:nowrap;overflow:visible;text-align:right!important;vertical-align:middle!important;" nowrap="nowrap">
+               
+		                <a href="/web/20060409205133/http://thorkildsen.no/faqsys/docs/qkspec.htm" title="20:51:33 Apr 9, 2006" style="background-color:transparent;border:none;"><img src="/static/images/toolbar/wm_tb_prv_on.png" alt="Previous capture" width="14" height="16" border="0" /></a>
+		                
+               </td>
+               <td id="displayDayEl" style="background:#000;color:#ff0;width:34px;height:24px;padding:2px 0 0 0;text-align:center;font-size:24px;font-weight: bold;" title="You are here: 8:31:06 Apr 12, 2006">12</td>
+				<td style="padding-left:9px;white-space:nowrap;overflow:visible;text-align:left!important;vertical-align:middle!important;" nowrap="nowrap">
+               
+		                <a href="/web/20061009232331/http://thorkildsen.no/faqsys/docs/qkspec.htm" title="23:23:31 Oct 9, 2006" style="background-color:transparent;border:none;"><img src="/static/images/toolbar/wm_tb_nxt_on.png" alt="Next capture" width="14" height="16" border="0"/></a>
+		                
+			    </td>
+           </tr>
+
+           <!-- NEXT/PREV YEAR NAV AND YEAR INDICATOR -->
+           <tr style="width:110px;height:13px;font-size:9px!important;">
+				<td style="padding-right:9px;font-size:11px!important;font-weight: bold;text-align:right;white-space:nowrap;overflow:visible;" nowrap="nowrap">
+               
+		                <a href="/web/20050225094117/http://thorkildsen.no/faqsys/docs/qkspec.htm" style="text-decoration:none;color:#33f;font-weight:bold;background-color:transparent;border:none;" title="25 Feb 2005"><strong>2005</strong></a>
+		                
+               </td>
+               <td id="displayYearEl" style="background:#000;color:#ff0;font-size:11px!important;font-weight: bold;padding-top:1px;width:34px;height:13px;text-align:center;" title="You are here: 8:31:06 Apr 12, 2006">2006</td>
+				<td style="padding-left:9px;font-size:11px!important;font-weight: bold;white-space:nowrap;overflow:visible;" nowrap="nowrap">
+               
+                       2007
+                       
+				</td>
+           </tr>
+           </tbody></table>
+       </td>
+
+       </tr>
+       <tr>
+       <td style="vertical-align:middle;padding:0!important;">
+           <a href="/web/20060412083106*/http://thorkildsen.no/faqsys/docs/qkspec.htm" style="color:#33f;font-size:11px;font-weight:bold;background-color:transparent;border:none;" title="See a list of every capture for this URL"><strong>18 captures</strong></a>
+           <div style="margin:0!important;padding:0!important;color:#666;font-size:9px;padding-top:2px!important;white-space:nowrap;" title="Timespan for captures of this URL">29 May 03 - 9 Oct 06</div>
+       </td>
+       <td style="padding:0!important;">
+       <a style="position:relative; white-space:nowrap; width:450px;height:27px;" href="" id="wm-graph-anchor">
+       <div id="wm-ipp-sparkline" style="position:relative; white-space:nowrap; width:450px;height:27px;background-color:#fff;cursor:pointer;border-right:1px solid #ccc;" title="Explore captures for this URL">
+			<img id="sparklineImgId" style="position:absolute; z-index:9012; top:0px; left:0px;"
+				onmouseover="showTrackers('inline');" 
+				onmouseout="showTrackers('none');"
+				onmousemove="trackMouseMove(event,this)"
+				alt="sparklines"
+				width="450"
+				height="27"
+				border="0"
+				src="/web/jsp/graph.jsp?graphdata=450_27_1996:-1:000000000000_1997:-1:000000000000_1998:-1:000000000000_1999:-1:000000000000_2000:-1:000000000000_2001:-1:000000000000_2002:-1:000000000000_2003:-1:000010000000_2004:-1:100000001103_2005:-1:030100110001_2006:3:010200000100_2007:-1:000000000000_2008:-1:000000000000_2009:-1:000000000000_2010:-1:000000000000_2011:-1:000000000000_2012:-1:000000000000_2013:-1:000000000000"></img>
+			<img id="wbMouseTrackYearImg" 
+				style="display:none; position:absolute; z-index:9010;"
+				width="25" 
+				height="27"
+				border="0"
+				src="/static/images/toolbar/transp-yellow-pixel.png"></img>
+			<img id="wbMouseTrackMonthImg"
+				style="display:none; position:absolute; z-index:9011; " 
+				width="2"
+				height="27" 
+				border="0"
+				src="/static/images/toolbar/transp-red-pixel.png"></img>
+       </div>
+		</a>
+
+       </td>
+       </tr></tbody></table>
+   </td>
+   <td style="text-align:right;padding:5px;width:65px;font-size:11px!important;">
+       <a href="javascript:;" onclick="document.getElementById('wm-ipp').style.display='none';" style="display:block;padding-right:18px;background:url(/static/images/toolbar/wm_tb_close.png) no-repeat 100% 0;color:#33f;font-family:'Lucida Grande','Arial',sans-serif;margin-bottom:23px;background-color:transparent;border:none;" title="Close the toolbar">Close</a>
+       <a href="http://faq.web.archive.org/" style="display:block;padding-right:18px;background:url(/static/images/toolbar/wm_tb_help.png) no-repeat 100% 0;color:#33f;font-family:'Lucida Grande','Arial',sans-serif;background-color:transparent;border:none;" title="Get some help using the Wayback Machine">Help</a>
+   </td>
+   </tr></tbody></table>
+
+</div>
+</div>
+<script type="text/javascript">
+ var wmDisclaimBanner = document.getElementById("wm-ipp");
+ if(wmDisclaimBanner != null) {
+   disclaimElement(wmDisclaimBanner);
+ }
+</script>
+<!-- END WAYBACK TOOLBAR INSERT -->
+ 
+
+<pre> 
+=============================================================================
+                   _             /////    /////   //////  /////   /////
+  __ _ _   _  ___ | | _____    //        //  //  //     //      //
+ / _` | | | |/ _ || |/ / _ \    /////   /////   ////// //       /////  2.2
+| (_| | |_| | (_|||   &lt;  __/       //  //      //     //           //
+ \__, |\__,_|\___||_|\_\___|  /////   //      //////   /////  /////
+    |_|                       
+=============================================================================
+</pre> 
+
+<center> 
+    The Most Sacred and Most Unofficial <B>Quake</B> Technical Specification.
+<br>
+
+              As derived by <b>Nezu</b> the Unworthy<br>
+                  (montanuy@dmi.ens.fr)<br>
+
+           From the holy Long Words of the id Gods<BR>
+      found in an Ancient Scroll retrieved by the <b>Vandals</b><BR>
+      and read according to the Lores of the <b>Cavemens</b>.<BR>
+</center>
+<hr>
+<cite>Sure, go ahead. But all that info is way outdated. Everything has changed.</cite><br>
+<center>-- John Romero</center>
+<hr>
+
+<H2>List of Contents</H2>
+
+<table border><pre><TR><TD><table>
+<TR><TD>0</TD>    <TD><A HREF="/web/20060412083106/http://thorkildsen.no/faqsys/docs/qkspec.htm#C00">Introduction</A></TD></TR>
+<TR><TD>1.</TD>   <TD><A HREF="/web/20060412083106/http://thorkildsen.no/faqsys/docs/qkspec.htm#C10">New WAD file</A></TD></TR>
+<TR><TD>1.1</TD>  <TD><A HREF="/web/20060412083106/http://thorkildsen.no/faqsys/docs/qkspec.htm#C11">Directory</A></TD></TR>
+<TR><TD>1.2</TD>  <TD><A HREF="/web/20060412083106/http://thorkildsen.no/faqsys/docs/qkspec.htm#C12">Pictures Format</A></TD></TR>
+<TR><TD>1.3</TD>  <TD><A HREF="/web/20060412083106/http://thorkildsen.no/faqsys/docs/qkspec.htm#C13">Wall Textures Format</A></TD></TR>
+<TR><TD>2.</TD>   <TD><A HREF="/web/20060412083106/http://thorkildsen.no/faqsys/docs/qkspec.htm#C20">Level Maps</A></TD></TR>
+<TR><TD>2.1</TD>  <TD><A HREF="/web/20060412083106/http://thorkildsen.no/faqsys/docs/qkspec.htm#C21">Organisation</A></TD></TR>  
+<TR><TD>2.2</TD>  <TD><A HREF="/web/20060412083106/http://thorkildsen.no/faqsys/docs/qkspec.htm#C22">Level</A></TD></TR>
+<TR><TD>2.3</TD>  <TD><A HREF="/web/20060412083106/http://thorkildsen.no/faqsys/docs/qkspec.htm#C23">Sectors</A></TD></TR>
+<TR><TD>2.4</TD>  <TD><A HREF="/web/20060412083106/http://thorkildsen.no/faqsys/docs/qkspec.htm#C24">Walls and Skies</A></TD></TR>
+<TR><TD>2.5</TD>  <TD><A HREF="/web/20060412083106/http://thorkildsen.no/faqsys/docs/qkspec.htm#C25">Texture references</A></TD></TR>
+<TR><TD>2.6</TD>  <TD><A HREF="/web/20060412083106/http://thorkildsen.no/faqsys/docs/qkspec.htm#C26">Planes</A></TD></TR>
+<TR><TD>2.7</TD>  <TD><A HREF="/web/20060412083106/http://thorkildsen.no/faqsys/docs/qkspec.htm#C27">Vertex</A></TD></TR>
+<TR><TD>2.8</TD>  <TD><A HREF="/web/20060412083106/http://thorkildsen.no/faqsys/docs/qkspec.htm#C28">Nodes</A></TD></TR>
+<TR><TD>2.9</TD>  <TD><A HREF="/web/20060412083106/http://thorkildsen.no/faqsys/docs/qkspec.htm#C29">Visibility lists</A></TD></TR>
+<TR><TD>2.10</TD> <TD><A HREF="/web/20060412083106/http://thorkildsen.no/faqsys/docs/qkspec.htm#C2A">Light maps and lighting</A></TD></TR>
+<TR><TD>3.</TD>   <TD><A HREF="/web/20060412083106/http://thorkildsen.no/faqsys/docs/qkspec.htm#C30">Entity Models</A></TD></TR>
+<TR><TD>3.1</TD>  <TD><A HREF="/web/20060412083106/http://thorkildsen.no/faqsys/docs/qkspec.htm#C31">Organisation</A></TD></TR>
+<TR><TD>3.2</TD>  <TD><A HREF="/web/20060412083106/http://thorkildsen.no/faqsys/docs/qkspec.htm#C32">Animation</A></TD></TR>
+<TR><TD>4.</TD>   <TD><A HREF="/web/20060412083106/http://thorkildsen.no/faqsys/docs/qkspec.htm#C40">Sound Capabilities</A></TD></TR>
+<TR><TD>4.1</TD>  <TD><A HREF="/web/20060412083106/http://thorkildsen.no/faqsys/docs/qkspec.htm#C41">Sound format</A></TD></TR>
+<TR><TD>4.2</TD>  <TD><A HREF="/web/20060412083106/http://thorkildsen.no/faqsys/docs/qkspec.htm#C42">Sound spatialisation</A></TD></TR>
+<TR><TD>5.</TD>   <TD><A HREF="/web/20060412083106/http://thorkildsen.no/faqsys/docs/qkspec.htm#C50">Network Capabilities</A></TD></TR>
+<TR><TD>6.</TD>   <TD><A HREF="/web/20060412083106/http://thorkildsen.no/faqsys/docs/qkspec.htm#C60">Miscellaneous Information</A></TD></TR>
+<TR><TD>6.1</TD>  <TD><A HREF="/web/20060412083106/http://thorkildsen.no/faqsys/docs/qkspec.htm#C61">The Quake programming language</A></TD></TR>
+<TR><TD>6.2</TD>  <TD><A HREF="/web/20060412083106/http://thorkildsen.no/faqsys/docs/qkspec.htm#C62">Definition of entities</A></TD></TR>
+<TR><TD>6.3</TD>  <TD><A HREF="/web/20060412083106/http://thorkildsen.no/faqsys/docs/qkspec.htm#C63">Definition of light maps</A></TD></TR>
+<TR><TD>7.</TD>   <TD><A HREF="/web/20060412083106/http://thorkildsen.no/faqsys/docs/qkspec.htm#C70">Final word</A></TD></TR>
+</table></pre></TD></TR></table>        
+
+
+
+
+<HR size=3>
+
+
+
+<A name="C00">  <H2>0. Introduction</H2> </A>
+
+ I know that it's completely ridiculous to publish specification of a 
+ game that is not finished, and that is not even supposed to be available
+ to anyone.<BR>
+ So this document is in no way a definite specification of Quake, and 
+ all that is described here will be totally obsolete by the time Quake
+ is released. In fact, it should become obsolete as soon as id software
+ releases official specification, if they bother to.
+<P>
+ The only purpose of this document is to make you familiar with the 
+ general structures and concepts of Quake editing.<BR>
+ There is not enough information here for you to start writing an editor
+ for Quake, not even enough to start making an actual Quake level.
+ But there are enough hints to enable you to prepare the materials,
+ and start planning things.<BR>
+ There is also more than enough for you to start dreaming a bit, 
+ while the id guys are still busy on the code.
+
+<P>
+<HR>
+<center><B>Legal Warning</B></center>
+<P>
+<B>Quake</B> and DOOM are Trademarks of id Software, inc, hereby acknowledged. 
+The <B>technical details</B> presented here are all <B>Copyright id Software</B>.
+This document is <B>not</B> an official id Software publication.<BR>
+Do not bother id Software concerning the contents of this file.<BR>
+Descent is a trademark of Interplay. Dark Forces is a trademark of Lucas Art.<BR>
+<P>
+This document is copyrighted. You are not allowed to publish it via any 
+electronic or non-electronic means without the explicit consent of id software.
+You are not allowed to put any part of this document on non-free support (like
+magasines, newsletter or CD-Rom) without my prior consent.<BR>
+In no event shall I be held responsible for any degradation of your health,
+wealth, mental sanity or social relations. <BR>
+All rights reserved. No guaranty. That's life!
+<P>
+
+<HR>
+<center><B>Thanks</B></center>
+  This document would not have been possible without the hard work of
+  <I>id software</I> and some <I>hackers</I> whose name is not public.
+  I think I did my share of hard work, but it was considerably easier
+  than what any of them did. So mainly thank them, not me!
+<P> 
+ Special Thanks to <B>Jens Hykkelbjerg</B> for the first HTML version.
+<P>
+
+<HR size=3>
+
+
+<A name="C10">  <H2>1. The new WAD2 format</H2> </A>
+
+It is expected that the WAD2 format is only temporary.
+Quake will probably directly read common picture and sound formats.
+However, stuff like MIP textures and Alias models might not be
+very easy to store in a traditional file format, so it is still
+possible that WAD remain in use.
+
+
+<A name="C11">  <H3>1.1 Wad Directory</H3> </A>
+
+<PRE>
+<B>// WAD Header</B>
+struct QKHEADER
+{ char Magic[4]= "WAD2";  // Name of the new WAD format
+  long NbOfDirEntries;    // Number of entries
+  long DirPosition;       // Position of WAD directory
+};
+
+<B>// Directory</B>
+struct QKENTRY
+{ long Start;             // Position of the entry in WAD
+  long Wsize;             // Size of the entry in WAD file
+  long Size;              // Size of the entry in memory
+  char Ident;             // Entry identification
+  char Cmprs;             // Compression
+  short Dummy;            // Not used
+  char Name[16];          // 1 to 16 characters, '\0'-padded
+} Dir[NbOfDirEntries];    // like in DOOM
+</PRE>
+
+<H4>1.1.1 Entry identification</H4>
+
+ The field <B>Ident</B> in the directory identifies the entry. It's a single byte, which
+ give 256 possibilities. Only 3 are actually used for the moment.
+
+
+<table border><pre><TR><td><table>
+<TR valign=top><TD>0x40=  </TD><TD>'@'=  </TD><TD>Raw bytes (Console, Color Palette)</TD></TR>
+<TR valign=top><TD>0x42=  </TD><TD>'B'=  </TD><TD>Pictures (for status bar)</TD></TR>
+<TR valign=top><TD>0x44=  </TD><TD>'D'=  </TD><TD>MIP Textures (for 3D brush models)</TD></TR>
+</table></TD></TR></PRE></table>
+
+
+<H4>1.1.2 Color palette Format</H4>
+
+ All the pictures, textures, sprites and alias model skins use 
+ color indexes in a 256-color table, and it can be expected that only 
+ a limited set of color palettes will be used. Maybe just one.
+ At least, it's pretty sure that there is only one color palette for 
+ all the textures.
+<P>
+ This format is Exactly the same as in DOOM:
+<PRE>
+struct RGB {char R; char G; char B;} Palette[256];
+</PRE>
+ Internally, the color palette is translated into a much
+ bigger structure, that takes into account the light level,
+ just like in DOOM. This structure depends on the number of colors
+ available on the display, so it might be calculated by the engine
+ at startup.
+
+
+<H4>1.1.3:Console lump format</H4>
+
+
+ The exact usage of the console is not known. Chances are that
+ it's some kind of text mode that is used when starting the game,
+ or when connecting to a server, in the great id software tradition
+ of not wasting any time on useless animation sequences.
+<P>
+ Modifying the console lump is of very limited interest.
+ Here is roughly the format:<BR>
+ The console lump is a similar in structure to the flat pictures
+ of DOOM. It's a simple lump of color indexes:
+<PRE>
+char  Console [192][128];  //This means it's a 128x192 array
+</PRE>
+
+ The first 64 rows are devoted to the decription of the character
+ font (each ASCII character below  0x80 has a 8x8 cell attached
+ to it. The characters below 0x20 are special).
+<P>
+ The rest of the picture is made of four 64x64 quadrant: one grid,
+ and threes other with somewhar random texture. These might be some
+ background for the level maps. Who cares actually?
+
+
+
+<A name="C12">  <H3>1.2 Picture Format</H3> </A>
+
+
+ The pictures will probably used for everything concerning the
+ status bar (animations, numbers, ...). They are not used for
+ sprites, countrary to DOOM.
+<P>
+ This is essentially the same format as in DOOM, except that the
+ picture is drawn by row, not by columns, and that 16-bit numbers
+ are used, because a screen is 320 or 640 wide.
+
+<PRE>
+<B>// Picture header</B>
+struct QKPIC
+{ long Width;           // Picture width
+   long Height;          // Picture height
+  long Row[Height];     // Offset to the rows, from start of picture
+}
+
+<B>// Each column is a set of lumps, placed one after the other.
+// if for a lump Hpos=0xFFFF, then it's the end of the set.</B>
+struct PICLUMP
+{ short Hpos;           // Horizontal offset
+  short Count;          // number of pixel
+  char Pixel[Count];    // pixels color index (in current palette)
+  char Dummy[Count&1];  // to align the structure PICLUMP on 16-bit boundary
+}
+</PRE>
+
+
+<A name="C13">  <H3>1.3 Level Wall Textures</H3> </A>
+
+
+ The MIP Textures are very special pictures, made of a set of 4 pictures,
+ scaled by 1, 1/2, 1/4 and 1/8, in order to avoid the Aliasing effect
+ that made DOOM walls and floors look so jerky in the distance. 
+<P>
+ Those textures are used to cover the walls, the floors, the ceilings
+ and the skies surfaces. Actually, they just cover any surface.
+ Those textures are NOT used for sprites or Entity models, so those
+ models are not (yet?) protected from ugly aliasing effects.
+
+<H4>1.3.1 Texture names</H4>
+  
+ The names of textures can contain up to 16 characters.
+<P>
+ If the texture is not animated, the name can be anything,
+ provided the first character is not '*', the asterisk.
+
+<H4>1.3.2 Animated Texture names</H4>
+
+ If the texture is animated:
+ <UL>
+ <LI>the first character is '*'
+ <LI>the second is '0' plus the frame number of the texture
+ <LI>the third is '0' plus the number of frames
+ </UL>
+ So for instance an animated sky will be composed of 3 textures:
+ <OL>
+ <LI>*02cloudsky
+ <LI>*12cloudsky
+ <LI>*22cloudsky
+ </OL>
+
+<H4>1.3.3 Texture Lump format</H4>
+
+ 
+ When stored in a WAD, the MIP textures are made of just one lump,
+ containing a header, then the texture scaled by 1, then by 1/2,
+ then by 1/4, then by 1/8. 
+<P>
+<PRE>
+<B>//Texture header</B>
+struct TEXHEAD
+{ char Name[16]         // Texture name, useless. To be removed?
+  long W;               // Width
+  long H;               // Heigth
+  long Scale1Pos;       // pointer to Tex, scaled 1
+  long Scale2Pos;       // pointer to Tex, scaled 1/2
+  long Scale4Pos;       // pointer to Tex, scaled 1/4
+  long Scale8Pos;       // pointer to Tex, scaled 1/8
+}
+<B>// At offset Scale1Pos, from start of file
+// Picture, scale 1</B>
+char Tex1[ W*H];
+<B>// At offset Scale2Pos, from start of file
+// Picture scaled by 1/2</B>
+char Tex2[ (W/2)*(H/2)];
+<B>// At offset Scale4Pos, from start of file
+// Picture scaled by 1/4</B>
+char Tex3[ (W/4)*(H/4)];
+<B>// At offset Scale8Pos, from start of file
+// Picture scaled by 1/8</B>
+char Tex4[ (W/8)*(H/8)];
+</PRE>
+
+ All those Tex1, Tex2, Tex3, Tex4 represent color indexes, And the 
+ picture is 256 colors. The picture palette is usually indicated in
+ the begining of the WAD that contain a set of textures.
+<P>
+ The color palette index zero is used to represent transparency.
+ 
+
+<H4>1.3.4 Texture Anti-aliasings</H4>
+
+ (Nonsense ahead. Go get some Aspirin)
+<P>
+ The sampling theorem states that when you sample any signal 
+ (sound, picture, anything) the highest frequency contained in this 
+ signal must be at most one half of the sampling frequency.
+ If there is any frequency above that, the sampling process will
+ map it into a lower frequency, thus creating a terrible mess into
+ the sampled signal. This mess is called Aliasing.
+<P>
+ When you try to display a picture on a smaller space, you increase
+ all the frequencies contained in that picture, and thus risk Aliasing.
+ That's basically what happend in DOOM at long distance.
+<P>  
+ Now, all you need is only to low-pass filter the picture, with a
+ cut frequency equal to half the sampling frequency. Easy! But...
+ There is no DSP on the video memory, so those calculations would
+ take too much time.<BR>
+ It's much easier to pre-calculate 4 scaled down pictures, that
+ can be used across the most common range of scales:<BR>
+ infinity-1, 1-1/2, 1/2-1/4, 1/4-1/8.<BR> 
+ Below 1/8, there will be some aliasing...
+<P>   
+ Here is how the right texture is selected in Quake:
+<PRE>
+int R_MipLevelforScale(float scale)
+{
+  if(scale>= 1) return 0;       // 1 and above. no aliasing.
+  if(scale>= 0.4) return 1;     // shouldn't it be 1/2 ?
+  if(scale>= 0.2) return 2;     // shouldn't it be 1/4 ?
+  return 3;                     // down to 1/8 (below, aliasing!)
+}
+</PRE>
+
+
+
+
+<HR size=3>
+
+
+
+
+<A name="C20">  <H2>2. Level Map structures</H2> </A>
+
+ The level structure looks fairly complex, but it contains only the
+ minimal amount of information. In that respect, it is much cleaner
+ than the level structure of DOOM. It seems clear that with Quake,
+ id has learnt how to make almost optimal use of 3D BSP tree.
+<P>
+ This 3D structure is real simple compared to the formats used by 
+ 3D Studio or even POV, so conversion should be possible.
+<P>
+ However, Quake will also necessitate 3 special structures which are
+ not common to 3D graphic packages:
+<OL>
+<LI>A 3D BSP tree, optimised for speed (minimum number of face splits,
+   and minimum number of nodes and leaves). It's not that hard to
+   calculate, but it's hard to optimise correctly.
+<LI>One visibility list per leaf, also optimised for speed (only the
+   leaves that can actually be seen from another leaf should be there).
+   It will probably require rather tedious calculations.
+<LI>A light map, that is used to make the rendering of surfaces more
+   realistic. I have no idea how this can be handled.
+</OL>
+
+
+<A name="C21">  <H3>2.1 General description of levels</H3> </A>
+
+
+ A Quake level is basically organised around a huge BSP tree.
+ All is derived from the BSP tree, and all depends on the BSP tree.
+ So if you don't like BSP trees, forget about making Quake editors.
+<P>
+ Of course, if you intend to edit Quake levels, chances are that you
+ will never have to deal with the BSP tree itself. What you will edit
+ is a rather complex 3D map, a bit like those of DESCENT, except that
+ almost any shape is allowed, not only combination of cubes.
+<P>
+ Quake will require a very clever 3D editor, because there seems to be
+ quite a lot of things to calculate that can't entirely left to the 
+ user, light ambient lights, alignement of light maps and texture 
+ offsets.
+
+<H4>2.1.1 Level boundaries:</H4>
+ 
+ The levels are considered by Quake only as a kind of entity, like
+ any other entities, and it seems possible to put one level inside 
+ another. Although this sounds a bit strange, it could be useful
+ in order to 'smoothly' transit from one level to the other.
+ In DOOM or even in HEXEN, there is only one level displayed at the
+ time, so transits between levels must be done via teleports. This
+ may not be the case in Quake.
+
+
+<A name="C22">  <H3>2.2 Level organisation</H3> </A>
+
+
+ So here is the level organisation on a file. As mentionned before,
+ it is a huge BSP tree. All the components of this tree are detailed
+ below, but first here is a general description:
+<P>
+ the BSP tree is made of nodes, starting with a root node, which has
+ two childs, which in turn have two childs, and so on, as you go
+ down the branches of the BSP tree. The nodes only represent a way
+ to partition the space, they do no ever appear in a level.
+<P>
+ Some of the childs are extremities of the branches. They are called
+ BSP tree leaves, and in fact each branch must be terminated by one leaf.
+ Those leaves are in fact portions of the actual 3D level, and usually
+ they represent portion of rooms.
+ So to any leaf is associated one or more surfaces, that represent the 
+ actual walls, floors, ceilings and sky for this portion of level.
+<P>
+ Those surfaces are defined by a plane in which they lie, an ordered set 
+ of vertex, that define their boundary, an constant base light level,
+ a single texture, and a light map and offsets for the texture.
+<P>
+ The textures are defined by a reference to a picture or a set of animated
+ pictures, some base offsets, and some flag that say if they must be flipped
+ horizontally, vertically or both.
+<P> 
+ I seriously doubt you could make any sense of the above, so there is some
+ more details, to add to the confusion. If by the end of this chapter you
+ still don't understand how the level are organised, go play DESCENT to
+ increase your experience with 3D volumes :-)
+
+
+
+
+<A name="C23">  <H3>2.3 The Tree Leaves (Sectors)</H3> </A>
+ 
+  
+ The tree leaves are the Quake equivalent of the sectors in DOOM. 
+ You can imagine them as rooms, or part of rooms, where the monsters,
+ players and object will be placed.
+<P>
+ Actually the tree leaves are the equivalent of the Sub Sectors: each 
+ sector in DOOM is decomposed by the BSP into smaller and simpler 
+ convex sub sectors, that contain only part of the sector lines.
+<P>
+ Technically, each tree leaf, made of some surfaces and bound by the
+ BSP node split lines, appears in 3D space as a convex polytope.
+<P>
+ Think of them as big rooms without any corners where you can hide from 
+ any part of the room. (Sorry, I'm just trying to be AOLicaly correct).
+<P>
+ Well, if you don't understand the above, I'm real sorry but the best you
+ can do is go ask your mother for a system upgrade.
+<P>
+ Technically, a tree leaf is defined by
+ <UL>
+ <LI>A bounding sphere (an origin point and a radius)
+ <LI>A list of Surfaces (a first surface, and a number of surfaces)
+ </UL>
+
+
+
+<A name="C24">  <H3>2.4 The Surfaces (Walls, floors and skies)</H3> </A>
+
+
+ The surfaces represent the visible boundaries of a tree leaf.
+ The surfaces are the Quake equivalent of the Sidedefs of DOOM,
+ in the sense that they tell what sector boundaries look like.
+<P>
+ Depending on the name of their texture, they will appear are a sky 
+ texture, or as a wall or floor (that can eventually be animated). 
+ Note also that though the skies are ordinary wall textures, they are
+ drawn in a very special way, that make them look like skies. That is 
+ basically the same trick as in DOOM, except that it doesn't need to use
+ a F_SKY fake sky marker.
+<P> 
+ The surfaces will be rendered as a texture-mapped polygon.
+ The texture somewhat takes into account the distance, for better
+ realism. Technically, the polygon is split based on the inverse 
+ of the distance, and fragments are mapped linearly.
+<P> 
+ The texture mapping also takes into account the orientation of the
+ surface, because calculations of points in texture space is done
+ by selecting only 2 coordinates among the three coordinates of the
+ points. So depending on the orientation of the surface, the most
+ representative set of coordinates must be chosen.
+<P>
+
+ Technically the surfaces are defined by:
+<UL>
+<LI> The plane where they lie in, (for distance calculations)
+<LI> An indication that they are on the front or back side.
+<LI> A set of vertex, ordered, to that the segments from one vertex
+   to the next actually represent boundaries of the surface.
+<LI> A texture, and a rectangle in texture space, so that the same
+   texture may be used differently for many surfaces
+<LI> A constant light level, a style of light, and a light map
+   that is part of the general level light map.
+</UL>
+
+
+<H4>2.4.1 Open Passage ways</H4>
+
+ When a surface is just a passage way (like a hall, a door, or a hole
+ in the floor) and need not be covered by a texture, it is just...
+ ignored. There is nothing that describes it in the level structure.
+<P>
+ This is a contrast with DOOM, where that kind of passage had to
+ be indicated by two sided lines. There is no 2 sided surface, unless
+ you want to create a transparent wall (and even then, it would
+ be made of two independant surfaces).
+
+
+<A name="C25">  <H3>2.5 Texture definitions</H3> </A>
+
+  The texture definitions are not actual textures, but rather special
+  references to the true textures. One or more texture definition can
+  point to the same texture data, and it will look somewhat different
+  each time. <BR>
+  There is no equivalent of this intermediary texture definition in DOOM.
+<P>
+  Each texture definition contains:
+<UL>
+<LI> the name of the actual texture (that could be animated)
+<LI> two offsets in the texture's picture space
+<LI> an indication of the scale of the texture
+<LI> 3 flags that say if the texture must be flipped horizontally, vertically
+    or if if horizontal and vertical must be exchanged.
+</UL>
+
+
+
+
+<A name="C26">  <H3>2.6 Planes definitions</H3> </A>
+
+
+ The planes are used as split planes in the BSP tree nodes, and as
+ reference plane in the Surfaces.
+<P>
+ They are the Quake equivalent of the DOOM Linedefs and Segments.
+<P>
+ The planes are defined by a normal vector and a distance.
+ This normal verctor must be of norm 1.
+<P>
+ The plane equations are used for distance calculation and to determine 
+ if a given vertex (of a surface, or an entity) is on the front side or
+ the back side of the plane.
+<P>
+ It is highly recommended that if a node and some set of surface use
+ the same plane equation, they point to the same plane definition.
+
+
+
+ 
+ <A name="C27">  <H3>2.7 Vertex definitions</H3> </A>
+
+ 
+ The Vertex as the Quake equivalent of the DOOM vertex. the only 
+ difference is that they are in 3D, not in 2D.
+<P>
+ There can only be 12 vertex per face, and in fact, 16 vertex
+ when taking into account the clipping of the face by the BSP planes.
+ In fact, there are so many limitations related to this 16 number
+ of vertexes that we can expect it's only temporary.
+<P> 
+
+
+<A name="C28">  <H3>2.8 BSP tree Nodes definitions</H3> </A>
+
+ The nodes are the Quake equivalent of the DOOM nodes and also of the 
+ DOOM blockmaps. They are parts of a 3D BSP tree, not a 2D BSP tree 
+ like in DOOM.
+<P>
+ The nodes are used for level display, placements of entities and
+ collision detections (and maybe even more).
+ So there is no need for a blockmap in Quake.
+<P>
+ Technically, nodes are defined by:
+<UL>
+<LI> A plane that split them in two
+<LI> A bounding sphere (origin point and radius)
+<LI> A front child node (or leaf)
+<LI> A back child  node (or leaf)
+</UL>
+
+ The root node of the BSP tree is the first node in the list of nodes 
+ (in DOOM, it was the last node). 
+<P>
+ The front child node (and all the nodes below it) is entirely contained
+ in the half-space that is in front of the split plane.
+<P>
+ The back child node (and all the nodes below it) is entirely contained
+ in the half-space that is in the back of the split plane.<BR> 
+ (The 'front' and 'back' of a split planes are defined by the plane
+  equation giving a positive or negative result for any given vertex)
+<P>
+ If the split planes reference is -1, then in fact the node is a tree
+ leaf, see the definition above.
+
+
+<A name="C29">  <H3>2.9 Visibility list</H3> </A>
+
+ This tricky structure is the Quake equivalent of the REJECT map
+ of DOOM. And yes, it will take ages to calculate (I hope not!).
+<P>
+ Unfortunately, it is much more important than the REJECT map, since
+ it can be used to make the level rendering much faster. This is
+ due to the fact that sectors are now the leaves of the BSP tree.
+<P>
+ The REJECT map in DOOM was only used to control the monster's
+ behaviour. It could not be used for rendering, since it was sector
+ based.
+<P>
+ So it can be expected that the REJECT special effects of DOOM (blind
+ monsters and such) are something of the past... though in fact,
+ screwing the visibility list is a very good way to obscure some
+ areas of the levels. But I'm not sure Quake will be of much fun in
+ blindfold mode.
+<P>
+ Basically, the Reject map is an array of bits, one array per tree leaf.
+ The bit number n, if set to 1, tells that when laying in the tree leaf,
+ one can see the leaf number n.
+<P>
+ When the player is in a leaf, the engine finds all the leaves that
+ are visible from that leaf, and tag those leaves. Then it tags back
+ all the nodes that are above the tagged leaves.
+ That way, only the part of the BSP tree that is really visible will
+ actually be tagged, and later displayed.
+
+
+
+
+
+
+
+<A name="C2A">  <H3>2.10 Lighting</H3> </A>
+
+ Recent information released by id software indicate that the light 
+ mapping and shadowing in Quake would be done dynamically. The fact
+ that everyone thinks it's damn impossible to make any dynamic shadowing
+ on a 486 or pentium is only a minor concern.<BR> 
+ I sincerly hope that the description below is outdated.
+<P> 
+ Quake apparently uses some static light model: the shadows are not 
+ calculated for each moving sources, but are pre-determined once for
+ all when the level is finished, taking into account the light sources
+ existing at that moment.
+<P>
+ There is no Gouraud or Phong shading calculated in real time. It happens
+ that those hyped shading models are rather meant for curved objects
+ approximated by polygons. Since Quake levels are polygons, not 
+ approximations, there is absolutely no reason to use Gouraud or Phong.
+<P>
+ The way Quake makes it's surface lighting so realistic is a bit special.
+ It works with each surfaces independently of others, and the lighting
+ is only calculated once for a set of similar surfaces.
+<P>
+ The basic idea behind the Quake lighting is to take into account 3 things:
+<UL>
+<LI>A constant light level 
+<LI>A type of lighting.
+<LI>A light map, which is no more than a basic light level, for each
+   texture pixel. 
+</UL>
+ 
+<H4> Constant light level</H4>
+
+   The basic lighting principle is that of so-called 'flat shading'.
+   All the points in a given surface have the same basic light level.
+<P>
+   There is one such light level for each surface, and we can assume it depends
+   on the orientation of the surface, and on the static light sources defined
+   before the level is calculated. 
+   I suppose that a good Quake editor would let the user define some sources of
+   lights (windows, torches, sky) and then do the lighting calculations once and
+   for all, for all surfaces.
+   Of course, this is fairly primitive (no way to move torches, to switch off lights)
+   but then again the game engine could possibly update this static light in real
+   time, under certain conditions.
+<P>
+   It could be that this basic light level, like in DOOM, can evolve
+   dynamically, depending on action on switches. It is even possible
+   that it is calculated in real time, taking into account the moving
+   light sources. That would make only a very crude approximation of a 
+   shadow, but maybe that is enough.
+
+ <H4>Type of lighting</H4>
+
+   This strange attributes seems to translate internally into some kind of 
+   multiplicator for the light map below.
+   Apparently, it only multiplies the light level, it doesn't affect the colors.
+   I supppose it's here to give a bit more variability to light maps.
+
+ <H4>Light Map</H4>
+   
+   The light map, basically, is a byte field, one byte per pixel of the texture.
+   This byte give the light level of this pixel. This allows for some fairly 
+   realistic apparent surface irregularity.
+   However, the light map is not defined for each pixels: it's only one light
+   value every 16 pixels, and it is bilinearly interpolated in the intervals.
+   Also, a light map can be shared by more than one surface.
+
+ <H4>Pixel Lighting</H4>
+
+   Using the pixel's color index, and the light level calculated as:
+   light(x,y) =  lightmap(x,y) * lightstyle[style] + constant light
+<P> 
+   This light level is used to select an internal color palette.
+   Then using the texture's color index and an index in this palette, it's possible
+   to find the actual lighted color. This mechanism is basically the same as in 
+   DOOM, except that there is 256 (?) color palettes, not 32.
+   This mechanism takes into account both 8-bit or 16-bit color palettes, so Quake 
+   will look better on 16-bit per color display, but will still run on 8-bit per 
+   color display.
+
+ <H4>Dynamic light mapping</H4>
+
+   Franckly I have no idea how this could work. However, the static light mapping is
+   already so calculation intensive that I wonder if, after all, a simplified 
+   dynamic light calculation wouldn't be as fast. 
+   Descent is supposed to do light calculation for every vertex of the cubes, and then
+   apply linear mapping between the vertex. A similar technique could be used in Quake,
+   but it would probably involve much more vertex calculations.
+
+
+
+<A name="C2B">  <H3>2.11 Model format</H3> </A>
+
+This is the format of the model, when stored in a single lump.
+
+<PRE>        
+                DELETED BECAUSE OBSOLETE
+
+         The format will probably be some ASCII.
+</PRE>
+
+
+
+<A name="C2C">  <H3>2.12 The Quake 3d engine: rendering of levels</H3> </A>
+
+<I>(Thanx to Jens for some critical reflexions)</I>
+<P>
+ I'm not going to explain in details how the Quake 3d engine works. It wouldn't
+ be fair to id software, and anyway I still don't understand a lot of critical
+ features. Also, if such an explanation was to be read by the conceptors of Quake,
+ chances are that they would die laughting, and I don't want to take that risk.
+<P>
+ Let's say only that the Quake 3D engine looks like an ordinary texture-mapped
+ polygon engine, where the polygon sorting is not done via classical backface 
+ elimination and distance sorting, but by using a BSP tree. Of course, there are
+ <B>many</B> more clever tricks, which are not supposed to be made public.
+<P>
+ Countrary to DOOM, there is no ray-casting, so some surfaces are sometime
+ rendered, then later overwritten by closer surfaces. Hence the visibility list
+ is critical for this engine, otherwise it might really crawl.
+<P>
+ The Quake engine bears definitely no relation to the Descent level display engine,
+ though there might be some similarities with the engine that display the vessels
+ of Descent.
+<P>
+ Well, this description gives only the general features of the Quake engine, and
+ actually don't make a lot of sense. Here are some temporary conclusions:
+ <UL>
+<LI> The levels can have any shape, there is no limitations like in DOOM.
+<LI> The view can potentially have any orientation, and the look up and look down
+     view won't look distorted like in DOOM or Dark Forces.
+<LI> The engine should be faster than that of Descent, and should not crawl when
+     displaying larger areas, unlike Descent.
+<LI> The shapes of the levels should be rather critical for performances.
+<LI> The engine will go faster with a limited number of textures.
+ </UL>
+
+ <B>This part will be updated later.</B>
+
+
+
+
+ <HR size=3>
+
+
+
+
+
+<A name="C30">  <H2>3. The 3D Alias Model Format</H2> </A>
+
+ Alias models can be used for entities, like players, objects, or monsters.
+ Some entities can use sprite models (that are similar in appearance
+ to those of DOOM, though the strucutre is totally different) or
+ even maybe models similar to those of the levels.
+
+
+
+<A name="C31">  <H3>3.1 Organisation of Alias Models</H3> </A>
+ 
+ Technically, an alias model is defined by:
+<UL>
+<LI> A bounding sphere (origin and radius)
+<LI> A scale factor.
+<LI> A flat rectangular picture, that constitue the skin
+<LI> a set of 2D vertexes placed on the skin
+<LI> a set of triangles (defined by the index of three vertex)
+<LI> one or more set of 3D vertexes (one set per animation frame).
+</UL>
+<P>
+ How does it work?<BR>
+ First imagine a wireframe model of the entity, made of triangles. This gives
+ the general shape of the entity. For instance, imagine you have the general 
+ shape of a cow, made of triangles in 3D space.
+<P>
+ The extremities of the triangles are the 3D vertexes, and
+ countrary to level models, there is no need for elaborate stuff like
+ nodes, planes, polygon surfaces. Only triangles and vertex.  
+<P>
+ Now, there is something missing: the skin. A cow without skin looks
+ pretty ugly.<BR>
+ Imagine that you have a flat carpet made of the skin of an unlucky cow.
+ All you need to do is put some parts of this carpet at the relevant place
+ on the wireframe model of the cow, and you'll get a fairly realistic
+ (though a bit polygonal) cow.<BR>
+ That's the way if works with the alias models.
+<P>
+ For each triangle in the wireframe model of the cow, there will be a 
+ corresponding triangle cut from the skin picture. Or, in other words,
+ for each 3D vertex, extremity of a triangle, there will be a corresponding
+ 2D vertex positionned on the skin picture.
+<P>
+ It is not necessary that the triangle is 3D space and the triangle
+ on the skin picture have exactly the same shape (in fact, it is
+ not possible for all triangles) but they should have shapes roughly
+ similar, to limit distortion and aliasing.
+<P>
+ That's all Quake needs to display an alias model. It's quite easy
+ to understand, but unfortunately editing such a structure may
+ be troublesome.
+
+
+<A name="C32">  <H3>3.2 Animating alias models</H3> </A>
+
+
+ Once the general shape of the model (for instance, a cow) is defined,
+ and the skin is mapped correctly on that shape, animation is pretty
+ straightforward: just move the triangles around and it will seem
+ to move.
+<P>
+ To move the triangle, you need only modify the position of the 
+ 3D vertexes at the extremity. For instance, to move the leg of the
+ cow, you will move the vertexes that define the extremity of the
+ legs. You will also move the other vertexes a bit, so that the 
+ movement looks less mechanical.
+<P>
+ Chances are that creating a fine looking animation is gonna be a very
+ tough job, a bit like with the DOOM sprites. I would bet that the 
+ quality of the animation will be the most critical point.
+<P>
+ Note that the animation consists <I>only</I> in changing vertex 
+ positions (and that's why there is one set of vertexes for each
+ animation frame).<BR>
+ The skin of the cow is not modified, neither are the definition of
+ the triangles. So blood stains cannot suddenly appear on the skin,
+ and parts of the cow cannot fly away, separated from the rest.<BR>
+ That is... unless you use some tricks, that I leave to your 
+ imagination.
+<P>
+ Note also that the animation is based on frames, like in DOOM. 
+ The animation is defined once and for all, and there is no
+ squeletal model or any similar physical model involved in the
+ calculations of the movements.<BR>
+ Of course, nothing in the structure of the Alias model strictly
+ forbids to use a physical model for the entity.<BR>
+ But is much more clever to write some well thought program to control
+ the animation sequences (and Quake allows that) than to waste precious
+ time calculating some approximate physical model.<BR>
+
+
+<A name="C33">  <H3>3.3 Rendering of alias models</H3> </A>
+
+
+ The rendering of entities is a bit more complicated than the ordinary
+ back-face elimination and triangle sorting that is common in games
+ like X-Wings, Terminal Velocity or the like. It doesn't use a BSP
+ tree like Descent (or so they say), but it takes into account the
+ BSP tree structure of the Quake levels.<BR>
+<P>
+ There is no need to bother about the engine. Just keep this in mind:
+<UL>
+<LI>The more convex your entity, the faster the rendering will be.
+<LI>Do not map many triangle to the same 3D area, that will slow down the
+  rendering.
+<LI>If your entities contain triangles whose rendering order is ambiguous,
+  the engine might make some little mistakes. It cannot be both fast and
+   totally safe. 
+</UL>
+
+ 
+<A name="C34">  <H3>3.4 Alias Model format</H3> </A>
+
+
+<PRE>
+                DELETED BECAUSE OBSOLETE
+
+        The format may become some ASCII.
+
+        All you need to know is that there is only one picture, and
+        that frames are done with vertex, rather than with changes in
+        the picture.
+</PRE>
+
+
+
+<HR size=3>
+
+
+
+<A name="C40">  <H2>4. Sound capabilities</H2> </A>
+
+
+You will find here some indication concerning the sound support, 
+but nothing really reliable. 
+
+<A name="C41"> <H3>Sound format</H3> </A>
+
+Quake is using WAVE file as input, but, surprisingly, instead of the
+expected 16-bit stereo, these are 8-bit mono sounds!
+<P>
+The sound has to be mono, not stereo, because the stereo effect
+is calculated by the game, for spatialisation.<BR>
+It is possible that the 16-bit sound drivers are not yet written,
+but actually since Quake uses many channels and different volumes 
+per channel, the sum is tantamount to a 16 bit sound.<BR>
+Note that the 3D engine is using a similar trick: 256 color textures,
+converted to 16 or 24 bit colors by using lights.
+<P>
+Now, the file format: the expected file format is WAV, but in fact
+the sound loading code is really simplified, and only a very special
+sub case of the WAV format is tolerated: a 8 bit mono sound, with
+no special features and especially no built-in comments.<BR>
+If you are using a good WAV program, it is possible that it uses a 
+more complex format. So don't be surprised if your file is rejected.
+
+
+
+<A name="C42"> <H3>Location of sound sources toward player</H3> </A>
+
+
+The sound spatialisation is done by using a simplified model,
+that doesn't take into account difference in phases, and echoes.
+<P>
+Basically, the sound itself is not modified, only the volume of
+the right and left channels are affected.
+<UL>
+<LI> If the source is too far, the sound is not played.
+<LI> If the source is on the left, the right volume is diminished.
+<LI> If the source is on the right, the left volume is diminished.
+<LI> Both left and right volumes are diminished linearly in 
+     function of the distance, up to the maximum distance.
+</UL>
+
+This looks pretty basic, but it works. I wonder if it won't make
+people a bit dizzy, though, if they use VR set. That's because
+the ear will have to addapt to this strange kind of spatialisation.<BR>
+
+Of course, the sound spatialisation may later be made more realistic.
+
+
+
+<A name="C43"> <H3>Supported sound cards</H3> </A>
+
+The only certitude is that the Sound Blaster will be supported. 
+But which flavour of SB, I haven't the faintest idea.<BR>
+There is no part dedicated to the GUS, but there is a part dedicated
+to the handling of channels via the DMA. It can be expected that most
+popular sound cards will be supported via this method.<BR>
+Anyway, this is not very important. The only troubles will be for
+PCMCIA sound cards, since they cannot use the DMA (or so they say).
+
+<A name="C44"> <H3>Music</H3> </A>
+
+There is no music. No hint whatsoever of something that could feed
+a MIDI device. Not even a mention of MUS stuff. Get a CD player!<BR>
+
+
+<HR size=3>
+
+<A name="C50">  <H2>5. The network capabilities</H2> </A>
+
+
+
+This area is being investigated.<BR>
+Results of investigations will be published here only if approved
+by id software. As a matter of fact, the network capabilities and
+the protocol used are considered as a trade secret. Only what is
+strictly necessary to game play will be detailed here.
+<P>
+Let's just say that Quake maintains a representation of the world were
+entities can be added an removed dynamicaly, and players can log in
+at any moment. Not really surprising...<BR>
+<P>
+The server seems to sends continuous updates the clients, but these updates
+are non-synchronous, contrary to DOOM. That means server and clients
+go at their own pace, but it's the server that keeps track of the
+game time.
+<P>
+The data exchanged is not compressed, and thus only suitable for
+transmission over a LAN, certainly not a 14.4k modem. This will change.
+<P>
+<B>This part will be updated later.</B>
+
+
+
+<HR size=3>
+
+<A name="C60">  <H2>6. Miscellaneous Information</H2> </A>
+
+
+
+ Here you will find some obsolete descrition of various stuff that don't
+ make a lot of sense yet.
+
+
+
+<A name="C61">  <H3>6.1 The Quake Programming Language</H3> </A>
+
+This language is very similar to C. It is loaded dynamically by
+the server, read, and transformed in an internal representation.
+<P>
+The description of the language here is totally outdated. It was probably
+rewritten for efficiency. Since it must be parsed during the game play, it 
+had better be simple to parse, so the C-like syntax will have to be improved.
+<P>
+The names of variables in the code are reminiscent of MUDs code,
+and there is all reason to believe Qu*ke will be MUD-like.<BR>
+Of course, there isn't much code compared to even the simplest MUDs.<BR>
+There is code that describe how the Qu*ke server should handle 
+the clients, as they join an existing world. BTW, they can join 
+dynamically, like in DESCENT. And they can join the level they wish.
+<P>
+The Things are all represented by C-like objects, with a
+set of attributes whose name are fairly intuitive (frags, velocity, 
+health...) and the language provides a set of functions of the
+basic stuff.
+<P>
+Vectors values are represented as character strings like "1 2 3", and
+can be added, scaled and multiplicated.
+The attribute think is used to tell or what code function the object
+shall apply.
+The attribute nextthink is used to tell when the next call to the 
+object's code shall happen.
+<P>
+Like in DOOM, the Object/monsters will be implemented as finite state 
+automats, based on frames. But you won't need DeHacked to read them.
+The Objects frame tables are provided in the code (with a special
+macro structure, that expands trivialy into code)
+
+<H4>Programmer's Corner</H4>
+<P>
+The language seems syntacticaly clean, but there seem to be no strict 
+type checking anywhere, so odds are that any complex code module
+will be real difficult to debug. Not to mention the 'goto' lying around.
+I wonder what happen when one mixup frames from different monsters...
+Apparently the language is entirely event driven (not a surprise) and
+timers can be set for certain events. Mind the event loops!
+<P>
+No details will be given on the actual code: the parser and probably
+the language were rewritten by id, for more efficiency.
+<P>
+It is not known if some fair level of AI can be implemented using this
+language. I seriously doubt it is possible to manipulate some accurate
+representation of the world. Quake isn't really a wargame, is it? ;-)
+
+
+
+<A name="C62">  <H3>6.2 List of Entities</H3> </A>
+
+
+ The entities represent the monsters, players, objects and probably
+ various other stuff.<BR>
+ Each type of entity is much like an object class, with a list of
+ parameters that define various default parameters, like the model
+ used fo represetn the entity, the Quake Programming language
+ file that defines the behaviour of the entity (the 'think' parameter) 
+ and similar properties.
+<P>
+Here is an example of entity type definition. It looks like some
+LISP syntax, with  { } instead of ( ). This is probably because the 
+parsing of LISP syntax is real easy and non-ambiguous. 
+
+<PRE>
+{
+  {classname   "bestiole"}
+  {color       "1.0 0.9 0.4"}
+  {orgofs      "64 64 80"}
+  {size        "32 32 70"}
+  {model       "s_bestiole"}
+}
+</PRE>
+
+
+
+
+<A name="C63">  <H3>6.3 Light maps</H3> </A>
+
+ This information is probably totally outdated.
+<P>
+ The light maps were a trick used in early versions of the Quake 
+ engine. It was a way to implement some cool shadows without too
+ many calculations involved. Countrary to what was supposed
+ initially, it bears no relation to dynamic changes in the light
+ level.
+<P>
+Example:
+<PRE>
+ccmdefabcdefgmmmmaahijlkmmaamm 9 BOUGIE (third variety)
+</PRE>
+See the level description to know how these light maps are used in levels.
+They don't seem to be used with entities.
+
+
+<A name="C64">  <H3>6.4 Player Movements</H3> </A>
+
+There are some reasons to believe that there is no restriction in
+3D movements Quake. 6-axis movement seems technically possible, and
+at least the movement internal structure allows all combinations, and
+the graphic engine is not restricted to any rotation.
+<P>
+Here are the known movements:
+<PRE>
+ turn left/right, up/down, 
+ move front/back
+ strafe left/right, up/down
+</PRE>
+ no key is defined for roll turn, jump, climb, fly.
+ This may/should change. 
+
+
+
+
+<A name="C65">  <H3>6.5 The Language of the Gods</H3> </A>
+
+
+
+The language of the Gods, countrary to common Tleilaxu beliefs, is C.
+It was C in DOOM, it is C in Quake. 
+<P>
+Let's just say that the code if id is characterised by... the absence of
+almost all security tests. That means that if the data structures are not
+100% perfect, the code will bug or crash without warning.
+This is especially true when you deal with indexes.
+Don't even make a mistake on an index, in a file.
+<P>
+It can be noted that the code was not optimised at all and used floating 
+numbers (and thus, used the floating point unit). This makes it especially
+unsuitable for 386 (no surprise) and in fact unsuitable for anything below 
+an helium-cooled 300 Mhz 686, with 500k of primary cache and 20 meg of s
+econdary cache. However the code was certainly completely rewritten and 
+optimised since these first experiments, and it will run at decent speed 
+even on a DX2/66 (Or, shall I say, DESCENT's speed. At least.)
+
+
+
+
+<HR size=3>
+
+
+
+<A name="C70">  <H2>7. Final Word</H2> </A>
+
+
+This material is provided to you as general information.<BR>
+You are in no way obliged to believe anything of the above.
+<P>
+<UL>
+<LI>This specification contains all the information that I estimate I can make 
+public without bringing any trouble to id software. Don't ask for more.
+<LI>If you want <B>trustable information</B>, you'd better wait for the official 
+specifications from id software. Chances are that they won't have reliable 
+description themselves, until Quake is nearly finished.
+<LI>If you intend to write a <B>game</B> as cool as Quake and think that it would
+be very clever to get some technical information from me, then you are taking some
+serious risks. I'm not supposed to keep your name secret.
+</UL>
+Last remark: this document was written quickly, and I'm not that proficient in 
+English. So it's full of mistakes.
+<P>
+<center><A href="mailto:montanuy@dmi.ens.fr">Nezu the Unworthy</A></center>
+<HR>
+Come visit my <A HREF="/web/20060412083106/http://thorkildsen.no/faqsys/docs/index.html">Home Page</A> for the last 
+updates to this specification.
+<HR>
+List of cool Quake Related pages:
+<UL>
+<LI><A HREF="/web/20060412083106/http://www.daimi.aau.dk/~hykkelbj/quake/index.html">Jen's</A> Quake page.
+<LI><A HREF="/web/20060412083106/http://www.islandnet.com/~ccaird/doom/quake.html">Colin's</A> Quake page.
+<LI><A HREF="/web/20060412083106/http://www.hal-pc.org/~jasonv/quake/">Jason's</A> Unofficial Quake Home.
+<LI><A HREF="/web/20060412083106/http://doomgate.cs.buffalo.edu/games/quake/">Jos's</A> Quake page on the <B>Doom Gate</B>.
+<LI><A HREF="/web/20060412083106/http://www.portal.com/~hleukart/rumorsquake.html">Hank's</A> Quake Rumor Mill.
+</UL>
+
+</BODY>
+</HTML>
+
+
+
+
+<!--
+     FILE ARCHIVED ON 8:31:06 Apr 12, 2006 AND RETRIEVED FROM THE
+     INTERNET ARCHIVE ON 7:28:52 Aug 26, 2013.
+     JAVASCRIPT APPENDED BY WAYBACK MACHINE, COPYRIGHT INTERNET ARCHIVE.
+
+     ALL OTHER CONTENT MAY ALSO BE PROTECTED BY COPYRIGHT (17 U.S.C.
+     SECTION 108(a)(3)).
+-->

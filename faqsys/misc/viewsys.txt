@@ -1,0 +1,224 @@
+Viewing Systems For 3D Engines
+
+---------------------------------------------------------------------------
+
+Introduction
+
+OK, so perhaps you have an engine running that has a duck, rotating in the
+middle of the screen. Very nice, but not much use for doing 'real' things
+with. You need a camera. You need to be able to walk around, to view the
+duck at different angles, to zoom in. You need a proper viewing system.
+---------------------------------------------------------------------------
+
+The XYZ Rotation Angle System
+
+So you think, I know, I'll make a system where my camera has 3 angles, X, Y
+and Z rotation. Then I just add on its position. So you build a matrix,
+apply that transformation to a model, then put it into camera space. It
+seems to work well... but it's rather limited. Specifying an orientation in
+terms of X Y and Z angles is tricky, and can cause problems. For example,
+once you start rotating around a little, a rotation in the X axis may not
+have yield the results you expected. You may also experience "Gimbal Lock",
+where rotations can cancel each other out, and so on. In short, this system
+is crap.
+
+---------------------------------------------------------------------------
+
+The UVN Vectors System
+
+This is quite a good system. It works by defining 3 vectors, U, V and N.
+These vectors are right, up, and viewing direction, respectively. If you
+take your left hand, point your index finger forwards, stick your thumb up
+to the sky, and point your middle finger to the right, then your middle
+finger is U, your thumb is V, and your index finger is N. Imagine that
+these vectors orientate the viewing system. So that to rotate your 'head'
+to the left, you would rotate about the V vector, to roll, you would rotate
+about N, and so on. Also needed to use this system is an origin, the point
+of the camera. To use this system, you will need to build a viewing matrix.
+This is calculated by multiplying together two matrices. The system is
+given by:
+
+Translation matrix =
+
+| 1  0  0  0 |
+
+| 0  1  0  0 |
+
+| 0  0  1  0 |
+
+| -x -y -z 0 |
+
+Rotation matrix =
+
+| Ux Vx Nx 0 |
+
+| Uy Vy Ny 0 |
+
+| Uz Vz Nz 0 |
+
+|  0  0  0 1 |
+
+CameraMatrix = Translation*Rotation
+
+N can also be calculated as:
+
+a = azimuth angle
+
+e = elevation angle
+
+Nx = sin(e)*cos(a)
+
+Ny = sin(e)*sin(a)
+
+Nz = cos(e)
+
+To point at an arbitrary position, you will then need to define N as the
+unit vector between the camera and the point. U and V will be guessed at,
+and adjusted. To adjust the vector, simply do:
+
+V = V' - (V'*N)*N
+
+Where V' is your guess at V. U is the cross product of N and V.
+
+---------------------------------------------------------------------------
+
+Two Points And A Twist
+
+This is another useful system. The camera is defined at one point, and it
+has a focus point. A twist angle is given, which is the angle about F - C
+(focus - camera). To build the matrix for this system, you'll need to do
+the following:
+
+a, b, c = Normalized direction XYZ
+
+e, f, g = Camera point XYZ
+
+a = twist angle
+
+
+
+     |  cos(a)   sin(a)  0  0 |
+
+V1 = | -sin(a)   cos(a)  0  0 |
+
+     |       0        0  1  0 |
+
+     |       0        0  0  1 |
+
+     |       b             -a                |
+
+     | -------------  -------------    a   0 |
+
+     | (1 - c^2)^1/2  (1 - c^2)^1/2          |
+
+     |                                       |
+
+     |      -ac            -bc               |
+
+V2 = | -------------  -------------    b   0 |
+
+     | (1 - c^2)^1/2  (1 - c^2)^1/2          |
+
+     |                                       |
+
+     |       0        (1 - c^2)^1/2    c   0 |
+
+     |       0              0          0   1 |
+
+     | 1  0  0  0 |
+
+V3 = | 0  1  0  0 |
+
+     | 0  0  1  0 |
+
+     | -e -f -g 1 |
+
+Tview = V1*V2*V3
+
+Watch out for when c^2 is 1. Then you get (1 - 1)^1/2, which is zero - an
+exception. This'll need a special case.
+
+Understanding How The Camera Model Works
+
+I've had a few people talking to me on IRC, with difficulty understanding
+how this system works. Well, I'll give you a full explanation, by breaking
+it all down into small pieces, and re-assembling it into a way you can
+understand.
+
+Part #1: UVN Vectors
+
+This part alone has caused quite a lot of confusion. In short, UV and N are
+3 vectors that are used to orientate the XY and Z values of your points. U
+is for the X axis, V is for the Y axis, N is for the Z axis.
+
+Now, we all may go around, merrily saying that a point is at (1, 2, 3). But
+what do we really mean when we say this? Simple. The point is 1 unit from
+the origin in the X AXIS, the point is 2 units from the origin in the
+Y AXIS, and the point is 3 units from the origin in the Z AXIS. Why have I
+emphasised the term axis? Because that is the key to understanding the
+rotation.
+
+When I say "X axis", what does that mean? Well, an axis can be considered
+as a unit vector - a direction. An axis is infinite is usually infinite in
+each direction. The X axis has the value (1, 0, 0). Now, imagine that to
+get a points X co-ordinate in camera space, we have to map a point onto the
+X axis. We would end up with something like:
+
+NewPoint.X = XAxis.x*Point.x + XAxis.y*Point.y + XAxis.z*Point.z
+
+Which simplfies down to:
+
+NewPoint.X = 1*Point.x + 0*Point.y + 0*Point.z
+
+Can you see what has occured? We don't just take the X value, we take the
+distance from the origin along the X axis. Now, as the X axis can be
+orientated in an arbitrary manner, then as the axis rotates, the point
+takes on new values: XY and Z are being combined in different ratios.
+
+Recall that we have similar vectors from V and N - the Y and Z axes. Again,
+a similar approach is taken to them: not simply taking the Y or
+Z co-ordinate, but taking the distance from the origin along an axis. It is
+fundamental that you understand that part.
+
+Now, UV and N are always perpendicular to each other, ie they will form the
+corner of a cube, regardless of rotation, the angles between each other
+will remain the same; just the orientation changes. To visualise this, take
+your left hand. Point out your index finger, stick your thumb upwards to
+the sky, and stick your middle finger out to the right. Your index finger
+is N, your thumb V, and your middle finger U. Rotate your hand a bit. As
+you can see, the vectors rotate around, changing the rotation of the
+camera, but still remain at the same angle to each other.
+
+Camera Position
+
+Camera position has also given a little trouble. What you have to remember
+is that camera position is specified in world co-ordinates, and when we
+perform the translation, we map the world back to the camera, not map the
+camera into the world. So, when we translate, the world will be moved
+towards the camera. To do that, we need to translate by a negative vector.
+And that vector is the camera position. Going back to my "hand" metaphor,
+imagine that the position of your hand is the position of the camera
+
+Space, (0, 0, 0), And Other Such Things
+
+Consider what happens when we apply -camera.pos to every co-ordinate in the
+space. They all get translated by the same amount, including the camera,
+which gets placed at (0, 0, 0) -- the origin. So, you can think of the
+camera position as being the origin of the world. However world space
+co-ordinates are not defined relative to that point, they are defined
+relative to (0, 0, 0) (NOT THE CAMERA POINT MIND!). So, the translation by
+-camera.pos moves the co-ordinates to be relative to the camera; in fact,
+you could make any point the centre of the world using such a system.
+
+Also, consider what the rotation is doing. Try to think not so much of the
+camera itself rotating; rather the world surrounding it rotating, being
+backward mapped into the universe. IE we don't take the horse to market, we
+bring the market to the horse.
+
+I hope this explains it clearly enough for you; bear in mind though that
+I can't put the thoughts directly into your brain, you have to work out the
+bits inbetween for yourself!
+
+Tom Hammersley, tomh@globalnet.co.uk
+
+This information was derived from 3D Computer Graphics, by Alan Watt

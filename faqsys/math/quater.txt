@@ -1,0 +1,117 @@
+VI. Object: class Quaternion
+
+VI.A Description:
+
+A scalar and an HVector that encapsulate rotations
+
+VI.B Data Members:
+
+VI.B.1 Private Data Members
+Type            Name            (Description)
+double          s               (scalar)
+HVector         v               (vector)
+
+VI.B.2 Public Data Members
+Type            Name            (Description)
+int             error           (Error flag, non-zero value is an error
+                                 found in qmv_errno.h or errno.h)
+
+VI.C Function Members:
+
+VI.C.1 Constructors:
+Name:           Arguments               (Description)
+Quaternion      void                    (identity rotation
+                                        s = 0, v = 1,0,0)
+Quaternion      double a,               (Quaternion s = a, v = [b,c,d])
+                double b,
+                double c,
+                double d
+Quaternion      Quaternion &w           (copy of w)
+Quaternion      Quaternion *w           (copy of Quaternion pointed at by w)
+Quaternion      double a,               (Quaternion s = a, v = b)
+                HVector &b
+Quaternion      double *w               (Quaternion filled with w)
+Quaternion      Euler &e                (Convert Euler Rotation to Quaternion)
+Quaternion      Radians &theta,         (Convert Axes/Angle to Quaternion)
+                Axes axis
+Quaternion      Radians theta,          (Convert Vector/Angle to Quaternion)
+                HVector &b
+Quaternion      Radians &theta,         (Convert double*/Angle to Quaternion)
+                double *b
+Quaternion      HMatrix &M              (Convert Rotation Matrix to
+                                        Quaternion.)
+
+VI.C.2 Operators:
+Return Type     Operator        Arguments       (Description)
+Quaternion&     -               void            (unary negative)
+Quaternion&     ~               void            (conjugate (rotation in
+                                                the opposite direction)
+                                                Note the conjugate of
+                                                ~(a*b) = ~a * ~b. So the
+                                                conjugate of a composite
+                                                rotation is not the inverse
+                                                of the rotations)
+void            =               Quaternion &w   (copies w)
+double&         []              int i           (references element i,
+                                                you may set or get the value
+                                                of element i, Element 0 is
+                                                the scalar, Elements 1-3
+                                                are the Vector.
+VI.C.3 Functions:
+Return Type     Name            Arguments       (Description)
+void            print           void            (print the elements)
+void            rotate          Axes axis,      (Coordinate rotate the
+                                Radians theta   Quaternion around axis
+                                                by theta radians)
+
+VI.C.4 Destructors:
+
+~Quaternion             (Required to release allocated memory)
+
+VI.D Friends:
+
+VI.D.1 Operators:
+Return Type     Operator        Arguments       (Description)
+Quaternion&     +               Quaternion& A,  (A + B)
+                                Quaternion& B
+Quaternion&     -               Quaternion& A,  (A - B)
+                                Quaternion& B
+Quaternion&     *               Quaternion& A,  (A * B (adds A rotation to B)
+                                Quaternion& B   (Note that A*B = B*A is
+                                                not always true ))
+Quaternion      >>              Quaternion& A,  (A * ~B)
+                                Quaternion& B
+Quaternion      <<              Quaternion& A,  (~A * B)
+                                Quaternion& B
+Quaternion&     *               HVector& a,     (a * B (Intermediate step))
+                                Quaternion& B
+Quaternion&     *               Quaternion& A,  (A * b (Intermediate step))
+                                HVector& b
+double          ^               Quaternion& A,  (~A * B (inner product))
+                                Quaternion& B
+Quaternion&     *               Euler& a,       (Prepend a rotation to B
+                                Quaternion& B   Quaternion rotations are
+                                                the reverse order of Matrix
+                                                rotations)
+Quaternion&     *               Quaternion& A,  (Append b rotation to A)
+                                Euler& b
+
+VI.D.2 Functions:
+Return Type     Name            Arguments       (Description)
+void            HMatrix::HMatrix Quaternion&    (Convert Quaternion
+                                                to a rotation Matrix)
+HVector&        HVector::operator= Quaternion&  (Copy Quaternion to Vector)
+
+VI.E Example Code
+
+Quaternion a; // s = 1, v = 0
+Degrees alpha(30.0);
+Euler eta(alpha,Z_AXIS);
+Quaternion b(eta);
+
+Vector x;
+x[0] = 1.000; // x is the i unit vector [1,0,0]
+Vector y;
+
+y = b * x * ~b; // rotate x 30 degrees counter-clockwise (+) around the Z axis
+y = ~b * x * b; // rotate x 30 degrees clockwise (-) around the Z axis

@@ -1,0 +1,53 @@
+> I'm rather new to this news group, and I'm interested in implementing
+> real-time shadows in my 3D engine (the follow-up of ALPHA2). Is there
+> any info on this subject available on the internet?
+> 
+> I already gave this subject some thought (together with a colleague):
+> BSP-rendering (or portals) both have excellent characteristics to limit
+> the time needed to calculate the shadow planes. It's clear that shadows
+> need to be calculated by intersecting potentially lit/shadowed polygons
+> with light-volumes, or shadow-volumes (We thought the first is better).
+> So, we start with n polygons that need to be intersected with n volumes,
+> since every polygon potentially casts a volume. That's n*n
+> intersections, when there's only ONE light source. This huge number can
+> be decreased, but are there people reading this that have good ideas?
+> 
+> I believe shadows can dramatically improve graphics quality and
+> immersion, so I hope this can be discussed thoroughly.
+
+This can be decreased to n*n/2 because you can sort (non-intersecting)
+polygons by distance from the light source, then you only need to check
+every polygon for shadowing by the ones nearer to the light source.
+
+Another method is shadow buffering, where you render the scene from the
+point of view of the light source to see which polygons are exposed. It
+works something like this:
+
+Assign each polygon in the scene with a different number (using, say a
+16-bit shadow buffer would allow 65535 polygons)
+:
+Render the scene in the normal way from the point of view of the light
+source (ie position the camera at the light source and point it towards
+the scene), but instead of any texturing or shading use a single value -
+the number assigned to this polygon. Also store the shadow buffer
+co-ordinates of all the vertices.
+:
+Now render the scene normally, but for each triangle or polygon as well as
+doing your normal shading use the co-ordinates of the corners of this
+polygon to interpolate in the shadow buffer, and every 'pixel' in the
+shadow buffer which has a value different to the value assigned to this
+polygon means that a point is in shadow (because from the point of view of
+the light source this point of the polygon isn't showing - it's obscured
+by a nearer polygon). If this point is in shadow plot a darker version of
+that pixel.
+
+phew. Hope you got all that.. it's quite hard explaining something like
+that without diagrams (I'll have to put a tutorial of this on my web pages
+sometime..)
+
+This method works quite well for discrete objects, where the whole object
+can easily be rendered into the shadow buffer. For full 360 degree scenes
+this is not really possible.
+
+-lks
+ www.chu.cam.ac.uk/home/lk213/

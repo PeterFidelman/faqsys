@@ -1,0 +1,170 @@
+Bilinear Interpolation Of Texture Maps
+
+----------------------------------------------------------------------------
+
+Introduction
+
+Do you sometimes notice that when you texture map, the screen looks a little
+jaggy? Do your texture look pixellated? Well, there is a way around that.
+You filter your textures. In this file, I'll explain some of the more common
+techniques, and fast implementations of them.
+----------------------------------------------------------------------------
+
+Bilinear Interpolation
+
+Bilinear interpolation (now on called 'bilerp' for short) is a process of
+filtering the surrounding texels, to smooth out any jaggies occuring between
+pixels, and giving the screen a smoother look. The basic calculation is as
+follows (from a post to usenet, auther unknown):
+
+        double texture[N][M];  // 0 <= x < N, 0 <= y < M
+        double xReal;  // 0 <= xReal <= N-1
+        double yReal;  // 0 <= yReal <= M-1
+
+        int x0 = int(xReal), y0 = int(yReal);
+        double dx = xReal-x0, dy = yReal-y0, omdx = 1-dx, omdy = 1-dy;
+
+        double bilinear = omdx*omdy*texture[x0][y0] +
+                          omdx*dy*texture[x0][y0+1] +
+                          dx*omdy*texture[x0+1][y0] +
+                          dx*dy*texture[x0+1][y0+1];
+
+What we are effectively doing here is using the decimal, fractional portion
+of the texture co-ordinates to interpolate between 4 texels. Each of the
+weights are the areas adjacent to the texel. So, as the fractioanl 'u'
+texture co-ordinate increases, less weight is given to the texels on the
+left, and increasing weight is given to those on the right. A similar effect
+can be seen as we move vertically.
+
+I found a simple way to speed it up. This one works in 256-colours, but its
+perfectly possible to adapt it to other modes I would imagine. First thing
+to do is build a table. This table will contain colour A mixed with colour
+B, in the ratio x*A + (1-x)*B. The table is built in a similar way to colour
+lookup tables, described elsewhere. With this table you can now find the mix
+of two colours, very quickly. Now for the filtering. The way I do it is
+quite simple. I use a filter shaped like this:
+
+           3
+           |
+        1--T--2
+           |
+           4
+
+Where T is the current texel, and 1-2-3-4 are the surrounding texels. Next,
+I mix 1 with 3, and 2 with 4. Then I mix both the results together. Finally
+I mix that with T, and plot it to the screen. Works quite well in practice,
+and is quite speedy. You'll most likely need to write this in assembly; to
+take advantage of the EBX addressing trick described elsewhere. Maybe this
+isn't true bilerp texturing, but it works well. I actually tried
+approximating bilinear texturing in direct RGB mode by using a table. It
+worked, but it didn't look good. The image was very grainy, and bandy.
+
+----------------------------------------------------------------------------
+
+Mip-mapping
+
+Mip-mapping is becoming an increasingly common trick nowadays. The name mip
+is derived from multum in parvo, many things in small places. It was
+invented by Williams, in 1983. The idea is that we construct a set of
+textures, each being 1/4 (half-width*half-height) the size of its parent,
+and filtering them down. Then, you select a texture, based on distance, or
+rather compression on the screen, and paint it to the screen. Very simply,
+pretty efficient. You'll need 1.3 times as much memory to do this. The
+advantage of this is it reduces aliasing on the textures, by mapping a
+smaller texture to a smaller polygon. You see you'll sometimes notice that
+if you have say a 256x256 texture, as it moves away from the viewer, it will
+begin to flicker and shake. This is because we're mapping a large texture to
+a small area, meaning we don't have much coherency in the texels we chose.
+For example, at frame i, we may choose texel (50, 20). However, at frame
+i+1, we may choose texel (100, 50). If that texels contains sufficiently
+different colour information to the previous one, you'll get that odd
+effect. We are jumping around texel co-ordinates too much, both damaging
+image quality, and also thrashing the cache.
+
+However, on the PC, this gives us a big headache - 256x256 textures. We can
+either:
+
+  1. Use smaller textures - 64x64, 32x32 etc, but lose speed of routine
+  2. Scale textures up to 256x256, and use up lots more memory.
+  3. Place multiple textures with a single 256x256 texture
+
+(1) Would be the most tempting option, but would lose a little speed - do we
+make a set of routines for a given width texture? Do we have a
+pre-calculated Y offset table? Do we have an array of shift values, used to
+calculate the address? Tricky stuff.
+
+Or we could go for (2). But there will be *very* high memory costs for this.
+Plus we will still be mapping a large texture to a small triangle, which
+will cause problems.
+
+Perhaps 3? Well, we can still use a super-duper 256x256 ebx addressing
+mapper. But we'll be wasting space. Perhaps not much, but it'll soon add up.
+Plus it makes calculating co-ordinates perhaps a little tricker, but nothing
+a LUT can't solve.
+
+I think the best solution is to leave this to hardware texture mappers, and
+use option 1. Yes, yes, I know not everyone has a 3D graphics card. I
+certainly don't. But I can't see any serious PC owner without one in 18
+months when the market stabilizes, prices come down etc, Microsoft finally
+make D3D (perhaps not so likely as the first two) usable to coders.
+
+----------------------------------------------------------------------------
+
+Tri-linear Interpolation
+
+This is a mix between the previous 2 techniques. The idea is we mix together
+a number of textures - the texture that is smaller than the current texture,
+the current texture, and the texture that is larger. We then filter these
+together, to produce a final image. The idea being that the viewer won't
+notice the sudden switch in mipmaps, instead giving a smooth blend as the
+texture is enlarged. This will be *very* slow in software though, because of
+coding complexity, lack of regs, (relatively) slow CPUs, caching
+problems..... This one is certainly best left to hardware.
+
+----------------------------------------------------------------------------
+
+Implementing Bi-linear texturing
+
+Now that you have all this information, you can implement a bilinear
+texturing system. However, this can be a little tricky at first, so I'll
+just give you some pseudo code to get you start on it:
+
+{All your normal setup stuff here etc, we're only interested in texturing part}
+
+Get decimal u and decimal v. Assumed 16.16 fixed point texture index
+
+du = (U & 0xFFFF) / 65536.0
+dv = (V & 0xFFFF) / 65536.0
+invdu = 1.0 - du
+invdv = 1.0 - dv
+Weight1 = invdu*invdv
+Weight2 = invdu*dv
+Weight3 = du*invdv
+Weight4 = du*dv
+
+r00 = Texture[V >> 16][U >> 16].Red
+g00 = Texture[V >> 16][U >> 16].Green
+b00 = Texture[V >> 16][U >> 16].Blue
+
+r01 = Texture[(V >> 16) + 1][U >> 16].Red
+g01 = Texture[(V >> 16) + 1][U >> 16].Green
+b01 = Texture[(V >> 16) + 1][U >> 16].Blue
+
+r10 = Texture[V >> 16][(U >> 16) + 1].Red
+g10 = Texture[V >> 16][(U >> 16) + 1].Green
+b10 = Texture[V >> 16][(U >> 16) + 1].Blue
+
+r11 = Texture[(V >> 16) + 1][(U >> 16) + 1].Red
+g11 = Texture[(V >> 16) + 1][(U >> 16) + 1].Green
+b11 = Texture[(V >> 16) + 1][(U >> 16) + 1].Blue
+
+Red = Weight1*r00 + Weight2*r01 + Weight3*r10 + Weight4*r11
+Green = Weight1*g00 + Weight2*g01 + Weight3*g10 + Weight4*g11
+Blue = Weight1*b00 + Weight2*b01 + Weight3*b10 + Weight4*b11
+
+PutPixel(X, Y, Pack(Red, Green, Blue))
+
+That is as good as a straight rip out of some code from my House project.
+(But obviously I don't use a putpixel function!).
+
+Tom Hammersley, tomh@globalnet.co.uk

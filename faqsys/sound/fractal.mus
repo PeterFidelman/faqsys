@@ -1,0 +1,1779 @@
+  
+Post: 2 of 9  
+From: bradr@bartok.Sun.COM (Brad Rubenstein)  
+Newsgroups: comp.music  
+Subject: Music-Research Digest      Vol. 5, #27  
+Date: 24 Mar 90 00:14:43 GMT  
+Reply-To: music-research%bartok@sun.UUCP  
+Lines: 281  
+  
+Music-Research Digest       Sun, 18 Mar 90       Volume 5 : Issue  27  
+  
+Today's Topics:  
+                       Fractal music generation  
+                             job posting  
+              Music Education (was: Re: MR Vol. 5, #21)  
+                  PD Music editing software anyone ?  
+             Sound Design and Music Publishing Colloquium  
+  
+  
+*** Send contributions to Music-Research@uk.ac.oxford.prg  
+*** Send administrative requests to Music-Research-Request  
+  
+*** Overseas users should reverse UK addresses and give gateway if necessary  
+***     e.g.   Music-Research@prg.oxford.ac.uk  
+***     or     Music-Research%prg.oxford.ac.uk@nsfnet-relay.ac.uk  
+  
+----------------------------------------------------------------------  
+  
+Date: 10 Mar 90 17:17:15 GMT  
+on.cc.bingvaxu>lich <alex%bilver%tarpit%ge-dab%crdgw1%albanycs%leah@edu.binghamt  
+Subject: Fractal music generation  
+To: music-research@prg  
+  
+I need some kind souls to send me some algorithms to generate music based  
+on fractals.  
+  
+I don't know much about this subject, but it occurred to me that a fractal  
+music algorithm might be used as an aid in writing fugues.  I have tried  
+one experiment already, based on the geometrical shape known as a "Koch  
+curve", where a pitch and duration corresponds to segment angle and length,  
+respectively.  
+  
+My suspicion is that I'm going about it all wrong.  My experimented generated  
+a sequence of notes that sounded interesting.  The problem is that it was  
+a single sequence and the notes were all the same length.  How can a fractal  
+generator be made to create overlapping sequences of notes which have  
+harmonically correct relations to each other?  
+  
+Music is a serial event that unfolds as time passes.  I am only able to  
+visualize fractals as geometric entities which where all parts exist at once.  
+  
+Please e-mail me suggestions, no matter how simple or bizarre.  They will  
+be appreciated.  Thanks.  
+  
+--  
+     ///  Alex Matulich  
+    ///  Unicorn Research Corp, 4621 N Landmark Dr, Orlando, FL 32817  
+\\\///  alex@bilver.UUCP    ...uunet!tarpit!bilver!alex  
+ \XX/  From BitNet use: bilver!alex@uunet.uu.net  
+  
+------------------------------  
+
+Post: 76 of 179 
+From: alex@bilver.UUCP (Alex Matulich) 
+Newsgroups: comp.music,alt.fractals,comp.sources.wanted 
+Subject: Fractal Music Generation (summary) 
+Keywords: I need help 
+Date: 9 Apr 90 01:19:56 GMT 
+Organization: William J. Vermillion, Winter Park, FL 
+Lines: 73 
+ 
+Several weeks ago I posted an a plea for help in comp.music and 
+comp.sources.wanted for an algorithm to generate fractal music.  I lost the 
+original text of my posting, but the gist of it was this: 
+ 
+A fugue is a piece of music rich in self-similar structure.  J. S. Bach, a 
+master at writing fugues, was able to maintain up to six instrumental parts 
+playing a short theme in different ways -- at different pitches, different 
+speeds, inverted, upside-down, backwards, and so on -- and it all fit 
+together too! 
+ 
+Fractals also are rich in self-similar structure.  By definition, after all, 
+a fractal IS a self-similar object.  The parallels between fractals and 
+fugues seem so close, I thought, that maybe a MUSICAL fractal generator 
+could be developed as an aid in writing fugues. 
+ 
+I tried an experiment based on the generation of a Koch curve, assigning 
+a relationship between note pitch and line angle, and another relationship 
+between note duration and line length.  My experimented generated a 
+sequence of notes that sounded interesting.  The problem is that it was 
+a single monotonic sequence.  How can a fractal music generator be made 
+to create overlapping sequences of notes which have harmonically correct 
+relations to each other? 
+ 
+I got 10 replies.  Three offered algorithmic advice, and everyone else 
+wanted the same information I was asking.  Apparently there is a fair 
+amount of interest out there, but little knowlege. 
+ 
+You there, reading this:  If you know anything about generating fractal 
+music, send e-mail or post an article, and quit lurking in the shadows! 
+ 
+Now for the summary [My comments are in brackets]: 
+ 
+(From Kevin Quitt  uunet!demott!kdq) 
+Use 6 dice for the note to be selected and another six for the length. 
+Roll die 0 for every note, die 1 half as often, die 2 half as often as 
+die 1, etc., and add then numbers to determine a number for selecting a 
+note within a predetermined key.  Accidentals are also randomly played. 
+More dice tends to smooth out the music, larger values gives more variation. 
+ 
+[Very interesting, but I was looking for something more deterministic.] 
+ 
+(From Doug Bischoff  uunet!psumv.psu.edu!deb110) 
+A 3-D fractal may be used to control 3 different musical event attributes 
+plus a fourth if the points are colored.  Use the X axis as a time scale. 
+For each X-axis time point, perform additive synthesis using the Y axis 
+for harmonics or frequencies and the Z axis for volume, and use the color 
+of the point on the X axis to determine a fundamental frequency from which 
+each harmonic is calculated. 
+ 
+[Yes, a more deterministic algorithm, but it seems to me that such an 
+ algorithm would create music having little natural unity and flow since 
+ (depending on the initial 3-D object) unfolding musical events might not 
+ have any real dependence on previous events.  I'd like to be able to 
+ give the fractal music generator an initial theme and see where it goes.] 
+ 
+(From Fred Sena  uunet!samsung.com!infinet!sena) 
+Map the numerical values from an iterative fractal generator onto some 
+harmonic rules.  For example, choose notes that have some harmonic relation 
+to each other (like a blues scale) and let the generator choose the 
+sequence.  Other levels of structure could be added to fractally change 
+fundamental keys, note lengths, and so on. 
+ 
+[This is very similar to what I was trying to do with the Koch curve 
+ generator.] 
+ 
+Since I posted my original question, the alt.fractals newsgroup has been 
+created, so I'm also posting this summary there. 
+ 
+-- 
+     ///  Alex Matulich 
+    ///  Unicorn Research Corp, 4621 N Landmark Dr, Orlando, FL 32817 
+\\\///  alex@bilver.UUCP    ...uunet!tarpit!bilver!alex 
+ \XX/  From BitNet try: IN%"bilver!alex@uunet.uu.net" 
+
+
+  
+Post: 77 of 179 
+From: edgar@shape.mps.ohio-state.edu (Gerald Edgar) 
+Newsgroups: comp.music,alt.fractals 
+Subject: Re: Fractal Music Generation (summary) 
+Keywords: I need help 
+Date: 9 Apr 90 12:37:24 GMT 
+Organization: The Ohio State University, Dept. of Math. 
+Lines: 28 
+ 
+In article <562@bilver.UUCP> alex@bilver.UUCP (Alex Matulich) writes: 
+> 
+>I tried an experiment based on the generation of a Koch curve, assigning 
+>a relationship between note pitch and line angle, and another relationship 
+>between note duration and line length.  My experimented generated a 
+ 
+This sounds like something I have done.  I used about 10 of the common 
+"dragon curves" (including Koch).  The change in pitch was related to 
+the angle (360 degrees corresponds to an octave), and duration was 
+related to line segment length. Of course, the duration should be a 
+POWER of the line length (the exponent is the reciprocal of the 
+fractal dimension) in order to achieve true self-similarity. 
+ 
+The curve known as "McWorter's pentigree" uses angles of 72 and 144 degrees, 
+which correspond to intervals not used in Western music.  Peculiar. 
+ 
+If there is some interest I can post the programs.  (Logo source code, 
+or Macintosh executable.) 
+ 
+(By the way, there is some literature on "fractal music", and it is NOT 
+this!!!) 
+ 
+ 
+-- 
+  Gerald A. Edgar 
+  Department of Mathematics             Bitnet:    EDGAR@OHSTPY 
+  The Ohio State University             Internet:  edgar@mps.ohio-state.edu 
+  Columbus, OH 43210   ...!{att,pyramid}!osu-cis!shape.mps.ohio-state.edu!edgar 
+ 
+Post: 79 of 179 
+From: george@shumv1.ncsu.edu (George Browning) 
+Newsgroups: comp.music,alt.fractals,comp.sources.wanted 
+Subject: Re: Fractal Music Generation (summary) 
+Keywords: I need help 
+Date: 9 Apr 90 15:19:58 GMT 
+Reply-To: george@shumv1.ncsu.edu (George Browning) 
+Organization: NCSU Computing Center 
+Lines: 36 
+ 
+In article <562@bilver.UUCP> alex@bilver.UUCP (Alex Matulich) writes: 
+>Several weeks ago I posted an a plea for help in comp.music and 
+>comp.sources.wanted for an algorithm to generate fractal music.  I lost the 
+>original text of my posting, but the gist of it was this: 
+> 
+ 
+        I have an article from the book Fundamental Algorithms for 
+Computer Graphics written by Richard F. Voss that talks about fractal 
+music.  Voss says "One of my exciting discoveries was that almost all 
+musical melodies also mimic 1/f noise."  He gives some pictures and 
+examples, including a couple of "spectral density measurements of the 
+pitch variations in various types of music showing their common 
+correlations as 1/f noise"  These graphs show such things as Medieval 
+music up to 1300, Beethoven's 3rd Symphony and the Beatles Sgt. Pepper. 
+I am not sure exactly how to generate 1/f noise (it doesn't look too 
+easy) but I will know how to by the end of the semester, as my graphics 
+project depends on it.  I am going to use it to make both terrain maps 
+and texture maps for water. 
+ 
+ 
+You may also want to look at: 
+ 
+Voss, R. F. and Clarke, J. "1/f Noise in Music: Music from 1/f Noise", 
+J. Accous.  Soc. Am. 63, (1978), 258-263. 
+ 
+Voss, R. F. and Clarke, J. "'1/f noise' in music and speech", Nature 
+258, 317-8 (1975). 
+ 
+ 
+ 
+                                - Jeff 
+-- 
+_____________________________________________________________________ 
+| George Browning                  North Carolina State University  | 
+| george@shumv1.ncsu.edu                               Raleigh, NC  | 
+|___________________________________________________________________| 
+ 
+Post: 87 of 179 
+From: billd@fps.com (Bill Davidson) 
+Newsgroups: comp.music,alt.fractals,comp.sources.wanted 
+Subject: Re: Fractal Music Generation 
+Keywords: I need help 
+Date: 10 Apr 90 19:27:13 GMT 
+Followup-To: comp.music 
+Organization: FPS Computing Inc., San Diego CA 
+Lines: 11 
+ 
+In article <562@bilver.UUCP> alex@bilver.UUCP (Alex Matulich) writes: 
+[asks for info on fractal music] 
+ 
+I have two references: 
+ 
+Dietrick E. Thomsen, "Making Music Fractally", Science News, Mar 22, 1980 
+ 
+Richard F. Voss, "Random Fractal Forgeries", SIGGRAPH '85 Course Notes 
+        for Fractals: Basic Concepts, Computation and Rendering. 
+ 
+--Bill Davidson 
+ 
+Post: 89 of 179 
+From: mu298ac@sdcc6.ucsd.edu (Philip Marlowe) 
+Newsgroups: comp.music,alt.fractals,comp.sources.wanted 
+Subject: Re: Fractal Music Generation (summary) 
+Keywords: I need help 
+Date: 11 Apr 90 03:28:53 GMT 
+Followup-To: comp.music 
+Organization: University of California, San Diego 
+Lines: 41 
+ 
+e Browning) writes:9.151958.26859@ncsuvx.ncsu.edu> george@shumv1.ncsu.edu (Georg 
+>In article <562@bilver.UUCP> alex@bilver.UUCP (Alex Matulich) writes: 
+> 
+>       I have an article from the book Fundamental Algorithms for 
+>Computer Graphics written by Richard F. Voss that talks about fractal 
+>music.  Voss says "One of my exciting discoveries was that almost all 
+>musical melodies also mimic 1/f noise."  He gives some pictures and 
+ 
+        This is an incredibly obvious statement to make.  Stepwise 
+motion is an important attribute of many tonal melodies,and 1/f 
+noise 
+generates stepwise motion.  So why can't you program 1/f noise to 
+produce good tonal melodies?  Because tonal melody is not random; it 
+has very strong directionality, and any programmer who wants to 
+have an algorithm that would produce good tonal melodies has to take 
+goal-oriented motion into account, which I don't believe is possible 
+with fractals.  Traditional tonal melody is incredibly causal.  It 
+can not be modeled on random procedures.  If there is any way for 
+computers to write good, catchy, tonal melodies, I suspect it must 
+be through an alogrithm which is contructed on the rules that most 
+musicians learn in theory class for writing melodies (too much 
+stepwise motion in the same directionis boring; an upward leap is 
+usually followed by a downward resolution by step, unless it's 
+outlining a triad; etc.) 
+ 
+        If you really want some insight into how tonal melody works, 
+and why good melodies *sound* good, try reading Leonard Meyer's 
+_Emotion_and_Meaning_in_Music_ and _Explaining_Music_. 
+ 
+        Previous discussions in this group about fugues being 
+"self-similar" shows a lack of understanding about just what a fugue 
+is.  Just because something is repeated at the same level, it doesn't 
+imply self-similarity (or does it?)  If you examine a Bach fugue at 
+the middleground or background level, you will see absolutely no 
+replication of the subject or countersubject, say.  What is 
+self-similar, perhaps, on these levels will be the movement from 
+tonic to dominant to tonic, but even this isn't guaranteed, and 
+besides, it's a self-similarity shared by just about every other 
+piece of baroque and classical music, as Schenker would have us 
+believe.  I really don't think you can call thematic unity 
+self-similarity. 
+ 
+ 
+Post: 90 of 179 
+From: err@fibercom.COM (Eric Rubin) 
+Newsgroups: comp.music,alt.fractals 
+Subject: Re: Fractal Music Generation (summary) 
+Keywords: I need help 
+Date: 10 Apr 90 12:44:48 GMT 
+Reply-To: err@fibercom.COM (Eric Rubin) 
+Organization: FiberCom Inc., Roanoke, Virginia 
+Lines: 12 
+ 
+-state.edu (Gerald Edgar) writes:zaphod.mps.ohio-state.edu> edgar@shape.mps.ohio 
+>If there is some interest I can post the programs.  (Logo source code, 
+>or Macintosh executable.) 
+ 
+I'd like to see the Logo source code. 
+ 
+ 
+-- 
+Eric Rubin                      INTERNET: err@fibercom.com 
+FiberCom, Inc.                      UUCP: ...!uunet!fibercom!err 
+P.O. Box 11966                     PHONE: 703-342-6700, 800-423-1183 x348 
+Roanoke, VA 24022-1966               FAX: 703-342-5961 
+ 
+ 
+Post: 94 of 179 
+From: smoliar@vaxa.isi.edu (Stephen Smoliar) 
+Newsgroups: comp.music,rec.music.classical 
+Subject: Re: Fractal Music Generation (summary) 
+Summary: tonal music and random procedures 
+Keywords: music theory, composition, Meyer 
+Date: 11 Apr 90 14:34:03 GMT 
+Reply-To: smoliar@vaxa.isi.edu (Stephen Smoliar) 
+Organization: USC-Information Sciences Institute 
+Lines: 170 
+ 
+In article <9613@sdcc6.ucsd.edu> mu298ac@sdcc6.ucsd.edu (Philip Marlowe) 
+writes: 
+>In article <1990Apr9.151958.26859@ncsuvx.ncsu.edu> george@shumv1.ncsu.edu 
+>(George Browning) writes: 
+>>In article <562@bilver.UUCP> alex@bilver.UUCP (Alex Matulich) writes: 
+>> 
+>>      I have an article from the book Fundamental Algorithms for 
+>>Computer Graphics written by Richard F. Voss that talks about fractal 
+>>music.  Voss says "One of my exciting discoveries was that almost all 
+>>musical melodies also mimic 1/f noise." 
+> 
+>       This is an incredibly obvious statement to make.  Stepwise 
+>motion is an important attribute of many tonal melodies,and 1/f 
+>noise 
+>generates stepwise motion.  So why can't you program 1/f noise to 
+>produce good tonal melodies?  Because tonal melody is not random; it 
+>has very strong directionality, and any programmer who wants to 
+>have an algorithm that would produce good tonal melodies has to take 
+>goal-oriented motion into account, which I don't believe is possible 
+>with fractals.  Traditional tonal melody is incredibly causal.  It 
+>can not be modeled on random procedures.  If there is any way for 
+>computers to write good, catchy, tonal melodies, I suspect it must 
+>be through an alogrithm which is contructed on the rules that most 
+>musicians learn in theory class for writing melodies (too much 
+>stepwise motion in the same directionis boring; an upward leap is 
+>usually followed by a downward resolution by step, unless it's 
+>outlining a triad; etc.) 
+> 
+There have been no end of attempts in this direction, and none have been 
+particularly successful.  The problem is that random procedures are being 
+applied at the wrong level of granularity.  To try to draw an appropriate 
+analogy, it is sort of like assuming that you could construct sentences 
+through random selection of syllables.  Lejaren Hiller actually tried to 
+do something like this in his "Computer Cantata," experimenting with Markov 
+processes with different "prior memory capacity;"  and the best he could do 
+was come up with the occasional coherent word or two.  People who have been 
+interested in random sentence generation know that you get a lot more mileage 
+out of defining your world in terms of a context-free grammar and then using 
+random procedures to determine which productions you invoke. 
+ 
+There are a few analogies to this practice in music.  If we consider the model 
+era, which preceded tonality, we can find an example of such a context-free 
+grammar in Dom Paolo Ferretti's ESTHETIQUE GREGORIENNE.  (The French 
+translation of this book appeared in 1938, so don't expect to find any 
+of Chomsky's terminology in it.)  Ferretti devotes considerable text to 
+the analysis of CENTONIZATION, a process by which new plainchants were 
+made up by piecing together fragments (CENTONS, from the French for a 
+patch in a patchwork quilt) of old ones.  Ferretti was astute enough 
+to realize that one could not put the patches together any old way; 
+and he offers up a table which, for all intents and purposes, is a 
+set of productions for centonizing chants in the Dorian mode.  It works 
+rather well;  and I implemented a "random sentence generator" based on 
+this table as part of my doctoral thesis. 
+ 
+There are any number of "dice composers" which apply a similar principle to 
+tonal music, the most famous being by Mozart.  Here, a random procedure is 
+invoked only for the selection of the terminals.  The nonterminal nodes of 
+the parse tree have been fixed by the "composer."  The bulk of his work has 
+gone into making sure that the choices of terminals for any given node are 
+interchangeable. 
+ 
+I find it slightly disheartening that people continue to disregard what appears 
+to be an important lesson from these experiments, which is that composers tend 
+to work at a higher level of granularity than individual notes.  This is not to 
+say that there are not situations in which choosing a specific note is not 
+important.  Certainly, every writer has situations in which it is critically 
+important to choose just the right word;  but if every writer applied that 
+attention to EVERY word, very little would get written.  Composition is a 
+matter of working which "musical ideas."  None of us may be able to pin down 
+just what that phrase denotes, but my own intuition tells me that it has a lot 
+to do with memories of past listening experiences.  To some extent, all 
+composers centonize--picking up materials from past experiences and finding 
+new ways in which to assemble them.  If we are determined to seek out 
+algorithmic rules, then it would seem that these rules should be directed 
+at two key questions: 
+ 
+        1.  How do we identify such units of material? 
+ 
+        2.  How do we determine how, given a collection of those units, 
+                they may be properly assembled? 
+ 
+>       If you really want some insight into how tonal melody works, 
+>and why good melodies *sound* good, try reading Leonard Meyer's 
+>_Emotion_and_Meaning_in_Music_ and _Explaining_Music_. 
+> 
+Meyer probably deserves due credit for being one of the first to recognize that 
+a question like "how tonal melody works" is probably as much a matter of 
+psychology as it is of music theory (if not more so).  However, Meyer's 
+understanding of psychology is rather naive.  He seems more interested 
+in exhibiting the BREADTH of his reading in non-musical subjects than 
+in trying to apply any of those areas in DEPTH.  Anyone interested in 
+a more serious exposition of how cognitive psychology may provide the 
+sorts of insights Philip has in mind would do better to turn to a book 
+like John Sloboda's THE MUSICAL MIND.  (I disagree with a good deal of 
+what Sloboda says in this book, but he DOES know how to lay out the relevant 
+issues.) 
+ 
+>       Previous discussions in this group about fugues being 
+>"self-similar" shows a lack of understanding about just what a fugue 
+>is.  Just because something is repeated at the same level, it doesn't 
+>imply self-similarity (or does it?)  If you examine a Bach fugue at 
+>the middleground or background level, you will see absolutely no 
+>replication of the subject or countersubject, say.  What is 
+>self-similar, perhaps, on these levels will be the movement from 
+>tonic to dominant to tonic, but even this isn't guaranteed, and 
+>besides, it's a self-similarity shared by just about every other 
+>piece of baroque and classical music, as Schenker would have us 
+>believe.  I really don't think you can call thematic unity 
+>self-similarity. 
+ 
+ 
+Again, the issue seems to be one of granularity.  What is REALLY important 
+about Schenker is that he tried to make us acknowledge that analysis must 
+proceed at many different levels of granularity.  Unfortunately, his (German?) 
+sense of order led him to assume that these granules could be neatly embedded 
+in a hierarchy;  and this assumption has been carried on by both Meyer and 
+Narmour, on one hand, Lerdahl and Jackendoff, on another, and Yeston, on a 
+third.  (There are probably several more hands lurking out there, but I am 
+not particularly inclined to catalog them.)  Fortunately, Lewin seems to have 
+broken out of this "dictatorship of the hierarchy" in his recent "Music Theory, 
+Phenomenology, and Modes of Perception" paper;  and my own guess is that he 
+will benefit from this liberation. 
+ 
+Another question is why we wish to place so much emphasis on "self-similarity." 
+Do we, as listeners, devote so much of our cognitive attention so simply being 
+able to recognize that we have heard something before?  Let me try sticking my 
+neck out on a hypothesis here which has been inspired by the work of Marvin 
+Minsky (who has written about music, as well as artificial intelligence). 
+Minsky believe that much of understanding is a matter of being able to 
+recognize, and account for, DIFFERENCES.  This is a bit like saying that 
+much of music is concerned with what we loosely call "variation" and the 
+fact that, as music history has progressed, we have become more and more 
+liberal about what constitutes a variation.  What makes the game interesting, 
+however, is that we cannot perceive differences unless we gauge them against 
+some standard of SAMENESS.  For example, in BOLERO, we quickly recognize that 
+variation is almost entirely a matter of orchestral color (all that parallel 
+motion is almost like trying to build up new sound spectra) while everything 
+else stays the same.  Thus, we seek out self-similarity not for its own sake 
+but for the ability to detect differences.  Fugues are exercises in how a 
+melodic motif may be engaged in many different contexts, so that it is CONTEXT 
+which becomes the basis for variation. 
+ 
+In all fairness, I should point out that Meyer has tried to pursue a similar 
+line of thought.  Much of his writing in music theory is concerned with 
+EXPECTATIONS.  However, he seems to believe that expectations may be grounds 
+on universal principles, such as those of gestalt psychology.  I, on the other 
+hand, think they are grounded on our ability to perceive self-similarity, 
+either within the context of a single composition or with respect to our 
+past listening experiences.  In other words, we seek out trying to identify 
+what we are hearing as being like something we have heard before, because then 
+we will assume that it will "go the same way."  This becomes a basis for our 
+expectations, and we listen to hear if those expectations are satisfied or if 
+something different occurs.  Thus, the mind is engaged;  and we are now 
+exhibiting the behavior of listening to music. 
+ 
+(One final point:  I am cross-posting this to rec.music.classical, since that 
+bulletin board provides a home for many opinions about both composition and 
+music theory.) 
+ 
+========================================================================= 
+ 
+USPS:   Stephen Smoliar 
+        USC Information Sciences Institute 
+        4676 Admiralty Way  Suite 1001 
+        Marina del Rey, California  90292-6695 
+ 
+Internet:  smoliar@vaxa.isi.edu 
+ 
+"Only a schoolteacher innocent of how literature is made could have written 
+such a line."--Gore Vidal 
+ 
+ 
+Post: 95 of 179 
+From: kassover@jupiter.crd.ge.com (David Kassover) 
+Newsgroups: comp.music 
+Subject: Re: Fractal Music Generation (summary) 
+Date: 11 Apr 90 15:11:34 GMT 
+Organization: Aule-Tek, Inc. 
+Lines: 38 
+ 
+In article <9613@sdcc6.ucsd.edu> mu298ac@sdcc6.ucsd.edu (Philip Marlowe) writes: 
+rge Browning) writes:9.151958.26859@ncsuvx.ncsu.edu> george@shumv1.ncsu.edu (Geo 
+| | In article <562@bilver.UUCP> alex@bilver.UUCP (Alex Matulich) writes: 
+| | 
+| |     I have an article from the book Fundamental Algorithms for 
+| | Computer Graphics written by Richard F. Voss that talks about fractal 
+| | music.  Voss says "One of my exciting discoveries was that almost all 
+| | musical melodies also mimic 1/f noise."  He gives some pictures and 
+| 
+|       This is an incredibly obvious statement to make.  Stepwise 
+| motion is an important attribute of many tonal melodies,and 1/f 
+| noise 
+| generates stepwise motion.  So why can't you program 1/f noise to 
+| produce good tonal melodies?  Because tonal melody is not random; it 
+| has very strong directionality, and any programmer who wants to 
+| have an algorithm that would produce good tonal melodies has to take 
+| goal-oriented motion into account, which I don't believe is possible 
+| with fractals. 
+... 
+ 
+About a year and a half ago, I was at a lecture given by 
+Mandelbrot.  Someone asked him about fractal music.  He replied 
+to the effect that he had heard the output of some experiments in 
+that area, and that they didn't "sound good". 
+(Whatever that means) 
+ 
+We in the audience were not given referencer the opportunity 
+to hear similar musical pieces and thus form our own opinions. 
+ 
+De gustibus non est disputandum.  Or as my father would say, 
+"Sahzeechizone" 
+ 
+ 
+-- 
+=================================================== 
+ 
+Post: 106 of 179 
+From: quiniou@calculo.irisa.fr (Rene Quiniou) 
+Newsgroups: comp.music,rec.music.classical 
+Subject: Re: Fractal Music Generation (summary) 
+Keywords: music theory, composition, Meyer 
+Date: 12 Apr 90 07:20:44 GMT 
+Reply-To: quiniou@irisa.fr 
+Organization: Irisa, Rennes(FR) 
+Lines: 41 
+ 
+Could you post the exact references of the sources cited in your article 
+as well as your thesis, please? 
+ 
+In article <12859@venera.isi.edu>, smoliar@vaxa.isi.edu (Stephen 
+Smoliar) writes: 
+|> In article <9613@sdcc6.ucsd.edu> mu298ac@sdcc6.ucsd.edu (Philip Marlowe) 
+|> writes: 
+|> >In article <1990Apr9.151958.26859@ncsuvx.ncsu.edu> george@shumv1.ncsu.edu 
+|> >(George Browning) writes: 
+|> >>In article <562@bilver.UUCP> alex@bilver.UUCP (Alex Matulich) writes: 
+|> >> 
+|> >>   I have an article from the book Fundamental Algorithms for 
+|> >>Computer Graphics written by Richard F. Voss that talks about fractal 
+ 
+|> grammar in Dom Paolo Ferretti's ESTHETIQUE GREGORIENNE.  (The French 
+|> translation of this book appeared in 1938, so don't expect to find any 
+ 
+|> There are any number of "dice composers" which apply a similar principle to 
+|> tonal music, the most famous being by Mozart.  Here, a random procedure is 
+ 
+|> >and why good melodies *sound* good, try reading Leonard Meyer's 
+|> >_Emotion_and_Meaning_in_Music_ and _Explaining_Music_. 
+|> > 
+|> sorts of insights Philip has in mind would do better to turn to a book 
+|> like John Sloboda's THE MUSICAL MIND.  (I disagree with a good deal of 
+ 
+|> in a hierarchy;  and this assumption has been carried on by both Meyer and 
+|> Narmour, on one hand, Lerdahl and Jackendoff, on another, and Yeston, on a 
+|> third.  (There are probably several more hands lurking out there, but I am 
+|> not particularly inclined to catalog them.)  Fortunately, Lewin seems 
+to have 
+|> broken out of this "dictatorship of the hierarchy" in his recent 
+"Music Theory, 
+|> Phenomenology, and Modes of Perception" paper;  and my own guess is that he 
+ 
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= 
+  QUINIOU Rene                  quiniou@irisa.fr 
+  INRIA / IRISA                         Phone : +33 99 36 20 00 
+ Campus Universitaire de Beaulieu       Fax :   99 38 38 32 
+ 35042 RENNES CEDEX - FRANCE            Telex : UNIRISA 950 473F 
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= 
+
+Post: 107 of 179 
+From: d88-jwa@nada.kth.se (Jon W{tte) 
+Newsgroups: comp.music 
+Subject: Re: Fractal Music Generation (summary) 
+Keywords: I need help 
+Date: 12 Apr 90 15:02:01 GMT 
+Reply-To: d88-jwa@nada.kth.se (Jon W{tte) 
+Organization: Royal Institute of Technology, Stockholm, Sweden 
+Lines: 32 
+ 
+In article <9613@sdcc6.ucsd.edu>, mu298ac@sdcc6.ucsd.edu (Philip 
+Marlowe) writes: 
+> In article <1990Apr9.151958.26859@ncsuvx.ncsu.edu> 
+george@shumv1.ncsu.edu (George Browning) writes: 
+ 
+>       This is an incredibly obvious statement to make.  Stepwise 
+> motion is an important attribute of many tonal melodies,and 1/f 
+> noise 
+> generates stepwise motion.  So why can't you program 1/f noise to 
+> produce good tonal melodies?  Because tonal melody is not random; it 
+> has very strong directionality, and any programmer who wants to 
+ 
+Actually, try making a plot of baroque music, and compare that to 
+1/f-squared noise. You'll find some interesting similarities ! 
+(Yes, it's 1/f-squared and not 1/f as the original poster said) 
+ 
+Gregorian music is closer to 1/f-cubed or even to the fourth... 
+ 
+Now, where does that leave acid house ? (oh, sorry...) 
+ 
+>       Previous discussions in this group about fugues being 
+> "self-similar" shows a lack of understanding about just what a fugue 
+> is.  Just because something is repeated at the same level, it doesn't 
+ 
+Look at the mandelbrot set. It is self-similar, but skewed, 
+rotated, mirrored and transformed in various ways. Actually, I 
+think you could create reasonable fuge-LIKE music (actually, a whole 
+new type) that was enjoyable using fractals. 
+ 
+   ---  Stay alert !  -  Trust no one !  -  Keep your laser handy !  --- 
+             h+@nada.kth.se  ==  h+@proxxi.se  ==  Jon Watte 
+                    longer .sig available on request 
+
+
+ 
+Post: 115 of 179 
+From: music@batman.moravian.EDU (music) 
+Newsgroups: comp.music,rec.music.classical 
+Subject: Re: Fractal Music Generation (summary) 
+Keywords: music theory, composition, Meyer 
+Date: 12 Apr 90 19:38:04 GMT 
+Followup-To: comp.music,rec.music.classical 
+Organization: Moravian College, Bethlehem, PA 
+Lines: 61 
+ 
+But is it MUSIC?    ;-) 
+ 
+I personally believe that all you've discussed regarding the 
+algorithmic process of producing (or attempting to produce) "good 
+tonal music" is rather more of a verbose punishment to the reader than 
+the gleaning of any insight to the process being attempted (no offense 
+intended!). I have worked around with algorithmic composition off and 
+on for many years, but "gave up" on attempting to create an artificial 
+musical learning base from which an algorithm could draw upon to 
+produce anything more interesting than (and this is a bad example) the 
+Mozart "Dice Minuet". So I personally decided that the goal of 
+creating "good tonal music" through "pure math" was a non sequitur to 
+the nature of the beast known as "tonal music". I therefore treaded 
+into the teritory of composers such as Xenakis (and Cage from a 
+philosophical, more than "technical" sense). In certain works of 
+Xenakis, Herma (piano) for example, the music is about as far from 
+"tonal" as it is from "12-tone serial" (we limit ourselves here to a 
+system of 12 notes; if we were to explore beyond to the reaches of 
+quarter-tones, arbitrary systems (i.e. Partch) we would be streaching 
+the mind beyond most peoples comprehenshion, something I REALLY WANT 
+TO DO (but that's another story!)). Xenakis uses algorithms to plot 
+his pitch classes, tempi, dynamics, etc. in a way that is more or less 
+"highly organized randomness". Personally, I think his advanced math 
+has little to do with the ultimate outcome of the music, but I like 
+what he does regardless. The music produces more of a gestalt 
+experience than a profoundly complex serial work (like Boulez' 
+Structures and any number of other works by strict 12-tone 
+serialists). The music comes from that great unknown: CHANCE. By 
+carefully controlling the elements of CHANCE on many levels (a grain 
+of sand to an astroid) we can then begin to produce CHANCE-based 
+organization, letting "nature control the music" (think of all the 
+combined chaos and symetry in the universe) and the "composer" guide 
+nature either via algorithms (serialization of chance structures) or 
+by subjective reasoning (nurturing nature). 
+ 
+Regardless of the outcome, "tonality" will be replaced by something of 
+a higher order: music that exists etearnally just waiting to be 
+"guided into place". This may smack of musical anarchy, but is the 
+UNIVERSE anarchic? It may seem so on certain levels but ultimately 
+"GOD" controls the "laws of nature" the way I like to control the 
+"laws of the music of nature". Strict tonality/serialism is 
+UN-natural. Only out of cultivating chaos can we deliver the truth of 
+music. Humans have too long restrained themselves into believing that 
+man-made rules about tonality (in the Western world at least) they 
+have unwhittingly enslaved themselves into a very narrow "band" of the 
+musical spectrum (as visible light is to the entire electromagnetic 
+spectrum). We must explore the outer limits of sound and learn to 
+appreciate them as we now appreciate "tonal" music. 
+ 
+(Think (philosophically) of the music of the Krell in the film 
+"Forbidden Planet" from the '50's. Think of 4'33". Think of the cosmic 
+background radiation. Think of the Universe as "music in the making". 
+And, finally, you'll probably think of ME as a raving lunatic...) 
+ 
+ 
+--------------------------------------------------- 
+| Stephen Heller - Music Technician               | In  transit from 
+| CSNET -> music@batman.moravian.edu              |   the center of 
+| UUCP  -> ...!rutgers!liberty!batman!music       |  Time & Space... 
+| INET  -> music%batman.moravian.edu@relay.cs.net | 
+--------------------------------------------------- 
+
+Post: 117 of 179 
+From: rreid@esquire.UUCP ( r l reid ) 
+Newsgroups: comp.music 
+Subject: 1/f 
+Date: 12 Apr 90 15:54:51 GMT 
+Reply-To: rreid@esquire.UUCP ( r l reid ) 
+Organization: ? ! 
+Lines: 28 
+Keywords: 
+ 
+e Browning) writes:9.151958.26859@ncsuvx.ncsu.edu> george@shumv1.ncsu.edu (Georg 
+>music.  Voss says "One of my exciting discoveries was that almost all 
+>musical melodies also mimic 1/f noise."  He gives some pictures and 
+ 
+The thing to be careful about is that the melodies mimic 1/f 
+noise, not vice versa.  I've got a 1/f program that cranks out 
+endless (if you want) 1/f melodies, with some nice parameters 
+(like "swing factor").  It's pleasent enough for a while, 
+but eventually you find that you are going nowhere.  Like, 
+where's the cadence? 
+ 
+What it is GREAT for is motive generation, if you are feeling uninspired 
+one fine day and you MUST get a jingle together by 5 pm.  In that 
+case, crank 'er up, and listen for a lovely catchy little 
+phrase to come by.  Then you can pick that out, and start doing 
+all the normal development kinds of things to it. 
+ 
+The Voss algorithm is a lot of fun to play with and you can get all kinds 
+of interesting things started with it.  To make music, you'll 
+have to take the output and work with it further. 
+ 
+I can post a description of the algorithm is there is enough 
+interest. 
+ 
+               Ro 
+            UUCP:  { uunet | cmcl2 }!esquire!rreid 
+        Internet:  rreid@dpw.com -or- rlr@woof.columbia.edu 
+ 
+ 
+ 
+Post: 118 of 179 
+From: mcdonald@aries.scs.uiuc.edu (Doug McDonald) 
+Newsgroups: comp.music,rec.music.classical 
+Subject: Re: Fractal Music Generation (summary) 
+Keywords: music theory, composition, Meyer 
+Date: 13 Apr 90 13:50:58 GMT 
+Reply-To: mcdonald@aries.scs.uiuc.edu (Doug McDonald) 
+Organization: School of Chemical Sciences, Univ. of Illinois at Urbana-Champaign 
+Lines: 9 
+ 
+ 
+On a slightly different subject, but related - I have tried to write computer 
+programs that imitate the paintings of Jackson Pollock - and it is 
+very difficult. It is probably not impossible, but it would require 
+essentially coding in the exact style of any painting. I did produce 
+programs that make nice screen images, quite arty, but I never got close 
+to the real thing. 
+ 
+Doug McDonald 
+ 
+Post: 122 of 179 
+From: bdb@becker.UUCP (Bruce Becker) 
+Newsgroups: comp.music 
+Subject: Re: Fractal Music Generation (summary) 
+Keywords: I need help 
+Date: 13 Apr 90 16:40:28 GMT 
+Reply-To: bdb@becker.UUCP (Bruce Becker) 
+Organization: G. T. S., Toronto, Ontario 
+Lines: 31 
+ 
+s: article <1990Apr12.150201.12739@kth.se> d88-jwa@nada.kth.se (Jon W{tte) write 
+|In article <9613@sdcc6.ucsd.edu>, mu298ac@sdcc6.ucsd.edu (Philip 
+|Marlowe) writes: 
+|> In article <1990Apr9.151958.26859@ncsuvx.ncsu.edu> 
+|george@shumv1.ncsu.edu (George Browning) writes: 
+|[...] 
+|>      Previous discussions in this group about fugues being 
+|> "self-similar" shows a lack of understanding about just what a fugue 
+|> is.  Just because something is repeated at the same level, it doesn't 
+| 
+|Look at the mandelbrot set. It is self-similar, but skewed, 
+|rotated, mirrored and transformed in various ways. Actually, I 
+|think you could create reasonable fuge-LIKE music (actually, a whole 
+|new type) that was enjoyable using fractals. 
+ 
+        I know some folks who actually did this. 
+        They seem to have used Scho:nberg's "Principles 
+        of Harmony" (I might have the name wrong) to 
+        translate fractal states into MIDI outputs. 
+        I don't know how they interpreted the text 
+        to produce the results, but it was reasonably 
+        musical, but not particularly melodic. 
+        As the fractal was being generated on an 
+        Amiga, the music would change according to the 
+        part of the M set and depth of recursion... 
+ 
+-- 
+  ,u,    Bruce Becker   Toronto, Ontario 
+a /i/    Internet: bdb@becker.UUCP, bruce@gpu.utcs.toronto.edu 
+ `\o\-e  UUCP: ...!uunet!mnetor!becker!bdb 
+ _< /_   "Free your ass and your mind will follow" - Punkadelic 
+
+ 
+Post: 128 of 179 
+From: carroll@bcsaic.UUCP (Jeff Carroll) 
+Newsgroups: comp.music,alt.fractals,comp.sources.wanted 
+Subject: Re: Fractal Music Generation (summary) 
+Keywords: I need help 
+Date: 13 Apr 90 06:20:07 GMT 
+Reply-To: carroll@bcsaic.UUCP (Jeff Carroll) 
+Organization: Boeing Computer Services AI Center, Seattle 
+Lines: 39 
+ 
+e Browning) writes:9.151958.26859@ncsuvx.ncsu.edu> george@shumv1.ncsu.edu (Georg 
+> 
+>       I have an article from the book Fundamental Algorithms for 
+>Computer Graphics written by Richard F. Voss that talks about fractal 
+>music.  Voss says "One of my exciting discoveries was that almost all 
+>musical melodies also mimic 1/f noise."  He gives some pictures and 
+>examples, including a couple of "spectral density measurements of the 
+>pitch variations in various types of music showing their common 
+>correlations as 1/f noise"  These graphs show such things as Medieval 
+>music up to 1300, Beethoven's 3rd Symphony and the Beatles Sgt. Pepper. 
+ 
+ 
+Nothing particularly exciting, profound, or metaphysical about that. The 
+reason that spectral density of music seems to vary as 1/f is that 
+musical scales are logarithmic in frequency - that is, musical pitch intervals 
+as measured by a musician are proportional to the logarithm of the 
+corresponding frequency intervals measured by an engineer. 
+This, incidentally, is why the slide switches on a 
+graphic equalizer cover wider bands as frequency gets higher. 
+ 
+The pitches, or "musical states", get farther apart in frequency as 
+frequency goes up. Therefore the spectral density varies roughly as 1/f. 
+It's analogous to the relationship between decibels and watts, or 
+between the Richter scale and the displacement (in inches) of the ground 
+under your feet. 
+ 
+It's clear that neither medieval chants, nor Beethoven, nor Sergeant 
+Pepper can be strictly described as "1/f noise". It is not the "1/f"ness 
+of this music that makes it interesting, great, or even musical. Once 
+you've built a real 1/f noise generator you'll realize that. 
+ 
+It might be more interesting to know whether the spectral density of 
+music along the *pitch* axis is normally distributed (approximately, of 
+course), or skewed one way or the other. In such a case, the spectral 
+(frequency) density of the music could be said to fit a log-normal 
+distribution. 
+ 
+        Jeff Carroll 
+        carroll@atc.boeing.com 
+
+ 
+Post: 144 of 179 
+From: rreid@esquire.UUCP ( r l reid ) 
+Newsgroups: comp.music 
+Subject: Re: 1/f 
+Date: 17 Apr 90 13:29:21 GMT 
+Reply-To: rreid@esquire.UUCP ( r l reid ) 
+Organization: ? ! 
+Lines: 186 
+ 
+ 
+When I said recently that I'd be willing to post a description of and 
+some code using the Voss algorithm, I got deluged with requests. 
+Some hungry folks out there! 
+ 
+If you missed that thread, there was some discusssion about 1/f 
+noise as "representing" a lot of music.  The fallacy in there 
+is that while you may be able to take a lot of music and 
+find that kind of distribution in it, it doesn't follow 
+that pink noise is sufficient to generate music.  In fact, 
+it isn't.  But if you appraoch it as a toy, you can have 
+some fun with it. 
+ 
+Disclaimer on the code - since this is a toy, the code isn't 
+as generalized as it could be.  And of course you use it 
+at your own risk. 
+ 
+First, a basic description of What It Is.  My note generating program 
+is called pink, and I wrote this about it: 
+ 
+  pink generates to stdout a list of octave point pitch class numbers 
+  as newline-null terminated charater strings (good for sending to 
+  pipes). The numbers are generated using the Voss argorithm 
+  as described by John Simonton in 1970.  Our control is to choose 
+  the 16 candidate notes (these are kept in a file), and to a lesser 
+  extent the seed for the random number generator (curerntly hard coded 
+  as 23). We have 5 dice with four sides. We have a five bit counter. 
+  We increment the five bit counter. Any dice whose corresponding bit has 
+  changed as a result of the incrementation gets re-rolled. The 
+  values of the 5 dice are added. This is the index into the 
+  candidate list. As in craps, the middle of the list is favored. 
+  (In fact I have yet to roll all zeros or all threes, so I have yet to use 
+  the very ends of my list). This is derived from the idea of pink 
+  noise, hence the name. 
+ 
+(The reference to Simonton is because I modeled my program after 
+the one he wrote in 6502 assembler for the PAiA. Unfortunatly this 
+gave my code a rather assembler-like flavor - bitmasks? Barf!) 
+ 
+As you can see, the idea is pretty simple - you're just favoring certain 
+notes.   Now, my program is generating 8ve.pchclass pitches - 
+you can use MIDI notes if that's what you need, or you could 
+use this to select time values, or timbres, or anything else 
+you might want.  What's also obvious to me is that 
+the choice of candidate notes will very much influence 
+how pleasent the result is. 
+ 
+Of course, you will need to plug these pitches (or whatever) into 
+notecards (or whatever) with other information.  And if you 
+want to make Music (capital M), you will not be able to use 
+this for much more than a jumping off point. 
+ 
+You give this 
+program 2 arguments: the filename of the candidate list, and the 
+number of notes you want to generate. 
+ 
+Here's my code: 
+ 
+#define NUMDICE 5 
+#define DICESIDES 4 
+ 
+int dice_reg[2]; 
+int dice[NUMDICE]; 
+int dice_side[DICESIDES]; 
+int numnotes; 
+ 
+static int dice_vals[DICESIDES] = { 0, 1, 2, 3, }; 
+static char candidates[8][16]; 
+ 
+#define SEED 23 
+#define STATESIZE 256 
+char state[STATESIZE]; 
+static int mask[NUMDICE] = { 01, 02, 04, 08, 010, }; 
+ 
+ 
+ 
+#include <stdio.h> 
+#include <math.h> 
+main(ac, av) 
+int ac; 
+char *av[]; 
+        { 
+        int i, j, k; 
+        char *c, *index(); 
+        FILE *fp; 
+ 
+        if(ac != 3) 
+                { 
+ av[0]);        fprintf(stderr, "usage: %s 16notefile number_of_notes_to_gen\n", 
+                exit(-1); 
+                } 
+        if((numnotes = atoi(av[2])) < 1) 
+                { 
+                fprintf(stderr, "%s is a strange number of notes\n", av[2]); 
+ av[0]);        fprintf(stderr, "usage: %s 16notefile number_of_notes_to_gen\n", 
+                exit(-1); 
+                } 
+        if((fp = fopen(av[1], "r")) == NULL) 
+                { 
+                fprintf(stderr, "Can't open %s\n", av[1]); 
+ av[0]);        fprintf(stderr, "usage: %s 16notefile number_of_notes_to_gen\n", 
+                perror("fopen"); 
+                exit(-1); 
+                } 
+        for(i = 0; i < 16; i++) 
+                { 
+                if(fgets(candidates[i], 8, fp) == NULL) 
+                        { 
+                        fprintf(stderr, "input needs 16, not %d notes\n", i); 
+_gen\n", av[0]);        fprintf(stderr, "usage: %s 16notefile number_of_notes_to 
+                        exit(-1); 
+                        } 
+                if(c = index(candidates[i], '\n')) 
+                        *c = '\0'; 
+                } 
+        for(j = 0; j < 2; j++) 
+                dice_reg[j] = 0; 
+        /* done initializing dice registers to 0 */ 
+        for(i = 0; i < NUMDICE; i++) 
+                dice[i] = random()%DICESIDES; 
+        /* done initializing dice to random */ 
+ 
+        initstate(SEED, state, STATESIZE); 
+ 
+        for(k = 0; k < numnotes; k++) 
+                { 
+                dice_reg[1] = dice_reg[0]; 
+                dice_reg[0]++; 
+                for(i = 0; i < NUMDICE; i++) 
+                        /* check the low DICENUM bits one at a time */ 
+                        /* do this by ORing with the right mask     */ 
+                        /* then if the XOR is true, the bits examined*/ 
+                        /* are different and we need to roll the die */ 
+ 
+                        if((mask[i] & dice_reg[0]) != (mask[i] & dice_reg[1])) 
+                                { 
+#ifdef TEST 
+                                fprintf(stderr,"rerolling %d\n", i); 
+#endif 
+                                dice[i] = random()%DICESIDES; 
+                                } 
+ 
+                /* add up the dice and this is the index into the cand */ 
+#ifdef TEST 
+                fprintf(stderr, "%d %d %d %d %d = ", 
+                    dice[0], dice[1], dice[2], dice[3], dice[4]); 
+#endif 
+                for(j = i = 0; i < NUMDICE; i++) 
+                        { 
+                        j += dice[i]; 
+                        } 
+#ifdef TEST 
+                fprintf(stderr, "%d\n", j); 
+#endif 
+                printf("%s\n", candidates[j]); 
+                } 
+        } 
+ 
+ 
+ 
+Here was my candidate list for a nice background stream of notes: 
+ 
+7.00 
+7.04 
+7.07 
+8.00 
+8.04 
+8.07 
+9.00 
+8.07 
+8.09 
+8.05 
+8.02 
+7.02 
+7.05 
+7.02 
+7.05 
+7.09 
+ 
+Have fun.  Naturally, this code is supplied without any warrantee 
+of any kind. 
+ 
+               Ro 
+            UUCP:  { uunet | cmcl2 }!esquire!rreid 
+        Internet:  rreid@dpw.com -or- rlr@woof.columbia.edu 
+ 
+
+
+
+ 
+Post: 147 of 179 
+From: eliot@phoenix.Princeton.EDU (Eliot Handelman) 
+Newsgroups: comp.music 
+earch Digest Vol. 5, #36)Handelman quoting Laske quoting Bel (was: Re: Music-Res 
+Date: 18 Apr 90 05:01:33 GMT 
+Reply-To: eliot@phoenix.Princeton.EDU (Eliot Handelman) 
+Organization: Princeton University, NJ 
+Lines: 78 
+ 
+In article <12935@venera.isi.edu> smoliar@vaxa.isi.edu (Stephen Smoliar) writes: 
+;In article <15369@phoenix.Princeton.EDU> eliot@phoenix.Princeton.EDU (Eliot 
+;Handelman) writes: 
+;> If it 
+;>happens that something tolerably interesting is produced through a random 
+;>model -- interesting by comparison with standards set by other non-randomaly 
+;>determined music, early serial, for example -- then one would have to 
+;>conclude, assuming some sort of homomorphism between the compositional and 
+;>the cognitive/perceptual, that the random generation model is telling you 
+;>something about the perception of the world, that perception may have a factor 
+;>of randomness built into it. Now this conclusion seems absurb and unwarranted, 
+;>but it parallels, I think, equivalent statements concerning the potential 
+;>relevance of NN-based music. 
+ 
+;Actually, I would not be so quick to write this approach off as absurd.  As I 
+;suggested in a recent article about using fractals, experimenting with random 
+;methods, if properly done, may tell us some valuable things about the 
+;GRANULARITY at which decisions of composition are made.  Mozart's dice 
+;composer "works" (and there are any number of levels at which it DOES 
+;work) by virtue of invariants among alternatives whose choice is left 
+;to chance.  You can do a Roman numeral analysis which will remain the 
+;same no matter what the dice choose for you.  (I've done this.)  You 
+;can probably also derive a Schenker middle-ground from which you can 
+;then derive all the different possible foregrounds which the dice may 
+;provide.  (I haven't done that one.)  To go back to that old Ligeti analysis 
+;of Boulez, the study of random processes may tell us when enough decisions have 
+;been made that it just doesn't matter how the remaining ones come out;  and 
+;that seems like pretty valuable information about both composition and 
+;perception. 
+ 
+I think there's a false teleology somewhere in here. I can make a not 
+so bad sounding piece for tom-toms by flipping coins, assuming the piece 
+doesn't go on too long, and I'm using a constant pulse. Typical sequences 
+will always have a structural richness unconstrained by the composition 
+rule, and just so that we know what we're talking about here's an example 
+of a randomly generated tom-tom piece: 
+ 
+ABBAAABBABAABAAABAABABBAAAAAAAABAAAAABBAAAAABAABABBBAABAAABAABAAABABAABB 
+ 
+I'm not saying this is good or bad, only that this can serve as the basis 
+for an extended form and analysis seminar that will have nothing to do 
+with the way in which it was generated. Compare, for example, with part of 
+the (I should say "a") tom-tom part in Stockhausen's early work Kreuzspiel, 
+consisting of sequence ABAABAAABAAAABAAAAAB etc. That seems to be a subtext 
+of my randomly generated sequence. We -- that is, as listeners (or really 
+here as analysis hacks who learned to talk about music from Allen Forte) 
+could say things like "the repetition of BB at unit 7 casts a reminder 
+back to the opening," that the opening begins with the symmetrical 
+statement of ABB and then enlarges on that symmetry with the pattern AB 
+then AAB then AAAB which is then folded back on itself through AAB then 
+AB, the  latter cell being pivotally exploited for reintroducing 
+the opening motive, ABB: the promise of densely composed out material is 
+then gradually withdrawn by suspending the B tom-tom for eight units, at 
+which point the listener, on presentation of the B anew followed by 
+the 5fold inistence on A again (thus introducing the fibonacci series 
+as a hypothesis of compositional determinism) realizes that the inversion 
+around the motivic axis AAAB was responsible for introducing the develpmental 
+idea of diminution, and one could easily continue in this manner. 
+I'm only claiming for the purpose of argument that this analysis has 
+something to do with how a resourceful listener, not easily put to 
+sleep, MIGHT hear this kind of thing -- might, because other analyses can 
+be constructed. Each of these analyses makes assumptions on the part of 
+the listener, and none of these assumptions can be traced back to the 
+composition rule. 
+ 
+Now as to the Mozart example: your concept of "works" is that you get 
+a conventional set of harmonies out of it. You're not suggesting 
+that was random (if so, look at the Thomas Atwood notebooks). You say that 
+music works: I say that music stinks. "Works," in my concept of Mozart, 
+is something like the slow movement of the f major quartet, and I don't 
+see a mapping from the technique of dice composition to the technique of 
+that movement. 
+ 
+As to the grain of decision making in composition: it's whatever you 
+want it to be. We live in the free world. 
+ 
+I stick to my guns: no inference from autocomposition, including 
+the formulaic, to perception. 
+
+
+
+Post: 151 of 179 
+From: aipdc@castle.ed.ac.uk (Paul D. Crowley) 
+Newsgroups: comp.music 
+Subject: Re: "Only Amateurs" Re: Music-Research Digest      Vol. 5, #34 
+Date: 18 Apr 90 16:48:59 GMT 
+Reply-To: aipdc@castle.ed.ac.uk (Paul D. Crowley) 
+Organization: Edinburgh University Computing Service 
+Lines: 6 
+ 
+I'd agree that trying to generate music algorithmically is usually a 
+pretty poor thing for a musician to be doing - but surely it's a 
+perfectly good thing for an AI dept. to be doing? 
+- 
+\/ o\ "I say we grease this rat-fuck son-of-a-bitch Paul D Crowley 
+/\__/ right now. No offense." - Aliens.             aipdc@uk.ac.ed.castle 
+
+
+ 
+Post: 158 of 179 
+From: andyn@stpstn.UUCP (Andy Novobilski) 
+Newsgroups: comp.music,alt.fractals,comp.sources.wanted 
+Subject: Re: Fractal Music Generation (summary) 
+Keywords: the 3 M's: math, music, midi 
+Date: 19 Apr 90 20:18:03 GMT 
+Reply-To: andyn@stepstone.com (Andy Novobilski) 
+Organization: The Stepstone Corporation, Sandy Hook, CT 06482 
+Lines: 19 
+ 
+Somewhere in the 1984-87 time frame, there was an article published 
+in the proceedings of USENIX (or some UNIX conference) by a research 
+team at AT&T on the topic of Binary Stocastic Subdivision as an algorithm 
+for generating music.  Included in the article was a number that you 
+could call to hear a demonstration of the algorithm played on a set of 
+MIDI controlled instruments. 
+ 
+I know the information is sketchy, but a little time at a technical 
+library should yield the reference.  If anyone is interested and can't 
+locate the paper in a local library, I'd be happy to try and find it 
+at home. 
+ 
+Best of luck, 
+Andy 
+ 
+-- 
+Andy Novobilski     | The Stepstone Corp.  | The expressed views have been 
+andyn@stepstone.com | 75 Glen Rd.          | approved by a committee of three: 
+(203)426-1875       | Sandy Hook, CT 06482 | the goldfish, blackfish, and me. 
+ 
+ 
+Post: 159 of 179 
+From: smoliar@vaxa.isi.edu (Stephen Smoliar) 
+Newsgroups: comp.music 
+earch Digest Vol. 5, #36)Handelman quoting Laske quoting Bel (was: Re: Music-Res 
+Summary: teleology at ten paces 
+Date: 20 Apr 90 00:31:03 GMT 
+Reply-To: smoliar@vaxa.isi.edu (Stephen Smoliar) 
+Organization: USC-Information Sciences Institute 
+Lines: 74 
+ 
+In article <15439@phoenix.Princeton.EDU> eliot@phoenix.Princeton.EDU (Eliot 
+Handelman) writes: 
+>In article <12935@venera.isi.edu> smoliar@vaxa.isi.edu (Stephen Smoliar) 
+>writes: 
+>;In article <15369@phoenix.Princeton.EDU> eliot@phoenix.Princeton.EDU (Eliot 
+>;Handelman) writes: 
+>;> If it 
+>;>happens that something tolerably interesting is produced through a random 
+>;>model -- interesting by comparison with standards set by other non-randomaly 
+>;>determined music, early serial, for example -- then one would have to 
+>;>conclude, assuming some sort of homomorphism between the compositional and 
+>;>the cognitive/perceptual, that the random generation model is telling you 
+>;>something about the perception of the world, that perception may have a 
+>;>factor 
+>;>of randomness built into it. Now this conclusion seems absurb and 
+>;>unwarranted, 
+>;>but it parallels, I think, equivalent statements concerning the potential 
+>;>relevance of NN-based music. 
+> 
+>;Actually, I would not be so quick to write this approach off as absurd.  As I 
+>;suggested in a recent article about using fractals, experimenting with random 
+>;methods, if properly done, may tell us some valuable things about the 
+>;GRANULARITY at which decisions of composition are made.  Mozart's dice 
+>;composer "works" (and there are any number of levels at which it DOES 
+>;work) by virtue of invariants among alternatives whose choice is left 
+>;to chance.  You can do a Roman numeral analysis which will remain the 
+>;same no matter what the dice choose for you.  (I've done this.)  You 
+>;can probably also derive a Schenker middle-ground from which you can 
+>;then derive all the different possible foregrounds which the dice may 
+>;provide.  (I haven't done that one.)  To go back to that old Ligeti analysis 
+>;of Boulez, the study of random processes may tell us when enough decisions 
+>;have 
+>;been made that it just doesn't matter how the remaining ones come out;  and 
+>;that seems like pretty valuable information about both composition and 
+>;perception. 
+> 
+>I think there's a false teleology somewhere in here. 
+ 
+If that's your way of saying that we are coming at this with different 
+objectives, then you're right.  I am not interested in whether or not 
+"I can make a not so bad sounding piece" by any random process.  I AM 
+interested in those random processes which, at some (probably ill-defined) 
+level, do not SOUND like random processes.  (Note that this is a question 
+of subjective human perception, as opposed to the exegetic skills of your 
+mathematically-trained theorist.)  Such processes probably tell us more about 
+how one listens than they do about how one composes;  but that does not make 
+them the less interesting (at least in my book, which you are free to return 
+to the library as long as you have not damaged the spine).  (I would argue, 
+by the way, in response to a remark by Paul Crowley, that the sort of inquiry 
+I have posed is a "perfectly good thing for an AI dept. to be doing."  I am 
+not so sure about the sort of composition objectives you have in mind. 
+Composing is a perfectly good thing for composers to do, and I would just 
+as soon leave it there.  If they wish to draw upon the resources of artificial 
+intelligence, they are as free to do so as if they wish to draw inspiration 
+from architecture.  About the only thing I can think of which would concern 
+an AI department would be a POST HOC analysis of what such a composer had done 
+with those resources.) 
+ 
+========================================================================= 
+ 
+USPS:   Stephen Smoliar 
+        USC Information Sciences Institute 
+        4676 Admiralty Way  Suite 1001 
+        Marina del Rey, California  90292-6695 
+ 
+Internet:  smoliar@vaxa.isi.edu 
+ 
+"By long custom, social discouse in Cambridge in intended to impart and only 
+rarely to obtain information.  People talk;  it is not expected that anyone 
+will listen.  A respectful show of attention is all that is required until 
+the listener takes over in his or her turn.  No one has ever been known to 
+repeat what he or she has heard at a party or other social gathering." 
+                                        John Kenneth Galbraith 
+                                        A TENURED PROFESSOR 
+ 
+Post: 161 of 179 
+From: mo@flash.bellcore.com (Michael O'Dell) 
+Newsgroups: comp.music,alt.fractals,comp.sources.wanted 
+Subject: Re: Fractal Music Generation (summary) 
+Keywords: the 3 M's: math, music, midi 
+Date: 20 Apr 90 02:24:12 GMT 
+Reply-To: mo@flash.UUCP (Michael O'Dell) 
+Organization: The Center for Virtual Reality 
+Lines: 8 
+ 
+Sorry, folks, it tweren't AT&T, but Bellcore's own Peter Langston 
+        -Mike O'Dell 
+        -Mike O'Dell 
+ 
+"I can barely speak for myself, much less anyone else!" 
+---------------------------------------- 
+The Center for Virtual Reality -- 
+"Solving yesterday's problems tomorrow!" 
+
+
+Post: 163 of 179 
+From: mcnamara@vixvax.mgi.com 
+Newsgroups: comp.music,alt.fractals 
+Subject: Re: Fractal Music Generation (summary) 
+Date: 14 Apr 90 03:07:20 GMT 
+Organization: Management Graphics, Inc. 
+Lines: 43 
+ 
+In article <562@bilver.UUCP>, alex@bilver.UUCP (Alex Matulich) writes: 
+> Several weeks ago I posted an a plea for help in comp.music and 
+> comp.sources.wanted for an algorithm to generate fractal music.  I lost the 
+> original text of my posting, but the gist of it was this: 
+> 
+> A fugue is a piece of music rich in self-similar structure.  J. S. Bach, a 
+> master at writing fugues, was able to maintain up to six instrumental parts 
+> playing a short theme in different ways -- at different pitches, different 
+> speeds, inverted, upside-down, backwards, and so on -- and it all fit 
+> together too! 
+> 
+> Fractals also are rich in self-similar structure.  By definition, after all, 
+> a fractal IS a self-similar object.  The parallels between fractals and 
+> fugues seem so close, I thought, that maybe a MUSICAL fractal generator 
+> could be developed as an aid in writing fugues. 
+> 
+> I tried an experiment based on the generation of a Koch curve, assigning 
+> a relationship between note pitch and line angle, and another relationship 
+> between note duration and line length.  My experimented generated a 
+> sequence of notes that sounded interesting.  The problem is that it was 
+> a single monotonic sequence.  How can a fractal music generator be made 
+> to create overlapping sequences of notes which have harmonically correct 
+> relations to each other? 
+> 
+        In 1988 or thereabouts Charles Dodge (_Earths' Magnetic Field_) came 
+to Mpls. to lecture about computer music.  He brought with him a tape of 
+several pieces of music, one generated using fractal relationships between 
+the parts of the composition.  As I recall, he generated an initial fractal 
+sequence, and then used fractal relations to generate the other parts from 
+the original one. 
+        The music was interesting.  Sort of like 101 Strings does Phillip 
+Glass.  As he put it:  "This is the first computer music I've heard which 
+sounds like bad music(previous attempts didn't sound like music at all)." 
+        There were several other interesting pieces on the tape.  The best 
+one was by Curtis Braun, titled _Brontosaurus_.  It was a child's poem, read 
+by a computer voice synthesis program, and then modified by the composer into 
+a sort of self-similar composition. 
+        I think he would send you the tape, and/or provide details of his 
+algorithms.  He is at the Brooklyn College Center for Computer Music. 
+Phone (718) 780-5582. 
+ 
+Curt McNamara 
+mcnamara@mgi.com 
+
+
+ 
+Post: 165 of 179 
+From: scott@bbxsda.UUCP (Scott Amspoker) 
+Newsgroups: comp.music 
+Subject: Re: "Only Amateurs" Re: Music-Research Digest      Vol. 5, #34 
+Date: 20 Apr 90 15:47:22 GMT 
+Reply-To: scott@bbxsda.UUCP (Scott Amspoker) 
+Organization: Basis International,  Albuquerque, NM 
+Lines: 15 
+ 
+:n article <3370@castle.ed.ac.uk> aipdc@castle.ed.ac.uk (Paul D. Crowley) writes 
+>I'd agree that trying to generate music algorithmically is usually a 
+>pretty poor thing for a musician to be doing - but surely it's a 
+>perfectly good thing for an AI dept. to be doing? 
+ 
+I don't 100% agree with this.  I have never worked with algorithmic 
+composers but it seems to me that they could help "suggest" ideas 
+that a human composer could work with.  (Sometimes it takes that 
+leap of logic to break out of a rut.) 
+ 
+-- 
+Scott Amspoker 
+Basis International, Albuquerque, NM 
+(505) 345-5232 
+unmvax.cs.unm.edu!bbx!bbxsda!scott 
+ 
+ 
+Post: 166 of 179 
+From: maverick@fir.berkeley.edu (Vance Maverick) 
+Newsgroups: comp.music 
+Subject: Algorithmic composing tools 
+Date: 20 Apr 90 19:43:13 GMT 
+Reply-To: maverick@fir.berkeley.edu (Vance Maverick) 
+Lines: 11 
+ 
+In article <695@bbxsda.UUCP>, scott@bbxsda.UUCP (Scott Amspoker) writes: 
+> I have never worked with algorithmic 
+> composers but it seems to me that they could help "suggest" ideas 
+> that a human composer could work with.  (Sometimes it takes that 
+> leap of logic to break out of a rut.) 
+ 
+Or that leap of illogic.  A "random" program doesn't know anything about 
+your rut, even if you think you've constrained it to do the kinds of 
+things you're thinking of.  I find these tools useful for generating raw 
+material I could not have invented myself, which I can then polish at my 
+leisure. 
+ 
+ 
+Post: 167 of 179 
+From: eliot@phoenix.Princeton.EDU (Eliot Handelman) 
+Newsgroups: comp.music 
+earch Digest Vol. 5, #36)Handelman quoting Laske quoting Bel (was: Re: Music-Res 
+Date: 20 Apr 90 22:41:19 GMT 
+Reply-To: eliot@phoenix.Princeton.EDU (Eliot Handelman) 
+Organization: Princeton University, NJ 
+Lines: 17 
+ 
+In article <12988@venera.isi.edu> smoliar@vaxa.isi.edu (Stephen Smoliar) writes: 
+;In article <15439@phoenix.Princeton.EDU> eliot@phoenix.Princeton.EDU (Eliot 
+;Handelman) writes: 
+ 
+[no inference from music automatons to perception etc.] 
+ 
+;                                I am not interested in whether or not 
+;"I can make a not so bad sounding piece" by any random process.  I AM 
+;interested in those random processes which, at some (probably ill-defined) 
+;level, do not SOUND like random processes. 
+ 
+But Steve, when you come right down to it, what DOES sound like a random 
+process? My students complained that Pierrot Lunaire, of all things, 
+sounded like random processes to them -- obviously that changes with a 
+wee bit of effort. Whereas with over 20 years moderne Musik behind me, not even 
+the Williams Mix sounds like a random process to me. It's already carrying a 
+hell of a lot of history. 
+ 
+ 
+Post: 168 of 179 
+From: latta@sting.Berkeley.EDU (Craig R. Latta) 
+Newsgroups: comp.music 
+Subject: Re: Algorithmic composing tools 
+Keywords: Reality is a better source 
+Date: 21 Apr 90 00:17:35 GMT 
+Reply-To: latta@sting.Berkeley.EDU (Craig R. Latta) 
+Organization: Music Department, UC Berkeley 
+Lines: 30 
+X-Local-Date: 20 Apr 90 17:17:35 PDT 
+ 
+In article <24264@pasteur.Berkeley.EDU>, maverick@fir.berkeley.edu 
+(Vance Maverick) writes: 
+ 
+|> In article <695@bbxsda.UUCP>, scott@bbxsda.UUCP (Scott Amspoker) writes: 
+ 
+|> > I have never worked with algorithmic 
+|> > composers but it seems to me that they could help "suggest" ideas 
+|> > that a human composer could work with.  (Sometimes it takes that 
+|> > leap of logic to break out of a rut.) 
+|> 
+|> Or that leap of illogic.  A "random" program doesn't know anything about 
+|> your rut, even if you think you've constrained it to do the kinds of 
+|> things you're thinking of.  I find these tools useful for generating raw 
+|> material I could not have invented myself, which I can then polish at my 
+|> leisure. 
+|> 
+ 
+        I find sources from Real Life (people talking, cats meowing, 
+jackhammers jacking, etc.) much more useful than some machine 
+throwing out noises with <insert parameter here>s generated from 
+<insert method here>. 
+ 
+        For me, there is a point when the use of automata in 
+creating emotion is silly. 
+ 
+ 
+----------------------------------------------------------------------------- 
+Craig Latta                          "Those who know History are 
+latta@swindle.Berkeley.EDU                  doomed to explain it"   -- me. 
+----------------------------------------------------------------------------- 
+ 
+Post: 171 of 179 
+From: pauld@hpausla.aso.hp.com (Paul Doornbusch) 
+Newsgroups: comp.music 
+Subject: Re: "Only Amateurs" Re: Music-Research Digest      Vol. 5, #34 
+Date: 21 Apr 90 01:33:31 GMT 
+Organization: HP Australian Software Operation 
+Lines: 16 
+ 
+Well I'm a composer who has been writing for several years.  I've been 
+through many music courses at various universities throughout the 
+world, and I work with many successful and famous composers. 
+ 
+I am interested in algorithmic composition (and I've never heard a 
+colleague criticize it) because I'm aware that I use an algorithm when 
+I write, formalizing that would be advantageous in understanding what 
+I'm doing.  Once the algorithm is formalized it may then be used with 
+data to produce a composition.  Advanced pieces are becoming 
+structurally more complex, a strong structure as defined by the 
+algorithm will allow the composer to produce such a piece. Because of 
+the mass of data involved the process can take extraordinary amounts 
+of time, computers are the key here as they allow the data to be 
+manipulated more easily and quickly. 
+ 
+I hope that this explains more of what it's all about. 
+ 
+ 
+Post: 172 of 179 
+From: smasters@gmuvax2.gmu.edu (Shawn Masters) 
+Newsgroups: comp.music,alt.fractals,comp.sources.wanted 
+Subject: Re: Fractal Music Generation (summary) 
+Summary: It was in Science News 
+Keywords: the 3 M's: math, music, midi 
+Date: 21 Apr 90 15:53:36 GMT 
+Reply-To: smasters@gmuvax2.UUCP (Shawn Masters) 
+Followup-To: comp.music 
+Organization: George Mason Univ. Fairfax, Va. 
+Lines: 9 
+ 
+I saw an article a number of years back about something like that.  It 
+was in Science News, and was talking about AI algorithm design this one 
+team of researchers was doing.  Not only did calling this  number just 
+play music, I seem to remeber that it was semi-interactive, and they 
+wanted the general public to test it.  In the end the reponse was to 
+great, so they shut down the line. 
+ 
+smasters@gmuvax2 
+smasters@gmuvax 
+ 
+ 
+Post: 173 of 179 
+From: pauld@hpausla.aso.hp.com (Paul Doornbusch) 
+Newsgroups: comp.music 
+Subject: Re: Algorithmic composing tools 
+Date: 22 Apr 90 05:48:18 GMT 
+Organization: HP Australian Software Operation 
+Lines: 32 
+ 
+ 21, 1990 /omp.music / latta@sting.Berkeley.EDU (Craig R. Latta) / 10:17 am  Apr 
+In article <24264@pasteur.Berkeley.EDU>, maverick@fir.berkeley.edu 
+(Vance Maverick) writes: 
+ 
+|> In article <695@bbxsda.UUCP>, scott@bbxsda.UUCP (Scott Amspoker) writes: 
+ 
+|> > I have never worked with algorithmic 
+|> > composers but it seems to me that they could help "suggest" ideas 
+|> > that a human composer could work with.  (Sometimes it takes that 
+|> > leap of logic to break out of a rut.) 
+|> 
+|> Or that leap of illogic.  A "random" program doesn't know anything about 
+|> your rut, even if you think you've constrained it to do the kinds of 
+|> things you're thinking of.  I find these tools useful for generating raw 
+|> material I could not have invented myself, which I can then polish at my 
+|> leisure. 
+|> 
+ 
+        I find sources from Real Life (people talking, cats meowing, 
+jackhammers jacking, etc.) much more useful than some machine 
+throwing out noises with <insert parameter here>s generated from 
+<insert method here>. 
+ 
+        For me, there is a point when the use of automata in 
+creating emotion is silly. 
+ 
+ 
+----------------------------------------------------------------------------- 
+Craig Latta                          "Those who know History are 
+latta@swindle.Berkeley.EDU                  doomed to explain it"   -- me. 
+----------------------------------------------------------------------------- 
+---------- 
+ 
+ 
+Post: 174 of 179 
+From: pauld@hpausla.aso.hp.com (Paul Doornbusch) 
+Newsgroups: comp.music 
+Subject: Re: Algorithmic composing tools 
+Date: 22 Apr 90 06:00:14 GMT 
+Organization: HP Australian Software Operation 
+Lines: 38 
+ 
+[ notes went berserk and posted the previous reply before I'd started 
+it, apologies to all] 
+ 
+>       I find sources from Real Life (people talking, cats meowing, 
+> jackhammers jacking, etc.) much more useful than some machine 
+> throwing out noises with <insert parameter here>s generated from 
+> <insert method here>. 
+ 
+The machine may be throwing out pitches and rhythms that are 
+permutations of your previous work.  Naturally occuring noises are 
+very usefull if that is what you want to use as a basis for a piece ,a 
+la Bartok or Kodaly. As a method for (you imply "inspiration") it is 
+no better or worse than any other method, and substansially less 
+controllable or dare I say random than some others. 
+ 
+>       For me, there is a point when the use of automata in 
+> creating emotion is silly. 
+ 
+At the risk of starting another notes network storm, what has emotion 
+got to do with music (I will cite Stravinski, Schoenberg, and Boulez 
+as references, there are many more)?  I write music for other people 
+to enjoy, whether they have an emotional reaction to a piece is not 
+under my control, and enjoyment may take many forms.  There is no 
+doubt in my mind that all music is enjoyable in some way to some 
+people, and equally non-ejnoyable to others.  Lyrics may invoke an 
+emotion as words are a widely understood method of communication, but 
+pitches and rhythms are extremely diverse both within and between 
+cultures, and invoke wildly varying responses from people depending on 
+many things: culture; education; solialization; age; personal history; 
+and so on.  For example there are Indian ragas that invoke fear in 
+parts of India because people believe that they will cause all water 
+to burst into flame, I may find these interesting or enjoyable to 
+listen to, and others may find them repulsive. 
+ 
+The use of automata in creating music is as valid a method as any, and 
+more flexible than a lot of other methods.  Using music to create 
+emotion is hazardous at best, writing music for people to enjoy 
+(define that as you wish) seems much more achievable. 
+ 
+ 
+Post: 175 of 179 
+From: maverick@fir.berkeley.edu (Vance Maverick) 
+Newsgroups: comp.music 
+Subject: Re: Algorithmic composing tools 
+Date: 22 Apr 90 18:41:55 GMT 
+Reply-To: maverick@fir.berkeley.edu (Vance Maverick) 
+Lines: 43 
+ 
+> >     I find sources from Real Life (people talking, cats meowing, 
+> > jackhammers jacking, etc.) much more useful than some machine 
+> > throwing out noises with <insert parameter here>s generated from 
+> > <insert method here>. 
+> 
+> The machine may be throwing out pitches and rhythms that are 
+> permutations of your previous work.  Naturally occuring noises are 
+> very usefull if that is what you want to use as a basis for a piece ,a 
+> la Bartok or Kodaly. As a method for (you imply "inspiration") it is 
+> no better or worse than any other method, and substansially less 
+> controllable or dare I say random than some others. 
+ 
+And "a machine throwing out noises" with random "parameters" sounds like 
+a pretty good description of a jackhammer.... 
+ 
+> The use of automata in creating music is as valid a method as any, and 
+> more flexible than a lot of other methods.  Using music to create 
+> emotion is hazardous at best, writing music for people to enjoy 
+> (define that as you wish) seems much more achievable. 
+ 
+I think you're in trouble if you make other people's enjoyment your 
+single goal and criterion.  After all, your access to your own 
+sensibility is much more direct than your access to others'.  It's 
+satisfying if other people like your music, and vital if you live by 
+your music, but I think it's a side effect.  My definition of what we're 
+up to in doing music is similar to Craig's, though "creating emotion" 
+sounds as Romantic as Clynes' seven gestures.  Is the experience of 
+following Stravinsky through the concerto for piano and winds "emotion"? 
+ Perhaps in the broadest definition. 
+ 
+Acoustical events have aesthetic properties, which we apprehend somehow 
+-- intuitively, mystically, analytically, whatever.  We like some of 
+these, and seek to build acoustical events with properties we care 
+about.  (Maybe we invent the properties of our own pieces, maybe we 
+refine them from what our environment gives us.)  Craig feels the real 
+world is richer in aesthetic properties than computer-generated sounds; 
+sure, but once you've found properties you like in a set of parameters 
+for your computer, the next step is easy to take. 
+ 
+Paul Doornbusch's attitude towards algorithms (expressed in an earlier 
+posting) shows a confidence that the properties of the output inhere in 
+the input, which I don't share.  Musical structure is a tool, not the 
+meaning of the music. 
+
+ 
+Post: 177 of 179 
+From: latta@sting.Berkeley.EDU (Craig R. Latta) 
+Newsgroups: comp.music 
+Subject: Re: Algorithmic composing tools 
+Date: 23 Apr 90 04:10:44 GMT 
+Reply-To: latta@sting.Berkeley.EDU (Craig R. Latta) 
+Organization: Music Department, UC Berkeley 
+Lines: 38 
+X-Local-Date: 22 Apr 90 21:10:44 PDT 
+ 
+ 
+Paul Doornbusch writes: 
+ 
+        "At the risk of starting another notes network storm, what has emotion 
+got to do with music?" 
+ 
+        You can either ignore music, or you can react to it: you can feel 
+some way about it (have an emotional response). This response can then 
+lead to others (i.e., a spurring of the intellect, to satisfy a desire to 
+"understand" what has been heard). 
+ 
+ 
+Vance Maverick writes: 
+ 
+        "And 'a machine throwing out noises' with random 'parameters' sounds 
+like a pretty good description of a jackhammer...." 
+ 
+        Yes, but do you have to spend several hundreds or thousands of 
+dollars, or become involved in a research project, to utilize that source? 
+My point is that the current tools of algorithmic composition are 
+too cumbersome, expensive, and inaccessible relative to the much richer 
+array of sources around us all the time, wherever we are. 
+ 
+ 
+Vance further writes: 
+ 
+        "Musical structure is a tool, not the meaning of the music." 
+ 
+ 
+        Right on. 
+ 
+ 
+-C 
+ 
+----------------------------------------------------------------------------- 
+Craig Latta                          "Those who know History are 
+latta@swindle.Berkeley.EDU                  doomed to explain it"   -- me. 
+
+
+
+Post: 224 of 225
+From: mgresham@artsnet.UUCP (Mark Gresham)
+Newsgroups: comp.music
+Subject: Re: Fractal Music Generation (summary)
+Keywords: I need help
+Date: 3 May 90 23:33:12 GMT
+Reply-To: mgresham@artsnet.UUCP (Mark Gresham)
+Organization: ARTSNET  Atlanta, GA  USA
+Lines: 30
+
+In article <23087@bcsaic.UUCP> carroll@bcsaic.UUCP (Jeff Carroll) writes:
+>It might be more interesting to know whether the spectral density of
+>music along the *pitch* axis is normally distributed (approximately, of
+>course), or skewed one way or the other. In such a case, the spectral
+>(frequency) density of the music could be said to fit a log-normal
+>distribution.
+
+Do you mean by that
+1) how often pitches appear in a piece (like Beethoven's 3rd
+Symphony) throughout the audible spectrum?   In that case, are you
+considering duration or just how many times a given pitch is
+initiated?
+2) or are you wondering how frequently a pitch occurs within
+a given tune?  If that, you might like to know that in a large
+proportion of tunes from oral traditions and tunes made up by
+children exhibit this order of frequency, in terms of the diatonic
+scale (in the scale degrees numbered 1 to 8 for 'white keys' C to C:
+
+more often   ...   less often
+5   3   6   2   1   8   7   4
+
+Cheers,
+
+--Mark
+
+========================================
+Mark Gresham  ARTSNET  Norcross, GA, USA
+E-mail:       ...gatech!artsnet!mgresham
+or:          artsnet!mgresham@gatech.edu
+========================================
+
+

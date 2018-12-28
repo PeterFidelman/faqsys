@@ -1,0 +1,68 @@
+     INSTRUCTION PAIRING RULES for the PENTIUM(TM) PROCESSOR
+
+From the Pentium Processor User's Manual, Volume 1:  Pentium
+Processor Data Book, section 3.1.2.
+
+
+The Pentium processor can issue one or two instructions every
+clock.  In order to issue two instructions simultaneously they
+must satisfy the following conditions:
+
+-> Both instructions in the pair must be "simple" as defined
+   below
+-> There must be no read-after-write or write-after-write
+   register dependencies between them
+-> Neither instruction may contain both a displacement and an
+   immediate
+-> Instructions with prefixes (other than 0F of JCC instructions)
+   can only occur in the u-pipe
+
+Simple instructions are entirely hardwired; they do not require
+any microcode control and, in general, execute in one clock.  The
+exceptions are the ALU mem,reg and ALU reg,mem instructions which
+are two and three clock operations respectively.  Sequencing
+hardware is used to allow them to function as simple
+instructions.  The following integer instructions are considered
+simple and may be paired:
+
+1.  mov reg, reg/mem/imm
+2.  mov mem, reg/imm
+3.  alu reg, reg/mem/imm
+4.  alu mem, reg/imm
+5.  inc reg/mem
+6.  dec reg/mem
+7.  push reg/mem
+8.  pop reg
+9.  lea reg, mem
+10.  jmp/call/jcc near
+11.  nop
+
+In addition, conditional and unconditional branches may be paired
+only if they occur as the second instruction in the pair.  They
+may not be paired with the next sequential instruction.  Also,
+SHIFT/ROT by 1 and SHIFT by imm may pair as the first instruction
+in a pair.
+
+The register dependencies that prohibit instruction pairing
+include implicit dependencies via registers or flags not
+explicitly encoded in the instruction.  For example, an ALU
+instruction in the u-pipe (which sets the flags) may not be
+paired with an ADC or a SBB instruction in the v-pipe.  There are
+two exceptions to this rule.  The first is the commonly occurring
+sequence of compare and branch which may be paired.  The second
+exception is pairs of pushes or pops.  Although these
+instructions have an implicit dependency on the stack pointer,
+special hardware is included to allow these common operations to
+proceed in parallel.
+
+Although in general two paired instructions may proceed in
+parallel independently, there is an exception for paired "read-
+modify-write" instructions.  Read-modify-write instructions are
+ALU operations with an operand in memory.  When two of these
+instructions are paired there is a sequencing delay of two clocks
+in addition to the three clocks required to execute the
+individual instructions.
+
+Although instructions may execute in parallel their behavior as
+seen by the programmer is exactly the same as if they were
+executed sequentially (as on the Intel486(TM) CPU).

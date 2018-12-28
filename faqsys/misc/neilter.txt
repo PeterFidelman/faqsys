@@ -1,0 +1,1120 @@
+
+Steve:
+
+   Here are the terrain files we talked about.
+
+   These are a decent example of how you can use various functions to generate
+nice looking terrain.  The map dumper will dump the maps by feature or by
+altitude.  If you have wide paper, dump them in expanded mode.
+
+   These files were used in the bots family of games in my paper.  The code is
+UNIX flavor of C, circa 1991 and earlier.  It should be pretty vanilla.
+
+   It's hard to get across how much fun these maps were to play on in a
+multiplayer ground armoured combat game.  I have a very strong memory of
+holding point on a freeway bridge on the rhine valley map durring a
+firefight.  My friends were giving me great supporting fire, and the auto
+(computer AI units) were coming down the road.  All of a sudden "Happy" (I
+named all of the AI units after Disney characters)  jumps twelve ranges and
+is at knife fighting range.  Two seconds later I'm staring at a screen full
+on phosphor at an R&D lab in central Ohio, wondering where Germany went.
+
+                                 -- Neil Kirby  (nak@lucent.com)
+
+------------------------- the map dumper makefile ---
+
+CFLAGS = -g
+CC = cc
+
+map:  main.o ../common/terrain.o
+        cc -O main.o  ../common/terrain.o -lm -o nmap
+        mv nmap map
+        bell
+
+------------------------- the terrain.h file ----
+
+/*********** terrain.h ************/
+
+#define WATER   0
+#define FLAT    1
+#define WOOD    2
+#define MTN     3
+#define ROAD    5
+#define HILL    6
+#define SWAMP   7
+/* roof and urban allow 2 different characters for blds with split
+levels*/
+#define URBAN   8
+#define ROOF    9
+
+#define TER_TYPES 10    /* count the types enumerated above */
+
+struct Terrain
+        {
+        double cost, alt, stealth, ecm;
+        int air_stealth, air_ecm;
+        char name;
+        };
+
+------------------------- the constants.h file ----
+
+#define FAIL -1
+#define SUCCESS 0
+#define NULL 0
+#define TRUE 1
+#define FALSE 0
+
+#define MAXSYS 30
+#define MAXRANGES 10
+
+#define ACTIVE 1
+#define PASSIVE 2
+
+------------------------- the terrain.c file ----
+
+#include        <math.h>
+#include        "../lib/constants.h"
+#include        "../lib/terrain.h"
+
+struct Terrain terrain[TER_TYPES];
+
+#define TER_CNT 9
+
+#define RET(RVAL,ALT,TP)\
+        {       \
+            *TP = terrain[RVAL];\
+            TP->alt = ALT;\
+            return(RVAL);\
+        }
+
+int (*ter_table[TER_CNT])();
+int totd=0;     /* init to 0 for the standard billiard table */
+
+set_totd(new)
+short new;
+{
+        if( (new < 0) || (new >= TER_CNT))
+        {
+            printf("Botcom sent us invalid terrain type of %d.\n", new);
+            return;
+        }
+        totd = new;
+        printf("Today's game uses map #%d.\n",totd);
+        init_terrain();
+}
+
+init_terrain()
+{
+        struct Terrain *t;
+        int i, farm(), islands(), rolling(), newyork(), pass(), air_strip();
+        int rhine(), bayou();
+
+        for(i=0; i < TER_CNT; i++ > ter_table[i] = NULL;
+        /* ter_table[0] is always NULL for billiard table. */
+        ter_table[1] = islands;
+        ter_table[2] = farm;
+        ter_table[3] = newyork;
+        ter_table[4] = pass;
+        ter_table[5] = rolling;
+        ter_table[6] = air_strip;
+        ter_table[7] = rhine;
+        ter_table[8] = bayou;
+
+        /* no draw if no terrain. */
+        if( totd != 0)init_graphics();
+
+        for(i=0; i < TER_TYPES; i++)
+        {
+            t = &terrain[i];
+            t->stealth = 0;
+            t->alt = 0;
+            t->ecm = 0;
+            t->air_stealth = 0;
+            t->air_ecm = 0;
+            t->name = '.';
+            t->cost = 1.0;
+        }
+
+        t = &terrain[MTN];
+        t->stealth = 0.25;
+        t->air_stealth = 2;
+        t->air_ecm = 40;
+        t->ecm = 10;
+        t->name = '^';
+        t->cost = 4.0;
+
+        t = &terrain[HILL];
+        t->stealth = 0.25;
+        t->ecm = 5;
+        t->air_stealth = 1;
+        t->air_ecm = 20;
+        t->name = '~';
+        t->cost = 2.0;
+
+        t = &terrain[WOOD];
+        t->stealth = 1;
+        t->ecm = 2;
+        t->air_stealth = 4;
+        t->air_ecm = 10;
+        t->name = '*';
+        t->cost = 1.5;
+
+        t = &terrain[ROAD];
+        t->cost = 0.5;
+        t->name = '+';
+
+        t = &terrain[URBAN];
+        t->name = '#';
+
+        t = &terrain[ROOF];
+        t->name = '"';
+
+        t = &terrain[WATER];
+        t->name = ' ';
+
+        t = &terrain[FLAT];
+        t->name = '-';
+
+        t = &terrain[SWAMP];
+        t->stealth = 0.2;
+        t->ecm = 1;
+        t->air_stealth = 1;
+        t->air_ecm = 5;
+        t->cost = 2.0;
+        t->name = '%';
+
+}
+
+get_terrain_type(fx, fy, tp)
+struct Terrain *tp;
+double fx, fy;
+{
+        if( ter_table[totd] != NULL)return( (*ter_table[totd])(fx,fy,tp));
+        RET(FLAT, 0.0, tp);
+}
+
+double get_terrain_alt(fx, fy)
+double fx, fy;
+{
+        struct Terrain tx, *tp= &tx;
+        int type;
+
+        type = get_terrain_type(fx, fy, tp);
+        type = type;    /* lint */
+        return( tp->alt);
+}
+
+char get_terrain_char(fx, fy)
+double fx, fy;
+{
+        struct Terrain tx, *tp= &tx;
+        int type;
+
+        type = get_terrain_type(fx, fy, tp);
+        type = type;    /* lint */
+        return( tp->name);
+}
+
+is_urban(type)
+int type;
+{
+        if( type == URBAN)return(TRUE);
+        if( type == ROOF)return(TRUE);
+        return(FALSE);
+}
+
+is_water(type)
+int type;
+{
+        if( type == WATER)return(TRUE);
+        return(FALSE);
+}
+
+is_flat(fx, fy)
+double fx, fy;
+{
+        struct Terrain tx, *tp= &tx;
+        int type;
+
+        type = get_terrain_type(fx, fy, tp);
+        if( type == FLAT)return(TRUE);
+        if( type == ROAD)return(TRUE);
+        return(FALSE);
+}
+
+is_woods(fx, fy)
+double fx, fy;
+{
+        struct Terrain tx, *tp= &tx;
+        int type;
+
+        type = get_terrain_type(fx, fy, tp);
+        if( type == WOOD)return(TRUE);
+        return(FALSE);
+}
+
+is_not_water(fx,fy)
+double fx, fy;
+{
+        struct Terrain tx, *tp= &tx;
+        int type;
+
+        type = get_terrain_type(fx, fy, tp);
+        if( type == WATER)return(FALSE);
+        return(TRUE);
+}
+
+is_firm(fx, fy)
+double fx, fy;
+{
+        struct Terrain tx, *tp= &tx;
+        int type;
+
+        type = get_terrain_type(fx, fy, tp);
+        if( type == WATER)return(FALSE);
+        if( type == SWAMP)return(FALSE);
+        return(TRUE);
+}
+
+newyork(fx, fy, tp)
+struct Terrain *tp;
+double fx, fy;
+{
+        /* loosely based on Manhattan, apologies to those who care. */
+
+        int sx, sy, ix, iy;
+        double rx, ry, range;
+
+        /* set the values that will deterimine terrain */
+
+        /* sector mirroring should be off map. */
+        ix = 100 + (fx);
+        iy = 120 + fy;
+        sx = 10 + (fx)/10;
+        sy = 12 + fy/12;
+        /* order is critical here */
+        rx = 100 + (fx) - ix;   /* just the fractional part */
+        ry = 120 + fy - iy;
+        /* go to independant numbers usable in any sector */
+        ix = ix % 10;
+        iy = iy % 12;
+        rx += ix;
+        ry += iy;
+
+        /* the areas over the rivers will be featureless flat */
+        if( (sx < 9) || (sx > 15))RET(FLAT, 1.0, tp)
+
+        /* we are garanteed sx in the range 9-15 */
+        /* carve the 45 degree tip to the water */
+        if( sy > (6 + sx)) RET(WATER, 0.0, tp)
+        if( sy == (6 + sx))
+        {
+            if( ry > rx)RET(WATER, 0.0, tp)
+        }
+
+        /* park avenue and central park */
+        if(sx == 11)
+        {
+            /* 0, 1, and 2 */
+            if(ix < 3) RET(ROAD, 1.0, tp)
+
+                /* central park */
+            range = hypot( (fx - 22.5), ( 0.8 * (fy - 18)) );
+            if( range <= 3.5) RET(WATER, 0.0, tp)
+
+            if(  (sy == 13) || (sy==14)  )
+            {
+                if( (ix==9)|| (iy==2) || (iy==7))RET(FLAT, 1.0, tp)
+                RET(WOOD, 1.0, tp)
+            }
+        }
+
+        /* 5th avenue and central park */
+        if(sx == 12)
+        {
+            /* 7, 8, and 9 */
+            if(ix > 6) RET(ROAD, 1.0, tp)
+
+                /* central park */
+            range = hypot( (fx - 22.5), ( 0.8 * (fy - 18)) );
+            if( range <= 3.5) RET(WATER, 0.0, tp)
+
+            if(  (sy == 13) || (sy==14)  )
+            {
+                if( (iy==5) || (iy==9))RET(FLAT, 1.0, tp)
+                RET(WOOD, 1.0, tp)
+            }
+        }
+
+                /* the cross streets */
+        if( (iy == 0) || (iy == 11)) RET(ROAD, 1.0, tp)
+
+        /* the East and Hudson rivers */
+        if( (sx == 9) || (sx == 15))RET(WATER, 0.0, tp)
+
+        /* actually, it's 8th, not Park, but who's perfect? */
+        /* back alley, except next to Park avenue which is really next
+            to the river so we put a river road edge on. */
+        if( sx == 10)
+        {
+            if(ix ==0) RET(ROAD, 1.0, tp)
+            else
+            {
+                /* shift it over 1 */
+                ix -= 1;
+                rx -= 1.0;
+            }
+
+        }
+        else
+        {
+            if(ix ==9) RET(ROAD, 1.0, tp)
+        }
+
+        /* temporary dithering & selection mechanism */
+        switch( (3 * sx + sy) % 8)
+        {
+        case 0:
+            {
+                /* bld type 1 */
+                /* corner parking lot */
+                if( (ix < 5)&&( iy < 4))RET(ROAD, 1.0, tp)
+                /* l shaped tall bld */
+                if(  iy < 7)RET(URBAN, 7.0, tp)
+                if( iy > 7)     /* two smnall blds */
+                {
+                    if( ix < 4)RET(ROOF, 2.0, tp)
+                    if( ix > 4)RET(URBAN, 3.0, tp)
+                }
+                RET(ROAD, 1.0, tp)
+            }
+            /*NOTREACHED*/
+            break;
+        case 1:
+            {
+                /* bld type 3, World Trade Center */
+                if( iy < 5)RET(URBAN, 10.0, tp)
+                if( iy > 6)RET(URBAN, 10.0, tp)
+                RET(ROAD, 1.0, tp)
+            }
+            /*NOTREACHED*/
+            break;
+        case 2:
+            {
+                /* bld type 4, Courtyard Hotel */
+                        /* trees */
+                if( (iy < 6) && (iy >3) && (ix > 2) && (ix < 6))
+                   RET(WOOD, 1.0, tp)
+                        /* pool */
+                if( (iy < 8) && (iy >5) && (ix > 2) && (ix < 6))
+                   RET(WATER, 0.0, tp)
+                        /* perimeter */
+                if( (iy < 9) && (iy >2) && (ix > 1) && (ix < 7))
+                   RET(FLAT, 1.0, tp)
+                RET(URBAN, 5.0, tp)
+            }
+            /*NOTREACHED*/
+            break;
+        case 3:
+            {
+                /* this one has 4 alt 6 towers, but the area between is 2 above
+                ** the pavement */
+                if( (iy==5) || (iy==6) || (ix == 4))RET(ROOF, 2.0, tp)
+                RET(URBAN, 6.0, tp)
+            }
+            /*NOTREACHED*/
+            break;
+        case 4:
+            {
+                /* bld type 2, warehouse with loading zone */
+                if( iy < 4)RET(URBAN, 2.0, tp)
+                if( iy > 7)RET(URBAN, 2.0, tp)
+                if( ix > 3)RET(URBAN, 2.0, tp)
+                RET(ROAD, 1.0, tp)
+            }
+            /*NOTREACHED*/
+            break;
+        case 5:
+            {
+                /* a smooth edged diamond shape */
+                if( ry < ( rx - 4) )RET(FLAT, 1.0, tp)
+                if( ry < ( 5 - rx) )RET(FLAT, 1.0, tp)
+                if( ry > ( 6 + rx) )RET(FLAT, 1.0, tp)
+                if( ry > ( 15 - rx) )RET(FLAT, 1.0, tp)
+                RET(URBAN, 8.0, tp)
+            }
+            /*NOTREACHED*/
+            break;
+        case 6:
+            {
+                /* 4 L corner buildings with open area center */
+                if( (iy==5) || (iy==6) || (ix == 4))RET(ROAD, 1.0, tp)
+        if( (iy > 2) && (iy < 9) && (ix > 1) && ( ix < 7))RET(ROAD, 1.0, tp)
+                RET(URBAN, 9.0, tp)
+            }
+            /*NOTREACHED*/
+            break;
+        default:
+            {
+                /* X shaped building with zig zag */
+                if( ix == (10 - iy) )RET(URBAN, 8.0, tp)
+                if( ix == (9 - iy) )RET(URBAN, 8.0, tp)
+                if( (ix + 1) == iy)RET(URBAN, 8.0, tp)
+                if( (ix + 2) == iy)RET(URBAN, 8.0, tp)
+
+                if( iy >= 6)
+                {
+                    if( (ix + 3) == iy)RET(URBAN, 8.0, tp)
+                    if( ix == (11 - iy) )RET(URBAN, 8.0, tp)
+                }
+                else
+                {
+                    if( ix == iy)RET(URBAN, 8.0, tp)
+                    if( ix == (8 - iy) )RET(URBAN, 8.0, tp)
+                }
+
+                RET(ROAD, 1.0, tp)
+            }
+            /*NOTREACHED*/
+            break;
+        }
+
+        /* error case */
+        RET(ROAD, 1.0, tp)
+}
+
+islands(fx, fy, tp)
+struct Terrain *tp;
+double fx, fy;
+{
+        double alt, dx, dy, range, r2;
+
+        /* center is at 9, 9 */
+        dx = 9 - fx;
+        dy = 9 - fy;
+        range = hypot( dx, dy);
+        if( range < 1.0)
+            alt = 12;
+        else
+            alt = 12/range;
+
+        if(range <= 4) RET( HILL, alt, tp)
+        if( range <= 8) RET( WOOD, alt, tp)
+        if( range <= 12) RET( FLAT, alt, tp)
+
+        dx = 30 - fx;
+        dy = 30 - fy;
+        range = hypot( dx, dy);
+        if( range < 1.0)
+            alt = 16;
+        else
+            alt = 16/range;
+        if(range <= 2) RET( MTN, alt, tp)
+        if(range <= 5) RET( HILL, alt, tp)
+        if( range <= 12) RET( WOOD, alt, tp)
+        if( range <= 16) RET( FLAT, alt, tp)
+
+        dx = 10 - fx;
+        dy = 40 - fy;
+        range = hypot( dx, dy);
+        if( range < 1.0)
+            alt = 8;
+        else
+            alt = 8/range;
+        if(range <= 4) RET( WOOD, alt, tp)
+        if( range <= 8) RET( FLAT, alt, tp)
+
+        dx = 35 - fx;
+        dy = 5 - fy;
+        range = hypot( dx, dy);
+        dx = 45 - fx;
+        dy = 5 - fy;
+        r2 = hypot( dx, dy);
+        if( range + r2 <= 11) RET( FLAT, 1.0, tp)
+
+        /* if it's not an island, must be sea. */
+        *tp = terrain[WATER];
+        tp->alt = 0.0;
+        return(WATER);
+}
+
+rolling(fx, fy, tp)
+struct Terrain *tp;
+double fx, fy;
+{
+        double offset = 1.5 * M_PI, dx, dy, alt;
+        int sign;
+
+        /* first translate from map to math */
+        fx -= 25;
+        fy -= 25;
+
+        /* first the road */
+        if( fx < 0.0) sign = 1;
+        else sign = -1;
+        dy = sign * sqrt(fabs(fx));
+
+        /* then the river */
+        dx = M_PI * sin(fy/M_PI);
+
+    /* at the road or the river, the altitude is 1 + zero, since sin of 1.5
+    pi is -1, added to 1 is zero */
+        alt = .5 + 0.25 * ( 1 + sin( offset + (fx - dx) * M_PI/12.0)) *
+                 ( 1 + sin( offset + (fy - dy) * M_PI/8.8) );
+
+        /* these are for generating a false image contour *
+        /*
+        if( alt <= .55) RET( FLAT, alt, tp)
+        if( alt <= .75) RET( WATER, alt, tp)
+        if( alt <= 1.0) RET( FLAT, alt, tp)
+        if( alt <= 1.25) RET( WATER, alt, tp)
+        */
+
+        RET(FLAT, alt, tp)
+
+}
+
+pass(fx, fy, tp)
+struct Terrain *tp;
+double fx, fy;
+{
+        double offset = 1.5 * M_PI, dx, dy, alt, ry, rx;
+        int sign;
+
+        /* first translate from map to math */
+        fx -= 25;
+        fy -= 25;
+
+        /* first the road */
+        if( fx < 0.0) sign = 1;
+        else sign = -1;
+        dy = sign * sqrt(fabs(fx));
+        rx = fabs(dy -fy);
+
+        /* then the river */
+        dx = M_PI * sin(fy/M_PI);
+        ry = fabs( fx -dx);
+
+    /* at the road or the river, the altitude is 1 + zero, since sin of 1.5
+    pi is -1, added to 1 is zero */
+        alt = 1 + 0.525 * ( 1 + sin( offset + (fx - dx) * M_PI/5)) *
+                 ( 1 + sin( offset + (fy - dy) * M_PI/5.4) );
+
+        if( rx <= 1.5) RET( ROAD, alt, tp)
+        if( ry < 1.5 ) RET( WATER, 0.0, tp)
+
+        /* then the flat on either side of the road except over the water
+        */
+        if( ry < 4) RET( WOOD, alt, tp)
+
+        /* the rest of the land is hills and mountains with passes */
+
+        /* mtns have hills around them, with flat tops */
+        if( alt >= 3.0) RET(FLAT, alt, tp)
+        if( alt > 2.5) RET(MTN, alt, tp)
+        if( alt > 1.5) RET(HILL, alt, tp)
+
+        *tp = terrain[FLAT];
+        tp->alt = alt;
+        return(FLAT);
+}
+
+farm(fx, fy, tp)
+struct Terrain *tp;
+double fx, fy;
+{
+        int sign, type, bx, by, ix, iy;
+        double alt, dy, r2;
+
+        /* set the values that will deterimine terrain */
+
+        /* sector mirroring should be off map. */
+        bx = 130 + fx/13;
+        by = 120 + fy/12;
+
+        /* sector values, mirroring off map */
+        ix = 130 + fx;
+        ix = ix % 13;
+        if( ix < 0) ix += 13;
+        iy = 120 + fy;
+        iy = iy % 12;
+        if( iy < 0)iy += 12;
+
+            /* river values */
+        /* first translate from map to math */
+        fx -= 25;
+        fy -= 25;
+        if( fx < 0.0) sign = -1;
+        else sign = 1;
+        dy = sign * sqrt(fabs(fx)) + M_PI * sin(fx/M_PI);
+        r2 = fabs(dy -fy);
+
+        /* the limiting hills and mountains */
+        if( r2 >= 28) RET(MTN, 5.0, tp)
+        if( r2 > 25)
+        {
+            alt = 5 - 4.0/3.0*(28 - r2);
+            RET(HILL, alt, tp)
+        }
+
+        /* common parts of all sectors */
+        if( (ix == 0) || (ix ==1) )RET(ROAD, 1.0, tp)
+        if( (iy == 0) )RET(ROAD, 1.0, tp)
+
+        /* the river */
+        if( r2 <= 1.5) RET( WATER, 0.0, tp)
+
+        /* sector details; */
+
+        type = bx + 2 * (by % 3);
+        type = type % 6;
+        if( type < 0) type += 6;
+        switch(type)
+        {
+            case 0:
+                /* orchard 3 */
+                if( (ix==7) || (iy==6) ) RET( FLAT, 1.0, tp)
+                RET( WOOD, 1.0, tp)
+                /* NOTREACHED */
+                break;
+            case 1:
+                /* orchard 1 */
+                if( (ix==4) || (ix==7) || (ix==10) ) RET( FLAT, 1.0, tp)
+                if( (iy==3) || (iy==6) || (iy==9) ) RET( FLAT, 1.0, tp)
+                RET( WOOD, 1.0, tp)
+                /* NOTREACHED */
+                break;
+            case 2:
+                /* rice paddies partly under water */
+                RET( SWAMP, 1.0, tp)
+                /* NOTREACHED */
+                break;
+            case 3:
+                /* rice paddies fully under water */
+                RET( WATER, 0.0, tp)
+                /* NOTREACHED */
+                break;
+            case 4:
+                /* fish ponds */
+                if( (ix==5) || (ix==9) ) RET( FLAT, 1.0, tp)
+                if( (iy==4) || (iy==8) ) RET( FLAT, 1.0, tp)
+                RET( WATER, 0.0, tp)
+                /* NOTREACHED */
+                break;
+            case 5:
+                /* orchard 2 */
+                if( (ix==5) || (ix==9) ) RET( FLAT, 1.0, tp)
+                if( (iy==4) || (iy==8) ) RET( FLAT, 1.0, tp)
+                RET( WOOD, 1.0, tp)
+                /* NOTREACHED */
+                break;
+        }
+        /* this is the error check */
+        RET(ROAD, 1.0, tp)
+}
+
+rhine(fx, fy, tp)
+struct Terrain *tp;
+double fx, fy;
+{
+        double center, f2, f1, rt2;
+        double absrtc, rtc, rvalt;
+        int ix, iy, i1, ic;
+
+        ix = fx;
+        iy = fy;
+
+        /* where is the river center? */
+        rt2 = 20 * sqrt(2.0);
+        if(fy <= 16)center = 25.0;
+        else
+        if(fy >= 76)center = -fy + 140 - rt2;
+        else if(fy <= 36)
+        {
+            f1 = fy - 16;
+            f1 *= f1;
+            center = 25 + rt2 - sqrt( 800.0 - f1);
+        }
+        else
+        {
+            f1 = fy - 56;
+            f1 *= f1;
+            f2 = 25 + rt2 - 40;
+            center = f2 + sqrt( 800.0 - f1);
+        }
+
+        /* what is the range to river center? */
+        rtc = fx - center;
+        absrtc = fabs(rtc);
+        ic = rtc;
+        /* what is the terrain altitude, determined by the river */
+        if( absrtc < 10)rvalt = 1.0;
+        else
+        if( absrtc > 20)rvalt = 3.0;
+        else
+        rvalt = 1.0 + (absrtc - 10.0)/5;
+
+        /* freeway or autobahn */
+        if( ((iy >= 5) && (iy <= 8)) || ( (iy >= 12) && (iy <= 15)))
+        {
+            RET(ROAD, rvalt, tp);
+        }
+        /* castle */
+        if( ((iy >= 50) && (iy <= 62)) && ( (ix >= 3) && (ix <= 15)))
+        {
+                /* grass border */
+            if( (iy == 50) || (iy == 62) || (ix == 15) || (ix == 3))
+                RET(FLAT, rvalt, tp);
+
+                /* four towers */
+            if( ((iy == 51) || (iy == 52) ) && ((ix == 4) || (ix == 5)))
+                RET(URBAN, 7.0, tp);
+            if( ((iy == 51) || (iy == 52) ) && ((ix == 13) || (ix == 14)))
+                RET(URBAN, 7.0, tp);
+            if( ((iy == 60) || (iy == 61) ) && ((ix == 4) || (ix == 5)))
+                RET(URBAN, 7.0, tp);
+            if( ((iy == 60) || (iy == 61) ) && ((ix == 13) || (ix == 14)))
+                RET(URBAN, 7.0, tp);
+
+                /* three walls have no gate */
+            if( (iy == 51) || (iy == 61) || (ix == 4) ||
+                    ((ix ==14) &&(iy != 56)) )
+                RET(ROOF, 6.0, tp);
+
+            RET(FLAT, rvalt, tp);
+        }
+
+        /* the river itself */
+        if( absrtc <= 5) RET( WATER, 0.0, tp);
+
+        /* the upper river road */
+        if( ic == -21)RET(ROAD, rvalt, tp);
+        /* castle access road */
+        if( (ic < -21) && (iy == 56) && (ix > 14))RET(ROAD, rvalt, tp);
+
+        /* no trees on the flood plain, or partway up hilll */
+        if( rvalt <= 1.5) RET(FLAT, rvalt, tp);
+
+        /* testing, gives terraces */
+        i1 = rvalt * 10;
+        if( ((i1%10) % 3) != 0) RET(WOOD, rvalt, tp);
+
+        if( (sin(rtc) > 0.0) && ( sin(fy +rtc) > 0.0))RET(WOOD, rvalt, tp);
+
+        RET(FLAT, rvalt, tp);
+
+}
+
+air_strip(fx, fy, tp)
+struct Terrain *tp;
+double fx, fy;
+{
+        int ix, iy, sign = 1;
+        double freq, rx, ry, center, width, app, slope;
+
+        ix = fx;
+        iy = fy;
+
+        /* the runway */
+        if( (ix >= 20) && (ix <= 40) && (iy >=20) && (iy <=22))
+        {
+                /* grass ends */
+            if( (ix == 20) || (ix == 40)) RET(FLAT,1.0,tp)
+                /* the pavement */
+            if(iy == 21) RET(ROAD,1.0,tp)
+                /* the clear zone */
+            RET(FLAT,1.0,tp)
+        }
+        if( (ix >= 25) && (ix <= 29) && (iy >=22) && (iy <=25))
+        {
+            if( (ix == 25)|| (ix ==29) || (iy == 25) )
+                RET(FLAT,1.0,tp)
+            RET(URBAN,2.0,tp)
+        }
+
+        /* lets put a river in */
+        rx = fx - 13;
+        ry = fy - 23;
+        if( ry < 0)
+        {
+            sign = -1;
+            ry = -ry;
+        }
+        /** these two lines are ok, but I don't like the shape **
+        freq = 0.4;
+        center = ry * sin( sign * ry * freq);
+        slope = freq * ry * cos( ry * freq) - sin( ry * freq);
+        **********/
+
+        freq = sqrt(ry);
+        center = freq * sin(sign * freq);
+        if( freq > 0.0001)
+            slope = 0.5 * (cos(freq) - sin(freq)/freq);
+        else
+            slope = 0.5 * (cos(freq) - 1);
+
+        /*
+        center = ry * sin( sign * freq );
+        slope = 0.5 * freq * cos(freq);
+        */
+
+        /*
+        ** this gives wide peaks ***
+        slope = 0.5 * freq * cos(freq) + sin(sign * freq);
+        ***** this give wide crossings ****
+        slope = 0.5 * sign * freq * cos(freq) + sin(sign * freq);
+        */
+
+        width = 1.5;
+        app = width * sqrt( 1 + slope * slope);
+        if( fabs( center - rx) < app) RET(WATER, 0.0, tp)
+
+        RET(WOOD,1.0,tp)
+}
+
+tester(fx, fy, tp)
+struct Terrain *tp;
+double fx, fy;
+{
+        double r1, r2, range, diff;
+
+        fy -= 25;
+
+        r1 = 8 * sin( M_PI * fx / 50.0);
+        r2 = 2 * sin( M_PI * fx /16.666666) - 2;
+        diff = fabs( r1 - r2);
+        range = fabs( fy - r1);
+        if( range > diff) RET(FLAT,9.0,tp)
+        range = fabs( fy - r2);
+        if( range > diff) RET(FLAT,9.0,tp)
+
+        RET(WATER,0.0,tp)
+}
+
+bayou(fx, fy, tp)
+struct Terrain *tp;
+double fx, fy;
+{
+        int iy;
+        double rf, width, ha, h1, h2, rc, rc2, rc3, arc, cwa;
+
+        iy = fy;
+
+        /* the highway */
+        if( (iy == 20) || (iy == 21))
+            RET(ROAD,2.0,tp);
+
+        /* river center */
+        rf =  sin( 2.0 * M_PI * sin( 0.05 * (fy - 21) + M_PI_2) );
+
+        rc = 25 + 6 * rf;
+        rc2 = 5 * rf;
+        rc3 = 50 + 5 * rf;
+        arc = fabs(rc - fx);
+
+        /* the six wide river */
+        if( arc <= 3.0)RET(WATER, 0.0, tp);
+
+        /* the embankment */
+        if( (fy < 24.0) && (fy >= 18.0) )
+        {
+            cwa = 2.5 - 0.5 * fabs( fy - 21.0);
+            RET(FLAT,cwa,tp);
+        }
+
+        /* the two side streams */
+        if( fabs(rc2 - fx) <= 1.0)RET(WATER, 0.0, tp);
+        if( fabs(rc3 - fx) <= 1.0)RET(WATER, 0.0, tp);
+
+        /* some high ground */
+        if( rf >= 0.0)
+        {
+            h1 = rc - 13 - 3 * rf;
+            h2 = rc - 13 + 3 * sqrt(rf);
+            width = fabs(h1 - h2);
+            ha = 1.0 + 0.2 * (width/2 - fabs( (h1 + h2)/2 - fx));
+            if( (fx >= h1) && (fx <= h2))
+            {
+                if( ha > 1.2)
+                {
+                    RET(WOOD,ha,tp);
+                }
+                else
+                {
+                    RET(FLAT,ha,tp);
+                }
+            }
+
+            h1 = rc + 13 + 2 * rf;
+            h2 = rc + 13 + 3 * rf;
+            width = fabs(h1 - h2);
+            ha = 1.0 + 0.2 * (width/2 - fabs( (h1 + h2)/2 - fx));
+            if( (fx >= h1) && (fx <= h2))
+            {
+                if( ha > 1.2)
+                {
+                    RET(WOOD,ha,tp);
+                }
+                else
+                {
+                    RET(FLAT,ha,tp);
+                }
+            }
+        }
+        else
+        {
+            h1 = rc + 13 - 3 * rf;
+            h2 = rc + 13 - 3 * sqrt(-rf);
+            width = fabs(h1 - h2);
+            ha = 1.0 + 0.2 * (width/2 - fabs( (h1 + h2)/2 - fx));
+            if( (fx <= h1) && (fx >= h2))
+            {
+                if( ha > 1.2)
+                {
+                    RET(WOOD,ha,tp);
+                }
+                else
+                {
+                    RET(FLAT,ha,tp);
+                }
+            }
+
+            h1 = rc - 13 + 2 * rf;
+            h2 = rc - 13 + 3 * rf;
+            width = fabs(h1 - h2);
+            ha = 1.0 + 0.2 * (width/2 - fabs( (h1 + h2)/2 - fx));
+            if( (fx <= h1) && (fx >= h2))
+            {
+                if( ha > 1.2)
+                {
+                    RET(WOOD,ha,tp);
+                }
+                else
+                {
+                    RET(FLAT,ha,tp);
+                }
+            }
+        }
+
+        /* the general swamp */
+        RET( SWAMP, 1.0, tp);
+}
+
+------------------------- the main for the map dumper----
+
+#include        <stdio.h>
+#include        "../lib/constants.h"
+
+char expand=FALSE;
+char contour=FALSE;
+
+main()
+{
+        int new;
+        char resp[20];
+
+        fprintf(stderr,"What terrain type? ");
+        scanf("%d", &new);
+        fprintf(stderr,"terrain %d.\n",new);
+        fprintf(stderr,"Expanded (y/n) ?");
+        scanf("%s",resp);
+        fprintf(stderr,"\n");
+        if(resp[0]=='y') expand=TRUE;
+        fprintf(stderr,"Contour (y/n) ?");
+        scanf("%s",resp);
+        fprintf(stderr,"\n");
+        if(resp[0]=='y') contour=TRUE;
+
+        set_totd(new);
+        printf("                Terrain Type %d\n",new);
+        do_it();
+}
+
+init_graphics()
+{
+
+}
+
+do_it()
+{
+        int i, x,y;
+        char resp[20], type, get_terrain_char();
+        double get_terrain_alt();
+
+        printf("   ");
+        for( x= -5; x<= 55; x++)
+        {
+            if( (x %10) == 0)
+            {
+                printf("%2.2d",x);
+                if( expand != TRUE)x++;
+            }
+            else
+            {
+                printf(" ");
+                if( expand == TRUE)printf(" ");
+            }
+        }
+        printf("\n");
+        printf("   ");
+        for( x= -5; x<= 55; x++)
+        {
+            if( (x %10) == 0)printf("|");
+            else printf(" ");
+            if( expand == TRUE)printf(" ");
+        }
+        printf("\n");
+        for(y=52; y>= -3; y--)
+        {
+            printf("%2d ",y);
+            for( x= -5; x<= 55; x++)
+            {
+                if( contour == TRUE)
+                {
+                    i = get_terrain_alt( (double) x, (double) y);
+                    if( i==0)
+                        type = ' ';
+                    else
+                    {
+                        i = i % 10;
+                        sprintf(resp,"%1.1d",i);
+                        type = resp[0];
+                    }
+                }
+                else
+                    type = get_terrain_char( (double) x, (double) y);
+
+                printf("%c",type);
+                if( expand == TRUE)printf(" ");
+            }
+            printf(" %2d\n",y);
+        }
+        printf("   ");
+        for( x= -5; x<= 55; x++)
+        {
+            if( (x %10) == 0)printf("|");
+            else printf(" ");
+            if( expand == TRUE)printf(" ");
+        }
+        printf("\n");
+        printf("   ");
+        for( x= -5; x<= 55; x++)
+        {
+            if( (x %10) == 0)
+            {
+                printf("%2.2d",x);
+                if( expand != TRUE)x++;
+            }
+            else
+            {
+                printf(" ");
+                if( expand == TRUE)printf(" ");
+            }
+        }
+        printf("\n");
+}
+
+                                [==========]
+
+                                   [ICU]
+                        Back to the AI Software Page

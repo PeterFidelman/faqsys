@@ -1,0 +1,67 @@
+To: albanycs:beowulf!rsbx
+Path: leah!uwmcsd1!ig!jade!ucbcad!ames!hc!hi!cyrus
+From: cyrus@hi.UUCP (Tait Cyrus)
+Subject: dithers
+Message-ID: <20906@hi.UUCP>
+Date: 29 Nov 87 17:39:53 GMT
+Organization: U. of New Mexico, Albuquerque
+
+Currently I have at my disposal the following 8 bit deep b/w dither routines:
+
+	1) Perform dithering using ordered (matrix) technique,
+	   optimized for 45 degree main axis. Output is an
+	   X bitmap.
+	   The matrix used is:
+
+unsigned char  t[8][8] = { 52,  44,  36, 124, 132, 140, 148, 156,
+                           60,   4,  28, 116, 220, 228, 236, 164,
+                           68,  12,  20, 108, 212, 252, 244, 172,
+                           76,  84,  92, 100, 204, 196, 188, 180,
+                          132, 140, 148, 156,  52,  44,  36, 124,
+                          200, 228, 236, 164,  60,   4,  28, 116,
+                          212, 252, 244, 172,  68,  12,  20, 108,
+                          204, 196, 188, 180,  76,  84,  92, 100 };
+
+	2) Perform dithering using ordered (matrix) technique.
+           Ref. Bayer. Output is in the form of an X bitmap.
+	   The matrix used is:
+
+/*  Dither matrix, four-point star type  */
+unsigned char t1[5][5] = {  40,  80, 140, 120,  20,
+                            60, 170, 210, 190, 100,
+                           150, 240, 250, 230, 160,
+                            90, 200, 220, 180,  50,
+                            10, 110, 130,  70,  30 };
+
+/*  Dither matrix, box type */
+unsigned char t2[5][5] = { 138, 230,   5, 219, 107,
+                            87,  46, 179,  67, 148,
+                           189,  26, 250,  15, 199,
+                           158,  77, 168,  56,  97,
+                           128, 209,  36, 240, 117 };
+
+	3) Dithering by error diffusion.  Error is diffused modulo 256
+	   to the pixel to the right and to the three pixels below.
+
+My question is: "Does anyone have anyother dithering algorithims,
+other than the ones mentioned above, that they use and are in the
+public domain?"
+
+I have seen some SUN background that use some 'rather interesting'
+dithers.  For example "yosemite", "shakespeare", "porsche" plus
+many others.
+
+I would very much like to get ahold of some dithers.
+
+Thanks in advance
+
+-- 
+    @__________@    W. Tait Cyrus   (505) 277-0806
+   /|         /|    University of New Mexico
+  / |        / |    Dept of EECE - Hypercube Project
+ @__|_______@  |    Albuquerque, New Mexico 87131
+ |  |       |  |
+ |  |  hc   |  |    e-mail:
+ |  @.......|..@       cyrus@hc.dspo.gov or
+ | /        | /        seismo!unmvax!hi!cyrus
+ @/_________@/

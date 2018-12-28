@@ -1,0 +1,70 @@
+In article <4a1h4l$ov4@newsy.ifm.liu.se>, d94marka@isy.liu.se says...
+>
+>paradise@ajax.umcs.lublin.pl (Marcin Jaskowiak) wrote:
+>>for bump mapping, modify interpolated normal by value of texture
+>>(you must do shading + t.mapping for bump maps).
+>>
+>>cya
+>
+>Wrongo. Modify interpolated normal by the LOCAL DERIVATE of
+>the texture.
+
+It works like this.
+
+A surface normal is not just a vector, it's a "tensor product" between
+two co-planar vectors:
+
+	N = du/dt x dv/dt (x=cross product)
+
+	where du/dt = unit vector lying along the surface in the
+	              "u" texture direction.
+	      dv/dt = similar in the "v" texture direction.
+
+Picture a grid texture map mapped onti, say, a sphere. The horizontal
+lines (u axis) are mapped to concentric circles around the sphere.
+The vertical lines (v axis) map to lines that meet at the top and bottom
+of the sphere. (Side note: ever tried rotating a grid-type-pattern
+texture map before applying it to a sphere? Cool!)
+
+You can construct unit vectors for du/dt and dv/dt quite easily,
+(especially on a ploygon) and the cross product between these is the
+surface normal. Now, if you mess around with these du/dt and dv/dt
+vectors before calculating the surface normal, you now have a controllable
+method of displacing the surface normal w.r.t. a texture map.
+
+Take a height map h[x][y] which is a bitmap with a value for every
+pixel that is proportional to the height it represents. You need to
+calculate the *change* in height in the u and v directions (I'm assuming
+you know the texture (u,v) coordinate for the point you're shading)...
+
+	int map_width  = 256;
+	int map_height = 256;
+	int s = (map_width-2) * u;	// u in range 0..1;
+	int t = (map_height-2) * v;	// v in range 0..1;
+	float du = h[u+1][v] - h[u][v];
+	float dv = h[u][v+1] - h[u][v];
+
+Plenty of scope for anti-aliasing the sampling here. The "-2" is
+because you need -1 for counting from 0, minus another 1 because you will
+be accessing h[u+1][u]. These values for du,dv can be used to perterb the
+surface normal:
+
+	float k = 0.01;			     // how bumpy the surface is
+	vector dudt = dudt + N * (k * du);   // vector + vector * scalar
+	vector dvdt = dvdt + N * (k * dv);   // vector + vector * scalar
+
+What we've done here is to add a small amount if an upwards direction
+to the surface derivitives. Imagine the plane the normal is resting on
+being rotated and perterbed. Now recalculate the normal:
+
+	N = cross(dudt,dvdt);	// cross product
+	N = renormalise(N);	// renormalise to unit vector
+
+There you have a bump mapped normal.
+
+-- 
+-----------------------------------------------------------------------
+ Robin Green, Technical Specialist                  rgreen@ea.com
+ Electronic Arts Ltd UK. Tel:01753 772353           EA has no opinions
+-----------------------------------------------------------------------
+

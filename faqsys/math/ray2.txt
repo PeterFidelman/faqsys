@@ -1,0 +1,134 @@
+Dan's Raytracing Notes, #1
+
+WARNING: This section was written at two drastically disparate times, and
+not proofread for consistency nor completely checked for accuracy. Please
+help me to improve this, send comments and suggestions to me!
+
+This is the second in a series of a tutorial on ray tracing (and anything
+else that looks like fun). In the first installment I covered the basics of
+ray tracing, what it is and all that, and showed you how to derive an
+intersection formula for a ray and a sphere.
+
+Because this is not a language specific text (although, if I can gather
+examples from people out there I'll include them), you'll have to figure
+out the particular implementation on your own. If you really get in a jam
+I'll provide help, and probably even C and C++ code to do all of this.
+
+'Nuff with the intro, on with the real stuff: At the end of the last
+episode, you probably had some code that gave you a circle in the middle of
+the screen.... D r a w n v e r y s l o w l y ... And you said to yourself,
+"Why do I need these pages and pages of arithmetic to draw a stupid circle
+in the middle of the screen. I could have done that a thousand ways and
+been faster. And you would have been right. So, in order to give you a
+quick and easy sense of accomplishment, this time I want to talk about
+color.
+
+No, this isn't gonna be one of those sensitive talks about racial issues,
+this is about how you make that ball look like it exists in the real world.
+
+When the ray from your eye hits the object, we color the pixel some color
+based on a bunch of things. In the last episode you colored it based solely
+on the fact taht it hit something. Obviously this gave you a very boring
+answer.
+
+In the real physical world color comes from the light that isn't absorbed
+and therefore bounces off when it hits an object. At this stage we'll break
+the way that light reflects off of various objects down into four
+components.
+
+* Ambient light. In the real world, light comes from a source (the sun, for
+instance) and shines on things. If this were all that happened, however,
+you wouldn't be able to see anything in the shadows. Light bounces off of
+anything that isn't dark matte black, and therefore those shadows aren't
+completely dark. Rather than simulate the bounces (done in radiosity
+simulations), most renderers have a minimum lighting level that everything
+uses. Ambient light is it.
+* Lambertian reflection. If you notice, the moon seems brightest at the
+center, even if it isn't full (yeah, I know that this isn't strictly true,
+but it's something everyone can relate to). The same is true for chalk,
+Nerf(tm) balls, and other dull matte surfaces. When a surface is not
+terribly reflective and is evenly lit, the color on it is related to
+perpendicular it is to the light: proportional to the cosine of the angle
+between the viewer's eye and a line perpendicular to the surface.
+* Specular reflection. Shiny surfaces reflect the actual light sources with
+some blurring. For instance, the classic computer image of the plastic ball
+has a bright spot on it, the sharper the difference between that spot and
+the surrounding color, the harder the ball looks. There are several systems
+to describe this, the most popular is known as "Phong" illumination. For
+this first section, we'll deal with ambient and diffuse reflection.
+
+First, if you're using a VGA or other display with a limited number of
+colors, make a routine that at the beginning of your program sets your
+palette to give you as many gray scales as your hardware can handle and at
+the end of your program restores as many of them as you'll need to have a
+working computer.
+
+First, add an ambient light to your routine; something that lets you enter
+in how bright it is in general in your scene. We'll deal with the color
+components later, but you might want to divide up all of your routines into
+three components (red, green and blue), treat them individually, but make
+everything put the same number into them for starters.
+
+Now add in something that asks for the brightness of your object, and
+multiply that by your ambient light and use that color as the color of your
+point.
+
+     point brightness = ambient brightness * color brightness
+
+Now you've got overly complex control over how bright that very boring very
+slowly drawn circle is.
+
+I promise, things are going to get more exciting soon.
+
+When you calculated the intersection with the sphere, the calculation
+routine returned a "time" element to you, how long it took your ray to hit
+the sphere. If we multiply the "delta" values of your ray and add in the
+origin of your ray, we have the point at which that ray hits the sphere
+(obviously).
+
+Sooooo, if we define a light relative to the sphere, take the angle between
+that light and the sphere, and add to our previous brightness this
+brightness, we should have a shaded diffuse ball:
+
+     point brightness = (ambient brightness +
+        light brightness * cos(angle between normal and eye)) *
+        color brightness
+
+Those of you, like me, who barely made it through linear algebra are now
+asking "this is great, but howintheheck are we supposed to deternine the
+angle between the surface normal and the vector to the eye.
+
+I'm glad you asked. It turns out that the cosine of the angle between two
+"normalized" vectors is their "dot product".
+
+"normalized" means that the lengths of the vectors is 1. What this means to
+those of you who don't remember Pythagorus is that the square root of the
+sum of the squares of the components of this vector is one. In other words:
+
+     square root(x * x + y * y + z * z) = 1.0.
+
+So to get there, you find the length of the vector (see that square root
+thingie up above...), and divide each of the components by one.
+
+"dot product" means the sum of each of the respective components of one
+vector times each of the components in the other vector. In other words:
+
+     dot product(V1, V2) = V1.x * V2.x + V1.y * V2.y + V1.z * V2.z
+
+So, if we create a light somewhere in space, find the "surface normal"
+vector to the point of intersection on the sphere (draw a line from the
+center of the sphere to the point where it hit), create a vector to the
+light from the point of intersection, normalize those two, get the dot
+product, multiply that times a light value and add it to the previously
+calculated brightness, we've got a light value for each point.
+
+Next time: We add Phong shading for specular highlights and make this
+sucker look plastic.
+
+As usual, I want more than "more, more!", I want feedback. Have you
+implemented anything? Did you have trouble understanding anything? Have you
+found any technical errors?
+
+---------------------------------------------------------------------------
+This is part of the Graphics Without Greek collection in the home pages of
+Dan Lyke, reachable at danlyke@chattanooga.net

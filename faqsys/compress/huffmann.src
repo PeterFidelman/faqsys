@@ -1,0 +1,596 @@
+(*
+           Komprimiert Files mit HUFFMANN-Code
+*)
+(*# debug (vid => full), check ( index => on ), check ( overflow => on ),
+    check ( range => on ), check ( stack => on ), check ( nil_ptr => on )*)
+(*#data (stack_size => 0F000H) *)
+MODULE huff_opt;
+FROM Storage IMPORT ALLOCATE, DEALLOCATE, Available, ClearOnAllocate;
+IMPORT FIO, IO, Lib, Window;
+
+(* ------------------------------------------------------------------------ *)
+CONST
+    MAGIC = 0AABBH;
+    MAXBUFSIZE = 48000;
+    MAXCHAR = 256;
+    Flush = MAX(LONGCARD);
+
+(* ------------------------------------------------------------------------ *)
+TYPE
+    tBufferPtr = POINTER TO tBuffer;
+    tBuffer = ARRAY [0..MAXBUFSIZE] OF CHAR;
+
+    tDecodeTreePtr = POINTER TO tDecodeTree;
+    tDecodeTree = RECORD
+                     c : INTEGER;
+                     left, right : tDecodeTreePtr;
+                 END;
+
+    tFreqTablePtr = POINTER TO tFreqTable;
+    tFreqTable = ARRAY [0..(MAXCHAR+1)*2] OF LONGCARD;
+
+    tHeapPtr = POINTER TO tHeap;
+    tHeap = ARRAY [0..(MAXCHAR+1)*2] OF INTEGER;
+
+    tBitCodeLenPtr = POINTER TO tBitCodeLen;
+    tBitCodeLen = ARRAY [0..MAXCHAR+1] OF CHAR;
+    tBitCodePtr = POINTER TO tBitCode;
+    tBitCode = ARRAY [0..MAXCHAR+1] OF LONGCARD;
+
+(* ------------------------------------------------------------------------ *)
+VAR
+    FreqTable : tFreqTable;
+    Heap, Daddy : tHeap;
+    BitCodeLen : tBitCodeLen;
+    BitCode : tBitCode;
+    DecodeTree : tDecodeTreePtr;
+    ActCFile : ARRAY [0..63] OF CHAR;
+    eof : BOOLEAN;
+    p_x, p_y : CARDINAL;
+    BitRestPos : LONGCARD;
+
+(* ------------------------------------------------------------------------ *)
+PROCEDURE iFatal(s : ARRAY OF CHAR);
+BEGIN
+    IO.WrStr(s);
+    HALT;
+END iFatal;
+
+(*# save, call(result_optional=>on) *)
+(* ------------------------------------------------------------------------ *)
+PROCEDURE ReadFile2Buffer(f : FIO.File; a : ADDRESS; size : CARDINAL)
+                                                                     : CARDINAL;
+VAR result : CARDINAL;
+    buffer : tBufferPtr;
+BEGIN
+    buffer := a;
+    IF eof THEN RETURN MAX(CARDINAL);  END;
+    result := FIO.RdBin(f, buffer^, size);
+    IF (result # size) OR FIO.EOF THEN
+        eof := TRUE;
+    END;
+    RETURN result;
+END ReadFile2Buffer;
+(*# restore *)
+
+(* ------------------------------------------------------------------------ *)
+(*
+PROCEDURE WriteBuffer2File(f : FIO.File; Buffer : tBufferPtr; size : CARDINAL);
+*)
+PROCEDURE WriteBuffer2File(f : FIO.File; a : ADDRESS; size : CARDINAL);
+VAR buffer : tBufferPtr;
+BEGIN
+    buffer := a;
+    FIO.WrBin(f, buffer^, size);
+    IF FIO.IOresult() # 0 THEN  iFatal("fwrite");  END;
+END WriteBuffer2File;
+
+(* ------------------------------------------------------------------------ *)
+PROCEDURE GetFileLength(FileName : ARRAY OF CHAR) : LONGCARD;
+VAR f : FIO.File;
+    result : LONGCARD;
+BEGIN
+    f := FIO.Open(FileName);
+    IF FIO.IOresult() # 0 THEN  iFatal("GetFileLenght: Open");  END;
+    result := FIO.Size(f);
+    IF FIO.IOresult() # 0 THEN  iFatal("GetFileLenght: Size");  END;
+    FIO.Close(f);
+    RETURN result;
+END GetFileLength;
+
+(*# save, option(bit_opr=> on) *)
+(* ------------------------------------------------------------------------ *)
+PROCEDURE Bits(x : LONGCARD; k, j : CARDINAL) : LONGCARD;
+VAR result, kl, jl : LONGCARD;
+BEGIN
+(*
+    IF k IN BITSET(x) THEN
+       RETURN 1;
+    ELSE
+       RETURN 0;
+    END;
+*)
+    kl := LONGCARD(k);
+    jl := LONGCARD(j);
+    result := ((x >> kl) & ~(~0 << jl));
+    RETURN result;
+END Bits;
+(*# restore *)
+
+VAR BitBuffer, BitCount : SHORTCARD;
+    BufferPos : CARDINAL;
+(*# save, call(result_optional=>on) *)
+(* ------------------------------------------------------------------------ *)
+PROCEDURE Write1Bit(BitMask : LONGCARD; VAR Buffer : tBuffer; f : FIO.File) : SHORTCARD;
+VAR Res : SHORTCARD;
+BEGIN
+    IF (BitCount = 8) OR (BitMask = Flush) THEN
+        IF (BitMask = Flush) THEN
+            BitBuffer := BitBuffer << (8-BitCount);
+        END;
+        Buffer[BufferPos] := CHAR(BitBuffer);
+        INC(BufferPos);
+        IF (BufferPos = MAXBUFSIZE) OR (BitMask = Flush) THEN
+            WriteBuffer2File(f, ADR(Buffer[0]), BufferPos);
+            BufferPos := 0;
+        END;
+        IF (BitMask = Flush) THEN
+            Res := BitCount;
+        ELSE
+            Res := 0;
+        END;
+        BitBuffer := 0;
+        BitCount := 0;
+    END;
+    BitBuffer := BitBuffer << 1;
+(*
+(*# save, option(bit_opr=> on) *)
+    BitBuffer := BitBuffer OR SHORTCARD(BitMask & 0001H);
+(*# restore *)
+*)
+(*
+    BitBuffer := BitBuffer + SHORTCARD(BitMask);
+*)
+(*# save, option(bit_opr=> on), check ( overflow => off ), check ( range => off ) *)
+(*
+    BitBuffer := BitBuffer OR SHORTCARD(BitMask);
+*)
+    BitBuffer := BitBuffer OR SHORTCARD(BitMask & 0001H);
+(*# restore *)
+    INC(BitCount);
+    RETURN Res;
+END Write1Bit;
+(*# restore *)
+
+VAR NumRead, LastSeg : CARDINAL;
+(* ------------------------------------------------------------------------ *)
+PROCEDURE Read1Bit(f : FIO.File; VAR Buffer : tBuffer; BitRest : SHORTCARD;
+                                                   FLen : LONGCARD) : LONGINT;
+VAR Res : LONGCARD;
+BEGIN
+    IF (BitCount = 0) THEN
+        IF (BufferPos = NumRead) THEN
+            NumRead := ReadFile2Buffer(f, ADR(Buffer), MAXBUFSIZE);
+            IF NumRead = MAX(CARDINAL) THEN
+                RETURN -1;
+            END;
+            BufferPos := 0;
+            IF FLen = FIO.GetPos(f) THEN
+                LastSeg := NumRead + 1;
+            ELSE
+                LastSeg := 0;
+            END;
+        END;
+        BitCount := 8;
+        IF LastSeg # 0 THEN
+            DEC(LastSeg);
+            IF LastSeg = 1 THEN
+                BitCount := BitRest;
+            END;
+        END;
+        BitBuffer := SHORTCARD(Buffer[BufferPos]);
+        INC(BufferPos);
+    END;
+(*# save *)
+(*# check ( overflow => off ), check ( range => off ) *)
+    Res := LONGCARD(BitBuffer);
+    DEC(BitCount);
+    BitBuffer := BitBuffer << 1;
+(*# restore *)
+(*# save, option(bit_opr=> on) *)
+(*    Res := ((Res & 80H) ? 1 : 0);*)
+    Res := (Res & 80H);
+    IF 7 IN BITSET(Res) THEN
+        RETURN 1;
+    ELSE
+        RETURN 0;
+    END;
+(*# restore *)
+END Read1Bit;
+
+(* ------------------------------------------------------------------------ *)
+PROCEDURE WriteFreqTable(VAR FreqTable : tFreqTable; f : FIO.File);
+VAR i : INTEGER;
+BEGIN
+    FOR i := 1 TO MAXCHAR DO
+        IF FreqTable[i] # 0 THEN
+            WriteBuffer2File(f, ADR(i), SIZE(i));
+            WriteBuffer2File(f, ADR(FreqTable[i]), SIZE(FreqTable[i]));
+        END;
+    END;
+    i := -1;
+    WriteBuffer2File(f, ADR(i), SIZE(i));
+END WriteFreqTable;
+
+(* ------------------------------------------------------------------------ *)
+PROCEDURE ReadFreqTable(VAR FreqTable : tFreqTable; f : FIO.File);
+VAR i : INTEGER;
+BEGIN
+    ReadFile2Buffer(f, ADR(i), SIZE(i));
+    WHILE (i # -1) DO
+        ReadFile2Buffer(f, ADR(FreqTable[i]), SIZE(FreqTable[i]));
+        ReadFile2Buffer(f, ADR(i), SIZE(i));
+    END;
+END ReadFreqTable;
+
+(* ------------------------------------------------------------------------ *)
+PROCEDURE WriteHeader(FileLength : LONGCARD; VAR FreqTable : tFreqTable; f : FIO.File);
+VAR foo : WORD;
+    dummy : SHORTCARD;
+BEGIN
+    foo := MAGIC;  dummy := 0;
+    FIO.Seek(f, 0);
+    WriteBuffer2File(f, ADR(foo), SIZE(foo));
+    WriteBuffer2File(f, ADR(FileLength), SIZE(FileLength));
+    BitRestPos := FIO.GetPos(f);
+    WriteBuffer2File(f, ADR(dummy), SIZE(dummy));
+    WriteFreqTable(FreqTable, f);
+END WriteHeader;
+
+(* ------------------------------------------------------------------------ *)
+PROCEDURE ReadHeader(VAR FileLength : LONGCARD; VAR FreqTable : tFreqTable;
+                                           VAR BitRest : SHORTINT; f : FIO.File);
+VAR foo : WORD;
+BEGIN
+    foo := 0;
+    FIO.Seek(f, 0);
+    ReadFile2Buffer(f, ADR(foo), SIZE(foo));
+    IF foo # WORD(MAGIC) THEN  iFatal("Illegal Header");  END;
+    ReadFile2Buffer(f, ADR(FileLength), SIZE(FileLength));
+    ReadFile2Buffer(f, ADR(BitRest), SIZE(BitRest));
+    ReadFreqTable(FreqTable, f);
+END ReadHeader;
+
+(* ------------------------------------------------------------------------ *)
+PROCEDURE ClearFreqTable(VAR FreqTable : tFreqTable; VAR Heap : tHeap);
+VAR i : INTEGER;
+BEGIN
+    FreqTable[0] := MAX(LONGCARD);
+    FOR i := 1 TO MAXCHAR DO
+        FreqTable[i] := 0;
+    END;
+    FOR i := 1 TO MAXCHAR * 2 DO
+        Heap[i] := 0;
+    END;
+END ClearFreqTable;
+
+(* ------------------------------------------------------------------------ *)
+PROCEDURE CountFreq(VAR FreqTable : tFreqTable; VAR Buffer : tBuffer; Size : CARDINAL);
+VAR i : CARDINAL;
+BEGIN
+    FOR i := 0 TO Size - 1 DO
+        INC(FreqTable[CARDINAL(Buffer[i])+1]);
+    END;
+END CountFreq;
+
+(* ------------------------------------------------------------------------ *)
+PROCEDURE CorrectHeap(VAR FreqTable : tFreqTable; VAR Heap : tHeap; N, k : CARDINAL);
+VAR j, v : CARDINAL;
+BEGIN
+    v := Heap[k];
+(*
+    WHILE (k <= N DIV 2) DO
+*)
+    LOOP
+        IF NOT (k <= N DIV 2) THEN  EXIT;  END;
+        j := k + k;
+        IF (j < N) AND (FreqTable[Heap[j]] > FreqTable[Heap[j+1]]) THEN
+            INC(j);
+        END;
+        IF (FreqTable[v] <= FreqTable[Heap[j]]) THEN
+            EXIT;
+        END;
+        Heap[k] := Heap[j];
+        k := j;
+    END;
+    Heap[k] := v;
+END CorrectHeap;
+
+(* ------------------------------------------------------------------------ *)
+PROCEDURE BuildHuffTree(VAR FreqTable : tFreqTable; VAR Heap, Daddy : tHeap;
+                          VAR BitCodeLen : tBitCodeLen;  VAR BitCode : tBitCode);
+VAR i, k, N, t : INTEGER;
+    x, j : LONGCARD;
+BEGIN
+    N := 0;
+    FOR i := 1 TO MAXCHAR DO
+        IF FreqTable[i] # 0 THEN
+            INC(N);
+            Heap[N] := i;
+        END;
+    END;
+    k := N;
+    WHILE k > 0 DO
+        CorrectHeap(FreqTable, Heap, N, k);
+        DEC(k);
+    END;
+    WHILE N > 1 DO
+        t := Heap[1];
+        Heap[1] := Heap[N];
+        DEC(N);
+        CorrectHeap(FreqTable, Heap, N, 1);
+        FreqTable[MAXCHAR+N] := FreqTable[Heap[1]] + FreqTable[t];
+        Daddy[t] := MAXCHAR + N;
+        Daddy[Heap[1]] := -INTEGER(MAXCHAR) - INTEGER(N);
+        Heap[1] := MAXCHAR + N;
+        CorrectHeap(FreqTable, Heap, N, 1);
+    END;
+    Daddy[MAXCHAR+N] := 0;
+    FOR k := 1 TO MAXCHAR DO
+        IF FreqTable[k] = 0 THEN
+            BitCode[k] := 0;
+            BitCodeLen[k] := 0C;
+        ELSE
+            i := 0;
+            j := 1;
+            t := Daddy[k];
+            x := 0;
+            WHILE t # 0 DO
+                IF t < 0 THEN
+                    x := x + j;
+                    t := -t;
+                END;
+                t := Daddy[t];
+                j := j + j;
+                INC(i);
+            END;
+            BitCode[k] := x;
+            BitCodeLen[k] := CHAR(i);
+        END;
+    END;
+END BuildHuffTree;
+
+(* ------------------------------------------------------------------------ *)
+PROCEDURE BuildDecodeTree(TreeNode : tDecodeTreePtr; BitCodeLen : tBitCodeLen;
+                                                          BitCode : tBitCode);
+VAR i, k : CARDINAL;
+    TreeRunner : tDecodeTreePtr;
+BEGIN
+(*
+    IF NOT Available(SIZE(tDecodeTree)) THEN  iFatal("out of core");  END;
+    ALLOCATE(TreeRunner, SIZE(tDecodeTree));
+*)
+    FOR i := 1 TO MAXCHAR DO
+        TreeRunner := TreeNode;
+        (*FOR k := BitCodeLen[i] TO 0 BY -1 DO*)
+        k := CARDINAL(BitCodeLen[i]);
+        WHILE k > 0 DO;
+            IF Bits(BitCode[i], k-1, 1) = 0 THEN
+                IF TreeRunner^.left = NIL THEN
+                    ALLOCATE(TreeRunner^.left, SIZE(TreeRunner^.left));
+                    TreeRunner^.left^.c := 0;
+                    TreeRunner^.left^.left := NIL;
+                    TreeRunner^.left^.right := NIL;
+                END;
+                TreeRunner := TreeRunner^.left;
+            ELSE
+                IF TreeRunner^.right = NIL THEN
+                    ALLOCATE(TreeRunner^.right, SIZE(TreeRunner^.right));
+                END;
+                TreeRunner := TreeRunner^.right;
+            END;
+            IF k = 1 THEN
+                TreeRunner^.c := i-1;
+            ELSE
+                TreeRunner^.c := -1;
+            END;
+            DEC(k);
+        END;
+    END;
+END BuildDecodeTree;
+
+(* ------------------------------------------------------------------------ *)
+PROCEDURE FreeDecodeTree(TreeNode : tDecodeTreePtr);
+BEGIN
+    IF TreeNode^.left # NIL THEN
+        FreeDecodeTree(TreeNode^.left);
+        DEALLOCATE(TreeNode^.left, SIZE(TreeNode^.left));
+    END;
+    IF TreeNode^.right # NIL THEN
+        FreeDecodeTree(TreeNode^.right);
+        DEALLOCATE(TreeNode^.right, SIZE(TreeNode^.right));
+    END;
+END FreeDecodeTree;
+
+(* ------------------------------------------------------------------------ *)
+PROCEDURE Compress(InFile, OutFile : FIO.File; InFileLen : LONGCARD);
+VAR InBuffer, OutBuffer : tBufferPtr;
+    Sum : LONGCARD;
+    i, j, k : CARDINAL;
+    BitRest : SHORTCARD;
+    loop, dummy : CARDINAL;
+BEGIN
+    IF NOT Available(MAXBUFSIZE) THEN  iFatal("Out of core");  END;
+    ALLOCATE(InBuffer, MAXBUFSIZE);
+    IF NOT Available(MAXBUFSIZE) THEN  iFatal("Out of core");  END;
+    ALLOCATE(OutBuffer, MAXBUFSIZE);
+    ClearFreqTable(FreqTable, Heap);
+    IO.WrStr("Counting frequencies...");  IO.WrLn;
+    Sum := 0;
+(*
+    WHILE (i = ReadFile2Buffer(InFile, InBuffer, MAXBUFSIZE)) DO
+*)
+    LOOP
+        i := ReadFile2Buffer(InFile, InBuffer, MAXBUFSIZE);
+        IF i = MAX(CARDINAL) THEN  EXIT;  END;
+        Sum := Sum + LONGCARD(i);
+        p_x := Window.WhereX();
+        p_y := Window.WhereY();
+        IO.WrStr("Progress: ");
+        IO.WrLngCard((Sum * 100) DIV InFileLen, 2);
+        Window.GotoXY(p_x,p_y);
+        CountFreq(FreqTable, InBuffer^, i);
+    END;
+    IO.WrLn;
+    IO.WrStr("Building huffmann tree...");  IO.WrLn;
+    BuildHuffTree(FreqTable, Heap, Daddy, BitCodeLen, BitCode);
+    IO.WrStr("Writing compressed file...");  IO.WrLn;
+    FIO.Seek(InFile, 0);
+    WriteHeader(InFileLen, FreqTable, OutFile);
+    Sum := 0;
+    eof := FALSE;
+    LOOP
+        i := ReadFile2Buffer(InFile, InBuffer, MAXBUFSIZE);
+        IF i = MAX(CARDINAL) THEN  EXIT;  END;
+        FOR j := 0 TO i-1 DO
+            IF BitCodeLen[CARDINAL(InBuffer^[j])+1] > CHAR(32) THEN
+                iFatal("Bit pattern > 32 bit");  IO.WrLn;
+            END;
+            loop := CARDINAL(BitCodeLen[CARDINAL(InBuffer^[j])+1]);
+            FOR k := loop TO 1 BY -1 DO
+                Write1Bit(Bits(BitCode[CARDINAL(InBuffer^[j])+1], k-1, 1), OutBuffer^, OutFile);
+            END;
+        END;
+        Sum := Sum + LONGCARD(i);
+        p_x := Window.WhereX();
+        p_y := Window.WhereY();
+        IO.WrStr("Progress: ");
+        IO.WrLngCard((Sum * 100) DIV InFileLen, 2);
+        Window.GotoXY(p_x,p_y);
+    END;
+    IO.WrLn;
+    BitRest := Write1Bit(Flush, OutBuffer^, OutFile);
+    FIO.Seek(OutFile, BitRestPos);
+    WriteBuffer2File(OutFile, ADR(BitRest), SIZE(BitRest));
+    DEALLOCATE(InBuffer, MAXBUFSIZE);
+    DEALLOCATE(OutBuffer, MAXBUFSIZE);
+END Compress;
+
+(* ------------------------------------------------------------------------ *)
+PROCEDURE Expand(InFile, OutFile : FIO.File; InFileLen : LONGCARD; VAR OutFileLen : LONGCARD);
+VAR Sum : LONGCARD;
+    Rest : SHORTINT;
+    Bit : LONGINT;
+    i : CARDINAL;
+    InBuffer, OutBuffer : tBufferPtr;
+    TreeNode, TreeRunner : tDecodeTreePtr;
+BEGIN
+    IF NOT Available(SIZE(tDecodeTree)) THEN  iFatal("out of core");  END;
+    ALLOCATE(TreeNode, SIZE(tDecodeTree));
+    ALLOCATE(TreeRunner, SIZE(tDecodeTree));
+    TreeNode^.left := NIL;  TreeNode^.right := NIL;
+    TreeNode^.c := -1;
+    IF NOT Available(MAXBUFSIZE) THEN  iFatal("Out of core");  END;
+    ALLOCATE(InBuffer, MAXBUFSIZE);
+    IF NOT Available(MAXBUFSIZE) THEN  iFatal("Out of core");  END;
+    ALLOCATE(OutBuffer, MAXBUFSIZE);
+    ClearFreqTable(FreqTable, Heap);
+    ReadHeader(OutFileLen, FreqTable, Rest, InFile);
+    IO.WrStr("Building huffmann & decoding tree...");  IO.WrLn;
+    BuildHuffTree(FreqTable, Heap, Daddy, BitCodeLen, BitCode);
+    BuildDecodeTree(TreeNode, BitCodeLen, BitCode);
+    IO.WrStr("Writing expanded file...");  IO.WrLn;
+    i := 0;
+    Sum := 0;
+    TreeRunner := TreeNode;
+    BufferPos := 0;
+    NumRead := 0;
+    LOOP
+        Bit := Read1Bit(InFile, InBuffer^, Rest, InFileLen);
+        IF Bit = -1 THEN  EXIT;  END;
+        IF Bit = 0 THEN
+            TreeRunner := TreeRunner^.left;
+        ELSE
+            TreeRunner := TreeRunner^.right;
+        END;
+        IF TreeRunner^.c # -1 THEN
+            OutBuffer^[i] := CHAR(TreeRunner^.c);
+            INC(i);
+            IF i = MAXBUFSIZE THEN
+                WriteBuffer2File(OutFile, OutBuffer, i);
+                Sum := Sum + LONGCARD(i);
+                i := 0;
+                p_x := Window.WhereX();
+                p_y := Window.WhereY();
+                IO.WrStr("Progress: ");
+                IO.WrLngCard((Sum * 100) DIV OutFileLen, 1);
+                Window.GotoXY(p_x,p_y);
+            END;
+            TreeRunner := TreeNode;
+        END;
+    END;
+    WriteBuffer2File(OutFile, OutBuffer, i);
+    Sum := Sum + LONGCARD(i);
+    IO.WrStr("Progress: ");  IO.WrLngCard(Sum DIV OutFileLen * 100, 1);  IO.WrLn;
+    FreeDecodeTree(TreeNode);
+    DEALLOCATE(TreeNode, SIZE(tDecodeTree));
+  (*  DEALLOCATE(TreeRunner, SIZE(tDecodeTree));*)
+    DEALLOCATE(InBuffer, MAXBUFSIZE);
+    DEALLOCATE(OutBuffer, MAXBUFSIZE);
+END Expand;
+
+VAR InFile, OutFile : FIO.File;
+    InFileLen, OutFileLen : LONGCARD;
+    argv, InFileName, OutFileName : ARRAY [0..63] OF CHAR;
+    percentage : LONGCARD;
+(* ------------------------------------------------------------------------ *)
+BEGIN
+    ClearOnAllocate := TRUE;
+    IF Lib.ParamCount() < 3 THEN
+        IO.WrStr("usage: huffmann <C(ompress)|E(xpand)> <infile> <outfile>");
+        HALT;
+    END;
+    Lib.ParamStr(InFileName, 2);
+    Lib.ParamStr(OutFileName, 3);
+    InFile := FIO.Open(InFileName);
+    IF FIO.IOresult() # 0 THEN  iFatal("Unable to open input file");  END;
+    OutFile := FIO.Create(OutFileName);
+    IF FIO.IOresult() # 0 THEN  iFatal("Unable to open output file");  END;
+    InFileLen := FIO.Size(InFile);
+    Lib.ParamStr(argv, 1);
+    BitBuffer := 0;
+    BitCount := 0;
+    BufferPos := 0;
+    eof := FALSE;
+(*
+    ALLOCATE(FreqTable, SIZE(tFreqTable));
+    ALLOCATE(Heap, SIZE(tHeap));
+    ALLOCATE(Daddy, SIZE(tHeap));
+    ALLOCATE(BitCodeLen, SIZE(tBitCodeLen));
+    ALLOCATE(BitCode, SIZE(tBitCode));
+*)
+    ALLOCATE(DecodeTree, SIZE(tDecodeTree));
+    DecodeTree^.left := NIL;  DecodeTree^.right := NIL;  DecodeTree^.c := 0;
+    IF CAP(argv[0]) = "C" THEN
+        Compress(InFile, OutFile, InFileLen);
+    ELSE
+        Expand(InFile, OutFile, InFileLen, OutFileLen);
+    END;
+    FIO.Close(InFile);
+    FIO.Close(OutFile);
+    IF CAP(argv[0]) = "C" THEN
+        OutFileLen := GetFileLength(OutFileName);
+        IO.WrStr("in: ");  IO.WrLngCard(InFileLen, 1);
+        IO.WrStr(" bytes   out: ");  IO.WrLngCard(OutFileLen, 1);  IO.WrLn;
+        percentage := (OutFileLen * 100) DIV InFileLen;
+        IO.WrStr("Compression rate: ");  IO.WrLngCard(percentage, 1);  IO.WrLn;
+    END;
+(*
+    DEALLOCATE(FreqTable, SIZE(tFreqTable));
+    DEALLOCATE(Heap, SIZE(tHeap));
+    DEALLOCATE(Daddy, SIZE(tHeap));
+    DEALLOCATE(BitCodeLen, SIZE(tBitCodeLen));
+    DEALLOCATE(BitCode, SIZE(tBitCode));
+*)
+    DEALLOCATE(DecodeTree, SIZE(tDecodeTree));
+END huff_opt.

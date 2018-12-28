@@ -1,0 +1,128 @@
+-------------------------------------------------------------------------------
+Algorithm:      Quicksort
+O(f(n)):        A(n)=n*lg(n)
+..W(n)=n^2 (sorted!)
+In-place:       No.
+Call:           Quicksort(left,right,arr)
+...
+Code:
+.Quicksort(left,right:integer;var arr:array[left..right] of integer);
+.  var m,i,j:integer;
+.begin
+.  i:=left;
+.  j:=right;
+.  m:=arr[trunc((left+right)/2)]; (* arr[left],arr[right],... *)
+.  repeat
+.    while (arr[i]<m) do i:=i+1;
+.    while (arr[j]>m) do j:=j-1;
+.    if (i<=j) then begin
+.      swap(arr[i],arr[j]);
+.      i:=i+1;
+.      j:=j-1;
+.    end;
+.  until (i>j);
+.  if (left<j)  then Quicksort(left,j,arr);
+.  if (i<right) then Quicksort(i,right,arr);
+.end;
+
+-------------------------------------------------------------------------------
+Algorithm:      Shellsort
+O(f(n)):        A(n)=
+..W(n)=n^1.5
+In-place:       Yes
+Call:           Shellsort(n,arr)
+
+Code:
+.Shellsort(n:integer;var arr:array[1..n] of integer);
+.  var d,i,j:integer;
+.      flag:boolean;
+.begin
+.  d:=n-1;
+.  while (d >= 1) do begin
+.    for i:=1 to n-d do begin
+.      j:=i;
+.      flag:=true;
+.      while flag do begin
+..flag:=false;
+..if (j>=1) then 
+..  if (arr[j]>arr[j+d]) then begin
+..    swap(arr[j],arr[j+d]);
+..    flag:=true;
+..    j:=j-d;
+..  end;
+.      end;
+.    end;
+.    d:=trunc(d/2);
+.  end;
+.end;
+
+-------------------------------------------------------------------------------
+Algorithm:      Mergesort
+O(f(n)):        A(n)=n*lg(n)
+..W(n)=n*lg(n)
+In-place:       No
+Call:           Mergesort(left,right,arr)
+
+Code:
+.Mergesort(left,right:integer;var arr:array[left..right] of integer);
+.  var middle:integer;
+.begin
+.  if (left < right) then begin
+.    middle:=trunc((left+right)/2);
+.    Mergesort(left,middle,arr);
+.    Mergesort(middle+1,right,arr);
+.    Merge(left,middle,middle+1,right,arr);
+.  end;
+.end;
+
+-------------------------------------------------------------------------------
+Algoritm:       Heapsort
+O(f(n)):        A(n)=n*lg(n)
+..W(n)=2*(n-1)*lg(n)
+In-place:       Yes
+Call:           Heapsort(n,arr)
+
+Code:
+.Heapsort(n:integer;var arr:array[1..n] of integer);
+.  var i,heapsize,max:integer;
+
+.  fixheap(lower,element,upper:integer);
+.  (* Reestablish the heap property in the tree, the element to insert
+.     at position 'lower' is 'element',last index in heap is 'upper'.
+.     The heap property means that the element at index 'lower' should
+.     be the largest in the subtree it represents.
+.   *)
+
+.begin
+
+.  (* heap construction *)
+.  for i:=trunc(n/2) to 1 step -1 do fixheap(i,arr[i],n);
+
+.  (* rearrange *)
+.  for heapsize:=n to 2 step -1 do begin
+.    max:=arr[1];
+.    fixheap(1,arr[heapsize],heapsize-1);
+.    arr[heapsize]:=max;
+.  end;
+
+.end;
+
+-------------------------------------------------------------------------------
+Algoritm:       Cardshuffling
+O(f(n)):        A(n)=n
+..W(n)=n
+In-place:       Yes
+Call:           Shuffle(n,arr)
+
+Code:
+.Shuffle(n:integer;var arr:array[1..n] of integer)
+.  var i,j:integer;
+.begin
+.  for i:=1 to n step  1 do arr[i]:=i; (* initiera *)
+.  for i:=n to 1 step -1 do begin      (* do the shuffling *)
+.    j:=trunc(i*rnd)+1;
+.    swap(arr[j],arr[i]);
+.  end;
+.end;
+
+-------------------------------------------------------------------------------

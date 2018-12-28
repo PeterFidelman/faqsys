@@ -1,0 +1,215 @@
+From: Mark Dixon
+Subj: LOADALL
+________________________________________________________________________
+
+ >    I know from past threads that LOADALL is an intruction available
+ > on 80x86 CPU's with a protected mode that is undocumented by  INTEL  
+ > but  was  used by Microsoft in their VDISK  program,  amoung  other  
+ > places.   I have rather  fragmentary  information  suggesting  that 
+ > there is "another"  LOADALL instruction  on 80386+  chips,  perhaps 
+ > only a BIOS emulation (?)  of the 286's LAOADALL.
+
+Apparently, so my doc's tell me, the actual instruction is only  present 
+on 286 processors, but that 386+ processors have similar functions  that 
+allow  it to achive the same thing. So it's just a matter  of  detecting 
+286/386 and using the appropriate routine....
+
+Anyway, here's a few extracts from my doc's on loadall ;
+
+Some uses for the Loadall instruction (just to get your mind going) :
+- getting  at  all  the memory in your machine at will, even  if  it  is
+  addressed above 1 megabyte, from real mode.
+- executing real-mode programs in ram above one megabyte.
+- installing a second operating-system-like program, or command  proces-
+  sor, or shell, in memory above 1 megabyte, and alternating between that
+  and DOS.
+- installing most of the guts of custom TSR's, shells, and  device-driv-
+  ers in ram above 1 megabyte (freeing up precious base memory), leaving 
+  in low memory only the stubs to call the code upstairs.
+- writing  very  large programs, which are "split", and  have  half  the
+  program  residing  in  the  low-down  640K, and the other half  up  in
+  extended memory, and running in either real or protected mode.
+- installing  large  protected-mode programs in extended  memory,  where
+  they will not conflict with, or crowd out DOS, and ping-ponging between
+  them and DOS.
+- switching to protected mode.
+- emulating  real mode from protected mode (tough, and full of  gotchas,
+  but still worth mentioning).
+- this is really off-the-wall, but possible: building automata that  use
+  Loadall  to  warp from state to state, sort of like a computer game of
+  Life, played in the twilight zone.
+
+
+                                   LOADALL
+
+Okay, so what IS the Loadall instruction?
+Simple:
+
+*** 0F 05 hex ***
+
+   So  how does it work?  Well, I've already told you the  gist  of it:
+all CPU  registers  are loaded from a 51-word table of data that  starts  
+at  80:0h (absolute  24-bit  address 800h).  This address is  one  thing  
+that  cannot be changed or re-programmed. It's hard-wired into the chip, 
+and  that's  that.   And that's unfortunate,  because  all  versions  of 
+anybody's DOS earlier than version 3.3 use that area for critical system 
+code.
+
+   Loadall  takes no operands, and is just a two-byte  instruction.  All 
+the "operands" for the instruction are obtained from the table at 80:0h.          
+Just  put "db 0Fh, 05" in your code stream, and watch the fun.  But  you 
+had better get that table right before you do, or else... (crash).
+
+                ** THE LOAD TABLE **
+-----------------------------------------------------------
+Address         Size            CPU register
+                (words)
+-----------------------------------------------------------
+
+800             3       unused  (?? I don't believe it.)
+806             1       MSW (Machine Status Word)
+808             7       unused  (?? I don't believe it.)
+816             1       TR (Task Register)
+818             1       Flag Word
+81A             1       IP (Instruction Pointer)
+81C             1       LDT (Local Descriptor Table)
+
+81E             1       DS (Data Segment, or DS Selector)
+820             1       SS (Stack Segment, or SS Selector)
+822             1       CS (Code Segment, or CS Selector)
+824             1       ES (Extra Segment, or CS Selector)
+
+826             1       DI (Destination Index)
+828             1       SI (Source Index)
+82A             1       BP (Base Pointer)
+82C             1       SP (Stack Pointer)
+
+82E             1       BX (Data Register BX)
+830             1       DX (Data Register BX)
+832             1       CX (Data Register BX)
+834             1       AX (Data Register BX)
+
+836             3       ES Descriptor Cache
+83C             3       CS Descriptor Cache
+842             3       SS Descriptor Cache
+848             3       DS Descriptor Cache
+
+84E             3       GDTR
+                        (Global-Descriptor-Table Register)
+
+854             3       LDTDC
+                        (Local-Descriptor-Table Descriptor Cache)
+
+85A             3       IDTR
+                        (Interrupt-Descriptor-Table Register)
+
+860             3       TSSDC
+                        (Task-State-Segment Descriptor Cache)
+
+total =         33h words == 102. bytes
+
+
+                  AND A PRETTY-TOGETHER DEFAULT TABLE
+
+   So  here's  what  a  default  Loadall  table  looks  like.  Note that 
+"new_Reg_Buf"  doesn't label any data item that we really use; it's  the 
+name of the whole table.
+
+;    LOADALL Register Load Table for new values to be loaded
+;    into registers by a Loadall.
+
+new_Reg_Buf     dw      3 dup (0)       ; unused space
+newMSW          dw      0
+newDead         dw      7 dup (0)       ; unused space
+newTR           dw      0
+newFlagWord     dw      0
+newIP           dw      offset after_ldall      ; * may chng
+newLDT          dw      0
+
+newDS           dw      0       ; *chng
+newSS           dw      0       ; *chng
+newCS           dw      0       ; *chng
+newES           dw      0       ; *chng
+
+newDI           dw      0
+newSI           dw      0
+newBP           dw      0
+newSP           dw      0       ; *chng
+
+newBX           dw      0
+newDX           dw      0
+newCX           dw      0
+newAX           dw      0
+
+newESDC         dw      0,      9300h,  0FFFFh  ; *chng
+newCSDC         dw      0,      9300h,  0FFFFh  ; *chng
+newSSDC         dw      0,      9300h,  0FFFFh  ; *chng
+newDSDC         dw      0,      9300h,  0FFFFh  ; *chng
+
+newGDTR         dw      D8A0h,  0FF00h, 88h     ; @ 0D8A:0 *n
+newLDTDC        dw      0,      0FF0Eh, 88h     ; @ E000:0
+newIDTR         dw      0,      0FF00h, 0FFFFh  ; @ 0000:0 *n
+newTSSDC        dw      4000h,  0FF0Eh, 800h    ; @ E400:0
+
+
+   Those  "*chng" comments mean that those items MUST be changed  by the 
+running  program before actually doing the Loadall. We cannot  correctly 
+default  them  in  the sources because the correct values  can  only  be 
+determined at runtime.
+
+   The "*n" means that those values are not really in the default tables 
+in the sources: the running program uses the sgdt and sidt  instructions 
+to  get those values and then plugs them into those two  entries.   Just 
+letting you see what they will look like. You could have anything in the 
+original table there, because  the running program will over-write those 
+items with  correct values anyway.
+
+   The "@ 0D8A:0" comments are just noting the addresses in those items, 
+in a more readable form.
+
+
+                       THE PROCEDURE FOR USING LOADALL
+                       (the ultra-safe, long procedure)
+
+1. Save  the  original machine state, so you have a state to  return to.  
+This  information  can be saved in a Loadall table, which  is  the  most 
+convenient form for later use.
+
+2. Disable interrupts.  Just in case.  We want a clean copy of area 80.
+
+3. Save  the 102-byte (33h words) block of data located at  80:0h.  Ver- 
+sions   of  DOS (both PC- and MS-) earlier than 3.3 use this  area   for 
+critical system code, and as of DOS 3.3, RamDrive.Sys, and Himem.Sys use 
+this area for their own Loadall tables.
+
+4. Re-enable  interrupts.   Let the clock ticks,  or  whatever, through, 
+while we do the following step.
+
+5. Set  up  the new Loadall table (new_reg_buf), which  defines  the new
+state we want to warp to.
+
+6. Disable Interrupts.
+
+7. Copy the new Loadall table to 80:0h.
+
+8. Execute a Loadall.
+
+9. Do  something  or other with your new machine state.   Read  or write 
+extended memory, run code upstairs, or whatever.
+
+10.  Copy the "old" Loadall table, containing the saved  machine  state, 
+down to 80:0.
+
+11.  Do   another  Loadall (Un-Loadall.)   This  restores  the  original 
+machine state.
+
+12. Copy the block of saved data back to 80:0h.
+
+13. Re-enable interrupts.
+
+Well, I hope that helps a bit. This is just a small bit out of some  45k 
+doc  file I have on the subject. If you were really interested  (though, 
+this  is  most of the important stuff here) I could netmail  it  bit  by 
+bit...
+
+  Mark.

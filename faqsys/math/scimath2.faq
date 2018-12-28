@@ -1,0 +1,818 @@
+SciMath FAQ
+
+             Table of Contents
+             -----------------
+ 1Q.- Fermat's Last Theorem, status of ..
+ 2Q.- Values of Record Numbers
+ 3Q.- Formula for prime numbers...
+ 4Q.- Digits of Pi, computation and references
+ 5Q.- Odd Perfect Number
+ 6Q.- Computer Algebra Systems, application of ..
+ 7Q.- Computer Algebra Systems, references to ..
+ 8Q.- Fields Medal, general info ..
+ 9Q.- Four Colour Theorem, proof of ..
+10Q.- 0^0=1. A comprehensive approach
+11Q.- 0.999... = 1. Properties of the real numbers ..
+12Q.- There are three doors, The Monty Hall problem, Master Mind and
+      other games ..
+13Q.- Surface and Volume of the n-ball
+14Q.- f(x)^f(x)=x, name of the function ..
+15Q.- Projective plane of order 10 ..
+16Q.- How to compute day of week of a given date
+17Q.- Axiom of Choice and/or Continuum Hypothesis?
+18Q.- Cutting a sphere into pieces of larger volume
+19Q.- Pointers to Quaternions
+20Q.- Erdos Number
+21Q.- Why is there no Nobel in mathematics?
+22Q.- General References and textbooks...
+23Q.- Interest Rate...
+24Q.- Euler's formula e^(i Pi) = - 1 ...
+
+
+
+6Q:  I have this complicated symbolic problem (most likely
+    a symbolic integral or a DE system) that I can't solve.
+    What should I do?
+
+A:  Find a friend with access to a computer algebra system
+    like MAPLE, MACSYMA or MATHEMATICA and ask her/him to solve it.
+    If packages cannot solve it, then (and only then) ask the net.
+
+
+7Q:  Where can I get <Symbolic Computation Package>?
+
+    THIS IS NOT A COMPREHENSIVE LIST. There are other Computer Algebra
+    packages available that may better suit your needs. There is also
+    a FAQ list in the group sci.math.symbolic. It includes a much larger
+    list of vendors and developers. (The FAQ list can be obtained from
+    math.berkeley.edu via anonymous ftp).
+
+
+
+A: Maple
+        Purpose: Symbolic and numeric computation, mathematical
+        programming, and mathematical visualization.
+        Contact: Waterloo Maple Software,
+        450 Phillip Street
+        Waterloo, Ontario
+        N2L 5J2
+        Phone (519)747-2373
+        FAX   (519)747-5284
+        email:  info@maplesoft.on.ca
+
+
+A: DOE-Macsyma
+        Purpose: Symbolic and mathematical manipulations.
+        Contact: National Energy Software Center
+        Argonne National Laboratory 9700 South Cass Avenue
+        Argonne, Illinois 60439
+        Phone: (708) 972-7250
+
+
+A: Pari
+        Purpose: Number-theoretic computations and simple numerical
+        analysis.
+        Available for most 32-bit machines, including 386+387 and 486.
+        This is a copyrighted but free package, available by ftp from
+        math.ucla.edu (128.97.4.254) and ftp.inria.fr (128.93.1.26).
+        Contact: questions about pari can be sent to pari@ceremab.u-bordeaux.fr
+        and for the Macintosh versions to bernardi@mathp7.jussieu.fr
+
+
+A: Mathematica
+        Purpose: Mathematical computation and visualization,
+        symbolic programming.
+        Contact: Wolfram Research, Inc.
+        100 Trade Center Drive Champaign,
+        IL 61820-7237
+        Phone: 1-800-441-MATH
+        info@wri.com
+
+
+A: Macsyma
+        Purpose: Symbolic numerical and graphical mathematics.
+        Contact: Macsyma Inc.
+        20 Academy Street
+        Arlington, MA 02174
+        tel: 617-646-4550
+        fax: 617-646-3161
+        email: info-macsyma@macsyma.com
+
+
+A: Matlab
+        Purpose: `matrix laboratory' for tasks involving
+        matrices, graphics and general numerical computation.
+        Contact: The MathWorks, Inc.
+        21 Prime Park Way
+        Natick, MA 01760
+        508-653-1415
+        info@mathworks.com
+
+
+A: Cayley
+        Purpose: Computation in algebraic and combinatorial structures
+        such as groups, rings, fields, modules and graphs.
+        Available for: SUN 3, SUN 4, IBM running AIX or VM, DEC VMS, others
+        Contact: Computational Algebra Group
+        University of Sydney
+        NSW 2006
+        Australia
+        Phone:  (61) (02) 692 3338
+        Fax: (61) (02) 692 4534
+        cayley@maths.su.oz.au
+
+
+8Q:  Let P be a property about the Fields Medal. Is P(x) true?
+
+A:  Institution is meant to be the Institution to which the researcher
+    in question was associated to at the time the medal was awarded.
+
+
+Year Name               Birthplace              Age Institution
+---- ----               ----------              --- -----------
+1936 Ahlfors, Lars      Helsinki       Finland   29 Harvard U         USA
+1936 Douglas, Jesse     New York NY    USA       39 MIT               USA
+1950 Schwartz, Laurent  Paris          France    35 U of Nancy        France
+1950 Selberg, Atle      Langesund      Norway    33 Adv.Std.Princeton USA
+1954 Kodaira, Kunihiko  Tokyo          Japan     39 Princeton U       USA
+1954 Serre, Jean-Pierre Bages          France    27 College de France France
+1958 Roth, Klaus        Breslau        Germany   32 U of London       UK
+1958 Thom, Rene         Montbeliard    France    35 U of Strasbourg   France
+1962 Hormander, Lars    Mjallby        Sweden    31 U of Stockholm    Sweden
+1962 Milnor, John       Orange NJ      USA       31 Princeton U       USA
+1966 Atiyah, Michael    London         UK        37 Oxford U          UK
+1966 Cohen, Paul        Long Branch NJ USA       32 Stanford U        USA
+1966 Grothendieck, Alexander Berlin    Germany   38 U of Paris        France
+1966 Smale, Stephen     Flint MI       USA       36 UC Berkeley       USA
+1970 Baker, Alan        London         UK        31 Cambridge U       UK
+1970 Hironaka, Heisuke  Yamaguchi-ken  Japan     39 Harvard U         USA
+1970 Novikov, Serge     Gorki          USSR      32 Moscow U          USSR
+1970 Thompson, John     Ottawa KA      USA       37 U of Chicago      USA
+1974 Bombieri, Enrico   Milan          Italy     33 U of Pisa         Italy
+1974 Mumford, David     Worth, Sussex  UK        37 Harvard U         USA
+1978 Deligne, Pierre    Brussels       Belgium   33 IHES              France
+1978 Fefferman, Charles Washington DC  USA       29 Princeton U       USA
+1978 Margulis, Gregori  Moscow         USSR      32 InstPrblmInfTrans USSR
+1978 Quillen, Daniel    Orange NJ      USA       38 MIT               USA
+1982 Connes, Alain      Draguignan     France    35 IHES              France
+1982 Thurston, William  Washington DC  USA       35 Princeton U       USA
+1982 Yau, Shing-Tung    Kwuntung       China     33 IAS               USA
+1986 Donaldson, Simon   Cambridge      UK        27 Oxford U          UK
+1986 Faltings, Gerd     1954           Germany   32 Princeton U       USA
+1986 Freedman, Michael  Los Angeles CA USA       35 UC San Diego      USA
+1990 Drinfeld, Vladimir Kharkov        USSR      36 Phys.Inst.Kharkov USSR
+1990 Jones, Vaughan     Gisborne       N Zealand 38 UC Berkeley       USA
+1990 Mori, Shigefumi    Nagoya         Japan     39 U of Kyoto?       Japan
+1990 Witten, Edward     Baltimore      USA       38 Princeton U/IAS   USA
+
+References :
+
+International Mathematical Congresses, An Illustrated History 1893-1986,
+Revised Edition, Including 1986, by Donald J.Alberts, G. L. Alexanderson
+and Constance Reid, Springer Verlag, 1987.
+
+Tropp, Henry S., ``The origins and history of the Fields Medal,''
+Historia Mathematica, 3(1976), 167-181.
+
+
+9Q:  Has the Four Colour Theorem been proved?
+
+    Four Color Theorem:
+
+    Every planar map with regions of simple borders can be coloured
+    with 4 colours in such a way that no two regions sharing a non-zero
+    length border have the same colour.
+
+A:  This theorem was proved with the aid of a computer in 1976.
+    The proof shows that if aprox. 1,936  basic forms of maps
+    can be coloured with four colours, then any given map can be
+    coloured with four colours. A computer program coloured this
+    basic forms. So far nobody has been able to prove it without
+    using a computer. In principle it is possible to emulate the
+    computer proof by hand computations.
+
+    References:
+
+    K. Appel and W. Haken, Every planar map is four colourable,
+    Bulletin of the American Mathematical Society, vol. 82, 1976
+    pp.711-712.
+
+    K. Appel and W. Haken, Every planar map is four colourable,
+    Illinois Journal of Mathematics, vol. 21, 1977, pp. 429-567.
+
+    T. Saaty and Paul Kainen, The Four Colour Theorem: Assault and
+    Conquest, McGraw-Hill, 1977. Reprinted by Dover Publications 1986.
+
+    K. Appel and W. Haken, Every Planar Map is Four Colourable,
+    Contemporary Mathematics, vol. 98, American Mathematical Society,
+    1989, pp.741.
+
+    F. Bernhart, Math Reviews. 91m:05007, Dec. 1991. (Review of Appel
+    and Haken's book).
+
+
+10Q:  What is 0^0 ?
+
+A:  According to some Calculus textbooks, 0^0 is an "indeterminate
+    form". When evaluating a limit of the form 0^0, then you need
+    to know that limits of that form are called "indeterminate forms",
+    and that you need to use a special technique such as L'Hopital's
+    rule to evaluate them. Otherwise, 0^0=1 seems to be the most
+    useful choice for 0^0. This convention allows us to extend
+    definitions in different areas of mathematics that otherwise would
+    require treating 0 as a special case. Notice that 0^0 is a
+    discontinuity of the function x^y.
+
+    Rotando & Korn show that if f and g are real functions that vanish
+    at the origin and are _analytic_ at 0 (infinitely differentiable is
+    not sufficient), then f(x)^g(x) approaches 1 as x approaches 0 from
+    the right.
+
+    From Concrete Mathematics p.162 (R. Graham, D. Knuth, O. Patashnik):
+
+    "Some textbooks leave the quantity 0^0 undefined, because the
+    functions x^0 and 0^x have different limiting values when x
+    decreases to 0. But this is a mistake. We must define
+
+       x^0 = 1 for all x,
+
+    if the binomial theorem is to be valid when x=0, y=0, and/or x=-y.
+    The theorem is too important to be arbitrarily restricted! By
+    contrast, the function 0^x is quite unimportant."
+   Published by Addison-Wesley, 2nd printing Dec, 1988.
+
+    References:
+
+    H. E. Vaughan, The expression '0^0', Mathematics Teacher 63 (1970),
+    pp.111-112.
+
+    Louis M. Rotando & Henry Korn, "The Indeterminate Form 0^0",
+    Mathematics Magazine, Vol. 50, No. 1 (January 1977), pp. 41-42.
+
+    L. J. Paige, A note on indeterminate forms, American Mathematical
+    Monthly, 61 (1954), 189-190; reprinted in the Mathematical
+    Association of America's 1969 volume, Selected Papers on Calculus,
+    pp. 210-211.
+
+
+11Q:  Why is 0.9999... = 1?
+
+A:  In modern mathematics, the string of symbols "0.9999..." is
+    understood to be a shorthand for "the infinite sum  9/10 + 9/100
+    + 9/1000 + ...." This in turn is shorthand for "the limit of the
+    sequence of real numbers 9/10, 9/10 + 9/100, 9/10 + 9/100 + 9/1000,
+    ..."  Using the well-known epsilon-delta definition of limit, one
+    can easily show that this limit is 1.  The statement that
+    0.9999...  = 1 is simply an abbreviation of this fact.
+
+                    oo              m
+                   ---   9         ---   9
+        0.999... = >   ---- = lim  >   ----
+                   --- 10^n  m->oo --- 10^n
+                   n=1             n=1
+
+
+        Choose epsilon > 0. Suppose delta = 1/-log_10 epsilon, thus
+        epsilon = 10^(-1/delta). For every m>1/delta we have that
+
+        |  m           |
+        | ---   9      |     1          1
+        | >   ---- - 1 | = ---- < ------------ = epsilon
+        | --- 10^n     |   10^m   10^(1/delta)
+        | n=1          |
+
+        So by the (epsilon-delta) definition of the limit we have
+
+               m
+              ---   9
+         lim  >   ---- = 1
+        m->oo --- 10^n
+              n=1
+
+
+    An *informal* argument could be given by noticing that the following
+    sequence of "natural" operations has as a consequence 1 = 0.9999....
+    Therefore it's "natural" to assume 1 = 0.9999.....
+
+             x = 0.99999....
+           10x = 9.99999....
+       10x - x = 9
+            9x = 9
+             x = 1
+    Thus
+             1 = 0.99999....
+
+    References:
+
+    E. Hewitt & K. Stromberg, Real and Abstract Analysis,
+    Springer-Verlag, Berlin, 1965.
+
+    W. Rudin, Principles of Mathematical Analysis, McGraw-Hill, 1976.
+
+
+12Q:  There are three doors, and there is a car hidden behind one
+    of them, Master Mind and other games ..
+
+A:  Read frequently asked questions from rec.puzzles, as well as
+    their ``archive file'' where the problem is solved and carefully 
+    explained. (The Monty Hall problem). 
+
+    MANY OTHER MATHEMATICAL GAMES ARE EXPLAINED IN THE REC.PUZZLES 
+    FAQ AND ARCHIVES. READ IT BEFORE ASKING IN SCI.MATH.
+
+    Your chance of winning is 2/3 if you switch and 1/3 if you don't.
+    For a full explanation from the rec.puzzles' archive, send to the
+    address archive-request@questrel.com an email message consisting 
+    of the text
+
+               send monty.hall
+
+
+    Also any other FAQ list can be obtained through anonymous ftp from
+    rtfm.mit.edu.
+
+    References
+
+    American Mathematical Monthly, January 1992.
+
+
+    For the game of Master Mind it has been proven that no more than
+    five moves are required in the worst case. For references look at
+
+    One such algorithm was published in the Journal of Recreational
+    Mathematics; in '70 or '71 (I think), which always solved the
+    4 peg problem in 5 moves. Knuth later published an algorithm which
+    solves the problem in a shorter # of moves - on average - but can
+    take six guesses on certain combinations.
+
+
+
+    Donald E. Knuth, The Computer as Master Mind, J. Recreational Mathematics
+    9 (1976-77), 1-6.
+
+
+13Q:  What is the formula for the "Surface Area" of a sphere in
+    Euclidean N-Space.  That is, of course, the volume of the N-1
+    solid which comprises the boundary of an N-Sphere.
+
+A:  The volume of a ball is the easiest formula to remember:  It's r^N
+    times pi^(N/2)/(N/2)!.  The only hard part is taking the factorial
+    of a half-integer.  The real definition is that x! = Gamma(x+1), but
+    if you want a formula, it's:
+
+    (1/2+n)! = sqrt(pi)*(2n+2)!/(n+1)!/4^(n+1)
+
+    To get the surface area, you just differentiate to get
+    N*pi^(N/2)/(N/2)!*r^(N-1).
+
+    There is a clever way to obtain this formula using Gaussian
+    integrals. First, we note that the integral over the line of
+    e^(-x^2) is sqrt(pi).  Therefore the integral over N-space of
+    e^(-x_1^2-x_2^2-...-x_N^2) is sqrt(pi)^n.  Now we change to
+    spherical coordinates.  We get the integral from 0 to infinity
+    of V*r^(N-1)*e^(-r^2), where V is the surface volume of a sphere.
+    Integrate by parts repeatedly to get the desired formula.
+
+    It is possible to derive the volume of the sphere from ``first 
+    principles''.
+
+
+14Q:  Does anyone know a name (or a closed form) for
+
+      f(x)^f(x)=x
+
+
+    Solving for f one finds a "continued fraction"-like answer
+
+
+               f(x) = log x
+                      -----
+                      log (log x
+                          ------
+                              ...........
+
+A:  This question has been repeated here from time to time over the
+    years, and no one seems to have heard of any published work on it,
+    nor a published name for it (D. Merrit proposes "lx" due to its
+    (very) faint resemblance to log). It's not an analytic function.
+
+    The "continued fraction" form for its numeric solution is highly
+    unstable in the region of its minimum at 1/e (because the graph is
+    quite flat there yet logarithmic approximation oscillates wildly),
+    although it converges fairly quickly elsewhere. To compute its value
+    near 1/e, use the bisection method which gives good results. Bisection
+    in other regions converges much more slowly than the "logarithmic
+    continued fraction" form, so a hybrid of the two seems suitable.
+    Note that it's dual valued for the reals (and many valued complex
+    for negative reals).
+
+    A similar function is a "built-in" function in MAPLE called W(x).
+    MAPLE considers a solution in terms of W(x) as a closed form (like
+    the erf function). W is defined as W(x)*exp(W(x))=x.
+
+    An extensive treatise on the known facts of Lambert's W function
+    is available for anonymous ftp at daisy.uwaterloo.ca in the
+    /pub/maple/5.2/share/LambertW.ps.
+
+
+
+15Q: Does there exist a projective plane of order 10?
+
+    More precisely:
+
+    Is it possible to define 111 sets (lines) of 11 points each
+    such that:
+    
+      For any pair of points there is precisely one line containing them
+      both and for any pair of lines there is only one point common to
+      them both?
+
+
+A:  Analogous questions with n^2 + n + 1 and n + 1 instead of 111 and 11
+    have been positively answered only in case n is a prime power.
+    For n=6 it is not possible, more generally if n is congruent to 1
+    or 2 mod 4 and can not be written as a sum of two squares, then an
+    FPP of order n does not exist.  The n=10 case has been settled as not
+    possible either by Clement Lam. As the "proof" took several years of
+    computer search (the equivalent of 2000 hours on a Cray-1) it can be 
+    called the most time-intensive computer assisted single proof. The
+    final steps were ready in January 1989.
+
+    References
+
+    R. H. Bruck and H. J. Ryser, "The nonexistence of certain finite
+    projective planes," Canadian Journal of Mathematics, vol. 1 (1949),
+    pp 88-93.
+
+    C. Lam, Amer.Math.Monthly 98 (1991), 305-318.
+
+
+16Q:  Is there a formula to determine the day of the week, given
+    the month, day and year?
+
+A:  First a brief explanation: In the Gregorian Calendar, over a period
+    of four hundred years, there are 97 leap years and 303 normal years.
+    Each normal year, the day of January 1 advances by one; for each leap
+    year it advances by two.
+
+        303 + 97 + 97 = 497 = 7 * 71
+
+    As a result, January 1 year N occurs on the same day of the week as
+    January 1 year N + 400.  Because the leap year pattern also recurs
+    with a four hundred year cycle, a simple table of four hundred
+    elements, and single modulus, suffices to determine the day of the
+    week (in the Gregorian Calendar), and does it much faster than all the
+    other algorithms proposed.  Also, each element takes (in principle)
+    only three bits; the entire table thus takes only 1200 bits, or 300
+    bytes; on many computers this will be less than the instructions to do
+    all the complicated calculations proposed for the other algorithms.
+
+    Incidental note: Because 7 does not divide 400, January 1 occurs more
+    frequently on some days than others!  Trick your friends!  In a cycle
+    of 400 years, January 1 and March 1 occur on the following days with
+    the following frequencies:
+
+           Sun      Mon     Tue     Wed     Thu     Fri     Sat
+    Jan 1: 58       56      58      57      57      58      56
+    Mar 1: 58       56      58      56      58      57      57
+
+    Of interest is that (contrary to most initial guesses) the occurrence
+    is not maximally flat.
+
+    The Gregorian calendar was introduced in 1582 in parts of Europe; it was
+    adopted in 1752 in Great Britain and its colonies, and on various dates
+    in other countries.  It replaced the Julian Calendar which has a four-year
+    cycle of leap years; after four years January 1 has advanced by five days.
+    Since 5 is relatively prime to 7, a table of 4 * 7 = 28 elements is
+    necessary for the Julian Calendar.
+
+
+    There is still a 3 day / 10,000 year error which the Gregorian calendar
+    does not take.  into account.  At some time such a correction will have
+    to be done but your software will probably not last that long :-)   !
+
+    Here is a standard method suitable for mental computation:
+
+        A. Take the last two digits of the year.
+        B. Divide by 4, discarding any fraction.
+        C. Add the day of the month.
+        D. Add the month's key value: JFM AMJ JAS OND
+                                      144 025 036 146
+        E. Subtract 1 for January or February of a leap year.
+        F. For a Gregorian date, add 0 for 1900's, 6 for 2000's, 4 for 1700's,
+           2 for 1800's; for other years, add or subtract multiples of 400.
+        G. For a Julian date, add 1 for 1700's, and 1 for every additional
+           century you go back.
+        H. Add the last two digits of the year.
+        I. Divide by 7 and take the remainder.
+
+        Now 1 is Sunday, the first day of the week, 2 is Monday, and so on.
+
+    The following formula, which is for the Gregorian calendar only, may be
+    more convenient for computer programming.  Note that in some programming
+    languages the remainder operation can yield a negative result if given
+    a negative operand, so "mod 7" may not translate to a simple remainder.
+
+        W == (k + [2.6m - 0.2] - 2C + Y + [Y/4] + [C/4]) mod 7
+           where [] denotes the integer floor function (round down),
+           k is day (1 to 31)
+           m is month (1 = March, ..., 10 = December, 11 = Jan, 12 = Feb)
+                         Treat Jan & Feb as months of the preceding year
+           C is century (1987 has C = 19)
+           Y is year    (1987 has Y = 87 except Y = 86 for Jan & Feb)
+           W is week day (0 = Sunday, ..., 6 = Saturday)
+
+    Here the century & 400 year corrections are built into the formula.
+    The [2.6m-0.2] term relates to the repetitive pattern that the 30-day
+    months show when March is taken as the first month.
+
+
+    References:
+
+    Winning Ways  by Conway, Guy, Berlekamp is supposed to have it.
+
+    Martin Gardner in "Mathematical Carnival".
+
+    Michael Keith and Tom Craver, "The Ultimate Perpetual Calendar?",
+    Journal of Recreational Mathematics, 22:4, pp. 280-282, 19
+
+    K. Rosen, "Elementary Number Theory",  p. 156.
+
+
+
+17Q:  What is the Axiom of Choice?  Why is it important? Why some articles
+    say "such and such is provable, if you accept the axiom of choice."?
+    What are the arguments for and against the axiom of choice?
+
+
+A:  There are several equivalent formulations:
+
+    -The Cartesian product of nonempty sets is nonempty, even
+    if the product is of an infinite family of sets.
+
+    -Given any set S of mutually disjoint nonempty sets, there is a set C
+    containing a single member from each element of S.  C can thus be
+    thought of as the result of "choosing" a representative from each
+    set in S. Hence the name.
+
+    >Why is it important?
+
+    All kinds of important theorems in analysis require it.  Tychonoff's
+    theorem and the Hahn-Banach theorem are examples. Indeed,
+    Tychonoff's theorem is equivalent to AC. Similarly, AC is equivalent
+    to the thesis that every set can be well-ordered.  Zermelo's first
+    proof of this in 1904 I believe was the first proof in which AC was
+    made explicit.  AC is especially handy for doing infinite cardinal
+    arithmetic, as without it the most you get is a *partial* ordering
+    on the cardinal numbers.  It also enables you to prove such
+    interesting general facts as that n^2 = n for all infinite cardinal
+    numbers.
+
+    > What are the arguments for and against the axiom of choice?
+
+    The axiom of choice is independent of the other axioms of set theory
+    and can be assumed or not as one chooses.
+
+    (For) All ordinary mathematics uses it.
+
+    There are a number of arguments for AC, ranging from a priori to
+    pragmatic.  The pragmatic argument (Zermelo's original approach) is
+    that it allows you to do a lot of interesting mathematics.  The more
+    conceptual argument derives from the "iterative" conception of set
+    according to which sets are "built up" in layers, each layer consisting
+    of all possible sets that can be constructed out of elements in the
+    previous layers.  (The building up is of course metaphorical, and is
+    suggested only by the idea of sets in some sense consisting of their
+    members; you can't have a set of things without the things it's a set
+    of).  If then we consider the first layer containing a given set S of
+    pairwise disjoint nonempty sets, the argument runs, all the elements
+    of all the sets in S must exist at previous levels "below" the level
+    of S.  But then since each new level contains *all* the sets that can
+    be formed from stuff in previous levels, it must be that at least by
+    S's level all possible choice sets have already been *formed*. This
+    is more in the spirit of Zermelo's later views (c. 1930).
+
+    (Against) It has some supposedly counterintuitive consequences,
+    such as the Banach-Tarski paradox. (See next question)
+
+    Arguments against AC typically target its nonconstructive character:
+    it is a cheat because it conjures up a set without providing any
+    sort of *procedure* for its construction--note that no *method* is
+    assumed for picking out the members of a choice set.  It is thus the
+    platonic axiom par excellence, boldly asserting that a given set
+    will always exist under certain circumstances in utter disregard of
+    our ability to conceive or construct it.  The axiom thus can be seen
+    as marking a divide between two opposing camps in the philosophy of
+    mathematics:  those for whom mathematics is essentially tied to our
+    conceptual capacities, and hence is something we in some sense
+    *create*, and those for whom mathematics is independent of any such
+    capacities and hence is something we *discover*.  AC is thus of
+    philosophical as well as mathematical significance.
+
+
+    It should be noted that some interesting mathematics has come out of an
+    incompatible axiom, the Axiom of Determinacy (AD).  AD asserts that
+    any two-person game without ties has a winning strategy for the first or
+    second player.  For finite games, this is an easy theorem; for infinite
+    games with duration less than \omega and move chosen from a countable set,
+    you can prove the existence of a counter-example using AC.  Jech's book
+    "The Axiom of Choice" has a discussion.
+
+    An example of such a game goes as follows.
+
+       Choose in advance a set of infinite sequences of integers; call it A.
+       Then I pick an integer, then you do, then I do, and so on forever
+       (i.e. length \omega).  When we're done, if the sequence of integers
+       we've chosen is in A, I win; otherwise you win.  AD says that one of
+       us must have a winning strategy.  Of course the strategy, and which
+       of us has it, will depend upon A.
+
+
+    From a philosophical/intuitive/pedagogical standpoint, I think Bertrand
+    Russell's shoe/sock analogy has a lot to recommend it.  Suppose you have an
+    infinite collection of pairs of shoes.  You want to form a set with one
+    shoe from each pair.  AC is not necessary, since you can define the set as
+    "the set of all left shoes". (Technically, we're using the axiom of
+    replacement, one of the basic axioms of Zermelo-Fraenkel (ZF) set theory.)
+    If instead you want to form a set containing one sock from each pair of an
+    infinite collection of pairs of socks, you now need AC.
+
+
+    References:
+
+    Maddy, "Believing the Axioms, I", J. Symb. Logic, v. 53, no. 2, June 1988,
+    pp. 490-500, and "Believing the Axioms II" in v.53, no. 3.
+
+    Gregory H. Moore, Zermelo's Axiom of Choice, New York, Springer-Verlag,
+    1982.
+
+    H. Rubin and J. E. Rubin, Equivalents of the Axiom of Choice II,
+    North-Holland/Elsevier Science, 1985.
+
+    A. Fraenkel, Y.  Bar-Hillel, and A. Levy, Foundations of Set Theory,
+    Amsterdam, North-Holland, 1984 (2nd edition, 2nd printing), pp. 53-86.
+
+
+18Q:  Cutting a sphere into pieces of larger volume. Is it possible
+    to cut a sphere into a finite number of pieces and reassemble
+    into a solid of twice the volume?
+
+A:  This question has many variants and it is best answered explicitly.
+    Given two polygons of the same area, is it always possible to
+    dissect one into a finite number of pieces which can be reassembled
+    into a replica of the other?
+
+    Dissection theory is extensive.  In such questions one needs to
+    specify
+
+     (A) what a "piece" is,  (polygon?  Topological disk?  Borel-set?
+         Lebesgue-measurable set?  Arbitrary?)
+
+     (B) how many pieces are permitted (finitely many? countably? uncountably?)
+
+     (C) what motions are allowed in "reassembling" (translations?
+         rotations?  orientation-reversing maps?  isometries?
+         affine maps?  homotheties?  arbitrary continuous images?  etc.)
+
+     (D) how the pieces are permitted to be glued together.  The
+         simplest notion is that they must be disjoint.  If the pieces
+         are polygons [or any piece with a nice boundary] you can permit
+         them to be glued along their boundaries, ie the interiors of the
+         pieces disjoint, and their union is the desired figure.
+
+
+    Some dissection results
+
+     1) We are permitted to cut into FINITELY MANY polygons, to TRANSLATE
+        and ROTATE the pieces, and to glue ALONG BOUNDARIES;
+        then Yes, any two equal-area polygons are equi-decomposable.
+
+        This theorem was proven by Bolyai and Gerwien independently, and has
+        undoubtedly been independently rediscovered many times.  I would not
+        be surprised if the Greeks knew this.
+
+        The Hadwiger-Glur theorem implies that any two equal-area polygons are
+        equi-decomposable using only TRANSLATIONS and ROTATIONS BY 180
+        DEGREES.
+
+     2) THM (Hadwiger-Glur, 1951) Two equal-area polygons P,Q are
+        equi-decomposable by TRANSLATIONS only, iff we have equality of these
+        two functions:     PHI_P() = PHI_Q()
+        Here, for each direction v (ie, each vector on the unit circle in the
+        plane), let PHI_P(v) be the sum of the lengths of the edges of P which
+        are perpendicular to v, where for such an edge, its length is positive
+        if v is an outward normal to the edge and is negative if v is an
+        inward normal to the edge.
+
+
+     3) In dimension 3, the famous "Hilbert's third problem" is:
+
+       "If P and Q are two polyhedra of equal volume, are they
+        equi-decomposable by means of translations and rotations, by
+        cutting into finitely many sub-polyhedra, and gluing along
+        boundaries?"
+
+        The answer is "NO" and was proven by Dehn in 1900, just a few months
+        after the problem was posed. (Ueber raumgleiche polyeder, Goettinger
+        Nachrichten 1900, 345-354). It was the first of Hilbert's problems
+        to be solved. The proof is nontrivial but does *not* use the axiom
+        of choice.
+
+        "Hilbert's Third Problem", by V.G.Boltianskii, Wiley 1978.
+
+
+     4) Using the axiom of choice on non-countable sets, you can prove
+        that a solid sphere can be dissected into a finite number of
+        pieces that can be reassembled to two solid spheres, each of
+        same volume of the original. No more than nine pieces are needed.
+
+        The minimum possible number of pieces is FIVE.  (It's quite easy
+        to show that four will not suffice).  There is a particular
+        dissection in which one of the five pieces is the single center
+        point of the original sphere, and the other four pieces  A, A',
+        B, B'  are such that A is congruent to A' and B is congruent to B'.
+        [See Wagon's book].
+
+        This construction is known as the "Banach-Tarski" paradox or the
+        "Banach-Tarski-Hausdorff" paradox (Hausdorff did an early version of
+        it).  The "pieces" here are non-measurable sets, and they are
+        assembled *disjointly* (they are not glued together along a boundary,
+        unlike the situation in Bolyai's thm.)
+         An excellent book on Banach-Tarski is:
+
+        "The Banach-Tarski Paradox", by Stan Wagon, 1985, Cambridge
+        University Press.
+
+        Robert M. French, The Banach-Tarski theorem, The Mathematical 
+        Intelligencer 10 (1988) 21-28.
+
+
+        The pieces are not (Lebesgue) measurable, since measure is preserved
+        by rigid motion. Since the pieces are non-measurable, they do not
+        have reasonable boundaries. For example, it is likely that each piece's
+        topological-boundary is the entire ball.
+
+        The full Banach-Tarski paradox is stronger than just doubling the
+        ball.  It states:
+
+     5) Any two bounded subsets (of 3-space) with non-empty interior, are
+        equi-decomposable by translations and rotations.
+
+        This is usually illustrated by observing that a pea can be cut up
+        into finitely pieces and reassembled into the Earth.
+
+        The easiest decomposition "paradox" was observed first by Hausdorff:
+
+     6) The unit interval can be cut up into COUNTABLY many pieces which,
+        by *translation* only, can be reassembled into the interval of
+        length 2.
+
+        This result is, nowadays, trivial, and is the standard example of a
+        non-measurable set, taught in a beginning graduate class on measure
+        theory.
+
+
+        References:
+
+        In addition to Wagon's book above, Boltyanskii has written at least
+        two works on this subject.  An elementary one is:
+
+          "Equivalent and equidecomposable figures"
+
+        in Topics in Mathematics published by D.C. HEATH AND CO., Boston.  It
+        is a translation from the 1956 work in Russian.
+
+          Also, the article "Scissor Congruence" by Dubins, Hirsch and ?,
+        which appeared about 20 years ago in the Math Monthly, has a pretty
+        theorem on decomposition by Jordan arcs.
+
+
+        ``Banach and Tarski had hoped that the physical absurdity of this
+        theorem would encourage mathematicians to discard AC. They were
+        dismayed when the response of the math community was `Isn't AC great?
+        How else could we get such counterintuitive results?' ''
+
+
+
+Copyright Notice
+
+Copyright (c) 1993   A. Lopez-Ortiz
+
+  This FAQ is Copyright (C) 1994 by Alex Lopez-Ortiz. This text,
+  in whole or in part, may not be sold in any medium, including,
+  but not limited to electronic, CD-ROM, or published in print,
+  without the explicit, written permission of Alex Lopez-Ortiz.
+
+
+
+
+--------------------------------------------------------------------------
+Questions and Answers Edited and Compiled by:
+
+Alex Lopez-Ortiz                              alopez-o@maytag.UWaterloo.ca
+Department of Computer Science                      University of Waterloo
+Waterloo, Ontario                                                   Canada
+-- 
+Alex Lopez-Ortiz                             alopez-o@neumann.UWaterloo.ca
+Department of Computer Science                      University of Waterloo
+Waterloo, Ontario                                                   Canada

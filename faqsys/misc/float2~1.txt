@@ -1,0 +1,29 @@
+Due to the C ANSI standard, when an application converts a number from floating
+                          point to integer, the number is truncated. On Pentium and Pentium II processors, this
+                          truncation is expensive because it involves changing the floating point control word.
+                          During the rendering process there are many places where ftol is called: in the
+                          polygon setup part and when converting the output of the lighting to rgb integer
+                          values. To save the extra cycles wasted on truncation, the fast_ftolprocedure
+                          presented here 'rounds to nearest'. 
+
+                          C declaration: 
+
+                          extern signed long fast_ftol(float d) 
+
+
+                          ASM implementation: 
+
+                              result dd 0 ;(in the data section)
+                              PUBLIC _fast_ftol
+                              _TEXT SEGMENT
+                              _d$ = 4
+                              
+                              _fast_ftol PROC NEAR
+                                  fld   DWORD PTR _d$[esp]
+                                  fistp DWORD PTR result
+                                  mov   eax , DWORD PTR result
+                                  ret 0
+                              _fast_ftol ENDP
+                             
+                             _TEXT ENDS
+

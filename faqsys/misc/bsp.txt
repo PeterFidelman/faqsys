@@ -1,0 +1,185 @@
+                       A Note on Quake BSP Algorithms
+
+                               Kekoa Proudfoot
+
+> > I can write up some BSP pseudo code, if there's enough interest.
+>
+> This would be really great.
+
+Okay, this is somewhat of a repost of some stuff from April.
+
+For collision detection, it's sufficient to use what the Specs call the BSP
+nodes, which start at node_id0 in struct model_t. It might be possible to
+use the so-called clip nodes (node_id1, node_id2), but I never got around to
+figuring out exactly what the clip nodes were or what they were for.
+
+In any event, the BSP tree starting at node_id0 does two things: it cuts up
+space into convex regions, and (through the repeated use of leaf 0) it
+classifies all of space as either inside or outside the world.
+
+First, some basic functions, opting for clarity and not speed:
+
+/* See the Specs for a description of the types */
+
+#define dot(a,b) ((a).x * (b).x + (a).y * (b).y + (a).z * (b).z)
+
+float point_to_plane_distance(vec3_t *point, plane_t *plane) {
+    return (dot(*point, plane->normal) - plane->dist);
+}
+
+int is_leaf(u_short child) {
+    return (child & 0x8000);
+}
+
+int leaf_is_inside(u_short leaf) {
+    assert(is_leaf(leaf));
+    return (child != 0xffff);
+}
+
+Here's the point location function, which returns the index of the leaf
+containing a point:
+
+u_short point_locate(u_short node, vec3_t *point) {
+    if (is_child(node))
+        return node;
+
+    if (point_to_plane_distance(point, &planes[nodes[node].plane_id]) > 0)
+        return point_locate(nodes[node].front);
+    else
+        return point_locate(nodes[node].back);
+}
+
+Here's the point classification function, which returns 1 if a point is
+inside the map, 0 otherwise:
+
+int point_is_inside(u_short node, vec3_t *point) {
+    return leaf_is_inside(point_locate(node, point));
+}
+
+Here's the sphere classification function, which returns 1 if a sphere is
+inside the map, 0 otherwise:
+
+int sphere_is_inside(u_short node, vec3_t *center, float radius) {
+    float dist;
+
+    if (is_child(node))
+        return leaf_is_inside(node);
+
+    dist = point_to_plane_distance(center, &planes[nodes[node].plane_id]);
+
+    if (dist > -radius)
+        if (!sphere_is_inside(nodes[node].front, center, radius)
+            return 0;
+
+    if (dist < radius)
+        if (!sphere_is_inside(nodes[node].back, center, radius))
+            return 0;
+
+    return 1;
+}
+
+Next, a ray intersection function, which we'll use to implement a function
+which tells us if two points can see one another.
+
+The ray intersection function will take five parameters: a node (node), a
+ray origin (p), a ray direction (d), a start time (min), and an ending time
+(max). In addition, the function will return a time, which will be the time
+of intersection (if an intersection exists) or max (if no intersection
+exists). A note on ray parametrization: I'll define a ray to be a set of
+points P such that P = p + t * d, t >= 0.
+
+float ray_intersect(u_short node, vec3_t *p, vec3_t *d, float min, float max) {
+    float    dist;
+    u_short  nearer;
+    u_short  farther;
+    float    scale;
+
+    if (is_leaf(node))
+        return leaf_is_inside(node) ? max : min;
+
+    dist    = point_to_plane_distance(p, &planes[nodes[node].plane_id]);
+    nearer  = (dist > 0) ? nodes[node].front : nodes[node].back;
+    farther = (dist > 0) ? nodes[node].back : nodes[node].front;
+    scale   = - dot(planes[n->plane_id].normal, *d);
+
+    if (scale == 0)
+        return ray_intersect(nearer, p, d, min, max);
+
+    dist /= scale;
+
+    if (dist > max || dist < 0)
+        return ray_intersect(nearer, p, d, min, max);
+
+    if (dist < min)
+        return ray_intersect(farther, p, d, min, max);
+
+    if (min = ray_intersect(nearer, p, d, min, dist) != dist)
+        return min;
+    else
+        return ray_intersect(farther, p, d, dist, max);
+}
+
+As a side note, it's possible to modify the previous function to return a
+pointer to the first plane_t that the ray intersects. I won't give the code
+for this, but suffice it to say that if and when the final recursive call to
+ray_intersect, ray_intersect(farther, p, d, dist, max), returns dist, the
+plane_t being considered at that instant in the recursion is the plane_t
+that the ray intersects.
+
+Back to point-to-point visibility. Here is a function that returns 1 if two
+points can see one another and 0 if the path between two points is blocked:
+
+int path_unblocked(u_short node, vec3_t *p0, vec3_t *p1) {
+    vec3_t d;
+
+    d.x = p1->x - p0.x;
+    d.y = p1->y - p0.y;
+    d.z = p1->z - p0.z;
+
+    return (ray_intersect(node, p0, d, 0.0, 1.0) == 1.0);
+}
+
+Okay, so that's about it.
+
+If you want more information, you might want to check out the BSPFAQ, at:
+
+http://reality.sgi.com/bspfaq/
+
+Also, the ray intersection algorithm is based on some pseudo-code in
+"Linear-Time Voxel Walking for Octrees," by Jim Arvo, which seems to be some
+sort of technical report that has made its way into the BSPFAQ. Anyways, you
+can find this at:
+
+http://reality.sgi.com/bspfaq/ltvw.shtml
+
+As a disclaimer, I put together most of the above code while I was writing
+all of this up, and I haven't tested any of it. I did try to consult the
+StoogeBot code to try to get all of the signs right, but no guarantees there
+either.
+
+> I understand _some_ of the basics, mostly from trying to read the
+> Terminator bot's code, but where I fall down is trying to do movement
+> in a way that closely imitates the Quake engine ... I want to move an
+> AABB along a certain vector, and when it runs into a wall it needs to
+> slide along it in the expected fashion.
+>
+> I guess I could do this with a sphere instead of an AABB, and I think I
+> figured out at some point that I merely needed the normal of the wall I
+> was running into to get the sliding effect.
+
+I haven't yet figured out the code for AABBs, either moving or stationary,
+but I suspect that the ray intersection algorithms might be of use if you
+combine them with the clip node BSP trees, which (from the description of
+them in the Specs) appear to describe bloated versions of the map. You can
+probably use the planes in the clip node BSP trees to get your normals. But
+what do I know, I don't exactly know what the clip node BSP trees are, so
+they might not be whay you want. Well, to add to that, some random spewage:
+I suspect that the clip node BSP trees are probably made by bloating the
+original map with an AABB, since this will give a bloat that can be
+represented by planar surfaces (as opposed to one whose representation would
+require some curved surfaces, which would be the case if spheres were used
+to do the bloat; curved surfaces and BSP trees don't mix well).
+
+Hope this helps,
+
+-Kekoa

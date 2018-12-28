@@ -1,0 +1,4 @@
+<Wogster> submissiv: you said: not need to be accurate..    sub eax, "1.0 in 
+   binaryform",  shr eax, add eax, "1.0"
+
+<Wogster> sub: might be the  ADD and SUB need to be switched... 

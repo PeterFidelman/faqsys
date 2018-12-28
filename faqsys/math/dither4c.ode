@@ -1,0 +1,873 @@
+From albanycs!leah:rsb584 Sat Jan  9 02:42:53 1988
+Received: by albanycs.albany.edu (5.54/4.8)
+	id AA08554; Sat, 9 Jan 88 01:49:12 EST
+Date: Sat, 9 Jan 88 01:49:06 EST
+From: albanycs!leah:rsb584 ( Raymond S Brand)
+Received: by leah.Albany.EDU (5.58/1.1)
+	id AA04508; Sat, 9 Jan 88 01:49:06 EST
+Message-Id: <8801090649.AA04508@leah.Albany.EDU>
+To: albanycs:beowulf!rsbx
+
+>From garyo@masscomp.UUCP Wed Jan  6 22:03:58 1988
+Path: leah!uwmcsd1!bbn!husc6!necntc!dandelion!ulowell!masscomp!garyo
+From: garyo@masscomp.UUCP (Gary Oberbrunner)
+Newsgroups: comp.graphics
+Subject: Re: Advanced Dither Needed
+Summary: Floyd-Steinberg Dither explained
+Keywords: dither
+Message-ID: <2741@masscomp.UUCP>
+Date: 7 Jan 88 03:03:58 GMT
+References: <3703@ames.arpa>
+Reply-To: garyo@masscomp.UUCP (Gary Oberbrunner)
+Distribution: na
+Organization: MASSCOMP - Westford, Ma
+Lines: 845
+
+In article <3703@ames.arpa> watson@ames.UUCP (John S. Watson) writes:
+>    I'm looking for either references to, or code for a really 
+>nice color dithering algorithm.  The algorithm produces 8-bit dithered 
+>images that are almost indistinguishable from the original 24-bit images.  
+
+Floyd & Steinberg's dithering algorithm is described in the following paper:
+
+Floyd, R.W. and Steinberg, L. "An Adaptive Algorithm for Spatial Gray Scale."
+SID 75m Int. Symp. Dig. Tech. Papers (1975), p. 36.
+
+I don't actually have this paper, just a reference to it in Heckbert's "Color
+Image Quantization for Frame Buffer Display (Siggraph proceedings, 1982,
+p. 297).  You probably want to check this paper out too.
+But the way F/S dither works is like this (it's so simple...)
+
+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+First you come up with a color map - use uniform segmentation for speed or
+Heckbert's method for quality.  Then you work from the top left to the bottom
+right of the image (pixel order), as follows:
+
+Find the closest match in the color map to the true pixel color.
+Use that color map entry to represent that pixel.
+
+Compute the r,g,b error resulting from the above approximation.
+
+Add 3/8 of that error to the pixel to the right, and 3/8 to the pixel
+below the current pixel.  The remaining 1/4 goes to the pixel diagonally
+below.  Don't forget to clip the rgb, as well as check your boundary
+conditions.
+
+And that's it - compute the next pixel!  No dither maps, no muss no fuss no
+bother.  And it's real fast since you can do the 3/8 and 1/4 by shifting.
+On some images it can help to add some random noise; for instance if you
+have a smooth (flat-shaded) surface that's just below one of the colors in
+the map, the error will build up slowly until you get a line of brighter
+color somewhere in the surface.  A bit o' noise gets rid of that line nicely.
+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+Of course choosing the color map is the fun part. :-) :-)
+
+					Gary Oberbrunner
+
+Here is a hack C program which implements both Heckbert's algorithm and F/S
+dither (no claims of any kind are made for this program - in fact this article
+ended above with my name, and this is all line nois)@(#*&...
+No seriously, this code needs real help - it was written for a one-shot deal,
+and it is very inefficient in many places.  But it does work ok.
+The worst part is where every possible color mapping is computed - SLOW!
+And Remap() ain't a speed-demon either, but that's where Floyd et. al.
+come in...
+			Enjoy (watch out for possible signature at end...)
+
+----------------------------------------------------------------------------
+Remember,		       -Truth is not beauty;
+Information is not knowledge; /	Beauty is not love;	  Gary Oberbrunner
+Knowledge is not wisdom;     /	Love is not music;	  ...!masscomp!garyo
+Wisdom is not truth;    ----/	Music is the best. - FZ
+----------------------------------------------------------------------------
+---------------------- c u t    h e r e ----------------------------------
+#! /bin/sh
+# This is a shell archive, meaning:
+# 1. Remove everything above the #! /bin/sh line.
+# 2. Save the resulting text in a file.
+# 3. Execute the file with /bin/sh (not csh) to create:
+#	quantize.c	(most everything in here)
+#	split.c		(the color-space-splitting algorithm)
+#	quantize.h	(structs & externs)
+#	std.h		(my "gotta have it" stuff)
+# This archive created: Wed Jan  6 21:58:18 1988
+export PATH; PATH=/bin:/usr/bin:$PATH
+if test -f 'quantize.c'
+then
+	echo shar: "will not over-write existing file 'quantize.c'"
+else
+cat << \SHAR_EOF > 'quantize.c'
+/*----------------------------------------------------------------------
+ * Color image quantizer, from Paul Heckbert's paper in
+ * Computer Graphics, vol.16 #3, July 1982 (Siggraph proceedings),
+ * pp. 297-304.
+ * By Gary Oberbrunner, copyright c. 1988.
+ *----------------------------------------------------------------------
+ */
+
+#include <stdio.h>
+#include <fcntl.h>
+#include <std.h>
+#include "quantize.h"
+
+static char SCCSId[] = "SCCS ID: %W% %G% %U";
+int NCOLS = 0;
+char *progname;
+int debug = 1;
+int dither = 0;				/* This turns on dithering */
+int fs_dither = 1;			/* This turns on Floyd-Steinberg dithering */
+
+#define DITH 8
+int Dither[DITH][DITH] = {
+{ 0, 32,  8, 40,  2, 34, 10, 42},
+{48, 16, 56, 24, 50, 18, 58, 26},
+{12, 44,  4, 36, 14, 46,  6, 38},
+{60, 28, 52, 20, 62, 30, 54, 22},
+{ 3, 35, 11, 43,  1, 33,  9, 41},
+{51, 19, 59, 27, 49, 17, 57, 25},
+{15, 47,  7, 39, 13, 45,  5, 37},
+{63, 31, 55, 23, 61, 29, 53, 21}
+};
+
+/* This is only temporarily global: */
+    out_pix_t  *quant_image;		/* the quantized image - cmap indices */
+
+main (argc, argv)
+int argc;
+char **argv;
+{
+    char  *filename, *outfilename;
+    int    rows = 0, NCOLS = 0, cmaplen = 0;
+    rgb_pix_t *image;		/* rgb image storage */
+    cmap_t *cmap;		/* color map; rgb byte triples */
+    unsigned int   *hist;	/* histogram of color values: indices are
+				   formed from 5 bits each of r,g,b */
+    unsigned int   *maptable;	/* quantized color map table: indices are
+				   colors, values are color map indices */
+    int i;	/* temp! */
+    progname = argv[0];
+    if (argc != 6) 
+    {
+	dbug1("Usage: %s infile rows cols colormaplen outfile\n", argv[0]);
+	dbug0("Converts 24-bit rgb image to n-bit colormapped image.\n");
+	exit(1);
+    }
+    
+    filename = argv[1];
+    rows = atoi(argv[2]);
+    NCOLS = atoi(argv[3]);
+    cmaplen = atoi(argv[4]);
+    outfilename = argv[5];
+
+    /* dynamically allocate all the various structures */
+    NEW(image, rgb_pix_t, rows * NCOLS * RGB_BYTES);
+    NEW(quant_image, out_pix_t, rows * NCOLS);
+    NEW(cmap, cmap_t, 3 * cmaplen);
+    NEW(hist, unsigned int, HIST_SIZE);
+    maptable = hist;		/* reuse the same storage for the map table */
+    
+    /* Perform the algorithm */
+    ReadImage(filename, image, rows, NCOLS);
+    MakeHist(image, rows * NCOLS, hist);
+/*    ShowHist(hist);*/
+    MakeCmap(hist, cmap, cmaplen);
+    ComputeMapping(cmap, cmaplen, maptable);
+    RemapImage(image, rows, NCOLS, cmap, cmaplen, maptable, quant_image);
+    WriteImage(outfilename, quant_image, rows, NCOLS, cmap, cmaplen);
+    /* Show the result */
+#ifdef GRAPHICS
+    mgiasngp(0,0);
+    for (i = 0; i < cmaplen*3; i+=3)
+    {
+	printf("Before LoadMap: cmap[%4d] = %3d, %3d, %3d\n",
+	       i/3, cmap[i], cmap[i+1], cmap[i+2]);
+    }
+    LoadMap(cmap, cmaplen);
+    Draw(quant_image, rows, NCOLS);
+    mgideagp();
+#endif
+}    
+/* This assumes that the image is stored in packed r,g,b byte triples in */
+/* row-major order. */
+ReadImage(name, array, rows, cols)
+char *name;
+rgb_pix_t *array;
+int rows, cols;
+{
+    int file;
+    int xfercount;
+    file = open(name, O_RDONLY);
+    if (file == -1)
+    {
+	dbug2("%s: Can't open file %s for reading.\n", progname, name);
+	perror(name);
+	exit(1);
+    }
+    dbug0("Reading file...");
+    xfercount = read(file, array, RGB_BYTES * rows * cols);
+    if (xfercount == -1)
+    {
+	dbug2("%s: Can't read file %s.\n", progname, name);
+	perror(name);
+	exit(1);
+    }
+    if (xfercount != RGB_BYTES * rows * cols)
+    {
+	dbug2("File %s ended prematurely after %d bytes: continuing.\n",
+	      name, xfercount);
+    }
+    dbug0("Done.\n");
+}
+
+/* Write out the quantized image */
+WriteImage(name, array, rows, cols, cmap, cmaplen)
+char *name;
+out_pix_t *array;
+int rows, cols;
+cmap_t *cmap;
+int cmaplen;
+{
+    int file;
+    int xfercount;
+    struct FileData {
+	int rows, cols, cmaplen, dummy;
+    } fdata;
+    int i;
+    fdata.rows = rows;
+    fdata.cols = cols;
+    fdata.cmaplen = cmaplen;
+    fdata.dummy = 0;
+    file = open(name, O_WRONLY | O_TRUNC | O_CREAT, 0666);
+    if (file == -1)
+    {
+	dbug2("%s: Can't open file %s for writing.\n", progname, name);
+	perror(name);
+	exit(1);
+    }
+    dbug0("Writing file...");
+    dbug1("Header is %d bytes.\n", sizeof(fdata));
+    xfercount = write(file, &fdata, sizeof(fdata));
+    if (xfercount != sizeof(fdata))
+    {
+	dbug3("%s: Can't write file %s's header.  Wrote %d bytes.\n",
+	      progname, name, xfercount);
+	if (xfercount == -1)
+	    perror(name);
+	exit(1);
+    }
+    dbug1("Color map is %d bytes.\n", 3 * cmaplen);
+    xfercount = write(file, cmap, 3 * cmaplen);
+    if (xfercount != 3*cmaplen)
+    {
+	dbug3("%s: Can't write file %s's color map.  Wrote %d bytes.\n",
+	      progname, name, xfercount);
+	if (xfercount == -1)
+	    perror(name);
+	exit(1);
+    }
+    xfercount = write(file, array, rows * cols);
+    if (xfercount != rows * cols)
+    {
+	dbug3("%s: Can't write image to file %s.  Wrote %d bytes.\n",
+	      progname, name, xfercount);
+	if (xfercount == -1)
+	    perror(name);
+	exit(1);
+    }
+    dbug0("Done.\n");
+    close(file);
+}    
+
+MakeHist(image, npix, hist)
+rgb_pix_t *image;
+int npix;
+unsigned int *hist;
+{
+    register int pix;		/* pixel index */
+    register rgb_pix_t *ppix;	/* pointer to the actual triple */
+
+    /* Clear out the histogram array */
+    for (pix = HIST_SIZE - 1; pix >= 0; pix--) hist[pix] = 0;
+
+    dbug0("Making histogram...\n");
+    for (pix = npix-1; pix >= 0; pix--)
+    {
+	if (pix % 25000 == 0) dbug1("%d \r", pix);
+	ppix = PIXPIX(image, pix);
+	/* Increment the histogram bucket corresponding to the value at pix:
+	   Only five bits of the color value are used to increase 
+	   clumping in the histogram.  The histogram is indexed by the five
+	   bits each of red, green and blue all strung together. */
+	hist[(*ppix >> HIST_SHIFT << (HIST_QUANT_BITS * 2)) |
+	     (*(ppix+1) >> HIST_SHIFT << HIST_QUANT_BITS) |
+	     (*(ppix+2) >> HIST_SHIFT)]++;
+    }
+    dbug0("Done.\n");
+}
+
+ShowHist(hist)
+unsigned int *hist;
+{
+    register int i, nmaps = 0;
+    printf("RED\tGREEN\tBLUE\n");
+    for (i = 0; i < HIST_SIZE; i++)
+    {
+	if (hist[i] != 0)
+	{
+	    nmaps++;
+	    printf("%-d\t%-d\t%-d\t= %d.\n",
+		   i >> 10 << 3, (i >> 5 & 0x1f) << 3, (i & 0x1f) << 3,
+		   hist[i]);
+	}
+    }
+    dbug1("%d different pixel values (5-bit quantized).\n", nmaps);
+}
+
+/* Compute the map color for each original color */
+/* This should be done dynamically while remapping... */
+ComputeMapping(cmap, cmaplen, maptable)
+cmap_t *cmap;
+int cmaplen;
+unsigned int *maptable;
+{
+    register int mapcolor, d, mindist, minmap;
+    int orig_color;
+
+    for (orig_color = 0; orig_color < HIST_SIZE; orig_color++)
+    {
+	mindist = BIG_DISTANCE;
+	for (mapcolor = 3*(cmaplen-1); mapcolor >= 0; mapcolor -= 3)
+	{
+	    if ((d = DIST(((orig_color >> 10) & 0x1f) << 3,
+			  ((orig_color >> 5) & 0x1f) << 3,
+			  (orig_color & 0x1f) << 3,
+			  cmap[mapcolor], cmap[mapcolor+1], cmap[mapcolor+2]))
+		< mindist)
+	    {
+		mindist = d;
+		minmap = mapcolor;
+	    }
+	}
+	maptable[orig_color] = minmap/3;
+	if ((orig_color & 0x3ff) == 0) dbug1("%d/31 \r", orig_color >> 10);
+    }
+}
+
+/* Pick color map values that are close to the real ones, using the map
+ * computed above in ComputeMapping(). */
+/* Now with optional dither! */
+RemapImage(image, rows, cols, cmap, cmaplen, maptable, quant_image)
+rgb_pix_t *image;			/* original image (rgb) */
+int rows, cols;			/* size of the image */
+cmap_t *cmap;			/* color map (rgb) */
+int cmaplen;			/* number of entries in cmap */
+unsigned int *maptable;		/* mapping table from rgb5 to cmap indices */
+out_pix_t *quant_image;		/* quantized image */
+{
+    int npix = rows * cols;
+    register unsigned int pix;
+    register int mapentry;
+    int nearestcm;
+    dbug0("Remapping image...");
+    for (pix = 0; pix < npix; pix++)
+    {
+	mapentry = ((PIXRED(image, pix) >> 3 & 0x1f) << 10) |
+	       ((PIXGREEN(image, pix) >> 3 & 0x1f) << 5) |
+	       (PIXBLUE(image, pix) >> 3 & 0x1f);
+	ASSERT (mapentry >= 0 && mapentry < HIST_SIZE)
+	nearestcm = maptable[mapentry];
+	if (fs_dither)
+	{
+	    register int r, g, b;
+	    register int errr, errg, errb;
+	    /* Compute error in current pixel */
+	    errr = PIXRED(image, pix) - cmap[nearestcm * 3];
+	    errg = PIXGREEN(image, pix) - cmap[nearestcm * 3 + 1];
+	    errb = PIXBLUE(image, pix) - cmap[nearestcm * 3 + 2];
+	    /* Propagate errors right and down */
+	    if (pix % cols != cols - 1)
+	    {	/* right gets 3/8 of the error */
+		r = (int) PIXRED(image,pix+1) +  errr * 3 / 8;
+		g = (int) PIXGREEN(image,pix+1) + errg * 3 / 8;
+		b = (int) PIXBLUE(image,pix+1) +  errb * 3 / 8;
+		PIXRED(image,pix+1) = clamp(r, 0, 255);
+		PIXGREEN(image,pix+1) = clamp(g, 0, 255);
+		PIXBLUE(image,pix+1) = clamp(b, 0, 255);
+	    }
+	    if (pix < npix - cols)
+	    {	/* down gets another 3/8 */
+		r = (int) PIXRED(image,pix+cols) + errr * 3 / 8;
+		g = (int) PIXGREEN(image,pix+cols) + errg * 3 / 8;
+		b = (int) PIXBLUE(image,pix+cols) + errb * 3 / 8;
+		PIXRED(image,pix+cols) = clamp(r, 0, 255);
+		PIXGREEN(image,pix+cols) = clamp(g, 0, 255);
+		PIXBLUE(image,pix+cols) = clamp(b, 0, 255);
+	    }
+	    if (pix < npix - cols - 1)
+	    {	/* and diagonally down gets the last 1/4. */
+		r = (int) PIXRED(image,pix+cols+1) + errr / 4;
+		g = (int) PIXGREEN(image,pix+cols+1) + errg / 4;
+		b = (int) PIXBLUE(image,pix+cols+1) + errb / 4;
+		PIXRED(image,pix+cols+1) = clamp(r, 0, 255);
+		PIXGREEN(image,pix+cols+1) = clamp(g, 0, 255);
+		PIXBLUE(image,pix+cols+1) = clamp(b, 0, 255);
+	    }
+	    /* Store the current pixel */
+	    quant_image[pix] = nearestcm;
+	}
+	else if (dither)
+	{
+	    register unsigned int r, g, b;
+	    register unsigned int nr, ng, nb;
+	    register int oppr, oppg, oppb;
+	    int oppnrcm;
+	    /* true rgb value for pixel */
+	    r = PIXRED(image, pix);
+	    g = PIXGREEN(image, pix);
+	    b = PIXBLUE(image, pix);
+	    /* rgb values for nearest color */
+	    nr = cmap[nearestcm * 3];
+	    ng = cmap[nearestcm * 3 + 1];
+	    nb = cmap[nearestcm * 3 + 2];
+	    /* Color as far from rgb as nrngnb but in the other direction */
+	    oppr = min(255, max(0, 2 * (int) r - (int) nr));
+	    oppg = min(255, max(0, 2 * (int) g - (int) ng));
+	    oppb = min(255, max(0, 2 * (int) b - (int) nb));
+	    /* Nearest match for opposite color: */
+	    oppnrcm = maptable[((oppr >> 3 & 0x1f) << 10) |
+				((oppg >> 3 & 0x1f) << 5) |
+				(oppb >> 3 & 0x1f)];
+	    /* If they're not the same, dither between them. */
+	    /* Dither constant is measured by where the true
+		color lies between the two nearest approximations.
+		Since the most nearly opposite color is not necessarily
+		on the line from the nearest through the true color,
+		some triangulation error can be introduced.  In the worst
+		case the r-nr distance can actually be less than the nr-oppr
+		distance. */
+	    if (oppnrcm != nearestcm)
+	    {
+		register int dither_const; 
+		int oppcmr = cmap[oppnrcm * 3];
+		int oppcmg = cmap[oppnrcm * 3 + 1];
+		int oppcmb = cmap[oppnrcm * 3 + 2];
+		dither_const = min(63, (64 * DIST(r, g, b, nr, ng, nb)) /
+				      DIST(nr, ng, nb, oppcmr, oppcmg, oppcmb));
+		if (!(dither_const >= 0 && dither_const < 64))
+		{
+		    dbug2("Pix: %d, Dither constant: %d\n", pix, dither_const);
+		    fprintf(stderr,"Near: %d %d %d\tTrue: %d %d %d\tOpp: %d %d %d / %d %d %d\n",
+			nr, ng, nb, r, g, b, oppr, oppg, oppb, oppcmr, oppcmg, oppcmb);
+		}
+		ASSERT (dither_const >= 0 && dither_const < 64);
+		if (Dither[(pix/cols)%DITH][(pix%cols)%DITH] < dither_const)
+		    quant_image[pix] = oppnrcm;
+		else
+		    quant_image[pix] = nearestcm;
+	    } else
+		quant_image[pix] = nearestcm;
+	} else {
+	    quant_image[pix] = nearestcm;
+	}
+    }
+    dbug0("Done.\n");
+    /* Cmap is still ok here */
+}
+
+/* Load up the frame buffer color map - device specific */
+LoadMap(cmap, cmaplen)
+cmap_t *cmap;
+int cmaplen;
+{
+    register int i;
+    dbug1("Loading %d color map entries...", cmaplen);
+#ifdef GRAPHICS
+    for (i = 0; i < cmaplen*3; i+=3)
+    {
+	register unsigned int r = cmap[i], g = cmap[i+1], b = cmap[i+2];
+	mgicm(i/3, (r << 16) | (g << 8) | b);
+	dbug2("Color %d is 0x%x.\n", i/3, (r << 16) | (g << 8) | b);
+    }
+#endif
+    dbug0("done.\n");
+}
+
+/* Draw the remapped image - device specific */
+Draw(image, rows, cols)
+out_pix_t *image;
+int rows, cols;
+{
+#ifdef GRAPHICS
+    mgiimage(image, 0, 0, cols-1, rows-1);
+#endif
+}
+SHAR_EOF
+fi
+if test -f 'split.c'
+then
+	echo shar: "will not over-write existing file 'split.c'"
+else
+cat << \SHAR_EOF > 'split.c'
+/*----------------------------------------------------------------------
+ * split up color space for quantize program
+ *----------------------------------------------------------------------
+ */
+
+#include <stdio.h>
+#include <std.h>
+#include "quantize.h"
+
+/* Pick your choice of algorithm: */
+/* MIDPOINT_CUT or POPULARITY */
+/* (Choose in makefile) */
+
+#ifdef MIDPOINT_CUT
+
+typedef unsigned int color_index_t;
+
+/* My method here is to allocate a clist array big enough for all the
+ * possible colors, and then recursively split it.  Since the recursion
+ * is depth-first and we're building a LIST, not a TREE of boxes, we can
+ * scramble the colors within a parent box because that parent won't be used
+ * any more.  We end up with a list of boxes into which all the existing
+ * colors are partitioned, as described in Heckbert's paper.
+ */
+struct Box {
+    struct Box *next;
+    int rmin, rmax, gmin, gmax, bmin, bmax;
+    color_index_t *clist;	/* an array of color indices */
+    int clist_len;		/* how many cindexes in the list */
+};
+
+static int nboxes, maxboxes;	/* number of boxes so far and max needed */
+
+MakeCmap(hist, cmap, cmaplen)
+unsigned int *hist;
+cmap_t *cmap;
+int cmaplen;
+{
+    register int i;
+    struct Box *box;
+    nboxes = 1;
+    maxboxes = cmaplen;
+    NEW(box, struct Box, 1);
+    dbug0("Making color boxes.\n");
+    MakeTopBox(box, hist);	/* Make the first (top-level) box */
+    while (nboxes < maxboxes)
+    	SplitBoxes(box);
+    FindColors(box, cmap, cmaplen);
+}
+
+MakeTopBox(box, hist)		/* Make the top box from the histogram */
+struct Box *box;
+color_index_t *hist;
+{
+    register int i;
+    ASSERT(box != NULL);
+    ASSERT(hist != NULL);
+    
+    /* Allocate enough color cells to hold all the colors */
+    NEW(box->clist, color_index_t, HIST_SIZE);
+    box->clist_len = 0;
+    box->next = NULL;
+    /* For each possible rgb color */
+    for (i = 0; i < HIST_SIZE; i++)
+    {
+	if (hist[i] > 0)	/* if any pixels are that color, */
+	    box->clist[box->clist_len++] = i;
+    }
+    Compact(box);
+    fprintf(stderr,"Top box at 0x%x: %d colors, R (%d -> %d)  G (%d -> %d)  B (%d -> %d)\n",
+	    box, box->clist_len,
+	    box->rmin, box->rmax, box->gmin, box->gmax, box->bmin, box->bmax);
+}
+
+/* Shrink the box limits until it just encloses the points within it. */
+Compact(box)
+struct Box *box;
+{
+    register int i;
+    ASSERT(box != NULL);
+    box->rmin = 256;
+    box->gmin = 256;
+    box->bmin = 256;	/* Greater than any value */
+    box->rmax = -1;
+    box->gmax = -1;
+    box->bmax = -1;	/* Less than any rgb value */
+    for (i = box->clist_len-1; i >= 0; i--)
+    {
+	int r = (box->clist[i] >> 10) & 0x1f; /* colors associated with 'i' */
+	int g = (box->clist[i] >> 5) & 0x1f;
+	int b = (box->clist[i]) & 0x1f;
+	/* Expand the box until it just fits the colors tightly */
+	if (r < box->rmin) box->rmin = r;
+	if (g < box->gmin) box->gmin = g;
+	if (b < box->bmin) box->bmin = b;
+	if (r > box->rmax) box->rmax = r;
+	if (g > box->gmax) box->gmax = g;
+	if (b > box->bmax) box->bmax = b;
+    }
+}
+
+/* Split all the boxes once each, stop if we've got enough */
+SplitBoxes(box)
+struct Box *box;
+{
+    struct Box *nextbox;
+    dbug1("Splitting all the boxes with %d done so far.\n", nboxes);
+    while (box != NULL && nboxes < maxboxes)
+    {
+	nextbox = box->next;
+	SplitBox(box);		/* SplitBox changes box->next! */
+	box = nextbox;
+    }
+}
+
+static char longdim;		/* char representing the longest dimension */
+
+int
+CompareColors(c1, c2)
+color_index_t *c1, *c2;
+{
+    switch (longdim)
+    {
+      case 'r':
+	return ((*c1 >> 10 & 0x1f) - (*c2 >> 10 & 0x1f));
+      case 'g':
+	return ((*c1 >> 5 & 0x1f) - (*c2 >> 5 & 0x1f));
+      case 'b':
+	return ((*c1 & 0x1f) - (*c2 & 0x1f));
+      default:
+	fprintf(stderr,"Illegal longdim 0x%x in CompareColors.\n", longdim);
+	exit(1);
+    }
+}
+
+/* Divide the box across its longest dimension at its median point
+ * This is NOT recursive - we split all the boxes once, then if there's
+ * more colors to be assigned we split all of them again, and so on. */
+SplitBox(box)
+struct Box *box;
+{
+    struct Box *newbox;		/* the 'other half' of the split box */
+    ASSERT(box != NULL);
+    if (nboxes > maxboxes) return;
+    if (box->clist_len <= 1) return;
+    nboxes++;
+    if (box->rmax - box->rmin >= box->gmax - box->gmin &&
+	box->rmax - box->rmin >= box->bmax - box->bmin)
+	longdim = 'r';
+    else
+    if (box->gmax - box->gmin >= box->rmax - box->rmin &&
+	box->gmax - box->gmin >= box->bmax - box->bmin)
+	longdim = 'g';
+    else
+    if (box->bmax - box->bmin >= box->gmax - box->gmin &&
+	box->bmax - box->bmin >= box->rmax - box->rmin)
+	longdim = 'b';
+    else
+    {
+	fprintf(stderr,"No longest dimension in SplitBox??!\n");
+        fprintf(stderr,"This box: R (%d -> %d)  G (%d -> %d)  B (%d -> %d)\n",
+	    box->rmin, box->rmax, box->gmin, box->gmax, box->bmin, box->bmax);
+	exit(1);
+    }
+    qsort(box->clist, box->clist_len, sizeof(color_index_t), CompareColors);
+    /* Set up the new box and put it after the old box */
+    NEW(newbox, struct Box, 1);
+    newbox->next = box->next;
+    box->next = newbox;
+    /* If len is odd, put the extra one in the old box */
+    newbox->clist_len = box->clist_len / 2;
+    box->clist_len -= newbox->clist_len;
+    newbox->clist = box->clist + box->clist_len;
+    Compact(box);
+    Compact(newbox);
+}
+
+/* Find the representative color in each box and put it into cmap. */
+FindColors(box, cmap, cmaplen)	/* here box is a list of boxes */
+struct Box *box;
+cmap_t *cmap;
+int cmaplen;
+{
+    register int r, g, b;
+    register int i;
+    int cml = 0;
+    while (box != NULL)
+    {
+	r = 0, g = 0, b = 0;
+	for (i=0; i < box->clist_len; i++)
+	{
+	    r += (box->clist[i] >> 10 & 0x1f) << 3;
+	    g += (box->clist[i] >> 5 & 0x1f) << 3;
+	    b += (box->clist[i] & 0x1f) << 3;
+	}
+	ASSERT(r/box->clist_len < 256);
+	ASSERT(g/box->clist_len < 256);
+	ASSERT(b/box->clist_len < 256);
+	cmap[cml*3] = r / box->clist_len;
+	cmap[cml*3+1] = g / box->clist_len;
+	cmap[cml*3+2] = b / box->clist_len;
+	box = box->next;
+	cml++;
+    }
+    ASSERT(cmaplen == cml);	/* since there should be 'cmaplen' boxes */
+    for (i = 0; i < cmaplen*3; i+=3)
+    {
+	printf("Cmap[%4d] = %3d, %3d, %3d\n",
+	   i/3, cmap[i], cmap[i+1], cmap[i+2]);
+    }
+}
+
+#endif
+
+#ifdef POPULARITY
+static unsigned int *HiSt;
+
+CompareHist(v1, v2)
+int *v1, *v2;
+{
+    return (HiSt[*v2] - HiSt[*v1]);
+}
+
+MakeCmap(hist, cmap, cmaplen)
+unsigned int *hist;
+cmap_t *cmap;
+int cmaplen;
+{
+    register int i;
+    unsigned int *hptrs;
+    /* This is the popularity algorithm (Boyle & Lippman, Archmac, 1978) */
+    /* First we sort the histogram: set up a bunch of pointers and sort them */
+    dbug1("Getting %d ints for hptrs...", HIST_SIZE);
+/*  NEW(hptrs, unsigned int, HIST_SIZE);*/
+    hptrs = (unsigned int *)quant_image;	/* use existing storage temporarily */
+    dbug0("initting it...");
+    for (i = 0; i < HIST_SIZE; i++) hptrs[i] = i;
+    HiSt = hist;
+    dbug0("Sorting...");
+    qsort (hptrs, HIST_SIZE, sizeof(unsigned int), CompareHist);
+    dbug0("making color map...");
+    for (i = 0; i < cmaplen; i++)
+    {
+	cmap[3*i] = hptrs[i] >> 10 << 3;
+	cmap[3*i+1] = (hptrs[i] >> 5 & 0x1f) << 3;
+	cmap[3*i+2] = (hptrs[i] & 0x1f) << 3;
+    }
+    dbug0("done.\n");
+    dbug1("Max pixels in one bucket: %d.\n", hist[hptrs[0]]);
+}
+#endif POPULARITY
+
+SHAR_EOF
+fi
+if test -f 'quantize.h'
+then
+	echo shar: "will not over-write existing file 'quantize.h'"
+else
+cat << \SHAR_EOF > 'quantize.h'
+/*----------------------------------------------------------------------
+ * header file for color-quantizer
+ * by Gary Oberbrunner  1/5/88
+ *----------------------------------------------------------------------
+ */
+
+#define HIST_QUANT_BITS 5	/* Histogram clump quantization */
+#define HIST_SHIFT (8 - HIST_QUANT_BITS)
+#define HIST_SIZE (1 << (HIST_QUANT_BITS * 3))
+
+#define RGB_BYTES 4		/* Bytes per rgb pixel (4 for alpha channel) */
+
+/* We need the next definition to reference a variable-size array */
+/* NCOLS is the number of columns in the array */
+/* Each pixel is stored as an rgb byte triplet */
+
+/* This is the address of the pixel triplet: */
+#define RCPIX(array, row, col)	(array + RGB_BYTES * (row * NCOLS + col))
+#define PIXPIX(array, pixel)	(array + RGB_BYTES * (pixel))
+/* These are the pixel components: */
+#define RED(array, row, col)	(*(RCPIX(array, row, col)))
+#define GREEN(array, row, col)	(*(RCPIX(array, row, col) + 1))
+#define BLUE(array, row, col)	(*(RCPIX(array, row, col) + 2))
+#define PIXRED(array, pix)	(*(PIXPIX(array, pix)))
+#define PIXGREEN(array, pix)	(*(PIXPIX(array, pix) + 1))
+#define PIXBLUE(array, pix)	(*(PIXPIX(array, pix) + 2))
+
+/* Here is the rgb-space distance metric: */
+#define DIST(r1,g1,b1,r2,g2,b2) \
+       (int) \
+       (3 * ((r1)-(r2)) * ((r1)-(r2)) + \
+	4 * ((g1)-(g2)) * ((g1)-(g2)) + \
+	2 * ((b1)-(b2)) * ((b1)-(b2)))
+#define BIG_DISTANCE 1000000	/* bigger than any real distance */
+
+typedef unsigned char cmap_t;
+typedef unsigned char rgb_pix_t;
+typedef unsigned char out_pix_t;
+
+extern out_pix_t  *quant_image;	/* the quantized image - cmap indices */
+extern int debug;
+SHAR_EOF
+fi
+if test -f 'std.h'
+then
+	echo shar: "will not over-write existing file 'std.h'"
+else
+cat << \SHAR_EOF > 'std.h'
+/* Standard include file with lots of generally useful stuff */
+/* by Gary Oberbrunner */
+
+#define min(x,y) ((x) < (y) ? (x) : (y))
+#define max(x,y) ((x) > (y) ? (x) : (y))
+#define clamp(x, mn, mx) (((x) <= (mn)) ? (mn) : (((x) >= (mx)) ? (mx) : (x)))
+
+#define SECURITY
+#ifdef SECURITY
+#define ASSERT(exp) { if (!(exp)) { fprintf(stderr,\
+	"Assertion error: %s, line %d. Assertion exp failed.\n",\
+	__FILE__, __LINE__);\
+	exit(69); } }
+#else
+#define ASSERT(exp)
+#endif
+
+#define dbug0(str) \
+    if (debug) fprintf(stderr, str);
+#define dbug1(str, arg1) \
+    if (debug) fprintf(stderr, str, arg1);
+#define dbug2(str, arg1, arg2) \
+    if (debug) fprintf(stderr, str, arg1, arg2);
+#define dbug3(str, arg1, arg2, arg3) \
+    if (debug) fprintf(stderr, str, arg1, arg2, arg3);
+#define dbug4(str, arg1, arg2, arg3, arg4) \
+    if (debug) fprintf(stderr, str, arg1, arg2, arg3, arg4);
+
+extern char *malloc();
+/*
+ * NEW is a macro to malloc 'n' new variables of type 'type'.
+ */
+#define NEW(var, type, num) \
+    if ((var = (type *) malloc((num) * sizeof(type)))==NULL) \
+	{	fprintf(stderr,\
+	    "ERROR: Out of memory.\nLast request:\n");\
+	fprintf(stderr,\
+	    "\tNumber: num\n\tType  : type\n\tName  : var.\n");\
+	fprintf(stderr,"File %s, line %d\n", __FILE__, __LINE__);\
+	fprintf(stderr,\
+	"\tTotal requested: num=%d x sizeof(type)=%d\n\t =%d bytes.\n",\
+	    num, sizeof(type), (num) * sizeof(type));\
+	exit(99); }
+SHAR_EOF
+fi
+exit 0
+#	End of shell archive
+-- 
+Remember,		       -Truth is not beauty;
+Information is not knowledge; /	Beauty is not love;	  Gary Oberbrunner
+Knowledge is not wisdom;     /	Love is not music;	  ...!masscomp!garyo
+Wisdom is not truth;    ----/	Music is the best. - FZ
+
+
+ 

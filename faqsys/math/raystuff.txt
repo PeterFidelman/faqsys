@@ -1,0 +1,2661 @@
+ _ __                 ______                         _ __
+' )  )                  /                           ' )  )
+ /--' __.  __  ,     --/ __  __.  _. o ____  _,      /  / _  , , , _
+/  \_(_/|_/ (_/_    (_/ / (_(_/|_(__<_/ / <_(_)_    /  (_</_(_(_/_/_)_
+	     /                               /|
+	    '                               |/
+
+			"Light Makes Right"
+
+			  October 1, 1990
+			Volume 3, Number 4
+
+Compiled by Eric Haines, 3D/Eye Inc, 2359 Triphammer Rd, Ithaca, NY 14850
+    wrath.cs.cornell.edu!eye!erich or erich@eye.com
+All contents are US copyright (c) 1990 by the individual authors
+Archive locations: anonymous FTP at cs.uoregon.edu [128.223.4.13], /pub/RTNews,
+		   weedeater.math.yale.edu [130.132.23.17], /pub/RTNews, and
+		   freedom.graphics.cornell.edu [128.84.247.85], /pub/RTNews.
+UUCP access: Vol 3, No 1 or write Kory Hamzeh (quad.com!avatar!kory) for info.
+
+Contents:
+    Introduction
+    New People, Address Changes, etc
+    Photorealism, and the color Pink (TM), from Andrew Glassner
+    DKBTrace v2.0 and Ray Tracing BBS Announcement, by David Buck, Aaron Collins
+    Article Summaries from Eurographics Workshop, by Pete Shirley
+    Convex Polyhedron Intersection via Kay & Kajiya, by Eric Haines
+    New Radiosity Bibliography Available, by Eric Haines
+    A Suggestion for Speeding Up Shadow Testing Using Voxels, by Andrew Pearce
+    Real3d, passed on by Juhana Kouhia, "Zap" Andersson
+    Utah Raster Toolkit Patch, by Spencer Thomas
+    NFF Shell Database, by Thierry Leconte
+    FTP list update and New Software, by Eric Haines, George Kyriazis
+    ======== USENET cullings follow ========
+    Humorous Anecdotes, by J. Eric Townsend, Greg Richter, Michael McCool,
+	Eric Haines
+    Graphics Interface '91 CFP
+    Parametric Surface Reference, by Spencer Thomas
+    Solid Light Sources Reference, by Steve Hollasch, Philip Schneider
+    Graphics Gems Source Code Available, by Andrew Glassner, David Hook
+    Graphics Gems Volume 2 CFP, by Sari Kalin
+    Foley, Van Dam, Feiner and Hughes "Computer Graphics" Bug Reports,
+	by Steve Feiner
+    Radiosity via Ray Tracing, by Pete Shirley
+    Algorithm Order Discussion, by Masataka Ohta, Pete Shirley
+    Point in Polygon, One More Time..., by Mark Vandewettering, Eric Haines,
+	Edward John Kalenda, Richard Parent, Sam Uselton, "Zap" Andersson,
+	and Bruce Holloway
+    Quadrant Counting Polygon In/Out Testing, by Craig Kolb, Ken McElvain
+    Computer Graphics Journals, by Juhana Kouhia
+
+-------------------------------------------------------------------------------
+
+Introduction
+
+Well, SIGGRAPH has come and gone, and as usual I ran out of time.  There's
+just too many people to meet and too much to see and do.  Highlights for me
+included the SIGGRAPH Trivia Bowl, meeting in a cemetery for lunch with other
+renderers after an all night session of Hurtenflurst (don't ask), and getting
+my head turned into data at Failure Analysis Associates (still haven't heard
+from them, though.  Does anyone have the phone number or address for this
+company?  I'd like to call and find out what is happening with them).  At
+SIGBowl our Ithaca team was able to lock in third place [of 3 teams] early on
+and held it against all comers.  Nonetheless, a great time:  one of many
+favorite moments was:
+
+	Pike (the moderator): "Who's biographical sketch reads as follows-"
+
+		BUZZ!
+
+	Team 1 (with no other information): "Turner Whitted!?"
+
+	Pike: "No, wrong.  Now let me read the question" and proceeds to read
+		some biographical data.
+
+		BUZZ!
+
+	Team 2: "Is it Turner Whitted!?"
+
+	Pike: "Still wrong."
+
+Team 3, sadly, did not guess "Turner Whitted?", but, rather, declined to answer.
+
+--------
+
+Does anyone have a nice, compact version of the Teapot?  That is, just the
+spline description (which I do have) and a tessellator which will turn it into
+quads/triangles (which I have, but it's deeply buried in some scary code)?
+This would be a nice addition to SPD 3.0, but I don't have one easily
+accessible.  Here's your chance to get your code distributed in the next
+release.  I'm willing to massage your code into outputting NFF format.
+
+I'll also announce that there is a new version of the ray tracing bibliography
+which I've finished as of today.  Many of the new articles listed are due to
+the untiring work of Tom Wilson, who says the librarians now hate him.  This
+new version should be available via FTP by October 5th on
+freedom.graphics.cornell.edu and cs.uoregon.edu (see the FTP site list later
+in this issue for more information).
+
+Important dates:
+	Graphics Interface papers due October 31st
+	Graphics Gems, Volume 2 submissions due November 1st
+
+-------------------------------------------------------------------------------
+
+New People, Address Changes, etc
+
+
+# Tom Wilson - parallel ray tracing, spatial subdivision
+# Center for Parallel Computation
+# Department of Computer Science (407-275-2341)
+# University of Central Florida
+# P.O. Box 25000
+# Orlando, FL 32816-0362
+alias	tom_wilson	wilson@ucf-cs.ucf.edu
+
+I am a Ph.D. student at UCF.  I am working in the area of parallel processing
+with ray tracing as an application.  I am working on a nonuniform spatial
+subdivision scheme that will eventually be implemented on our BBN Butterfly
+GP1000.
+
+--------
+
+# Steve Hollasch - efficiency, algorithms, ray-tracing
+# Master's Student in C.S., Arizona State University
+# 1437 West 6th Street
+# Tempe, AZ  85281-3205
+# (602) 829-8758
+alias   steve_hollasch   hollasch@enuxha.eas.asu.edu
+
+    I'm working on completing my thesis in December 1990 or January 1991.  The
+research basically covers viewing 4D objects (as physical entities, not 3D
+scalar fields).  I'm working on a 4D raytracer right now that handles
+hyperspheres and tetrahedrons, and I hope to extend it to hyperellipsoids,
+hypercones, hypercylinders and so on.  I'd also like to learn how to tessellate
+4D solids with tetrahedrons to be able to view arbitrary 4D solids.  Practical
+uses?  I'm still trying to think off something...  =^)
+
+--------
+
+# Christophe Vedel - improving radiosity
+# LIENS, Ecole Normale Superieure
+# 45, rue d'Ulm
+# 75230 PARIS Cedex 05 FRANCE
+# (33) 1 43 26 59 74
+e-mail  vedel@ens.ens.fr
+	vedel@FRULM63.BITNET
+
+I'm interested in improving the radiosity method for finer results or larger
+scenes.  Spatial subdivision techniques developed for ray tracing should help
+to achieve this goal.  I'm also working on interactivity with lighting
+simulation programs.
+
+--------
+
+# Frederic Asensio - behavioral animation, radiosity
+# LIENS, Ecole Normale Superieure
+# 45, rue d'Ulm
+# 75230 PARIS Cedex 05 FRANCE
+# (33) 1 43 26 59 74
+e-mail  asensio@ens.ens.fr
+	asensio@FRULM63.BITNET
+
+I am interested in interactive radiosity methods, which could be used in the
+design process and in stochastic methods for light sampling with rays.
+
+--------
+
+# Scott Senften - efficiency, scientific visualization
+# McDonnell Douglas Corp.
+# McDonnell Aircraft Co.
+# Mail Code 1065485
+# St. Louis, MO 63166
+# (314)232-1604
+alias scott_senften	  senften%d314vx.decnet@mdc.com
+alias senften_tu     senften@tusun2.utulsa.edu
+
+Presently I'm doing research in neural nets.  There is a real need in the NN
+society for some good scientific visualization.  I'm presently doing work in
+speech recognition, diagnostics, flight reconfiguration, and signal
+processing, as well as graphic visualization of neural networks.  My graduate
+work was in Ray Tracing efficiency.
+
+--------
+
+Sam Uselton
+
+Internet:
+uselton@nas.nasa.gov
+
+    Work			 Home
+Phone:
+(415) 604-3985		       (415) 651-6504
+
+USMail:
+Samuel P. Uselton, PhD	       Sam Uselton
+Computer Sciences Corp.
+M/S T 045-1		       1216 Austin St.
+NASA Ames Research Center      Fremont, CA 94539
+Moffett Field, CA 94035
+
+
+Ray Tracing interests:
+efficiency, accuracy, distributed ray tracing, parallel implementations
+
+
+At NASA I'm working on volume visualization for computational fluid dynamics.
+I've used this as an excuse ( :-) ) to write a ray caster (no bounces) that
+integrates through the volume, accelerated by taking advantage of the special
+grids, as well as an item buffer-like initial hit finder.
+
+I'm also working with Redner & Lee on extending our distributed ray tracing
+work to handle diffuse illumination, caustics, wavelength dependent
+refraction, and other realistic effects.
+
+Once these problems are completely solved ( :-) :-) ), there are several
+parallel machines here that I would like to wring out.
+
+Oh yes, we (Lee, Steve Stepoway, Scott Senften and myself) have yet another
+Acceleration technique we like better than any of the popular ones.  (Actually
+it can combine with bounding boxes.)  It is somewhere between regular space
+subdivision (a la medical volume folks and Japanese SEADS..)  and the bounding
+slabs idea (Kaplan?  [no, Kay]).  It was written and submitted for pub once,
+but we keep thinking of new tweaks, so it is being re-written.
+
+--------
+
+# Juhana Kouhia
+# Ylioppilaankatu 10 C 15
+# 33720 Tampere
+# Finland
+alias	juhana_kouhia	jk87377@tut.fi
+
+I have done my wireframe, scanline and ray tracing programs with Jim Blinn's
+modeling language.
+
+[Another renderer with a last name starting with K!  There's Kajiya, Kaplan,
+Kay, Kirk, Kolb, Kuchkuda, Kyriazis, just to mention a few. --EAH]
+
+--------
+
+# Michael L. Kaufman  - speed, ray tracing on a PC, ray tracing fractal images
+# Northwestern University
+# 2247 Ridge Ave #2k
+# Evanston IL, 60201
+# (708) 864- 7916
+# kaufman@eecs.nwu.edu
+
+I am just getting started in Ray-Tracing.  I am interested in coming up with
+algorithms that are fast enough to do on a 386 PC.  I am also interested in
+using Ray-Tracing techniques as a new way of looking at certain types of
+fractal images.
+
+--------
+
+Stephen Boyd Gowing - light transmission, motion, art
+B.App.Sc (Computing) Undergraduate.
+University of Technology, Sydney
+
+4/10 Short St, Glebe 2037 AUSTRALIA (home)
+
+alias	stephen_gowing	sbgowing@ultima.cs.uts.oz.au
+
+I'm currently half way through a project to study the effect of light passing
+through sphere(s).  The eventual aim is to produce a short animation showing a
+single sphere inverting an image which breaks (unmerges?)  into two spheres
+one behind the other and study the "flow" of the image through them.  At the
+moment I am still rewriting the tracer I used for my 2nd-last graphics
+assignment last year.  I'd like to do it in C++ but this would make things
+awkward as we don't have access to a compiler.  I'd also like to implement
+some sort of shading language into the image description - probably using
+something like forth.
+
+--------
+
+# Rick Brownrigg  --  efficiency, texturing, visualization, DTM displays
+# Kansas Geological Survey
+# University of Kansas
+# 1930 Constant Avenue
+# Lawrence, KS  USA  66046
+# 913 864 4991
+
+-------------------------------------------------------------------------------
+
+Mail, from Andrew Woo, George Kyriazis, Zap Andersson
+
+
+from Andrew Woo:
+
+I have gone through many changes in the last year, from graduating with a
+M.Sc. at University of Toronto, to working at SAS Institute, to working at
+Alias Research - which is my current working address.  My e-mail at Alias is
+awoo@alias.UUCP.
+
+I checked out your latest RT News.  I think David Jevans was a little too hard
+on you about not knowing about the ray id for voxel traversal.  In fact, in GI
+90, one of the authors was unaware of it, too (in the "Approximate Ray
+Tracing" paper).  So you are not alone.  In fact, there is an explicit
+mentioning of ray id in an early paper that David did not mention:
+
+	John Amanatides, "A Fast Voxel Traversal Algorithm for Ray Tracing",
+	EuroGraphics, 1987, pp. 1-10.
+
+On the claim that David Jevans made about wasting time on more intersection
+culling schemes, I tend to agree.  In fact, I have stopped looking for more
+clever ways to cull intersections.  But I intend to check out another route to
+ray tracing savings.  Once I get some promising results, I will share the idea
+with you (to avoid any embarrassments in case the idea backfires).
+
+On renaming DIstributed Ray Tracing, I am more of a fan of coming up with
+amusing acronyms for the algorithms.  For Cook's, I thought DiRT might be
+interesting.  I also came up with an acronym for my paper in GI 90 - Voxel
+Occlusion Method as an Intersection-culling Technique, which spells VOMIT.
+
+--------
+
+from George Kyriazis:
+
+I was reading the last RTN issue I received.  In there it states about a
+program that converts sculpt4d to NFF, and it also commented that Sculpt4D is
+an exceptional modeler.  Well, I have my doubts.  Last spring I was working on
+a program to raytrace Scultpt4D files and animations on a Pixel Machine.
+Well, the file format is far from being strait-forward.  We had to call Byte
+by Byte for a few questions and stayed on the phone for more than an hour.
+One of the Sculpt4D unwanted 'features' was that it normalized the intensity
+of all displayed pixels wrt the brightest.  The result on the Pixel Machine
+was disastrous!  Images were either overexposed or totally black!  :-) Well,
+this is one of the problems faced, but I don't want to list more...
+
+-------------------------------------------------------------------------------
+
+Photorealism, and the color Pink (TM), from Andrew Glassner
+
+From a Tektronix ad in this month's Advanced Imaging, we learn that it is now
+possible to turn real photographs into photorealistic images (presumably
+thereby increasing realism):
+
+"Traditional workstations can't handle reality.  They create a simulated
+world...  With Dynamic Visualization, reality and simulation are brought
+together by TekImaging (TM), powerful image-processing software...  [and now,
+the big one -ag] TekImaging lets you transform real-world images into
+photo-realistic scenes, complete with light, shadow, and texture."
+
+So now I can take a picture of myself, and using their software make it look
+photo-realistic and indistinguishable from a real picture - what a
+breakthrough!
+
+--------
+
+Beware of the colors you pick for your images.  Here's a footnote in an
+Owens-Corning Fiberglas ad in this month's [August?] Popular Science (pg 21):
+
+"* The color Pink is a trademark of Owens-Corning Fiberglas Corp."
+
+I think I'll get a trademark on red before all the good colors are taken...
+
+-------------------------------------------------------------------------------
+
+DKBTrace v2.0 and Ray Tracing BBS Announcement, by David Buck, Aaron Collins
+
+I recently completed version 2.0 of my freely distributable raytracer called
+DKBTrace.  This raytracer is a project I've been working on (actually, off and
+on) for the past five years.  The raytracer features:
+
+   - primitives for spheres, planes, triangles, and quadrics
+   - constructive solid geometry
+   - solid texturing using a Perlin-style noise function
+   - image mapping (IFF and GIF formats)
+   - hierarchical bounding boxes
+   - transparency
+   - fog
+   - 24 bit output files
+   - adaptive anti-aliasing using jittered supersampling
+   - "quick" previewing options
+
+The raytracer was developed on an Amiga computer, but it is easily portable to
+other platforms.  The interface to the raytracer raytracer is a scripting
+language (sorry, no GUI).  The language is quite readable compared to many
+other input file formats.
+
+The source and Amiga executables are available by anonymous FTP from
+alfred.ccs.carleton.ca [134.117.1.1].  The source and executables are freely
+distributable.
+
+As with any raytracer, there are still things that need to be done, added, or
+improved with DKBTrace.  The image mapping was added at the last minute, so it
+only uses a simple projection scheme.  This means that the mappings look
+bizarre when viewed from the sides or the back.  For the most part, however,
+the solid textures are quite powerful and can create some very interesting
+effects.
+
+To implement transparency, I decided to add the transparency value value to
+the color structure.  A color contains red, green, blue, and alpha components.
+This makes it much easier to use in textures.
+
+The textures also allow you to define your own color map and to have the
+colors automatically interpolated from one range to the next.  Interpolating
+the colours makes the images look much better than just a simple step
+function.
+
+Questions and comments concerning the raytracer can be directed to
+David_Buck@Carleton.CA on BITNET.  The IBM port (and several enhancements)
+were done by Aaron Collins.  Aaron can be reached on Compuserve.
+
+--------
+
+DKBtrace dox info:
+
+Aaron Collins can be reached on the following BBS'es
+
+Lattice BBS		      (708) 916-1200
+The Information Exchange BBS  (708) 945-5575
+Stillwaters BBS		      (708) 403-2826
+
+AAC:  As of July of 1990, there will be a Ray-Trace specific BBS in the (708)
+Area Code (Chicago suburbia) for all you Traceaholics out there.  The phone
+number of this new BBS is (708) 358-5611.  I will be Co-Sysop of that board.
+There is also a new Ray-Trace and Computer-Generated Art specific SIG on
+Compuserve, GO COMART.  And now, back to the DOCS...
+
+-------------------------------------------------------------------------------
+
+Article Summaries from Eurographics Workshop, by Pete Shirley
+	(shirley@iuvax.cs.indiana.edu)
+
+[What follows are summaries of ray tracing related articles given during the
+Eurographics Workshop on Photosimulation, Realism and Physics in Computer
+Graphics in Rennes, France, June 1990. - EAH]
+
+INCREMENTAL RAY TRACING by Murakami and Hirota (Fujitsu)
+A extension of Parameterized ray tracing that allowed moving some scene
+objects in addition to changing material properties.  Used tables of
+changed voxels to determine if a ray's interaction with geometry has
+changed.  Included implementation on multiple CPUs.  Also includes
+reference to a paper in Japanese by Matsumoto on Octree ray tracing in
+1983!
+
+PARAMETRIC SURFACES AND RAY TRACING by Luc Biard (IMAG, France)
+Like most parametric patch papers, this one went over my head, but
+it seems to be an interesting paper, and includes some implementation results.
+
+A PROGRESSIVE RAY TRACING BASED RADIOSITY WITH GENERAL REFLECTANCE FUNCTIONS
+by Le Saec and Schlick (France)
+A proposal for general BRDF radiosity (very similar to what I propose in the
+paper above).  Also includes method for interactive display - display only
+non-mirrors until viewer stops, then ray trace (UNC style).
+
+LIGHT SOURCES IN A RAY TRACING ENVIRONMENT by Roelens et al. (France)
+A method for showing 'cone of light' effect when there is not very
+dense participating media in a room (primary scattering only).
+
+METHODS FOR EFFICIENT SAMPLING OF ARBITRARILY DISTRIBUTED VOLUME DENSITIES
+by Hass and Sakas (FRG)
+Methods of sampling a volume density along a ray.
+
+-------------------------------------------------------------------------------
+
+Convex Polyhedron Intersection via Kay & Kajiya, by Eric Haines
+
+I like Kay and Kajiya's bounding slabs method [SIGGRAPH 86] a lot.  By
+thinking about how this algorithm actually works, we can derive a method for
+intersecting convex polyhedra.  A working definition of a convex polyhedron is
+a polyhedron which can have at most two intersection points for any ray.
+
+To review:
+Their idea is to form a bounding volume around an object by making slabs.  A
+slab is the volume between two parallel planes.  The intersection of all slabs
+is the bounding volume (i.e. the volume which is inside all slabs).  The
+intersection method works by intersecting each slab and checking out
+intersection conditions for it alone, then comparing these results to the
+answer for previous slabs.  That is, first we get the near and far
+intersection points for the ray with the slab.  If the far hit is behind the
+ray's origin (i.e. negative distance) or the near hit is beyond the maximum
+distance (i.e. you might limit how far the ray can travel by keeping track of
+the closest object hit so far, or the distance to the light if this is a
+shadow ray), then the ray cannot hit the bounding volume.
+
+If the near and far hits are within bounds, then we essentially do a set
+operation of this line segment and any previous slab line segments formed.
+For example, if this is the second slab tested, we try to find the overlap of
+the first slab's hits and this slab's hits.  If the two segments do not
+overlap, then there is no point along the ray that is inside both slabs.  In
+other words, there is no point inside the bounding volume, since this volume
+is the logical intersection of all slabs.  To get the logical intersection of
+the slab segments, we merely store the largest of the near hits and the
+smallest of the far hits.  If this largest near hit is greater than this
+smallest far hit, there was no overlap between segments, so the bounding
+volume is missed.  If near is less than far, this new high-near, low-far
+segment is used against successive slab segments.  If the ray survives all
+segment tests, then the resulting near and far values are the distance along
+the ray of the near and far hits on the bounding volume itself.
+
+What's interesting about this test is that it is essentially doing
+Constructive Solid Geometry operations between slabs, similar to [Roth 82].
+This simple idea can be extended further, allowing you to quickly intersect
+convex polyhedra.  Another good feature is that the polyhedra can be defined
+entirely by the plane equations for the faces, so no vertices have to be
+stored.
+
+Imagine that you have defined a convex polyhedron by specifying each face
+using a plane equation, Ax + By + Cz + D = 0.  Have each face's normal {A,B,C}
+point outwards.
+
+To intersect this object with a ray, simply test the ray against each face:
+if you hit a plane that faces towards the ray (i.e. the dot product of the
+normal and the ray direction is negative), then use this as a hit for near;
+if you hit a plane facing away, then use this as a hit for far.   Now, instead
+of having a line segment for each slab, you have an unbounded ray for each
+plane.  For example, if you have a hit for a near distance (i.e. you hit a
+forward facing plane), then you would first check if this near is beyond your
+current maximum distance.  If not, then you would store the maximum of this
+near value and the previous (if any) near value.  If at this point the stored
+near value is greater than the stored far value, the ray has missed.  This
+process continues with each plane until you miss or you run out of planes.
+The near and far points are then your intersection points with the polyhedron.
+
+Essentially, this process is an extension of Kay & Kajiya: the ray is tested
+against each face and the intersection point is used to form a segment which
+is unbounded (infinite) on one end.  This segment is tested for validity
+against the ray's segment and the polyhedron's current intersection segment.
+If the polyhedron's segment is valid at the end of the process, then the ray
+hit the polyhedron.  Basically, each face of the polyhedron defines a
+half-space in which the inside of the polyhedron must lay.  The intersection of
+these half-spaces is the polyhedron itself.
+
+One minor problem is what happens when the ray is parallel to the plane.  You
+could use Kay & Kajiya's suggestion of using some epsilon for the divisor,
+but I prefer handling this special case separately.  If parallel, then we
+want to check if the ray origin is inside the half-space:  if it is not, then
+the ray cannot ever hit the polyhedron (since the ray does not cross into the
+volume of valid intersections formed by this half-space).  In other words, if
+we substitute the origin into the plane equation, the result of the expression
+must be negative for the point to be inside the half-space; if not, the ray
+must miss the polyhedron.
+
+The pseudo-code:
+
+    Maxdist = maximum distance allowed along ray
+    Tnear = -MAXFLOAT, Tfar = MAXFLOAT
+    For each plane in the polyhedron:
+	Compute intersection point T and sidedness
+	dp = ray.direction DOT plane.normal
+	do = (ray.origin DOT plane.normal) - plane.d
+	If ( dp == 0 )
+	    /* ray is parallel to plane - check if ray origin is inside plane's
+	       half-space */
+	    If ( do > 0 )
+		/* ray is outside half-space */
+		return MISSED
+	Else
+	    /* ray not parallel */
+	    T = do / dp
+	    If ( dp < 0 )
+		/* front face - T is a near point */
+		If ( T > Maxdist ) return MISSED
+		If ( T > Tnear )
+		    Tnear = T
+		    Normal = plane.normal
+	    Else
+		/* back face - T is a far point */
+		If ( T < 0.0 ) return MISSED
+		If ( T < Tfar ) Tfar = T
+	    If ( Tnear > Tfar ) return MISSED
+    endfor
+    return HIT
+
+At the end, Tnear is the intersection distance and Normal is the surface
+normal.  Tfar is the exit distance, if needed.
+
+That's it:  instead of laborious inside/outside testing of the polygon on each
+face (and storing all those vertices), we have a quick plane test for each
+face.  If the number of planes is large, it might have been better to store
+the polygons and use an efficiency scheme.  However, the method above is
+certainly simpler to code up and is pretty efficient, compact, and robust:
+for example, there are no special edge intersection conditions, as there are
+no edges!
+
+An aside:
+One thing that I hadn't mentioned is how we can better initialize the near and
+far hit distances before the slab tests.  It turns out that when testing
+bounding volumes we can set Tnear (the near distance) to 0 and Tfar to the
+maximum ray distance (if any - else set it to "infinity").  This corresponds
+to the segment formed by the ray:  we consider points between 0 and the
+maximum ray distance to be valid points on the ray, and so want to find slab
+segments that overlap this segment.  Note that these initial conditions gets
+rid of some complication for the algorithm:  we now don't have to test our
+slab segment against the ray's segment and the previous bounding volume
+segment, but rather are always testing against a single segment which
+represents the intersection of both of these.  This idea is not in Kay &
+Kajiya's presentation, by the way.
+
+Note that there is one change that occurs if you initialize the near and far
+distances in this way:  the near and far distances computed when a volume is
+hit will not yield the true surface intersections, but rather will give the
+first and last points inside the volume.  This is useful for bounding volumes,
+since we usually just want to know if we hit them and have some idea of the
+distance.
+
+-------------------------------------------------------------------------------
+
+New Radiosity Bibliography Available, by Eric Haines
+
+A bibliography of publications related to radiosity is now available at:
+
+	freedom.graphics.cornell.edu [128.84.247.85]: /pub/Radiosity
+
+It's a compressed package using "refer" format.  Articles related to radiosity
+or "non-classical" rendering (soft shadows, caustics, etc) are included here.
+This version is significantly improved from the version I posted some months
+ago.  Many thanks to all who helped update it.
+
+-------------------------------------------------------------------------------
+
+A Suggestion for Speeding Up Shadow Testing Using Voxels, by Andrew Pearce
+
+Requirements:
+------------
+This method is applicable to any type of spatial subdivision.  It is probably
+best suited to those of us who tessellate our objects to ray trace them.
+
+Method:
+------
+I've expanded on Eric Haines' method of storing the last object hit by a
+shadow ray with each light source, I now save a pointer to the voxel which
+contains the last object hit (or at least the voxel the intersection occurred
+in if the object spans multiple voxels).  My rationale is that if the shadow
+ray does NOT intersect the "last object" which shadowed that light source,
+then the likelihood of it hitting something in the neighborhood of that same
+object is pretty good.  If we save the voxel which the shadowing occurred in
+for the previous ray, we can examine the other objects in that voxel for
+possible light source occlusion WITHOUT the ray startup and voxel traversal
+costs.  Now this assumption is likely untrue if you're just tracing spheres
+and checker boards (some slight intended :^) but it works quite well for
+tessellated objects (NURBS patches in my case).
+
+I NULL my pointers to both the last object and last voxel if no shadow
+intersection was found on the last shadow ray to this light.
+
+I store a ray_id with every object to insure that any given ray is tested for
+intersection with an object ONLY ONCE even if it spans multiple voxels.  Each
+ray has a unique id.  (I thought, as did David Jevans, that this was a well
+known technique).  So, even if the shadow ray misses all of the objects in
+"last voxel" and must be traced like a regular shadow ray, we are likely not
+losing much since if the shadow ray enters the "last voxel" during it's
+traversal of the voxels, the ray will see that it has already been intersected
+with all of the objects in that voxel, and that voxel will be skipped
+relatively quickly (slightly slower than an empty voxel; the time it takes to
+compare the ray ID against the ray ID stored with each object).
+
+Pseudo-code:
+-----------
+/****************************************************************************/
+/* Obviously we cannot use the "last object hit" for transparent	    */
+/* objects since multiple objects may be involved in the shadowing process. */
+/* The code outlined below assumes that we only store the "last object" and */
+/* "last voxel" for shadow rays generated from a primary ray intersection.  */
+/* What we really should have is a tree indicating what was hit at each     */
+/* level of recursion. Ie. What object shadowed the intersection point      */
+/* generated by the last refraction ray, generated from a reflection ray    */
+/* generated by a primary ray?						    */
+/****************************************************************************/
+float check_shadowing(ray, light)
+RAY_REC   ray;   /* ray from shading point to light source */
+LIGHT_REC light; /* the light source we are interested in */
+{
+if (light.last_object != NULL) {
+
+	/* intersect_object() marks object as having been */
+	/* intersected by this ray. */
+	hit = intersect_object( ray, light.last_object, &object);
+
+	if (hit) {
+		return(1.0); /* full shadowing */
+	}
+
+	if (light.last_voxel != NULL) { /* implied !hit */
+
+		/* intersect_object_in_voxel_for_shadows() returns hit = TRUE */
+		/* on first affirmed intersection with a non-transparent
+		 * object. */
+		/* It ignores transparent objects altogether. */
+		hit = intersect_objects_in_voxel_for_shadows( ray,
+							      light.last_voxel,
+							      &object);
+		if (hit) {
+			light.last_object = object;
+			return(1.0);
+		}
+	}
+}
+
+/* traverse_voxels_for_shadows() DOES intersect transparent objects and */
+/* sorts the intersections for proper attenuation of the light intensity. */
+/* If it hits multiple objects, the object returned is the transparent one. */
+hit = traverse_voxels_for_shadows(ray, &object, &voxel, &shadow_percent);
+
+if (!hit) {
+	light.last_object = light.last_voxel = NULL;
+	return(0.0);
+}
+if (object.transparency_value > 0.0) {
+	/* the object is transparent */
+	light.last_object = light.last_voxel = NULL;
+}
+else {
+	light.last_object = object;
+	light.last_voxel  = voxel;
+}
+return ( shadow_percent );
+}
+
+
+Results:
+-------
+(For the discussion below, "positive occlusion" means we have guaranteed that
+the point we are shading is shadowed from the light source.)
+
+The "last object hit" method provided a positive occlusion 52% of the time,
+and if the "last object hit" method did not provide positive occlusion, the
+"last voxel" method provided a positive occlusion 76% of the time.
+
+I performed a "pixie" of the code with and without this opt. on an SGI
+Personal Iris with no other code changes or scene changes, there is ONE light
+source in the scene which is casting shadows.  The ray tracer with the "last
+voxel" optimization used 2% fewer cycles.  (Actual system times vary wildly
+based on load, but the last voxel version did run about 10% faster using the
+UNIX "times()" system call, but I don't trust "times()").  Two percent
+doesn't seem like an awful lot, but this is just a quick and dirty hack, and I
+would expect to save 2% on EACH light source which casts shadows.
+
+The test scene I'm using is a snare drum with a shadow casting spotlight on
+it.  See IEEE Computer Graphics & Applications, Sept.  1988, the cover story
+includes a tiny reproduction of the image should you wish to see what I'm
+playing with, although the image in CG&A was done with a 2D projective
+renderer (ray casting), not ray tracing.  The reflections in the floor and on
+the chrome in that image were realised using two separate cubic environment
+maps, the shadows were done with a depth map, the wallpaper is a simple
+parametric map and the floor boards have 6 separate solid wood textures
+randomly assigned to them.
+
+The test scene contains approximately 60,000 triangles and I'm rendering at
+512x512 resolution with no anti-aliasing, and a limit of one recursion level
+for both shadow and reflection rays for a total of 638,182 rays.  There is
+only one light in the scene which casts shadows.
+
+I'll be doing tests on more scenes with various levels of voxel subdivision,
+and object distribution.  I'll let you know the results, even if they're
+negative!  (The above results did surprise me a little).
+
+Additional Note:  I urge anyone doing ray/triangle intersections to use Didier
+Badouel's "An Efficient Ray-Polygon Intersection" (Graphics Gems pp.
+390-393).  I have implemented both Badouel's method and Snyder/Barr's
+barycentric method, and Badouel's method is about 19% faster (I optimized the
+snot out of my implementation of the barycentric method, but I used most of
+those same opts in Badouel's method as well).  This result is from comparing
+the same scene ray traced with the two versions.
+
+_________________________________________________________________________
+
+[A second article followed some days later - EAH]
+
+More results from the voxel/shadow optimization:
+-----------------------------------------------
+
+One thing I neglected to mention in the previous message was that you should
+be sure to NULL out your last object and last voxel hit pointers at the end of
+each scanline.
+
+NEW TEST SCENES:
+---------------
+The test scenes producing the results below are 40x40x40 arrays of polygons
+(each polygon is broken down into 8 triangles).  The polygons are distributed
+at unit distances from each other, and then their orientations are jittered
+(rotations) and their positions are jittered (translate of -1.  to +1.).  Each
+polygon is roughly a unit in width and height.  The polygons are inside of a
+larger box (the room) with 15 shadow casting lights in a 5x3 array just below
+the "ceiling".  There were no reflection or refraction rays generated.  All
+images were computed at 645x486 pixels with 4 supersamples per pixel.  Every
+intersection generated 15 shadow rays.  The "sparse" scene had every polygon
+scaled by 0.2 in all dimensions.  The resulting sparse image looks like an
+exploding particle system (due mainly to the 145 degree field of view).  In
+the dense image, almost no background can be seen.
+
+CHART DESCRIPTION:
+-----------------
+"Last Voxel" speed up refers to the percentage fewer cycles the "last voxel"
+method took to compute the same image.  Since this percentage is calculated
+based on the number of cycles the entire ray trace took, it is an exact
+measure of the speed up.  Negative numbers mean that the "last voxel" method
+was slower.  It is important to note that file read, tessellation and spatial
+subdivision time is included in the count of the cycles, so the actual speed
+up to the ray tracing alone may be greater than is stated, depending on how
+you want to measure things.
+
+Average Hits Per Ray is included as a general measure of the density of the
+scene, it is the number of confirmed ray/triangle intersections divided by the
+total number of rays (shadow rays included).  In the sparse scene it is less
+than one since most of the shadow rays made it to the light sources without
+hitting anything.  The dense scene is greater than one because some confirmed
+intersections are abandoned due to nearer intersections being found in the
+same voxel.
+
+Average Hits Per Primary Ray is the number of confirmed ray/triangle
+intersections divided by the number of primary (eye) rays.
+
+--------------+-----------------+-----------------+
+Scene         | 64,000 jittered | 64,000 jittered |
+Description   | polygons (0.2)  | polygons (1.0)  |
+	      |   (sparse)      |   (dense)       |
+--------------+-----------------+-----------------+
+Number of     |   551,408       |  551,408        |
+Triangles     |                 |                 |
+--------------+-----------------+-----------------+
+Number of     |                 |                 |
+Shadow Casting|       15        |     15          |
+Lights        |                 |                 |
+--------------+-----------------+-----------------+
+Number of Rays|   11,324,318    |  8,427,904      |
+--------------+-----------------+-----------------+
+"Last Object" |                 |                 |
+Success Rate  |       50.7%     |  90.9%          |
+--------------+-----------------+-----------------+
+"Last Voxel"  |                 |                 |
+Success Rate  |       23.4%     |  39.3%          |
+--------------+-----------------+-----------------+
+"Last Voxel"  |                 |                 |
+Speed Up      |       1.04%     |  3.6%           |
+--------------+-----------------+-----------------+
+Average Hits  |                 |                 |
+Per Ray       |       0.265     |  1.001          |
+--------------+-----------------+-----------------+
+Average Hits  |                 |                 |
+Per Primary   |       2.363     |  6.638          |
+Ray           |                 |                 |
+--------------+-----------------+-----------------+
+
+It is encouraging that there is a speedup even in very sparse scenes (however
+slight a speed-up it is).  These "random" scenes are not very indicative of
+the type of scenes we are generally interested in ray tracing.  (Really, these
+scenes look like particle systems, I can think of much better ways to render
+them with to produce similar images :^).  So, here's the same chart for the
+snare drum with increasing numbers of lights.  The extra lights are scattered
+around the "room" and all point towards "Spanky" the snare drum.
+
+--------------+---------+---------+---------+
+Scene         | Snare 1 | Snare 3 | Snare 6 |
+Description   | Shadow  | Shadow  | Shadow  |
+	      | Light   | Lights  | Lights  |
+--------------+---------+---------+---------+
+Number of     |  59,692 |  59,692 |  59,692 |
+Triangles     |         |         |         |
+--------------+---------+---------+---------+
+Number of     |         |         |         |
+Shadow Casting|    1    |    3    |    6    |
+Lights        |         |         |         |
+--------------+---------+---------+---------+
+Number of Rays| 638,182 |1,097,569|1,737,021|
+--------------+---------+---------+---------+
+"Last Object" |         |         |         |
+Success Rate  |  52.6%  |  89.0%  |  88.7%  |
+--------------+---------+---------+---------+
+"Last Voxel"  |         |         |         |
+Success Rate  |  76.3%  |  77.0%  |  76.9%  |
+--------------+---------+---------+---------+
+"Last Voxel"  |         |         |         |
+Speed Up      |  1.97%  |  3.37%  |  4.39%  |
+--------------+---------+---------+---------+
+Average Hits  |         |         |         |
+Per Ray       |  0.75   |  0.67   |  0.59   |
+--------------+---------+---------+---------+
+Average Hits  |         |         |         |
+Per Primary   |  1.84   |  2.84   |  3.94   |
+Ray           |         |         |         |
+--------------+---------+---------+---------+
+
+Well, the speed-up isn't quite 2% per light as I said in my previous article,
+but it is there.  The "last voxel" trick has not slowed down the ray tracing
+process in any of these tests which is quite encouraging.
+
+------------------------------------------------
+
+Another helpful hint if you are ray tracing tessellated or planar surfaces:
+In general when spawning a shadow ray, one must be careful to avoid
+intersecting the object just struck.  Usually this is done by adding some
+small epsilon to the origin of the shadow ray along it's direction of travel.
+However, if you store a ray id with every object (triangle) to record if that
+object has been tested against the current ray, then you can use that id to
+avoid testing your shadow ray against the intersected object which generated
+the shadow ray.  Before spawning the shadow ray, place the id number of the
+shadow ray into the ray id field of the object which has just been
+intersected.  This method won't work for objects which can self shadow (eg.
+parametric or implicit surfaces), but it works fine for planar surfaces (eg.
+triangles from surface tessellations).
+
+--------------------------------------------------------
+
+- Andrew Pearce, Alias Research, Toronto, like Downtown
+- pearce%alias@csri.utoronto.ca   |   pearce@alias.UUCP
+
+-------------------------------------------------------------------------------
+
+Real3d, passed on by Juhana Kouhia (jk87377@tut.fi) and "Zap" Andersson
+
+[This was an advertisement on some amiga board.]
+
+	Real 3D FEATURES
+	----------------
+
+Real 3D is design and animation program for producing high quality, realistic
+pictures of three dimensional objects.  It provides an impressive set of
+advanced features including:
+
+Ray Tracing	    A ray tracing of Real 3D is strongly based on the
+		    physical reality of the real world. Real 3D
+		    produces pictures by simulating the laws of physics,
+		    and consequently they represent reality with
+		    astonishing accuracy.
+
+Speed		    Innovative methods and new ray tracing algorithms
+		    make Real 3D really fast. When using fastest ray tracing
+		    mode, rendering time is typically from 1 to 15 minutes.
+
+Hierarchical	    With Real 3D you can create hierarchical objects.
+Object		    This means that objects you create can be made of
+Oriented	    subobjects, and these subobjects may have their
+Construction	    own substructure and so on. This kind of a tree
+of Objects	    structure is well known in the context of disk
+		    operating systems, in which you can create directories
+		    inside directories. In Real 3D counterparts of these
+		    directories are used to collect objects into logical
+		    groups.
+		    This kind of approach makes for example object
+		    modifications extremely easy, because it is possible
+		    to perform operations to logical entities. If you
+		    want to copy a DOS directory, you don't have to
+		    take care of the files and directories inside it.
+		    In the same manner, you can stretch a complex object in
+		    Real 3D as easily as one part of it.
+
+True Solid	    Real 3D includes a true solid modeler. Solid model is the
+Model		    most sophisticated way to represent three dimensional
+		    objects. This modeling technique requires much computing
+		    power and therefore it has earlier been used only in
+		    environments, which are many times faster than Amiga.
+		    Now it is possible to Amiga owners to reach all the
+		    advantages of solid model, thanks to ultimate
+		    optimizations carried out when developing Real 3D.
+
+Smoothly Curved     In addition to plane surfaces, Real 3D includes several
+Surfaces	    curved surfaces, such as ball, cylinder, cone and
+		    hyperboloid. This means that no matter how much you
+		    enlarge a ball created by Real 3D, you don't find
+		    any edges or corners on its surface. Furthermore,
+		    this makes the program much faster. And what is most
+		    important, the produced pictures look really good.
+
+Boolean		    Solid model allows Boolean operations between objects.
+Operations	    It is possible, for example, to split an object into
+		    two pieces and move the pieces apart so that the inner
+		    structure of the object is revealed.
+		    Operations can also be done so that the properties of
+		    the material of the target object are changed. By using
+		    a brilliant cylinder one can drill a brilliant hole into
+		    a matt object. Operations are a powerful way to create
+		    and modify objects. Especially in modeling technical
+		    objects these Boolean operations are indispensable.
+
+Properties of       A user of Real 3D is not restricted to use some basic
+Surfaces	    surface brilliancies such as matt or shiny. Instead,
+		    the light reflection properties can be freely adjusted
+		    from absolute matt to totally mirrorlike, precisely
+		    to the desired level.
+
+Properties of       Due to solid model, it is possible to create objects
+Materials	    from different materials, which have suitable physical
+		    properties. Just as surface brilliancy, also transparency
+		    of a material can be adjusted without any restrictions.
+		    Even light refraction properties are freely adjustable
+		    so that it is possible to create optical devices from
+		    glass lenses. These devices act precisely as their
+		    real counterparts: a magnifying glass in Real 3D world
+		    really magnifies!
+
+Texture Mapping     The texture mapping properties of Real 3D are not
+		    restricted to a typical chequered pattern: Any IFF
+		    picture can be used to paint objects. You can create
+		    pictures with your favorite painting program as well
+		    as with a video digitizer or a scanner. For example, by
+		    digitizing a wood filament pattern, it is easy to create
+		    wooden objects looking very realistic.
+		    Pictures can be located precisely to desired places,
+		    with desired sizes and directions.
+		    Real 3D offers as many as seven texture mapping methods,
+		    including parallel, cylinder, ball and spiral projections.
+
+Light Sources       Unlimited number of light sources of desired color and
+		    brightness. The only restriction is amount of memory.
+
+Animation	    As well as you can create single pictures, you can
+Support		    create series of pictures, animations. Real 3D includes
+		    also software for representing these animations
+		    interactively. Animation representation can be directed
+		    by a script language from ascii files or even from
+		    keyboard. Instead of looping animations you can define
+		    infinitely many ways to represent your pictures. Therefore
+		    you can create animations from a small number of pictures
+		    by displaying them various ways.
+
+Rendering	    Real 3D includes several different rendering techniques:
+Techniques	    a real time wireframe model, a hidden line wireframe model,
+		    a high speed one light source ray tracing model,
+		    a non-shadow-casting ray tracing model and a perfect ray
+		    tracing model. You can select either a HAM display mode
+		    with 4096 colors or a grey scale display mode offering
+		    higher resolution. Also version with 16 million color
+		    rendering (24 bits output) will become available during
+		    November 1990.
+
+Availability	    When writing this document (6.9.1990), marketing of
+		    Real 3D is already started in Europe with a little
+		    lower price than that of Sculpt 4D. The distribution
+		    in the USA is not yet arranged. For further information
+		    of Real 3D, please contact:
+
+			REALSOFT KY
+			KP 9, SF-35700 VILPPULA
+			FINLAND
+
+			Tel. +358-34-48390
+
+--------
+
+from "Zap" Andersson:
+
+REAL3d ('member that?) is available (in Sweden at least) from:
+KARLBERG & KARLBERG AB
+FLADIE KYRKOVAEG
+S-23700 BJARRED
+SWEDEN
+Phone: +46(0)46-47450
+Phax:  +46(0)46-47120
+
+-------------------------------------------------------------------------------
+
+Utah Raster Toolkit Patch, by Spencer Thomas
+
+The first patch for the Utah Raster Toolkit version 3.0 is now available.  The
+patch file is urt-3.0.patch1, and is currently available from cs.utah.edu and
+freebie.engin.umich.edu, and will soon be available from our other archive
+sites (depending on how quickly the archive maintainers grab the patch file).
+There are also slight changes to the files urt-img.tar and urt-doc.tar (in
+particular, if you had trouble printing doc/rle.ps, this is fixed).
+
+[p.s. there was also a fix to a getx11 bug for the Sun 4, which is
+pub/urt-SUNOS4.1-patch.tar.Z on freebie and weedeater. --EAH]
+
+Here is the description from the patch file:
+	Fixed core dump in rletogif, compile warnings in giftorle.
+	Minor update bug in getx11 fixed.
+	getx11 now exits if all its input files are bogus.
+	New program: rlestereo, combines two images (left and right eye)
+	into a red-blue (or green) stereo pair.
+	Configuration file for Interactive Systems 386/ix.
+	Minor fix to rleskel: ignore trailing garbage in an input image.
+
+And the list of the current archive sites, from the urt.README file in
+the ftp directory:
+
+  North America
+     East coast
+	weedeater.math.yale.edu	130.132.23.17	(pub/*)
+     Midwest
+	freebie.engin.umich.edu	35.2.68.23	(pub/*)
+     West
+	cs.utah.edu		128.110.4.21	(pub/*)
+  Europe
+     Sweden
+	alcazar.cd.chalmers.se	129.16.48.100	(pub/urt/urt-3.0.tar.Z)
+	maeglin.mt.luth.se	130.240.0.25	(pub/Utah-raster/*)
+  Australia
+     	ftp.adelaide.edu.au	129.127.40.3	(pub/URT/*)
+	or, if you know what this means:
+		Fetchfile:     sirius.ua.oz in URT
+
+=Spencer W. Thomas 		EECS Dept, U of Michigan, Ann Arbor, MI 48109
+spencer@eecs.umich.edu		313-936-2616 (8-6 E[SD]T M-F)
+
+-------------------------------------------------------------------------------
+
+NFF Shell Database, by Thierry Leconte (Thierry.Leconte@irisa.fr)
+
+[Below is Thierry Leconte's code for an NFF version of the seashell generator
+I listed last issue.  He added some reasonable lights and a view (which I was
+too lazy to do).  I'll probably add it to the 3.0 version of the SPD.  Setting
+"steps" is similar to an SPD SIZE_FACTOR type control.  You'll need the SPD to
+compile and link this program.  -- EAH]
+
+#include <stdio.h>
+#include <math.h>
+#include "def.h"
+#include "lib.h"
+
+main(argc,argv)
+int argc;  char *argv[];
+{
+static  double  gamma = 1.0 ;   /* 0.01 to 3 */
+static  double  alpha = 1.1 ;   /* > 1 */
+static  double  beta = -2.0 ;   /* ~ -2 */
+static  int     steps = 600 ;   /* ~number of spheres generated */
+static  double  a = 0.15 ;      /* exponent constant */
+static  double  k = 1.0 ;       /* relative size */
+double  r,x,y,z,rad,angle ;
+int     i ;
+COORD4  back_color, obj_color ;
+COORD4  center, light ;
+COORD4  from, at, up ;
+COORD4  sphere;
+
+#define OUTPUT_FORMAT	OUTPUT_CURVES
+
+/* output viewpoint */
+SET_COORD( from, 6, 60, 35 ) ;
+SET_COORD( at, 0.0, 8.0, -15.0 ) ;
+SET_COORD( up, 0.0, 0.0, 1.0 ) ;
+lib_output_viewpoint( &from, &at, &up, 45.0, 0.5, 512, 512 ) ;
+
+/* output background color - UNC sky blue */
+SET_COORD( back_color, 0.078, 0.361, 0.753 ) ;
+lib_output_background_color( &back_color ) ;
+
+/* output light sources */
+SET_COORD( light, -100.0, -100.0, 100.0 ) ;
+lib_output_light( &light ) ;
+
+/* set up sphere color */
+SET_COORD( obj_color, 1.0, 0.8, 0.4 ) ;
+lib_output_color( &obj_color, 0.8, 0.2, 100.0, 0.0, 1.0 ) ;
+
+    for ( i = -steps*2/3; i <= steps/3 ; ++i ) {
+	angle = 3.0 * 6.0 * M_PI * (double)i / (double)steps ;
+	r = k * exp( a * angle ) ;
+	sphere.x = r * sin( angle ) ;
+	sphere.y = r * cos( angle ) ;
+	/* alternate formula: z = alpha * angle */
+	sphere.z = beta * r ;
+	sphere.w = r / gamma ;
+	lib_output_sphere( &sphere, OUTPUT_FORMAT ) ;
+    }
+}
+
+-------------------------------------------------------------------------------
+
+FTP list update and New Software, by Eric Haines, George Kyriazis
+
+I posted my FTP site list for ray tracing related stuff, and a few people were
+nice enough to write and update this list.  The new list is posted after this
+note from George Kyriazis at RPI (his site has the friendliest login I've ever
+seen):
+
+--------
+
+iear.arts.rpi.edu [128.113.6.10]:
+
+There was an article in IEEE CG&A a while ago from Sandia National Labs (the
+guy's name was Mareda I think) that uses fourier transforms and digital
+filters to create wave height fields from white noise.  What I have in the
+directory is an implementation of this algorithm and a program that raytraces
+it on the AT&T Pixel Machine.
+
+A list of what exists in there follows:
+
+graphics-gems:	source code to Glassner's Graphics Gems book.
+ray-tracing-news:What else?
+wave:		Rendering of ocean waves using fft. (Mareda, et. al.)
+coldith:	conversion from my image format to sun rasterfiles
+		and dithering from 32 or 24 bit -> 8 bit rasterfiles.
+drt:		A ray-tracer from the Netherlands by Marinko Laban
+gk:		A distributed raytracer by me.
+microray:	DBW_uRAY by David Wecker
+mtv:		Well, you know what this is.  It probably is an old version.
+non-completed-OO-modeler:
+		Something I was working on.  It barely works, but I put
+		it out there just for the fun of it.
+ohta:		Masataka Ohta's constant time ray-tracer;
+		with a few improvements.
+pxm-and-vmpxm-ray.etc:
+		Two raytracers for the AT&T Pixel Machine.  The second
+		one uses some virtual memory code to store more objects.
+		The VM source is included also.
+qrt:		Well, QRT!
+rayshade:	Rayshade 2.21 by Craig Kolb.
+
+I hope I'll have a few anonymous ftp sessions after this.. :-)
+
+--------
+
+Corrected FTP site list for ray tracing related material:
+
+weedeater.math.yale.edu [130.132.23.17]:  /pub - *Rayshade 3.0 ray tracer*,
+	*color quantization code*, RT News, *new Utah raster toolkit*, newer
+	FBM, *Graphics Gems code*.  Craig Kolb <kolb@yale.edu>
+
+cs.uoregon.edu [128.223.4.13]:  /pub - *MTV ray tracer*, *RT News*, *RT
+	bibliography*, other raytracers (including RayShade, QRT, VM_pRAY),
+	SPD/NFF, OFF objects, musgrave papers, some Netlib polyhedra, Roy Hall
+	book source code, Hershey fonts, old FBM.  Mark VandeWettering
+	<markv@acm.princeton.edu>
+
+hanauma.stanford.edu [36.51.0.16]: /pub/graphics/Comp.graphics - best of
+	comp.graphics (very extensive), ray-tracers - DBW, MTV, QRT, and more.
+	Joe Dellinger <joe@hanauma.stanford.edu>
+
+freedom.graphics.cornell.edu [128.84.247.85]:  *RT News back issues, source
+	code from Roy Hall's book "Illumination and Color in Computer
+	Generated Imagery", SPD package, Heckbert/Haines ray tracing article
+	bibliography, Muuss timing papers.  [CURRENTLY NOT AVAILABLE]
+
+alfred.ccs.carleton.ca [134.117.1.1]:  /pub/dkbtrace - *DKB ray tracer*.
+	David Buck <david_buck@carleton.ca>
+
+uunet.uu.net [192.48.96.2]:  /graphics - RT News back issues (not complete),
+	other graphics related material.
+
+iear.arts.rpi.edu [128.113.6.10]:  /pub - *Kyriazis stochastic Ray Tracer*.
+	qrt, Ohta's ray tracer, other RT's (including one for the AT&T Pixel
+	Machine), RT News, Graphics Gems, wave ray tracing using digital
+	filter method.  George Kyriazis <kyriazis@turing.cs.rpi.edu>
+
+life.pawl.rpi.edu [128.113.10.2]: /pub/ray - *Kyriazis stochastic Ray Tracer*.
+	George Kyriazis <kyriazis@turing.cs.rpi.edu>
+
+xanth.cs.odu.edu [128.82.8.1]:  /amiga/dbw.zoo - DBW Render for the Amiga (zoo
+	format).  Tad Guy <tadguy@cs.odu.edu>
+
+munnari.oz.au [128.250.1.21]:  */pub/graphics/vort.tar.Z - CSG and algebraic
+	surface ray tracer*, /pub - DBW, pbmplus.  David Hook
+	<dgh@munnari.oz.au>
+
+cs.utah.edu [128.110.4.21]: /pub - *Utah raster toolkit*.  Spencer Thomas
+	<thomas@cs.utah.edu>
+
+gatekeeper.dec.com [16.1.0.2]: /pub/DEC/off.tar.Z - *OFF objects*,
+	/pub/misc/graf-bib - *graphics bibliographies (incomplete)*.  Randi
+	Rost <rost@granite.dec.com>
+
+abcfd20.larc.nasa.gov [128.155.23.64]: /amiga - DBW,
+	/usenet/comp.{sources|binaries}.amiga/volume90/applications -
+	DKBTrace 2.01.  Tad Guy <tadguy@cs.odu.edu>
+
+expo.lcs.mit.edu [18.30.0.212]:  contrib - *pbm.tar.Z portable bitmap
+	package*, *poskbitmaptars bitmap collection*, *Raveling Img*,
+	xloadimage.  Jef Poskanzer <jef@well.sf.ca.us>
+
+venera.isi.edu [128.9.0.32]:  */pub/Img.tar.z and img.tar.z - some image
+	manipulation*, /pub/images - RGB separation photos.  Paul Raveling
+	<raveling@venera.isi.edu>
+
+ftp.ee.lbl.gov [128.3.254.68]: *pbmplus.tar.Z*.
+
+ucsd.edu [128.54.16.1]: /graphics - utah rle toolkit, pbmplus, fbm, databases,
+	MTV, DBW and other ray tracers, world map, other stuff.  Not updated
+	much recently.
+
+okeeffe.berkeley.edu [128.32.130.3]:  /pub - TIFF software and pics.  Sam
+	Leffler <sam@okeeffe.berkeley.edu>
+
+irisa.fr [131.254.2.3]:  */iPSC2/VM_pRAY ray tracer*, /NFF - many non-SPD NFF
+	format scenes.  Didier Badouel <badouel@irisa.irisa.fr>
+
+surya.waterloo.edu [129.97.129.72]: /graphics - FBM, ray tracers
+
+vega.hut.fi [128.214.3.82]: /graphics - RTN archive, ray tracers (MTV, QRT,
+	others), NFF, some models
+
+netlib automatic mail replier:  UUCP - research!netlib, Internet -
+	netlib@ornl.gov.  *SPD package*, *polyhedra databases*.  Send one
+	line message "send index" for more info.
+
+UUCP archive: avatar - RT News back issues.  For details, write Kory Hamzeh
+	<kory@avatar.avatar.com>
+
+======== USENET cullings follow ===============================================
+
+Humorous Anecdotes, by J. Eric Townsend, Greg Richter, Michael McCool,
+	Eric Haines
+
+
+from J. Eric Townsend (jet@uh.edu):
+
+Went to lunch with a good (but non-technical) friend of mine the other day.
+On the way home, we were talking about what a nice day it was for lying around
+and reading.  She mentioned that she'd gotten a Joyce Carol Oates book I was
+looking for and was going to read it.
+
+I said, "I wish I had time to read something fun, but I've got to read some
+more ray tracing today for my special problems class."
+
+She said, "Ray Tracing?  Who's that.  I don't think I've heard of him."
+
+She thought it was funny only after I stopped laughing and took a few minutes
+to explain it to her.
+
+Tomorrow, I think I'm going to add a second name to my door (we have slots for
+two as most RA's share offices):  "Ray Tracing".
+
+--------
+
+from Greg Richter ({emory,gatech}!bluemtn!greg)
+
+We had a similar incident with a new secretary who informed me that a salesman
+had called asking about our Gator Rays.  She wanted to know if we were
+involved in animal testing.
+
+--------
+
+from Michael McCool (mccool@dgp.toronto.edu)
+
+>She said, "Ray Tracing?  Who's that.  I don't think I've heard of him."
+
+For some reason the term seems to collect fun.  At SIGGRAPH in Dallas this
+year the Ray-tracing course organizers [Glassner & Arvo] kept bringing up the
+"related fields" of rat-racing and tray-racing.  Last SIGGRAPH there was a
+"tutorial video" on tray-racing that was shown; it involved sliding trays
+down stairs, and gave examples of acceleration techniques, etc.  One wonders.
+
+--------
+
+from Eric Haines:
+
+And don't forget the t-shirt (a number of Canadians, Calgarians I think, had
+them on):  There's a picture of a nerdy guy holding a pencil and kneeling over
+a man laying on the ground covered with a sheet of paper.  The entire figure
+is labeled "Ray Tracing".  The caption:  "Okee dokee, Ray, here comes Mr.
+Pencil."
+
+John Wallace also mentioned to me seeing a poster in Denver of jewels with the
+words "Ray Tracy" below, as this was the jeweller's name.
+
+For those who've moved from graduate work to the world of business, a slogan:
+"Once I was a ray-tracer, now I'm a rat racer."
+
+I received the "Spherical Aberration" award from Andrew Glassner & Jim Arvo
+for helping organize various ray tracing things.  The award was a glass sphere
+on a wooden base.  It sat on my office windowsill until I moved to a new
+office one day.  Looking at the award, I noticed black marks at the base.  The
+sphere had acted like a (crummy, luckily) magnifying glass and burnt grooves
+in the wood!  It was interesting to see how the marks seemed to correspond to
+the movement of the sun and the seasons.  Anyway, the moral is "Caustics can
+be dangerous" (after all, why do you think they call them "caustic"?).
+
+-------------------------------------------------------------------------------
+
+G r a p h i c s   I n t e r f a c e   ' 9 1
+	Calgary, Alberta, Canada
+	3-7 June 1991
+
+CALL FOR PARTICIPATION
+
+Graphics Interface '91 is the seventeenth Canadian Conference devoted to
+computer graphics and interactive techniques, and is the oldest regularly
+scheduled computer graphics conference in the world.  Now an annual
+conference, film festival, and tutorials, Graphics Interface has
+established a reputation for a high-quality technical program.  The 1991
+conference will be held in Calgary, Alberta, June 3-7 1991 in conjunction
+with Vision Interface '91. Graphics Interface '91 is sponsored by the
+Canadian Man-Computer Communications Society.
+
+IMPORTANT DATES:
+
+Four copies of a Full Paper due:	31 Oct. 1990	*** N O T E ***
+Tutorial Proposals due:			15 Nov. 1990
+Authors Notified:			 1 Feb. 1991
+Cover Submissions due:			 1 Feb. 1991
+Final Paper due:			29 Mar. 1991
+Electronic Theatre Submissions due:	 1 May  1991
+
+TOPICS:
+
+Contributions are solicited describing unpublished research results and
+applications experience in graphics, including but not restricted to the
+following areas:
+
+Image Synthesis & Realism		User Interface
+Shading & Rendering Algorithms		Windowing Systems
+Geometric Modeling			Computer Cartography
+Computer Animation			Image Processing
+Interactive Techniques			Medical Graphics
+Graphics for CAD/CAM			Graphics in Education
+Computer-Aided Building Design		Graphics & the Arts
+Industrial & Robotics Applications	Visualization
+Graphics in Business			Graphics in Simulation
+
+Four copies of full papers should be submitted to the Program Chairman
+before Oct.31 1990. Include with the paper full names, addresses, phone
+numbers, fax numbers and electronic mail addresses of all the authors. One
+author should be designated "contact author"; all subsequent correspondence
+regarding the paper will be directed to the contact author. The other
+addresses are required for follow-up conference mailings, including the
+preliminary program.
+
+FOR GENERAL INFORMATION:		SUBMIT PAPERS TO:
+
+Wayne A. Davis				Brian Wyvill
+GI '91 General Chairman			GI '91 Program Chairman
+Department of Computing Science		Department of Computer Science
+University of Alberta			University of Calgary
+Edmonton, Alberta, Canada		Calgary, Alberta, Canada
+T6G 2H1					T2N 1N1
+
+Tel:	403-492-3976			Tel:	403-220-6009
+EMail:	usersams@ualtamts.bitnet	EMail:	blob@cpsc.ucalgary.ca
+
+[There are often a fair number of papers on ray tracing at this conference
+{vs.  maybe one at SIGGRAPH}, so it is a good place to consider submitting RT
+research.  --EAH]
+
+-------------------------------------------------------------------------------
+
+Parametric Surface Reference, by Spencer Thomas
+
+In article <3632.26f78d3f@cc.curtin.edu.au> Kessells_SR@cc.curtin.edu.au writes:
+> Can someone please tell me where I can find an algorithm for
+> finding the intersection of a ray and a Bezier and/or B-Spline
+> patch.
+
+You might look at
+
+Lischinski and Gonczarowski, "Improved techniques for ray tracing
+parametric surfaces," Visual Computer, Vol 6, No 3, June 1990, pp
+134-152.
+
+Besides having an interesting technique, they refer to most of the
+other relevant work.
+
+[This entire issue is dedicated to ray tracing, and is worth checking out.
+-EAH]
+
+--
+=Spencer W. Thomas 		EECS Dept, U of Michigan, Ann Arbor, MI 48109
+spencer@eecs.umich.edu		313-936-2616 (8-6 E[SD]T M-F)
+
+-------------------------------------------------------------------------------
+
+Solid Light Sources Reference, by Steve Hollasch, Philip Schneider
+from: comp.graphics
+
+Steve Hollasch (hollasch@enuxha.eas.asu.edu) writes:
+
+    How do raytracers make light sources out of arbitrary objects?  I
+thought a while back that one approach would be to find the direction to
+the object from the illuminated point, fire a random cone of rays at the
+object, and assign some fraction of the object's light to the point for
+each unobstructed ray.
+
+    The main drawback of this approach, as I see it, is that it would
+yield a mottled illuminated area, and the mottling would vary in a
+random manner.
+
+    About five minutes ago I had an idea for another approach:
+
+    -  Find the 2D bounding box (from the illuminated point's view) of the
+       illuminating object.
+
+    -  From this box, get the two orthogonal basis vectors.
+
+    -  Now subdivide this bounding box (using the basis vectors), just
+       as you would the original raytrace grid.
+
+    -  For each light ray fired, determine if the ray intersects the
+       illuminating object.  If it does, increment the `silhouette'
+       counter.  If the light ray intersects no other object, then
+       increment the `light' counter.
+
+    -  Once done, the light that shines on the illuminated point is
+       (light_counter/silhouette_counter) * object_light.
+
+    This technique would also lend itself to numerous optimizations.
+For example, if you assume that all light objects cast a convex
+silhouette, then you could use binary search techniques to locate the
+edges of the silhouette.  That is, you can assume that all scan lines
+will be runs of space-silhouette-space intersections, hone in on the
+edges, and then multiply the resulting silhouette width by the scanline
+height to get the relative area.
+
+    Is there a better way to do this?  I haven't come across this
+problem in any of the graphics texts I've read.
+
+--------
+
+Philip Schneider (pjs@decwrl.dec.com) replies:
+
+    Get in touch with the University of Washington Department of Computer
+Science.  Two or three years ago Dan O'Donnell wrote an M.S. thesis
+on what he called "solid light sources".  (Sorry, my copy is in a box
+right now, so I don't recall the exact title :-(
+
+    Real nice work, as I recall, and the resulting pictures were pretty
+interesting -- one of them featured a coffee mug, with steam rising from it
+that turned into a glowing "neon sign" light formed into the shape of
+the word "Espresso" (of course, I'm biased from having worked alongside him
+at the UW graphics lab :-)
+
+Philip J. Schneider
+DEC Advanced Technology Development
+
+[Has anyone seen this thesis?  Could you give me an exact reference (for the
+Ray Tracing Bibliography)?  --EAH]
+
+-------------------------------------------------------------------------------
+
+Graphics Gems Source Code Available, by Andrew Glassner, David Hook
+
+As many readers of the usenet are aware, at Siggraph '90 Academic Press
+released a new book, "Graphics Gems" (edited by Andrew Glassner, published by
+Academic Press, Cambridge MA, 864 pp, $49.95, ISBN 0-12-286165-5).  The book
+is a compilation of many people's work, showing how they solved important
+problems in computer graphics.  Many of the Gems are realized with
+ready-to-run C implementations, presented in two appendices.
+
+The authors and the publisher are pleased to release this source code to the
+public domain:  neither the authors nor publisher hold any copyright
+restrictions on any of these files.  The code is freely available to the
+entire computer graphics community for study, use, and modification.  We do
+request that the comment at the top of each file, identifying the original
+author and the program's original publication in the book Graphics Gems, be
+retained in all programs that use these files.
+
+Each Gem is made available on an as-is basis; although considerable effort has
+been expended to check the programs as originally designed and their current
+release in electronic form, the authors and the publisher make no guarantees
+about the correctness of any of these programs or algorithms.
+
+All source files in the book are now available via anonymous ftp from site
+'weedeater.math.yale.edu'.  To download the files, connect to this site with
+an ftp program.  For user name type the word 'anonymous'; for password enter
+your last name.  When you are logged in, type 'cd pub/GraphicsGems/src'.  Each
+program from the book is stored in its own plaintext file.  I suggest you
+first download the file README (type 'get README', then quit ftp and open the
+file with any text editor); among other things it describes how to download
+the rest of the directory, identifies the administrator of the site (who will
+collect bug reports, etc.), and provides a table of contents so you can
+identify the source files with their corresponding Gems.
+
+We have enjoyed putting this book together.  It was a pleasure for me to work
+with the many talented people who contributed to the success of this project.
+A central theme of the book's philosophy was for the results to be practical
+and useful - public release of the source code is a happy result of this
+philosophy, shared by the authors, editor, and publisher.
+
+We all hope this free source code is a useful resource for programmers
+everywhere.
+
+--------
+
+From David Hook:
+
+AARnet/ACSnet sites can now obtain GraphicGems source code from
+gondwana.ecr.mu.oz.au (128.250.1.63) via anonymous ftp in pub/GraphicsGems or
+through fetchfile, (for a general info file do a "fetchfile
+-dgondwana.ecr.mu.oz pub/GraphicsGems/GEMS.INFO" and for a general listing
+"fetchfile -dgondwana.ecr.mu.oz -LV pub".
+
+Please note this is a clone site of the GraphicsGems code at
+weedeater.math.yale.edu, and bug reports, etc...  should still be forward to
+the administrators there.  Their addresses are listed in the GEMS.INFO and
+README files.
+
+--------
+
+[I felt the following was a good way to summarize much of what "Graphics Gems"
+has in it.  It's excellent, highly recommended (no, I don't have anything in
+it).  Andrew Woo's trick for a quick rejection test on polygons gave me a few
+percent speedup on intersecting these, for example.  Oddly enough, I had tried
+his idea earlier (Kells Elmquist independently discovered it here), but didn't
+get much speedup.  Seeing it in print made me try it again, but this time on a
+variety of databases.  This time it gave some speed-up - the first time I
+tried it on a database particularly ill-suited for performance improvement!
+Finding out that someone else had used it successfully encouraged me to
+explore further.  What's his trick?  You'll have to see the book...  - EAH]
+
+The table below gives the correspondence between each source
+file in this directory and the name of the Gem it implements.
+Each implementation illustrates one way to realize the
+techniques described by the accompanying Gem in the book.
+The files here contain only the source code for that
+realization.  For a more complete description of the
+algorithms and their applications see the Gems of the same
+name in the first 11 Chapters of the book.
+
+---------- header files ----------
+GraphicsGems.h	       / Graphics Gems C Header File
+
+----------    C code    ----------
+2DClip		       / Two-Dimensional Clipping:
+			 A Vector-Based Approach
+AALines                / Rendering Anti-Aliased Lines
+AAPolyScan.c           / Fast Anti-Aliasing Polygon
+			 Scan Conversion
+Albers.c               / Albers Equal-Area Conic Map
+			 Projection
+BinRec.c               / Recording Animation in Binary Order
+			 For Progressive Temporal Refinement
+BoundSphere.c          / An Efficient Bounding Sphere
+BoxSphere.c            / A Simple Method for Box-Sphere
+			 Intersection Checking
+CircleRect.c           / Fast Circle-Rectangle Intersection
+			 Checking
+ConcaveScan.c          / Concave Polygon Scan Conversion
+DigitalLine.c          / Digital Line Drawing
+Dissolve.c 	       / A Digital "Dissolve" Effect
+DoubleLine.c           / Symmetric Double Step Line Algorithm
+FastJitter.c           / Efficient Generation of Sampling
+			 Jitter Using Look-up Tables
+FitCurves.c            / An Algorithm for Automatically
+			 Fitting Digitized Curves
+FixedTrig.c            / Fixed-Point Trigonometry with
+			 CORDIC Iterations
+Forms.c                / Forms, Vectors, and Transforms
+GGVecLib.c             / 2D And 3D Vector C Library
+HSLtoRGB.c             / A Fast HSL-to-RGB Transform
+Hash3D.c               / 3D Grid Hashing Function
+HypotApprox.c          / A Fast Approximation to
+			 the Hypotenuse
+Interleave.c           / Bit Interleaving for Quad-
+			 or Octrees
+Label.c                / Nice Numbers for Graph Labels
+LineEdge.c             / Fast Line-Edge Intersections On
+			 A Uniform Grid
+MatrixInvert.c         / Matrix Inversion
+MatrixOrtho.c          / Matrix Orthogonalization
+MatrixPost.c           / Efficient Post-Concatenation of
+			 Transformation Matrices
+Median.c               / Median Finding on a 3x3 Grid
+NearestPoint.c         / Solving the
+			 Nearest-Point-On-Curve Problem
+			 and
+			 A Bezier Curve-Based Root-Finder
+OrderDither.c          / Ordered Dithering
+PixelInteger.c         / Proper Treatment of Pixels
+			 As Integers
+PntOnLine.c            / A Fast 2D Point-On-Line Test
+PolyScan               / Generic Convex Polygon
+			 Scan Conversion and Clipping
+Quaternions.c          / Using Quaternions for Coding
+			 3D Transformations
+RGBTo4Bits.c           / Mapping RGB Triples Onto Four Bits
+RayBox.c               / Fast Ray-Box Intersection
+RayPolygon.c           / An Efficient Ray-Polygon
+			 Intersection
+Roots3And4.c           / Cubic and Quartic Roots
+SeedFill.c             / A Seed Fill Algorithm
+SquareRoot.c           / A High-Speed, Low-Precision
+			 Square Root
+Sturm                  / Using Sturm Sequences to Bracket
+			 Real Roots of Polynomial Equations
+TransBox.c             / Transforming Axis-Aligned
+			 Bounding Boxes
+TriPoints.c            / Generating Random Points
+			 In Triangles
+ViewTrans.c            / 3D Viewing and Rotation Using
+			 Orthonormal Bases
+
+-------------------------------------------------------------------------------
+
+Graphics Gems Volume 2 CFP, by Sari Kalin
+
+This is a quick note to let everyone know that Academic Press will be
+publishing a sequel to the book GRAPHICS GEMS, edited by Andrew Glassner.
+Since Andrew decided to take a breather from editing books, I'll be doing the
+honors this time around.  So, if you're interested in contributing a clever
+graphics algorithm or insight (i.e.  a "Gem") to the new volume, contact Sari
+Kalin (the editor at Academic Press) and she'll send you an author's packet.
+Here's the address:
+
+    Sari Kalin
+    Academic Press
+    955 Massachusetts Ave.
+    Cambridge, MA  02139
+
+    tel:   (617) 876-3901
+    email: cdp!skalin@labrea.stanford.edu
+
+AP wants to get the book out by SIGGRAPH `91, so that means the schedule is
+tight.  The submission deadline for first drafts is November 1, 1990, so don't
+delay!  Also, I'm sure AP would appreciate hearing any comments you might have
+about the first volume.
+
+-------------------------------------------------------------------------------
+
+Foley, Van Dam, Feiner and Hughes "Computer Graphics" Bug Reports,
+	by Steve Feiner
+
+Sender: feiner@cs.columbia.edu (Steven Feiner)
+Organization: Columbia University Dept. of CS
+
+We're in the process of setting up a separate email account to make it easy to
+report bugs, suggest changes, and obtain a copy of the bug list for Computer
+Graphics:  Principles and Practice, 2nd Ed. by Foley, van Dam, Feiner, and
+Hughes.  Since Dave Sklar, the person who is setting up the account, is also
+busting to get the versions of the book's SRGP and SPHIGS graphics packages
+ready for their SIGGRAPH demos, the email account won't be available until
+after SIGGRAPH.  We'll post details as soon as it's up.
+
+Meanwhile, here are fixes for some dangling references and a missing exercise,
+all of which had been devoured by a hungry gremlin:
+
+1) Dangling references:
+
+FIUM89 Fiume, E.L. The Mathematical Structure of Raster Graphics, Academic
+Press, San Diego, 1989.
+
+FOUR88 Fournier, A. and D. Fussell,
+``On the Power of the Frame Buffer,'' ACM TOG, 7(2), April 1988,
+103-128.
+
+HUBS82 Hubschman, H. and S.W. Zucker, ``Frame-To-Frame Coherence and the Hidden
+Surface Computation: Constraints for a Convex World,'' ACM TOG, 1(2),
+April 1982, 129-162.  [The bibliography includes HUBS81, the SIGGRAPH 81 paper
+on which HUBS82 was based.]
+
+SNYD87 Snyder, J.M. and A.H. Barr, ``Ray Tracing Complex Models Containing
+Surface Tessellations,'' SIGGRAPH 87, 119-128.
+
+TAMM82 Tamminen, M. and R. Sulonen.  ``The EXCELL Method for Efficient
+Geometric Access to Data,'' in Proc. 19th ACM IEEE Design Automation
+Conf., Las Vegas, June 14-16, 1982, 345-351.
+
+2) A missing exercise:
+
+15.25 If you have implemented the z-buffer algorithm, then add hit detection
+to it by extending the pick-window approach described in Section 7.12.2 to
+take visible-surface determination into account.  You will need a SetPickMode
+procedure that is passed a mode flag, indicating whether objects are to be
+drawn (drawing mode) or instead tested for hits (pick mode).  A SetPickWindow
+procedure will let the user set a rectangular pick window.  The z-buffer must
+already have been filled (by drawing all objects) for pick mode to work.  When
+in pick mode, neither the frame-buffer nor the z-buffer is updated, but the
+z-value of each of the primitive's pixels that falls inside the pick window is
+compared with the corresponding value in the z-buffer.  If the new value would
+have caused the primitive to be drawn in drawing mode, then a flag is set.
+The flag can be inquired by calling InquirePick, which then resets the flag.
+If InquirePick is called after each primitive's routine is called in pick
+mode, picking can be done on a per-primitive basis.  Show how you can use
+InquirePick to determine which object is actually visible at a pixel.
+
+Steve Feiner
+feiner@cs.columbia.edu
+
+-------------------------------------------------------------------------------
+
+Radiosity via Ray Tracing, by Pete Shirley (shirley@iuvax.cs.indiana.edu)
+from: comp.graphics
+
+
+kaufman@delta.eecs.nwu.edu (Michael L. Kaufman) writes:
+
+>This may be a stupid question, but why can't radiosity be handled by ray
+>tracers?  Also, are there any archives that contain code/papers on radiosity
+>that I can learn from?
+>Michael
+
+Ray Tracers can indeed do radiosity.  Check out the Sillion and Puech paper
+or the Wallace et al. paper in Siggraph '89.  Also the Airey et al. paper
+in proceedings of the symposium of Interactive 3D graphics (Computer
+Graphics 24 (2)), and my Graphics Interface 90 paper.  Also Heckbert's
+Siggraph 90 paper.
+
+If all you want is a brute force radiosity code (and this code works pretty
+well), then start with N polygons.  Each polygon will have reflectivity Ri
+and will emit power Ei.   Assume you want to send R rays on the first pass.
+We will now do what amounts to physical simulation:
+
+T = 0		   // T is total emitted power
+For i = 1 to N
+	Ui = Ei    // Ui is unsent power
+	Pi = Ei    // Pi is total power estimate
+	T = T + Ei
+
+dP = T / R	   // dP is the approximate power carried by each ray
+For b = 1 to NumReflections
+   For i = 1 to N
+	r = int(Ui / dP)  // patch i will send power Ui in r rays
+	dPi = Ui / r
+	Ui = 0
+	for j = 1 to r
+		choose random direction with cosine weighting and
+ 		send ray with until it hits polygon p (see Ward et al.
+		Siggraph 88 paper equation 2 p 87)
+
+		Up = Up + Rp * dPi
+		Pp = Pp + Rp * dPi
+
+
+// Once this is done, we will have the power Pi coming from each surface,
+// Now we should convert to radiance (see my GI 90 paper or Kajiya's
+// Course notes in Siggraph 90 Advanced RT notes)
+
+For i = 1 to N
+	Li = Pi / (pi * Ai)  // Li is radiance, pi is 3.14..., Ai is area
+
+
+This ignores interpolation to polygon vertices to give a smooth image
+(see Cohen & Greenberg siggraph 85 figure 8A).
+
+
+You might also want to check out Ward et al.'s Siggraph 88 paper.  Not true
+radiosity, but is ray tracing based and has some of the best features
+of ray tracing methods.  If your scene is all diffuse, that method may be
+the way to go.
+
+-------------------------------------------------------------------------------
+
+Algorithm Order Discussion, by Masataka Ohta, Pete Shirley
+
+
+In article <1150@mti.mti.com> adrian@mti.UUCP (Adrian McCarthy) writes:
+
+>Rather than using recursive or hierarchical
+>spatial subdivision techniques to reduce ray-object intersection tests
+>(which are of O(log n) algorithms)
+
+Can you prove it? I think (but can't prove) hierarchical spatial
+subdivision is only O(n**(1/3)).
+
+>many instances can use a surface map for
+>a single bounding volume as a lookup table to immediately determine a small
+>subset of objects to test (which is truly of O(1)). (Small subset here is
+>roughly equivalent to the set of objects in the smallest volume in a
+>comparable hierarchical scheme.)
+
+I already published an O(1) ray tracing algorithm (See "An introduction
+to RAY TRACING" edited by Andrew S. Glassner, Academic Press, 6.3 The Ray
+Coherence Algorithm, page 232-234, or, "Computer Graphics 1987 (Proc.
+of CG International '87)", page 303-314, Ray Coherence Theorem and
+constant time ray tracing algorithm).
+
+Judging from the above brief description of your algorithm, it may be
+similar or identical to mine.
+
+>It's *not* general,
+
+Hmmm, mine is general.
+
+--------
+
+Kaplan also has claimed a constant time algorithm.  I don't believe that
+his is constant time - it (like an octree) is a divide and conquer
+search, so it will AT BEST be O(logN)  (it takes O(logN) time to travel
+down the height of a tree).
+
+I don't really see how we can even say what the big-O of a ray intersection
+is without precisely stating what rays are allowed on what geometry.
+For example, suppose I set up N epsilon radius spheres in random locations
+within a cube, where epsilon is small.  In the typical case a ray might
+come close to many spheres.  If an octree is used, the candidate sets
+of many leaves might be checked (worse than O(logN)).  If all of the spheres
+have the same center, how can any scheme get a candidate set for a ray
+through the center that doesn't include all spheres?  This would be
+O(NlogN) for an octree and O(N) optimally.  How would your method be O(1)?
+It seems that often we have good algorithm behavior in practice with
+pathological cases giving terrible big-Os.  Perhaps we can bound the set
+of scenes somehow?
+
+--------
+
+Ohta replies:
+
+>Kaplan also has claimed a constant time algorithm.  I don't believe that
+>his is constant time--
+
+I agree with you. I know what is O(1).
+
+>I don't really see how we can even say what the big-O of a ray intersection
+>is without precisely stating what rays are allowed on what geometry.
+
+Well, it is assumed that, ray object intersection calculation takes only
+constant time. That is, to ray trace a surface defined by N-th degree
+polynominal in constant time regardless to N, is just impossible.
+
+>For example, suppose I set up N epsilon radius spheres in random locations
+>within a cube, where epsilon is small.  In the typical case a ray might
+>come close to many spheres.  If an octree is used, the candidate sets
+>of many leaves might be checked (worse than O(logN)).  If all of the spheres
+>have the same center, how can any scheme get a candidate set for a ray
+>through ythe center that doesn't include all spheres?  This would be
+>O(NlogN) for an octree and O(N) optimally.  How would your method be O(1)?
+
+Good question.  But, first, we should make it clear what is constant time ray
+tracing.  As for the per-scene complexity, no algorithm (including your first
+example) can be better than O(N) just because of input complexity (reading all
+the input takes O(N) time).  So, we should talk about complexity to trace a
+single ray.
+
+My algorithm may consume possibly long and computationally complex
+pre-processing time to analyze a scene.  But, the important fact is that the
+time for pre-processing is dependent only on the scene and not on the number
+of rays.
+
+And, after pre-precessing, all rays can be traced in constant time.
+
+With your example of co-centric spheres (assuming epsilon radius is different
+on each sphere, or the problem is reduced to too trivial to trace a single
+sphere), each sphere should further be subdivided into smaller pieces to
+obtain constant time property.  With such a finer subdivision, even octree
+method may be able to do better than O(NlogN).
+
+>It seems that often we have good algorithm behavior in practice with
+>pathological cases giving terrible big-Os.  Perhaps we can bound the set
+>of scenes somehow?
+
+It may be reasonable to define complexity of a scene by the complexity of
+pre-processing to obtain constant-timeness.
+
+--------
+
+In a separate note, Ohta writes:
+
+>Can you prove it? I think (but can't prove) hierarchical spatial
+>subdivision is only O(n**(1/3)).
+
+I have found it is obvious.  All spatial subdivision is at most O(n**(1/3)) if
+
+	1) Objects are tiny
+	2) Objects are uniformly scattered in space
+
+1) means that the possibility of intersection is negligible.
+2) means at least O(n**(1/3)) subspace must be traversed.
+
+-------------------------------------------------------------------------------
+
+Point in Polygon, One More Time..., by Mark Vandewettering, Eric Haines,
+	Edward John Kalenda, Richard Parent, Sam Uselton, "Zap" Andersson, and
+	Bruce Holloway
+
+
+Mark VandeWettering writes about the point in polygon test:
+
+The solution proposed by rusmin@twinsun.com was based upon the Jordan Curve
+theorem: any ray from inside a polygon crosses an odd number of edges on its
+way to infinity.  He chose a random ray that began at the point in question,
+and counted the number of intersections.  Problem: if you intersected a vertex
+you were kind of clueless.  Solution, fire another ray.
+
+You solve these problems by simplifying everything.  The ray you shoot should
+go to the positive X axis.  Assume without loss of generality that your
+point is the origin.  Now: if you are going to intersect a vertex, its because
+the y component of an edge endpoint is == 0.  Well, decide whether you want
+to count this as positive or negative.  Assume positive (I always do).  It
+turns out you get the right answer anyway.  For example
+
+      origin	     ^
+		     |
+	o	     o			counts as one intersection
+		     |
+		     v
+
+      origin	     ^ ^
+		     |/
+	o	     o			counts as zero or two intersections
+
+      origin
+
+	o	     o			counts as zero or two intersections
+		     |\
+		     v v
+
+
+Voila!  C'est explique!
+
+
+[and in a later note:]
+
+Hardly my own idea.  It was shown to me by Eric Haines originally, but I don't
+think he claims credit for it either.  Any takers?  Is it patented by Unisys
+as well :-)?
+
+--------
+
+Eric Haines [the crazy fool!] replies:
+
+	Anyway, having an ego and all that, I do indeed claim to be the
+inventor of the "consider all points on the line to be above the line"
+solution, which gets rid of those pesky special cases where vertices are on the
+test ray.  I started with some very complicated special case code in 1986
+which worried about whether the points were on the ray.  Months went by...
+One day, looking at the code, I noticed another stupid special case that I
+didn't handle correctly (something like "if the last point is on the ray and
+the first point is on the ray...").  I looked at the problem again and
+realized that the only property of the ray that I really cared about was that
+it was a divider, not that it was a set of points forming a ray.  Eureka,
+Arkansas!  Get rid of those points, and so define away the problem - no points
+can lie on the ray, if we define the ray as having no points.  O happy day, it
+even worked.  Anyway, it's all written up in my section of "An Introduction to
+Ray Tracing", edited by Andrew Glassner, Academic Press.
+
+	Historical note:  the earliest reference I have to the point in
+polygon test is the classic "A Characterization of Ten Hidden-Surface
+Algorithms" by Ivan Sutherland et al, 1974, ACM Computing Surveys v6 n1.  This
+has both the ray crossing test and the sum of the angles test, plus the convex
+polygon test (check if the point is inside all lines by substitution into each
+edge's 2D line equation).
+
+	Computational geometry fiends noted that the method has the problem of
+being indeterminate on edges:  if your intersection point is exactly on an
+edge, it's arbitrary whether the point is determined to be inside or outside
+the polygon (that is, do you consider an edge crossing the point to be to the
+right or left of the point, or do you want a third category, such as "on"?).
+
+	However, there is a general consistency to the ray crossing test for
+ray tracing.  If the point being tested is along the edge joining two visible
+polygons (which both face the same general direction, i.e. not a silhouette
+edge) and the polygons are projected consistently upon the plane perpendicular
+to the ray, the point is guaranteed to be considered to be inside one and only
+one of the polygons.  That is, no point will be considered within any two
+non-overlapping polygons, nor will it "fall in the crack" between polygons.
+
+	Think about it this way:  if points on the left edges of the polygon
+are considered outside, then the points on the right edges will be considered
+inside.  This is because we would then consider an edge crossing the x axis at
+exactly 0 as being to the right of the test point.  Since one polygon's left
+edge is another's right edge, it all balances out to make each point be inside
+only one polygon in a polygon mesh.  Horizontal edges are treated the same
+way:  if a point is actually on such an edge, when tested, the point will be
+categorized as "below" the edge consistently.  This will lead it to be inside
+one and only one polygon in a mesh.
+
+	In reality, when ray tracing you very rarely get points that are
+exactly on an edge, so this is something of a non-problem.  But if you really
+really care about this possibility, make sure to always cast your polygons
+onto the plane perpendicular to the ray (this plane is also good for
+consistency if you want to get edges for Gouraud RGB interpolation, Phong
+normal interpolation, etc).
+
+	Finally, for you incredibly demonic CompGeom types: yes, indeed,
+points on silhouette edges are still inconsistent.
+
+P.S.  As our patent on the 90 degree angle was successful, the pending patent
+on the Jordan Curve Theorem should come through any day now... ;-)
+
+--------
+
+Edward John Kalenda replies:
+
+Sorry to be a poop Eric, but my boss at Calma, Steve Hoffman, told me
+about the "points on the ray are above the ray" thing in 1981. He claimed
+someone told HIM several years before.
+
+I think it's one of those things that just need to be attributed to the
+anonymous coder.
+
+--------
+
+I reply:
+
+	Oh, well, at least I can claim to be the first to publish!  Sadly
+enough, the word still hasn't fully percolated out.  The latest Foley & Van
+Dam (& Feiner & Hughes) says on page 34:  "Next, choose a ray that starts at
+the test point and extends infinitely in any direction, and that does not pass
+through any vertices".  Page 339 makes reference to "intersections at vertices"
+being a "special case".  Passing through a vertex is still considered to be a
+problem (even though it isn't).
+
+	It's this kind of thing that makes me happy to see books like
+"Graphics Gems" come out.  Letting the world know about the little tricks of
+the trade saves us all a lot of time and replication of effort (I sure wish I
+had known about the "above the ray" trick in 1986 - it would have saved me
+hours of struggle).
+
+--------
+
+Richard Parent (parent@cis.ohio-state.edu) writes:
+
+With respect to 'consider all the points on the line to be above the line',
+both Steve Levine (Ph.D. from Stanford, I believe) and myself discussed
+this as a solution we used in our respective problems; mine was implementing
+Lourtrel's hidden line routine and I imagine his had to do with the
+hierarchical clipping he was doing.  This was at one of the Siggraph's in the
+mid to late seventies, '76, if I had to guess.  It's been around for awhile.
+
+--------
+
+I reply:
+
+	I guess I could compare myself to Leibniz vs. Newton (both
+independently discovering calculus), but I'm probably more in the class of the
+guy that discovers that Wintergreen Life Savers give off sparks when chewed in
+the dark.
+
+--------
+
+Sam Uselton writes:
+
+I've been off news for a few days and just saw your posting of sept 6.  Isn't
+the "consider all points on the line to be above the line" the same as
+"shortening an edge to prevent the vertex lying on the scan line" as suggested
+in Foley & Van Dam (the old one) when describing polygon scan conversion?
+That's not the first place I heard this idea either, it was just the easiest
+reference to grab off the shelf.
+
+I think this is one of those solutions that is just subtle enough that most
+people don't think of it themselves and think it is neat when they see it but
+just obvious enough that a few people every year re-invent it, and go showing
+it around to others.  Just the kind of thing IMHO that makes Glassner's
+collection and the RTNews such useful things, because it probably couldn't get
+published "traditionally" .
+
+Trying VERY hard to pull up archival storage, I'm pretty sure I saw this first
+while still at UTD in grad school, which means Henry Fuchs was probably
+explaining it.  Whether he is one of the many originators or he got it from a
+fellow Utah grad student, I couldn't guess.  (Oh, yeah.  Time?  1975-1979).
+
+--------
+
+I note:
+
+For scan conversion it is still a bit tricky:  you have to think a bit about
+where edges begin and end (you want edges with vertices exactly on the scan
+line to be handled correctly, e.g. if the edge's maximum y ends on the scan
+line, delete this edge just before checking scan line).  This kind of problem
+goes away for ray tracing, since you don't have to worry about active edges,
+etc.
+
+--------
+
+Sam replies:
+
+After a weekend of R&R old memory is more easily accessible.  I seem to
+associate my first connection with point in polygon/ ray intersection/ Jordan
+curve theorem/etc etc to an informal seminar, led by Henry Fuchs and Zvi
+Kedem, attended by Alain Fournier, Don Fussell, Jose Barros, myself, and I
+think Bruce Naylor, in which we read and studied early Michael Shamos papers
+(Shamos & Hoey, Bentley & Shamos...).  Must have been about 1978 or so.
+
+--------
+
+I reply:
+
+	Thanks for the info.  What I find amazing about all this is that
+somewhere, somewhere this was not mentioned in the ray tracing literature
+before "An Intro to RT".  Until you (and others) pointed out that this problem
+and solution is analogous to the scan-line problem, I honestly hadn't made the
+connection!  Nor, it seems, had anyone else in print.  Sedgewick's
+"Algorithms" talks about this problem but doesn't give a "points above the
+ray" solution, Berlin in 1985 SIGGRAPH course notes gives a few solutions to
+the problem, but says that test rays through vertices are a special case & are
+very nasty.  Certainly Cornell's ray tracer didn't solve this problem.
+Glassner used the sum of the angles method, so he didn't know about it, so UNC
+didn't know about it.  Sounds like somewhere out west was the point of origin,
+but it never made it east of the Mississippi.  Curious.
+
+	Sutherland et al's 1974 paper "A Characterization of Ten Hidden
+Surface Algorithms" mentions the problem as a problem ("care is required to
+get consistent results").  Anyway, sounds like there probably wasn't a
+solution before them (if anyone would know, I would think it would be them).
+Interesting puzzle to try to figure out the identity of this anonymous
+programmer.
+
+--------
+
+From "Zap" Andersson:
+
+As I think I posted earlier, this is somewhat similar to my own approach in
+getting rid of special cases: Assume we are testing for a ray along X axis...
+For all line segments, swap 'em, so it's "first" point is upwards (Have a lower
+Y coordinate). Then, for each segment, test if the point's Y > firstY. If not,
+discard (This, in essence, is a version of Eric's idea, only mine :-) then,
+check if Y <= lastY. If not, discard. IMPORTANT ISSUE HERE is that I actually
+CARE about the 'second' point of the line, and include it in the check, that's
+MY way of getting rid of problem of a corner pointing downwards: It will yield
+2 intersections, Eric's method yields none. No big deal, really.... after
+this simple boundstest, it's time for the dreary math on checking if the
+intersection is on POSITIVE X, i.e. if X > firstX && X > lastX, discard, and
+last but not least, check the real intersection with some math (Left as an
+exercise for the reader :-).
+
+OBTW, fr'got! FIRST, you check if (LastY - Y) * (FirstY - Y) is > 0. If so,
+discard.
+
+--------
+
+Bruce Holloway posts:
+
+In article <1990Sep11.163420.13592@odin.corp.sgi.com> robert@sgi.com writes:
+>
+>In article <KPS5FNC@xds1.ferranti.com>, peter@ficc.ferranti.com (Peter
+>da Silva) writes:
+>|> In article <33619@cup.portal.com> ekalenda@cup.portal.com (Edward
+>John Kalenda) writes:
+>|> > Sorry to be a poop Eric, but my boss at Calma, Steve Hoffman, told me
+>|> > about the "points on the ray are above the ray" thing in 1981. He claimed
+>|> > someone told HIM several years before.
+>|> >
+>|> > I think it's one of those things that just need to be attributed to the
+>|> > anonymous coder.
+>|>
+>|> Another of those obvious techniques like the XOR-cursor. Good thing nobody
+>|> patented *this* one...
+>
+>I didn't see any smiley's after this one Peter.  I'm sure that
+>many readers don't realize that the XOR-cursor in hardware *IS* patented.
+>
+>... and that's not the only obvious technique that this particular
+>company has a patent on.
+
+This thread is a riot.  My old boss at Calma, Joe Sukonick, patented the
+XOR-cursor technique based on work he did around 1974, when I went to work
+there.  I remember meeting Jim Clark for the first time around 1979 in front
+of Stacey's bookstore in Palo Alto before he became famous for the Geometry
+Engine.  He was married to a friend of mine from Calma (whom we were all in
+love with!) & said he didn't think Joe's patent was valid because it wasn't
+original.  I agree with him.
+
+One of the things the patent says is that XOR works because it is "idempotent".
+Joe had a Ph.D. in math from MIT & liked to use words like that, but I thought
+AND & OR were idempotent & XOR worked because it wasn't!  What you need is
+any operation that can be undone, or inverted, like ADD, say.  (What is XOR
+but an ADD without carry?)  Anyway, the patent is now owned by Cadtrak, a
+corporate shell whose charter is to sue everyone under the sun over that
+patent.  Last I heard, Western Digital was going to take them to court to
+overturn it.
+
+Now as to the "points on the ray are above the ray", this is really the same
+as the idea of half-open intervals which has broad usage in computer graphics.
+When you point-sample a polygon, this is how you make sure that rectangles
+of area m*n hit exactly m*n pixels, even if they lie on your sample grid.
+When I was just a kid at Calma, I wrote two programs that used that idea.
+One was a program to cross-hatch concave (and convex) polygons for making
+plots of overlapping layers on ICs.  Another was a program which intersected
+arbitrary closed polygons with each other.  This was an application program
+written in Calma's GPL which was used to calculate the capacitance between
+layers of a chip, by finding the areas of all the overlaps.  Both of these
+algorithms needed to use the half-open idea to take care of the corner cases.
+
+I left Calma in 1976, too inexperienced to realize what a singular place it
+had been.  After the ownership changed, most everyone scattered to the four
+corners of the globe.  Later, I actually had a contract job working for
+Cal & Irma Hefte, the founders of Calma.  Cal passed away some years ago--
+he seemed to me to be a lot like Willy Loman in "Death of a Salesman".
+He told me "people are the most complicated & interesting things in the
+world".  Mrs. Hefte and her daughters have a flower shop on Blossom Hill Rd.
+A genuine Silicon Valley story!  (There's a lot more.)
+
+-------------------------------------------------------------------------------
+
+Quadrant Counting Polygon In/Out Testing, by Craig Kolb, Ken McElvain
+from: comp.graphics
+
+[After all that, I thought it was worth posting some real live code, but
+instead for a quadrant counting method that is almost the same as the point in
+polygon ray test.  The "infinite ray" test is really counting quadrants (in
+"An Intro to RT" I show how you can get the winding number using it), but does
+not bother to evaluate the exact quadrant unless need be.  For example, if
+both endpoints of an edge are in the +Y space, we have no need to evaluate
+whether we're in +X or -X.  -EAH]
+
+In article <1990Mar29.171010.28348@agate.berkeley.edu> raymond@sunkist.UUCP
+(Raymond Chen) writes:
+
+>Nobody yet has mentioned my favorite method for point-in-polygon
+>detection:  Using the winding number.
+
+[...]
+
+>/* Point in polygon detection.  Original author unknown.
+> * Except where noted, I have NOT edited the code in any way.
+> * I didn't even fix the misspellings.  (And no, I don't code
+> * in this style.)
+> */
+
+[...]
+
+>	return(quad);	/**rjc**/ /* for some reason, the original
+>				     author left out this crucial line! */
+>}
+>--
+>A remark:  The whichquad function is not perfect.  It doesn't handle
+>the boundary cases right (but as I said, that's only a problem
+>if the point lies on the polygon).
+
+(After a long-overdue search through my archives...)
+
+The code was posted to comp.graphics in February of '88 by Ken McElvain
+(decwrl!sci!kenm).  Regarding the typos and the boundary cases, Ken wrote:
+
+> I pulled this out of some other code and hopefully didn't break it in
+> doing so.  There is some ambiguity in this version as to whether a point
+> lying on the polygon is inside or out.  This can be fairly easily
+> detected though, so you can do what you want in that case.
+
+I once did a number of tests on Ken's winding number code and an implementation
+of the 'ray' algorithm, using a ray tracer (rayshade).  For the test scenes
+I rendered, I found that the winding number method was approximately 10% faster
+than the ray method.  Your mileage may vary.
+
+[It surprises me that this algorithm is ever faster:  the infinite ray
+solution is essentially the same idea as the quadrant idea, except that it
+avoids x compares when the signs of the y components are the same.  Maybe I'll
+hack rayshade & prove it someday...  -- EAH]
+
+From: kenm@sci.UUCP (Ken McElvain)
+Organization: Silicon Compilers Systems Corp. San Jose, Ca
+
+In article <5305@spool.cs.wisc.edu>, planting@speedy.cs.wisc.edu (W. Harry Plantinga) writes:
+> In article <7626@pur-ee.UUCP> beatyr@pur-ee.UUCP (Robert Beaty) writes:
+> >In article <20533@amdcad.AMD.COM> msprick@amdcad.UUCP (Rick Dorris) writes:
+> >>In article <971@ut-emx.UUCP> jezebel@ut-emx.UUCP (Jim @ MAC) writes:
+> >>>Have a nice one here:
+> >>>Have a boundary defined on the screen. Boundary is composed of points
+> >>>joined by lines... Now some random points are generated and I want to check
+> >>>if a given point is within or outside the existing boundary.. Any algorithm for
+> >> <rick suggests the infinite ray/intersection counting algorithm>
+> >
+> >I have seen this type of algorithm before and the one I thought up
+> >in an afternoon is FAR superior and vastly simpler to code up.
+> >
+> ><robert beaty suggests an algorithm that measures sums the angles of
+> >the lines connecting the points and the test point>
+>
+> Haven't I seen this discussion of point-in-polygon algorithms about 15
+> times before? :-)
+>
+> Robert, your algorithm is simpler only in the kind of problems it
+> handles.  It will only work for convex polygons, whereas the other
+> works for any polygons.  It's not even much simpler; measuring angles
+> and determining whether line segments intersect are of comparable
+> difficulty.
+>
+> Maybe you should have said that although your algorithm is far
+> inferior, it's not any easier to code?
+
+
+Robert's suggestion is a good one.  The sum of the angles about the
+test point is known as the winding number.  For non intersecting
+polygons if the winding number is non-zero then the test point is
+inside the polygon.  It works just fine for convex and concave
+polygon's.  Intersecting polygon's give reasonable results too.
+A figure 8  will give a negative winding number for a test point
+in one of the loops and a positive winding number for the other loop,
+with all points outside having a winding number of 0.  Other advantages
+of the winding number calculation are that it does not suffer from
+the confusion of the infinite ray algorithm when the ray crosses a vertex
+or is colinear with an edge.
+
+Here is my version of a point in poly routine using a quadrant
+granularity winding number.  The basic idea is to total the angle
+changes for a wiper arm with its origin at the point and whos end
+follows the polygon points.  If the angle change is 0 then you are
+outside, otherwise you are in some sense inside.  It is not necessary to
+compute exact angles, resolution to a quadrant is sufficient, greatly
+simplifying the calculations.
+
+I pulled this out of some other code and hopefully didn't break it in
+doing so.  There is some ambiguity in this version as to whether a point
+lying on the polygon is inside or out.  This can be fairly easily
+detected though, so you can do what you want in that case.
+
+
+--------
+/*
+ * Quadrants:
+ *    1 | 0
+ *    -----
+ *    2 | 3
+ */
+
+typedef struct  {
+	int x,y;
+} point;
+
+pointinpoly(pt,cnt,polypts)
+point pt;       /* point to check */
+int cnt;	/* number of points in poly */
+point *polypts; /* array of points, */
+		/* last edge from polypts[cnt-1] to polypts[0] */
+{
+	int oldquad,newquad;
+	point thispt,lastpt;
+	int a,b;
+	int wind;       /* current winding number */
+
+	wind = 0;
+	lastpt = polypts[cnt-1];
+	oldquad = whichquad(lastpt,pt); /* get starting angle */
+	for(i=0;i<cnt;i++) { /* for each point in the polygon */
+		thispt = polypts[i];
+		newquad = whichquad(thispt,pt);
+		if(oldquad!=newquad) { /* adjust wind */
+			/*
+			 * use mod 4 comparisons to see if we have
+			 * advanced or backed up one quadrant
+			 */
+			if(((oldquad+1)&3)==newquad) wind++;
+			else if((((newquad+1)&3)==oldquad) wind--;
+			else {
+				/*
+				 * upper left to lower right, or
+				 * upper right to lower left. Determine
+				 * direction of winding  by intersection
+				 *  with x==0.
+				 */
+				a = lastpt.y - thispt.y;
+				a *= (pt.x - lastpt.x);
+				b = lastpt.x - thispt.x;
+				a += lastpt.y * b;
+				b *= pt.y;
+
+				if(a > b) wind += 2;
+				else wind -= 2;
+			}
+		}
+		lastpt = thispt;
+	}
+	return(wind); /* non zero means point in poly */
+}
+
+/*
+ * Figure out which quadrant pt is in with respect to orig
+ */
+int whichquad(pt,orig)
+point pt;
+point orig;
+{
+	if(pt.x < orig.x) {
+		if(pt.y < orig.y) quad = 2;
+		else quad = 1;
+	} else {
+		if(pt.y < orig.y) quad = 3;
+		else quad = 0;
+	}
+	return ( quad ) ;	/* [I added the fix - EAH] */
+}
+
+
+Ken McElvain
+decwrl!sci!kenm
+
+-------------------------------------------------------------------------------
+
+Computer Graphics Journals, by Juhana Kouhia (jk87377@tut.fi)
+
+Here is a list, not as good as it could be.  I would like to see a short
+descriptions about each journals on it.  I would like to see more information
+about geometry related journals or journals that covers this newsgroup
+subjects.  End of this list has list of journals, which was suggested to me,
+but I didn't find enough information about them or I was too lazy to find
+anything.  If somebody has suggestions what to do with them, please let me
+know.
+
+Additions, corrections, etc. are welcome to the list.  Thank you all who
+helped me.
+
+
+Computer Graphics, Geometry, Image Processing Journals
+======================================================
+
+ACM Transactions On Graphics
+----------------------------
+   -Quarterly
+   -Available from:
+	Association For Computing Machinery
+	11 West 42 Street
+	New York, NY 10036
+	USA
+
+Computer Aided Design
+---------------------
+   -10 issues / year
+   -Available from:
+	Butterworth Scientific Ltd.
+	88 Kingsway
+	London WC2 6AB
+	England
+
+Computer Graphics
+-----------------
+   -Includes SIGGRAPH conference proceeding
+   -Includes SIGGRAPH panel proceeding
+   -Available from:
+	Association For Computing Machinery
+	11 West 42 Street
+	New York, NY 10036
+	USA
+   -Also available from:
+	Academic Press
+
+Computer Graphics Forum
+-----------------------
+   -Journal of the European Association of Computer Graphics
+    (EuroGraphics)
+   -Available from:
+	Elsevier Science Publishers B.V.
+	Journals Department
+	P.O. Box 211
+	1000 AE Amsterdam
+	The Netherlands
+
+Computer Graphics World
+-----------------------
+   -Professional graphical application and industrial use
+   -Monthly
+   -Available from:
+	PennWell Publishing Company
+	119 Russell Street
+	P.O. Box 457
+	Littleton, Massachusetts 01460-0457
+	USA
+
+Computer Images International
+-----------------------------
+   -Professional graphical application and industrial use
+   -Monthly
+   -Available from:
+	P.O. Box 109
+	Maclaren House
+	Scarbrook Road
+	Croydon CR9 1QH
+	England
+	Phone: 01-688 7788
+	Telex: 946665
+	Fax:   01-681 1672
+
+Computers & Graphics
+--------------------
+   -Available from:
+	Oxword Books (GB)
+
+Computer Vision, Graphics and Image Processing
+----------------------------------------------
+   -Available from:
+	Academic Press
+---> [split 1991]
+
+Computer Vision, Graphics and Image Processing:
+ Graphical Models and Image Processing
+-----------------------------------------------
+   -Available from:
+	Academic Press
+
+Computer Vision, Graphics and Image Processing:
+ Image Understanding
+-----------------------------------------------
+   -Available from:
+	Academic Press
+
+Graphics Interface
+------------------
+   -Proceedings of Canadian computer graphics convention
+   -Available from in Canada:
+	Canadian Information Processing Society
+	243 College Street, 5th Floor
+	Toronto, Ontario
+	M5T 2Y1
+	(416)-593-4040
+   -Available from in USA:
+	Morgan Kaufmann Publishers
+	Order Fulfillment Center
+	PO Box 50490
+	Palo Alto, CA 94303
+	USA
+	(415)-965-4081
+
+IEEE Computer Graphics & Applications
+-------------------------------------
+   -Monthly
+   -Available from:
+	IEEE Computer Society
+	Circulation Department
+	P.O. Box 3014
+	Los Alamitos, CA 90720-9804
+	USA
+
+Image and Vision Computing
+--------------------------
+   -Image analysis
+   -Available from:
+	Butterworth Scientific Ltd.
+	88 Kingsway
+	London WC2 6AB
+	England
+
+Pixel
+-----
+   -Available from:
+	Pixel Communications, Inc.
+	245 Henry St., Suite 2-G
+	Brooklyn, NY 11201
+	USA
+	Phone: (718) 624-3386
+
+Signal Processing: Image Communication
+--------------------------------------
+   -A publication of the European Association for Signal Processing
+    (EURASIP)
+	EURASIP
+	P.O. Box 134
+	CH-1000 Lausanne 13
+	Switzerland
+   -Also available from:
+	Elsevier Science Publishers B.V.
+	Journals Department
+	P.O. Box 211
+	1000 AE Amsterdam
+	The Netherlands
+
+Visual Computer
+---------------
+   -Available from:
+	Springer-Verlag
+	Heidelberger Platz 3
+	D-1000 Berlin 33
+	Germany
+   -Also available from:
+	Springer-Verlag New York, Inc.
+	Journal Fulfillment Services, Dept. J
+	P.O. Box 2485
+	Secaucus, N.J. 07094
+	USA
+
+******************************************************************************
+
+Miscellaneous Journals
+======================
+
+Leonardo
+--------
+   -Journal of the International Society for the Arts, Sciences &
+    Technology
+   -SIGGRAPH art show catalogue
+   -Available from:
+	Pergamon
+
+******************************************************************************
+
+What?
+=====
+
+IEEE Trans. on Pattern Analysis and Machine Intelligence,
+
+IEEE Trans. on Systems, Man, and Cybernetics
+
+Journal of the Discrete and Computational Geometry
+
+Machine Vision and Applications
+
+Pattern Recognition
+   -Available from:
+	Pergamon
+
+Pattern Recognition Letters
+   -Available from:
+	North-Holland
+
+Symposium on Computational Geometry
+
+Symposium on Foundation of CS
+   -One or two papers a year on geometry
+
+Symposium on Theory of Computing
+
+-------------------------------------------------------------------------------
+END OF RTNEWS

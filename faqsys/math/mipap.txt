@@ -1,0 +1,448 @@
+(Please note that the following paper is only a sample and does not fully
+descibe the algorithmic content of Texture Potential Mapping. If you would
+like to know more about how the algorithm works, please contact me at
+psh@doc.ntu.ac.uk)
+
+                         Texture Potential Mapping
+
+---------------------------------------------------------------------------
+
+Abstract
+
+This paper presents a new method of overcoming aliasing problems which
+result from point to point texture mapping. The algorithm deals with
+transformed pixels in texture space by first building a "potential" array
+of the original texture. An average texture intensity is then obtained by
+traversing around the edges of the transformed pixel and applying a
+"potential map" across it's boundaries. The paper compares the results of
+"potential mapping" with other well established techniques and provides an
+evaluation of the relative computational costs of the new method.
+
+Introduction
+
+Early real-time graphics systems, such as flight simulators, gave us an
+insight into the practicality of interacting with 3-D environments. Their
+main criticism however was their lack of realism due to the extreme
+smoothness of surfaces. Not only were the scenes visually uninteresting,
+but it was found that pilots training on flight simulators were unable to
+make use of visual motion cues when "flying" at low altitude. However, as
+greater processing power became more readily available, methods were
+devised try to give a better representation of surfaces, thereby adding
+richness to the scene and linking more closely to their "real-life"
+counterparts. The most startling difference can be observed by overlaying a
+predetermined texture to each surface (see figure(1a) and figure (1b)).
+Thus, the demand for graphical realism in modern real-time graphics systems
+has meant that texture mapping has become a vital component in the graphics
+rendering pipeline. However, the process of accurately mapping texture
+values to the display requires a significant amount of computing power.
+
+---------------------------------------------------------------------------
+Figure 1. Click Here to view
+---------------------------------------------------------------------------
+
+Normal real-time image rendering methods require that instead of mapping
+the texture values on a polygon in 3-D space to the screen, screen pixels
+are effectively mapped onto a region of the texture. This means that whilst
+image results would be fine when transformed screen pixels are of the same
+order of size, shape and orientation as the stored texture pixels, when the
+size of the transformed pixels in texture space vary, aliasing can readily
+occur causing the resulting texture of the image to swim and scintilate.
+Therefore a method of finding the average texture value within the pixels
+needs to be adopted. Various techniques of dealing with aliasing in
+real-time systems have been established over the years. All of them try to
+minimize it's effects by using various degrees of approximation. These
+methods however, avoid the problem of directly dealing with general
+quadrilaterals in texture space, and will fail to produce pleasing results
+at certain viewing distances and orientations for a particular texture due
+blurring or aliasing effects.
+
+A new technique is therefore desirable for improving the quality of texture
+mapping results in high-performance real-time graphics architectures
+without requiring excessive computational power.
+
+This paper describes a new type of texture mapping algorithm called
+"Texture Potential" mapping that is optimised for the constraints of
+hardware systems and can easily be embedded into a single or
+multi-processor graphics pipeline.
+---------------------------------------------------------------------------
+
+The Mapping Process
+
+Since the basis of adding planar texture patterns to smooth surfaces is
+mapping, the texture problem reduces to the specification of a
+transformation from one co-ordinate system to another. The most commonly
+used method is to scan in screen space (x,y) and find the transformation
+that maps to texture space u(x,y) and v(x,y). Thus, the amount of work done
+during a point to point transformation for a polygon in object space is
+directly proportional to the number of pixels the polygon covers in screen
+space
+
+This can be summarized as:
+
+          for y
+
+               for x
+
+               compute u(x,y) and v(x,y)
+
+               copy TEXTURE[u,v] to SCREEN[x,y]
+
+The mapping from screen space to texture space can be deduced by applying a
+perspective matrix transformation expressed in homogeneous form:
+
+[xw yw w]=[u v 1] A  D  G
+
+                B  E  H
+
+                C  F  I
+
+Hence the values of u and v are evaluated by finding the inverse of this
+matrix:
+
+[uq vq q] = [x y 1] EI-FH  FG-DI  DH-EG =  a  d  g
+
+                  CH-BI  AI-CG  BG-AH    b  e  h
+
+                  BF-CE  CD-AF  AE-BD    c  f  i
+
+Resulting in:
+
+u = (ax + by + c) / (gh + hy + I) and v = (dx + ey + f) / (gh + hy + I)
+
+Since the formulae for u and v are quotients of linear expressions, they
+can be computed incrementally when using scan-line methods for
+rasterization. This further reduces the computational cost to 3 adds and
+two divides per screen pixel.
+
+Aliasing
+
+If the method described above is used on a point to point basis, i.e. the
+centres of each of the screen pixels are mapped to single texture values,
+then large chunks of the original texture can easily become left out. This
+is analogous to the classic "jaggies" aliasing effect, where edges within a
+pixel are not sufficiently sampled (i.e. sampling takes place below the
+Nyquist rate). Texture aliasing arising from low sampling rates however,
+can often deteriorate picture quality more seriously than "jaggies" do
+since more pixels are affected. Furthermore, in a real time system,
+textures will tend to map at different orientations for each frame at a
+rate of 30 to 60 frames per second. The resulting texture may well exhibit
+Moiré fringes and will appear to swim and scintillate [1].
+
+Such a problem can be dealt with effectively by making use of a procedural
+texture [2]. With a procedural texture it may be possible to evaluate the
+average texture within a pixel analytically - but there are few choices of
+"texture function" which allow this, the major option being patterns built
+from superpositions of sinusoids. With such a system, exact sampling of
+texture is possible, resulting in high quality anti-aliased images. Some
+early flight simulator texture mapping systems utilised this approach. The
+drawback of this method is that the range of possible patterns is severely
+limited and hence it is not possible to reproduce the majority of textures
+found in the real world. Figure 2(a) shows the results of aliasing using of
+point-to-point mapping. When compared with the outcome of mapping
+procedural texture analytically, figure 2(b), we see that anti-aliasing is
+clearly an essential part of the texture mapping process.
+
+Aliasing can also be reduced by taking a large number of texture samples
+within a pixel and applying a filter in texture space[3]. Figure (2c) makes
+use of 16 samples within each pixel evaluated incrementally and figure(2d)
+uses 16 random samples for each pixel. Note that the latter method produces
+better results but still exhibits spurious areas of texture.
+The method of applying more samples drastically increases the processing
+time required to render each surface in a 3-D scene. More subtle techniques
+are therefore required that retain as much of the original texture as
+possible whilst keeping the sampling rate low.
+
+---------------------------------------------------------------------------
+Figure 2a. Click Here to view
+Figure 2(a). The procedural texture is mapped analytically, producing
+excellent anti-aliased results
+---------------------------------------------------------------------------
+
+---------------------------------------------------------------------------
+Figure 2b. Click Here to view
+Figure 2(b). The same texture is mapped on a point to point basis. Extreme
+aliasing effects and fringing are exhibited as the texture becomes
+compressed with distance.
+---------------------------------------------------------------------------
+
+---------------------------------------------------------------------------
+Figure 2c. Click Here to view
+Figure 2(c). Aliasing effects are reduced by taking 16 samples at the same
+points within each pixel.
+---------------------------------------------------------------------------
+
+---------------------------------------------------------------------------
+Figure 2d. Click Here to view
+Figure 2(d). Effects of aliasing reduce further if the samples are taken
+randomly within each pixel.
+---------------------------------------------------------------------------
+
+Established Methods of Anti-aliasing Texture In Real Time
+
+MIP Mapping
+
+Williams [4] deals with the problem of texture aliasing by making use of
+several images of the texture at various resolutions, each of which are
+derived from the original by averaging down to lower resolutions. When a
+transformed screen pixel is covered by a collection of texture pixels, the
+MIP map pixels corresponding to this collection most closely are used to
+give a filtered value. Since only a limited number of the tables may be
+stored, values from two adjacent tables must be blended in order to deal
+with the difference of the transition of one resolution to another across a
+surface.
+
+MIP mapping has the advantage of speed since only two bilinear
+interpolations are required to get a value from each adjacent table plus an
+additional interpolation between the two values. However this is generally
+at the expense of accuracy. For example, a perspective projection may well
+require that the texture be compressed in only one direction. This will
+tend to result in obvious blurring of the original texture as the MIP map
+goes down to lower resolutions at greater viewing distances. Figure (3)
+illustrates the effect of blurring using a MIP map.
+
+---------------------------------------------------------------------------
+Figure 3. Click Here to view
+Figure 3. Effects of aliasing are not easily observable here, but massive
+amounts of blurring occur as the texture compresses with distance to the
+point where the texture is unobservable.
+---------------------------------------------------------------------------
+
+Summed Area Table
+
+Crow [5] devised a scheme in which a single table of entries calculated
+from the original texture is used by which a sum of texture values lying
+within a given rectangle can be easily determined. Thus if we place a
+bounding rectangle around a transformed
+
+pixel in texture space, an average texture value can be determined by
+evaluating the sum of texture values within it using the summed area table
+and then dividing this value by its area. The idea of making use of such a
+table is neat in that it does not require us to actually look at each of
+the texture values within the rectangle at render time.
+
+This method has an advantage over MIP mapping in that a virtually
+continuous range of texture densities can be obtained and thus, better
+results can be expected. The extra processing required to perform the
+Summed Area Table method comes from the fact that now four bilinear
+interpolations are required to map each of the corners of the screen pixel
+to texture space in order to obtain a bounding rectangle.
+
+To see where the Summed Area method becomes significantly less accurate,
+consider a screen pixel that has undergone a perspective bilinear
+transformation to texture space.
+
+See figure (4).
+
+It can be seen that a bounding rectangle will not suffice when the texture
+becomes compressed and the surface is viewed at rotations about more than
+one axis with reference to the surface. These cases therefore need to be
+taken into consideration since we will observe excessive blurring in these
+areas of the resultant texture. See figure (5b)
+
+---------------------------------------------------------------------------
+Figure 5a. Click Here to view
+Figure 5a. Effects of blurring are removed with the summed area table - but
+this is a favourable orientation
+---------------------------------------------------------------------------
+
+---------------------------------------------------------------------------
+Figure 5b. Click Here to view
+Figure 5b. Effects of , blurring and fringing are evident here with the
+summed area method. This is due to the orientation of the texture and the
+type of texture used
+---------------------------------------------------------------------------
+
+Adaptive Precision Method
+
+Glassner [6] extended the Summed Area method by iteratively trimming away
+the excess areas of the bounding rectangle. This requires detecting the
+geometry of the transformed screen pixel relative to its bounding box and
+then systematically subdividing the excess areas into either triangles or
+rectangles which can then be deducted from the original sum. See figure
+(6).
+
+Although the method minimises the error produced by the Summed Area method,
+it is found that producing an estimate on the number of subdivisions that
+need to be made for good results is difficult to produce accurately leading
+to unpredictable results. Furthermore, the classification of general
+quadrilaterals tends to make the overall process algorithmically
+burdensome. Such an algorithm would be difficult to optimise or implement
+in hardware. A particular problem arises from the large number of accesses
+which may need to be made to the table for each pixel. In a highly
+optimised system these accesses will be the dominant factor in dertermining
+system performance.
+
+Other Methods of Anti-aliasing Texture
+
+Other well established methods have less application in real-time systems
+since they tend work in texture space (such as Feibush-Levoy-Cook [7]) .
+This means that a great deal of transformations from texture space to
+screen space may well occur for a single pixel.
+
+New Method: Potential Mapping
+
+Having examined the range of texture anti-aliasing methods, it becomes
+evident that there is a bias either in favour of efficiency, leading to
+spurious areas of the resulting texture, or in favour of texture integrity,
+where computation is greatly increased and hardware implementation becomes
+impractical. It would therefore seem appropriate to balance the scales of
+efficiency and integrity by developing a new method that takes all of the
+following factors into account :
+
+             + A simple algorithm.
+
+             + Ability to cope with general texture patterns at any
+               orientation.
+
+             + Speed.
+
+             + Ability to implement in hardware.
+
+             + Minimal Aliasing
+
+             + Minimal Blurring
+
+If we assume a screen pixel to be square then its resultant image after
+rotation and a perspective transformation of it's corner points will be a
+general quadrilateral. Ideally we would like a method that deals with the
+quadrilateral directly without approximating it to any simpler shape.
+Furthermore, as with Crow, we would like to avoid having to look at each
+and every texture pixel that lies within the transformed pixel when
+determining the average texture value (i.e. when finding the texture sum
+and the area of the quadrilateral).
+
+Consider Gauss' theorem in Physics, in which the charge contained within a
+volume can be found by traversing only the surface of that volume. If this
+is reduced by one dimension then, by analogy, the texture contained within
+a transformed pixel can be found by traversing only its boundary. This is
+essentially the principle behind Potential mapping .
+
+Results of the potential mapping algorithm show that the effects of
+blurring and aliasing are significantly reduced when compared with MIP
+mapping (figures (3) and (9a) respectively) and when compared with the
+summed area method (figures (5) and (9b) respectively). The residual Moire
+fringing which can be seen is caused by the top hat style filter which has
+been used. To eliminate this fringing it would be necessary to use a filter
+such as a Gaussian which has a more gradual fall off at the edges.
+Unfortunately this is difficult to achieve without resorting to a brute
+force integration technique involving all the texels which lie within and
+around the projected pixel edges.
+
+Since the texture patterns used in these images represent a severe test of
+a texture anti-aliasing system it is likely that the kind of patterns use
+more commonly in practical applications will not display the effect so
+strongly. If the residual fringing is a problem it can easily be eliminated
+at a cost of slight blurring by passing the final image through a filter
+before display. (In practice an adjustment of the monitor focus can achieve
+the required effect at zero cost).
+
+---------------------------------------------------------------------------
+Figure 9a. Click Here to view
+Figure 9a Using the Potential Mapping Technique the excessive blurring
+noticed in figure 3 is removed without introducing significant aliasing.
+---------------------------------------------------------------------------
+
+---------------------------------------------------------------------------
+Figure 9b. Click Here to view
+Figure 9b. The effects of blur, aliasing and fringing are greatly reduced
+when using potential mapping even with the unfavourable texture
+orientation, as used in Figure 5b.
+---------------------------------------------------------------------------
+
+Implementation and Performance Considerations
+
+Unlike methods such as the MIP Map or summed area table, the time taken per
+pixel by our algorithm will vary according to the scale and orientation of
+the texture. Consequently we cannot specify a fixed performance level for
+this algorithm.
+
+We have included in our test programs extra instructions to count the
+amount of time being taken by each stage in the process. For a full screen
+image of texture at a shallow angle, as shown in the illustrations above,
+the results show that the inverse perspective transformation takes 12% of
+the time, set up operations take 40% and the remaining 48% is spent tracing
+around the edge of the pixels. At a less optimal orientation of the texture
+map (when the projected pixel is very long in the non-integrated direction)
+the time spent tracing increases by 50%. If speed is more critical than
+memory size then this problem can be overcome by creating an alternative
+texture potential which is summed in the opposite direction. Since the time
+taken to perform the inverse perspective transformation will be the same as
+for the other algorithms and the set up operations that need to be done for
+each pixel are likely to be comparable to those required by the summed area
+table method, these proportions give an approximate guide to relative
+performance.
+
+This suggests a rough factor of two degradation in speed compared to the
+summed area table and between two and four compared to MIP mapping,
+depending on how many samples and scales the MIP map uses. When the texture
+system is being optimally used, most of the time the texels will be of
+similar scale to the screen pixels. In these circumstances the number of
+entries which need to be summed for each pixel edge will normally be only
+one or two. In consequence the time taken to trace around the pixels will
+disappear (the time taken for the first point on each edge has been
+included in the set up time) and our algorithm will be only marginally
+slower than the summed area table or MIP Map.
+
+On a single processor using current technology, none of the algorithms is
+capable of real time performance so interactive systems will require
+multiple processors or special hardware. Our algorithm is well suited to
+parallel processing using a pipeline architecture because it easily
+decomposes into the stages of transformation, pixel edge set up, pixel edge
+tracing and the summation of the final results. A subdivision work based on
+giving each processor a separate area of the screen can also be done quite
+easily because the only data which needs to be communicated between
+processors is the sums over pixel edges and they only need to be passed
+between nearest neighbours. Multiple copies of the potential map would be
+needed to avoid access conflicts between the processors.
+
+All these estimates assume that all instructions other than divide and
+reciprocal take a single cycle and no allowance has been made for cache
+misses. Such assumptions correlate well with the use of a modern DSP style
+processor such as the TMS320C40 with all external memory being single cycle
+SRAM. In many systems the external memory is much slower than the cache and
+instructions which do not access it run very much faster than those that
+do. In such a system the number of external memory accesses provides an
+alternative performance measure. It is likely that the only external
+accesses in any of the algorithms will be the reads from the texture map or
+potential. On this measure our experiments have shown that Potential
+Mapping requires a minimum of two and an average of seven to ten accesses
+per pixel as against four for the summed area table and two to eight for
+MIP mapping (depending on the version used). Simply averaging all the
+texels within a pixel would have required between twenty and thirty
+accesses on average in the cases we tested.
+
+In a hardware implementation these memory access requirements are the only
+critical factor because almost all the other operations are simple logical
+or arithmetic ones which can be pipelined and parallelized into a single
+cycle architecture without using excessive numbers of gates. We can deduce
+that our method is two to four times slower than the summed area table or
+MIP map techniques, both of which have some deficiency in anti-aliasing
+performance. It is about two or three times faster than the brute force
+approach, which produces similar quality output. Compared to multiple
+random samples it produces better output at slightly lower cost.
+
+Conclusions
+
+As remarked above, the justification for the Potential Mapping method is
+that it should be faster than existing high quality methods and produce
+better quality results than existing fast methods. In the preceding section
+we have shown that the theoretical performance of our technique is a useful
+improvement over the simple approach of averaging all texels within a
+pixel. The illustrations demonstrate that it also avoids the problem areas
+which affect faster techniques.
+
+Whilst the new method is somewhat slower than those in current use it is
+interesting to note that this speed differential is outweighed by the
+technological advances of recent years. Consequently a potential mapping
+system implemented with current technology would have a better
+price/performance ratio than would have been possible using MIP mapping or
+the summed area table at the time at which they were first proposed.
+
+Potential mapping is therefore worthy of serious consideration as a texture
+anti-aliasing system for future image generation systems.
+
+---------------------------------------------------------------------------
+
+                         Texture Potential Mapping
+
+

@@ -1,0 +1,52 @@
+From - Tue Oct 28 18:47:10 1997
+Path: ifi.uio.no!news-feed.ifi.uio.no!uninett.no!news.algonet.se!news.maxwell.syr.edu!news-peer.sprintlink.net!news-pull.sprintlink.net!news-in-east.sprintlink.net!news.sprintlink.net!Sprint!207.241.0.194!news.wwa.com!not-for-mail
+From: **** CHIRANJEEVI **** <ram@niu.edu>
+Newsgroups: comp.sys.ibm.pc.demos,comp.graphics.algorithms,comp.graphics.animation,alt.3d.studio
+Subject: Re: 3ds .VUE : How does it work ?? (URGENT!!)
+Date: Tue, 28 Oct 1997 19:02:56 -0600
+Organization: Northern Illinois University
+Lines: 34
+Message-ID: <34568B40.4770@niu.edu>
+References: <634csn$2m7@tempo.univ-lyon1.fr>
+NNTP-Posting-Host: digi3-013.wwa.com
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-Mailer: Mozilla 3.01 (Win95; I)
+To: pdeltour@dpm.univ-lyon1.fr
+Xref: ifi.uio.no comp.sys.ibm.pc.demos:52731 comp.graphics.algorithms:59841 comp.graphics.animation:54312 alt.3d.studio:40220
+
+Pierre Deltour wrote:
+> "transform : n1 n2 n3 n4 n5 n6 n7 n8 n9 n10 n11 n12 "
+> 
+> The 9 first numbers are the transformation matrix in the center of mass reference frame.
+> There seems that y and z axe are "inverted" ( in my opinion )
+> 
+> So the transformation matrix is
+> 
+> [x_world]   [ n1  n3  n2  ]  [ x_asc-x_Com ]     [ n10 ]
+> [y_world] = [ n7  n9  n8  ]  [ y_asc-y_Com ]  +  [ n11 ]
+> [z-world]   [ n4  n6  n5  ]  [ z_asc-z_Com ]     [ n12 ]
+
+with these values, n1-n12, the matrix should be something like this...
+ _                _
+| n1   n2   n3   0 |
+| n4   n5   n6   0 |
+| n7   n8   n9   0 |
+| n10  n11  n12  1 |
+ -                - 
+So if you say   Xs = x_asc - x_com, Ys = y_asc - y_com and so on...
+The matrix you multiply by will be
+[ Xs   Ys    Zs   1 ].
+
+Thus,
+
+[x_world] = Xs * n1 + Ys * n4 + Zs * n7 + n10;
+[y_world] = Xs * n2 + Ys * n5 + Zs * n8 + n11;
+[z_world] = Xs * n3 + Ys * n6 + Zs * n9 + n12;
+
+This is the basic idea, I don't know how 3ds arranges the data for its
+matrices, but you should get the idea, ( and I assume you know the file
+format )
+
+- C.P.I. / ASMiNC

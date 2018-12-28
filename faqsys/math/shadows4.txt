@@ -1,0 +1,187 @@
+Fast Multi-Pass Exact Screen-Space Shadows using an Accumulation
+Buffer, a Stencil and a Z-Buffer
+================================================================
+Sebastien Loisel, zed@scylla.math.mcgill.ca
+
+This algorithm was first presented in a paper in 1991. I'll try to figure
+out the precise reference in the near future.
+
+I attempt to describe a fast shadow algorithm for point light sources using
+modern graphics acceleration hardware. The down side of this algorithm is
+that it is multipass, with 1 base pass and two passes per light source. It
+is also hard to incorporate this with A-buffering methods, forcing one to
+actually generate full blown high resolution pictures and filtering down
+to a lower resolution for anti-aliasing. The up side is that this algorithm
+is linear time in the number of polygons in the scene (which favorably
+compares with shadow volume methods, usually) and that it does not suffer from
+aliasing artifacts that are seen in shadow maps in some extreme cases. Each
+pass of the algorithm executes using O(1) space, namely some minimal space
+for execution and a frame buffer. That is, the algorithm does not need to
+store all the polygons thus we are not limited by memory space.
+
+All these operations can be performed with a solid implementation of
+an OpenGL machine. The algorithm does not handle transparent surfaces or
+light-bending lenses and mirrors.
+
+Overview
+========
+
+Everything is always drawn from the point of view of the eye (as opposed
+to the shadow map algorithms). The first pass fills in the Z-buffer with
+the z value of the closest thing in all the pixels, the RGB values
+are also generated assuming that the object falls inside the shadow
+of some other object (eg, only the ambient term is used). In the second pass,
+each triangle generates a (truncated) shadow polyhedron.
+We 'draw' each face of the shadow polyhedra and count how many of those
+shadow faces fall behind the z value for each pixel. If we get an even value,
+the pixel is in the light, if we get an odd value, the pixel is in the 
+shade. In the third pass, we draw the picture again with all 
+lighting options turned on (diffuse, specular, etc...) except ambient
+light, which is turned off for it has already been computed but only draw to
+pixels which have been found not to be in the shadow volumes. The second and
+third passes are repeated once for each light source and the results for all
+light sources can be accumulated with the picture from the first pass. The
+resulting picture will have correct screen-space shadows.
+
+First Pass
+==========
+
+In the first pass, the frame buffer (RGB and Z values) are cleared. Then,
+the scene is drawn normally with no light except ambient light.
+
+Second Pass
+===========
+
+For this step we need a stencil buffer. We first clear the stencil buffer. We
+have no need whatsoever of the RGB values generated in the first step, and
+we need read only access to the z-buffer generated in the first step.
+
+The first thing to do is to clear the stencil buffer to, say, all ones.
+
+We now need to decide on a L=(x,y,z) light position. Then, for each
+triangle given by three vertices P1, P2, P3, we generate the truncated shadow
+pyramid (NOT infinite). Let A be P1-L, B be P2-L and C be P3-L and normalize
+A,B and C. Then, for some constant k, you get the points Q1=L+kA, Q2=L+kB,
+Q3=L+kC. The shadow frustrum is then given by the 5 following sides:
+
+1- the triangle P1P2P3
+2- the quadrilateral Q1Q2P2P1
+3- the quadrilateral Q1Q3P3P1
+4- the quadrilateral Q2Q3P3P2
+5- the triangle Q1Q2Q3 (the 'cap')
+
+Triangle 5 (Q1Q2Q3) is there simply to 'cap' the otherwise infinite shadow
+volume. We need our shadow volumes to be finite to allow us to check for
+containment in the shadow volume later on. Unfortunately, for any choice
+of k it is possible to cook up an example in the unit cube (or sphere or
+any compact set) where the shadow frustrum above misses some parts of the
+unit cube that it should not miss. This means that some stuff may be mistakenly
+lit. A fix is to use an heptahedron instead of the pentahedron above (a
+heptahedron is a polyhedron with 7 faces). Let V be A+B+C, normalized. Then let
+R be L+k*V, then the heptahedron is defined by the following faces:
+
+1' through 4' are the same as 1 through 4 above.
+5'- Triangle Q1Q2R
+6'- Triangle Q1Q3R
+7'- Triangle Q2Q3R
+
+5' through 7' are now the cap. Now one can argue that the shadow volume
+delimited by 1' through 7' restricted to the sphere of radius k*sqrt(3)/3
+is correct I think (I need to check this). This may be more reassuring than
+the previous case but on the other hand it increases time spent performing
+computations. Furthermore, if the light source can be guaranteed to be some
+sane distance away from everything else, the pentahedral trick may be made
+to work by choosing a suitably large k.
+
+Note that if A+B+C is of zero norm then this triangle does not project a shadow
+for the light is in the plane of the triangle.
+
+So now we have the shadow volume faces. We need to go through a rasterizing
+process. For each pixel, the Z check is performed. If the shadow polygon is
+found to lie behind the Z value computed in step 1, the stencil value of the
+pixel is negated (or some other sort of toggling operation). No other
+operations are performed, in particular, the Z values of the z-buffer are not
+updated. Note here that in a certain sense, we are doing a strange thing,
+all the work is being done when the Z test fails. Any Z test that passes is
+simply discarded.
+
+At this point, we can invoke the even/odd rule for checking whether a point
+is inside the shadow volume. For each pixel, we've effectively counted
+whether a ray coming in from infinity crosses the shadow volumes an even or
+odd number of times before it reaches the Z value stored in the Z buffer.
+If even, then the pixel is outside the shadow volume, if odd the pixel is
+inside the shadow volume. So if the stencil was cleared to 1 initially and
+we negate that for each shadow plane of interest, a 1 says that there is
+no shadow and a -1 says that there is a shadow.
+
+For numerical reasons, it is probably desirable to instruct the rasterizer
+to add a small epsilon to the Z values of the shadow volumes. This is because
+the frontmost faces will generate one of the faces for shadow volumes and
+both the shadow face and the 'real' face will have the same Z values for
+the pixels, plus or minus roundoff errors. The roundoff will make the face
+jump in and out of shadows in an apparently random fashion. Moving all the
+shadow volumes away a little (adding a small epsilon to their Z values) should
+settle this problem.
+
+This problem can also be eliminated completely with no numerical hack at
+the cost of a little extra complexity. In the first pass, each pixel is
+assigned an (even) primitive ID in the stencil. In the second pass, we toggle
+the low bit of the primitive ID in the pixel if and only if the shadow face
+is behind the Z value of the pixel as given by the Z buffer from the first
+pass AND the shadow face is not generated by the same primitive as one whose
+ID is in the stencil (modulo the lowest bit). In effect, this is the same
+algorithm excepted that a face is not affected by its own shadow volume.
+
+Third Pass
+==========
+
+In this pass, the Z buffer is cleared and the RGB buffer is saved away then
+cleared to zero. The scene is drawn with diffuse and specular highlights but
+with stenciling turned on. We only want to draw the parts of the picture
+which are lying in the light (continuing with the example where a 1 means
+in the light and a -1 means in the shadow, we want to draw only to pixels
+for which the stencil contains a 1). Once we are done, we accumulate the
+RGB values with the saved RGB values. If the hardware/API allows this,
+the RGB buffer need not be saved and cleared, RGB values can be accumulated
+as we go.
+
+This will yield the correct shadows we are interested in.
+
+Conclusion
+==========
+
+I have described a fast shadow rasterization method. There are some numerical
+glitches which complicate the algorithm but these can be done away with by
+a careful programmer. The only real limitation here is that we be able to
+easily find a k for step two which will work. Using the heptahedron variation,
+this can be easily done by finding the largest distance of a light to a
+vertex, which is linear in time as a function of the number of vertices. All
+other operations are linear in time as a function of the number of triangles
+(or vertices) or sublinear, so the overall performance of the algorithm for
+a single light is linear in time with the number of triangles in the scene.
+
+As we go to multiple lights, performance grows linearly with the number of
+lights. Therefore, the overall performance of the algorithm is O(n*m), where
+n is the number of triangles (or vertices) and m is the number of lights.
+Note that I am assuming that time to render a triangle is roughly constant.
+
+Unfortunately, no provisions are made for transparent surfaces et al. One
+can always draw the solid surfaces first with shadows and then transparent
+surfaces without shadows, hoping that the viewer will not notice this but
+a better solution should be hoped for. Unfortunately, it is noteworthy
+that transparent surfaces are very problematic for Z-buffering algorithms
+in general.
+
+The algorithm only requires one extra pass when compared to shadow maps.
+Indeed, shadow maps require 2 passes per light where as this algorithm requires
+two passes per light plus a set-up pass. We can thus hope that any performance
+difference between this and shadow maps will decrease as the number of lights
+increases. It will also have much less aliasing problems, which has
+proven to be an important issue in some applications (eg, visual
+simulation).
+
+The object-space shadow map algorithm has classically been hard to accelerate
+in hardware though it would make it easier to anti-aliase things without
+actually increasing the resolution of the picture we generate. It is also
+hard to control the number of fragments produced by object-space shadow
+volume algorithms.

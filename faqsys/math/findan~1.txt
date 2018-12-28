@@ -1,0 +1,63 @@
+Finding the intersection point between a line and a set
+
+----------------------------------------------------------------------------
+
+     [Image] A light ray is defined by a (starting) point Po, and a direction
+       D (both are 4-dimensionnal). The first thing is to use the depth t
+       from Po in the ray's direction as parameter. We are only interested
+       in points Q=(x,y,z,w) given by:
+
+         Q(t) = Po + t. D
+
+       The problem is now a root-finding one:
+
+         f(t) = Fc( Q(t) ) = 0
+
+       where Fc is our, complicated, map.
+
+       Taking as first guess t=0 (the eye), we must find, and sort,
+       the roots of f. There as many solutions:
+
+     [Image] If a distance estimator is available (Julia sets, especially),
+       one can use them the get close to the set. A distance estimator gives a
+       lower bond for the distance separating a point from the set,
+       if this point is outside the set, thus limiting the method.
+
+     [Image] One can use the Newton-Raphson scheme to
+     get close to the root. This has the advantage of using the (approximated)
+     Normal to the set, which is a quantity the ray-tracer needs for lighting
+     properties. A Newton step is defined by updating the current guess t to:
+
+         t' = t - f(t)/f'(t)
+
+     But here,
+
+       f'(t) = d/dt Fc( Q(t) ) = Grad Fc . d/dt Q(t)
+                = N(t) . D
+
+     This method converges quadratically, if it converges,
+     and most of the time to the nearest root ! This is a drawback.
+
+     [Image] The best (to me) method, is to use the good ol' bissection
+     method which is bound to success if a root has been bracketed
+     correctly. This is done in two steps:
+
+        [Image] First, choose a minimal step size dt, according to
+          which final precision one wants. Than for each guess t choose
+          the greater of both previous methods and dt. This ensure that
+          the iteration won't get stalled in the neighbourhood of a root, or
+          spend an eternity hovering over the set, making tiny steps, if the
+          ray is tangantial to the set, but outside it.
+
+        [Image] Once the set's surface has been crossed, polish the root.
+          But not that much ! Fractal's surface is really complicated, at all
+          scales, so one needs doing an averaging. Finding the root with a great
+          precision would result in a jaggy appearance. Better leave a 'natural'
+          unaccuracy on it to avoid this problem.
+
+        [Image] Then keep on going along the ray, to
+          check if roots, lying beyond the previous, still remain...
+
+----------------------------------------------------------------------------
+
+[Image]  [Image] [Image]   [mirror]

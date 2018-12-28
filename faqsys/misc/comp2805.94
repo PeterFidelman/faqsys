@@ -1,0 +1,2901 @@
+msdos-programmer-faq/faq
+Comp-os-msdos-programmer-archive-name: dos-faq
+Posting-frequency: monthly
+Last-modified: 28 May 1994
+
+Copyright (C) 1994  Stan Brown, Oak Road Systems.  All rights reserved.
+This article is not in the public domain, but it may be redistributed so
+long as this notice, the acknowledgments, and the information on
+obtaining the latest copy of this list are retained and no fee is
+charged.  The code fragments may be used freely; credit would be polite.
+
+    Special note:  Maintenance on this file is minimal because I have
+    limited time (and, lately, limited interest) in this area.  Someone
+    with a more active interest in DOS programming could do the net a
+    great service by taking over this list; send me email if interested.
+
+
+Subject:  Table of Contents
+
+section 0. Introduction to this article
+		001. What is this article? (rev: 19 Apr 1994)
+    002. Why is this article? (rev: 20 Mar 1994)
+    003. How can I search this article for a particular topic? (rev: 20
+         Mar 1994)
+    004. Who has contributed to this article?
+    005. Are the answers guaranteed correct and complete? (rev: 20 Mar
+         1994)
+section 1. General questions
+    101. Why won't my code work?
+    102. What is this newsgroup about? (rev: 11 Sep 1993)
+    103. Is comp.os.msdos.programmer just for C programmers? (rev: 20
+         Mar 1994)
+    104. What's the difference from comp.sys.ibm.pc.programmer?
+    105. Is comp.os.msdos.programmer available as a mailing list? (new:
+         2 Feb 1993)
+    106. What's this "netiquette"? (rev: 20 Mar 1994)
+    107. How can I learn more about Usenet? (new: 7 Aug 1993)
+    108. What other technical newsgroups should I know about? (rev: 6
+				 Apr 1994)
+section 2. Compile and link
+    201. What the heck is "DGROUP > 64K"? (rev: 18 Apr 1993)
+    202. How do I fix "automatic data segment exceeds 64K" or "stack
+         plus data exceed 64K"?
+    203. Will Borland C code and Microsoft C code link together? (rev:
+         15 Aug 1993)
+    204. Why did my program bomb at run time with "floating point
+         formats not linked" or "floating point not loaded"? (rev: 20
+         March 1994)
+    205. How can I change the stack size in Borland's C compilers? (rev:
+         24 March 1994)
+    206. What's the format of an .OBJ file? (rev: 24 Mar 1994)
+    207. What's the format of an .EXE header?
+    208. What's the difference between .COM and .EXE formats?
+section 3. Keyboard
+    301. How can I read a character without echoing it to the screen,
+         and without waiting for the user to press the Enter key?
+		302. How can I find out whether a character has been typed, without
+         waiting for one?
+    303. How can I disable Ctrl-C/Ctrl-Break and/or Ctrl-Alt-Del? (rev:
+         11 Sep 1993)
+    304. How can I disable the print screen function?
+    305. How can my program turn NumLock (CapsLock, ScrollLock) on or
+         off?
+    306. How can I speed up the keyboard's auto-repeat? (rev: 24 Mar
+         1994)
+    307. What is the SysRq key for?
+    308. How can my program tell what kind of keyboard is on the system?
+    309. How can I tell if input, output, or stderr has been redirected?
+         (rev: 24 Mar 1994)
+    310. How can I increase the size of the keyboard buffer? (new: 20
+         June 1993)
+    311. How can I stuff characters into the keyboard buffer? (new: 15
+         Aug 1993)
+section 4. Disks and files
+		401. What drive was the PC booted from?
+    402. How can I boot from drive b:? (rev: 24 Mar 1994)
+    403. Which real and virtual disk drives are valid? (rev: 15 Aug
+         1993)
+    404. How can I make my single floppy drive both a: and b:?
+    405. How can I disable access to a drive? (new: 15 Aug 1993)
+    406. How can a batch file test existence of a directory? (rev: 28
+         May 1994)
+    407. Why won't my C program open a file with a path?
+    408. How can I redirect printer output to a file? (rev: 16 Aug 1993)
+    409. How can I redirect the output of a batch file? (rev: 24 Mar
+         1994)
+    410. How can I redirect stderr? (rev: 24 Mar 1994)
+    411. How can my program open more files than DOS's limit of 20?
+         (rev: 12 Sep 1993)
+    412. How can I read, create, change, or delete the volume label?
+    413. How can I get the disk serial number?
+    414. What's the format of .OBJ, .EXE., .COM files?
+		415. How can I flush the software disk cache?
+section 5. Serial ports (COM ports)
+    501. How do I set my machine up to use COM3 and COM4?
+    502. How do I find the I/O address of a COM port? (rev: 24 Mar 1994)
+    503. But aren't the COM ports always at I/O addresses 3F8, 2F8, 3E8,
+         and 2E8?
+    504. How do I configure a COM port and use it to transmit data?
+         (rev: 17 Sep 1993)
+section 6. Other hardware questions and problems
+    601. Which 80x86 CPU is running my program? (rev: 24 Mar 1994)
+    602. How can a C program send control codes to my printer?
+    603. How can I redirect printer output to a file?
+    604. Which video adapter is installed?
+    605. How do I switch to 43- or 50-line mode?
+    606. How can I find the Microsoft mouse position and button status?
+    607. How can I access a specific address in the PC's memory? (rev:
+         24 March 1994)
+    608. How can I read or write my PC's CMOS memory? (rev: 24 Mar 1994)
+		609. How can I access memory beyond 640K? (rev: 24 Mar 1994)
+section 7. Other software questions and problems
+    701. How can a program reboot my PC? (rev: 24 Mar 1994)
+    702. How can I time events with finer resolution than the system
+         clock's 55 ms (about 18 ticks a second)? (rev: 24 Mar 1994)
+    703. How can I find the error level of the previous program? (rev:
+         24 Mar 1994)
+    704. How can a program set DOS environment variables? (rev: 24 Mar
+         1994)
+    705. How can I change the switch character to - from /? (rev: 20 Mar
+         1994)
+    706. Why does my interrupt function behave strangely? (rev: 24 Sep
+         1993)
+    707. How can I write a TSR (terminate-stay-resident utility)? (rev:
+         24 Mar 1994)
+    708. How can I write a device driver?
+    709. What can I use to manage versions of software? (rev: 21 Aug
+         1993)
+    710. What's this "null pointer assignment" after my C program
+         executes? (rev: 20 Mar 1994)
+    711. How can a batch file tell whether it's being run in a DOS box
+         under Windows? (new: 20 Mar 1994)
+    712. How can my program tell if it's running under Windows? (rev: 20
+         Mar 1994)
+    713. How can a program tell whether ANSI.SYS is installed? (new: 20
+         Apr 1994)
+    799. How do I copyright software that I write? (rev: 9 Sep 1993)
+section A. Downloading
+    A01. What are SimTel, Garbo, and wustl? (rev: 6 Apr 1994)
+    A02. I have no ftp access.  How can I get files from the archives?
+         (rev: 14 June 1993)
+    A03. Can I get archives on CD-ROM? (rev: 24 May 1993)
+    A04. Where do I find program <mumble>? (rev: 7 Aug 1993)
+    A05. How can I check SimTel or Garbo before I post a request for a
+         program? (rev: 24 Mar 1994)
+    A06. How do I download and decode a program I found? (rev: 7 Aug
+         1993)
+    A07. Where is UUDECODE?
+    A08. Why do I get errors when extracting from a ZIP file I
+         downloaded? (rev: 20 Mar 1994)
+section B. Vendors and products
+    B01. How can I contact Borland? (rev: 6 Sep 1993)
+    B02. How can I contact Microsoft? (rev: 18 Sep 1993)
+    B03. What's the current version of UNZIP? (rev: 17 Mar 1994)
+    B04. What is the phone number for a vendor's BBS? (rev: 24 Mar 1994)
+section C. More information
+    C01. Are there any good on-line references for PC hardware
+         components? (rev: 28 July 1993)
+    C02. Are there any good on-line references for PC interrupts?
+    C03. What and where is "Ralf Brown's interrupt list"? (rev: 5 Apr
+         1994)
+    C04. Where can I find lex, yacc, and language grammars?
+    C05. What's the best book to learn programming?
+    C06. Where are FAQ lists archived? (rev: 29 Mar 1994)
+    C07. Where can I get the latest copy of this FAQ list? (rev: 30 Mar
+         1994)
+    C08. How do I use ftp? (rev: 6 Apr 1994)
+
+
+section 0. Introduction to this article
+=======================================
+
+Subject:  001. What is this article? (rev: 19 Apr 1994)
+
+    This is the FAQ list (Frequently Asked Questions list) for the
+    newsgroup comp.os.msdos.programmer.  Starting 2 Feb 1993, new
+    questions and questions with revised answers are marked with "new:"
+    or "rev:" and the change date.  A separate article, containing just
+    the changes, is posted with subject line "comp.os.msdos.programmer
+    FAQ diffs".
+
+    If the posting date shown above is much more than a month in the
+    past, see "C07. Where can I get the latest copy of this FAQ list?"
+
+Subject:  002. Why is this article? (rev: 20 Mar 1994)
+
+    FAQ lists are intended to reduce the noise level in their newsgroups
+    that results from the repetition of the same questions, correct
+    answers, wrong answers, corrections to the wrong answers,
+    corrections to the corrections, debate, etc.
+
+    This list should serve as a repository of the canonical "best"
+    answers to the questions in it.  The names of folks who have helped
+    to improve this FAQ list are listed in "004. Who has contributed to
+    this article?"
+
+Subject:  003. How can I search this article for a particular topic?
+               (rev: 20 Mar 1994)
+
+    This list is in digest format.
+
+    To skip one topic and go to the next:  Search for "Subject" starting
+    in column 1.  In trn and similar newsreaders, the command
+    "g^Subject", or a simple Ctrl-G, does that.
+
+    To search for specific topics:  In the Table of Contents (above),
+    locate the question you need.  Then search for that question number.
+    For example, while you're reading this list, the trn newsreader
+    command "g  203" (note the two spaces) goes to question 203.
+
+    If your newsreader doesn't support searches, you can extract these
+    articles to a file and use your favorite editor's search commands.
+
+Subject:  004. Who has contributed to this article?
+
+    This list is edited by Stan Brown, Oak Road Systems, Cleveland,
+    Ohio, the "I" or "me" in some answers.
+
+    Many articles posted in comp.os.msdos.programmer sparked ideas or
+    provided information for the first version of this list.  Though
+    they are not responsible for any errors, thanks are due to the
+    following persons for posted articles or private email that led to
+    improvements in this FAQ list:
+
+    Jamshid Afshar, Mark Aitchison, Sanjay Aiyagari, George Almasi,
+    Aaron Auseth, Robert Baker, Preston Bannister, Scott Barman, Denis
+    Beauregard, Per Bergland, Mike Black, Chris Blum, Ron Bodkin, Mark
+    Brader, Jon Brinkmann, Andrew James Bromage, Glynn Brooks, Paul
+    Brooks, Ralf Brown, Shaun Burnett, Raymond Chen, Denny de Jonge,
+    Eric DeVolder, Alan Drew, Paul Ducklin, Gary Dueck, Roland Eriksson,
+    Mark Evans, Markus Fischer, George Forsman, Roger Fulton, Vincent
+    Giovannone, Robert Grunloh, B.Haible, Janos Haide, Klaus Hartnegg,
+    Kris Heidenstrom, Tom Haapanen, Joel Hoffman, Ari Hovila, Chin
+    Huang, Joe Huffman, Michael Holin, Mike Iarrobino, Byrial Jensen,
+    Rune Jorgensen, Ajay Kamdar, Everett Kaser, Jeff Kellam, Jen Kilmer,
+    Reinhard Kirchner, Dave Kirsch, Chad Knudsen, Samuel Ko, Benjamin
+    Lee, Stephen Lee, Jim Lynch, Greg Malknecht, Sidney Markowitz, Jim
+    Marks, Dimitri Matzarakis, Fred McCall, Ken McKee, Doug Merrett, Tom
+    Milner, Bill Moore, Duncan Murdoch, Steve Murphy, Daniel Neri, Mert
+    Nickerson, David Nugent, John Oldenburg, David Pape, Keith Petersen,
+    Karl Riedling, Arthur Rubin, Gerald Ruderman, Timo Salmi, Tapio
+    Sand, John Schmid, Russell Schulz, Huseyin Sevay, Ajay Shah, Bob
+    Smith, Sean Sullivan, Steve Summit, Tom Swingle, Anders Thulin, Curt
+    Tilmes, Rick Watkins, Ya-Gui Wei, Joe Wells, Scott Winder, Gregory
+    Youngblood, khill@vax1.umkc.edu
+
+    New contributor: Sean Sullivan
+
+Subject:  005. Are the answers guaranteed correct and complete? (rev: 20
+               Mar 1994)
+
+    I've tried to check all facts, but THERE IS NO WARRANTY ON THE CODE
+    OR ON THE TECHNIQUES DESCRIBED HEREIN.  Please send corrections to
+    brown@ncoast.org.  All the code has been tested; but the testing may
+    not have been perfect, and machines and configurations vary.
+    (Except where otherwise noted, C code was tested with both BC++ 2.0
+    and MSC 5.0.)
+
+    The mention of particular books or programs must not be construed to
+    reflect unfavorably on any that are not mentioned.
+
+
+section 1. General questions
+============================
+
+Subject:  101. Why won't my code work?
+
+    First you need to try to determine whether the problem is in your
+    use of the programming language or in your use of MS-DOS and your PC
+    hardware.  (Your manual should tell you which features are standard
+    and which are vendor- or MS-DOS- or PC-specific.  You _have_ read
+    your manual carefully, haven't you?)
+
+    If the feature that seems to be working wrong is something related
+    to your PC hardware or to the internals of MS-DOS, this group is the
+    right place to ask.  (Please check this FAQ list first, to make sure
+    your question isn't already answered here.)
+
+    On the other hand, if your problem is with the programming language,
+    the comp.lang hierarchy (including comp.lang.pascal and comp.lang.c)
+    is probably a better resource.  Please read the other group's FAQ
+    list thoroughly before posting.  (These exist in comp.lang.c,
+    comp.lang.c++, comp.lang.modula3, comp.lang.lisp, comp.lang.perl;
+    they may exist in other groups as well.)  It's almost never a good
+    idea to crosspost between comp.os.msdos.programmer and a language
+    group.
+
+    Before posting in either place, try to make your program as small as
+    possible while still exhibiting the bad behavior.  Sometimes this
+    alone is enough to show you where the trouble is.  Also edit your
+    description of the problem to be as short as possible.  This makes
+    it look more like you tried to solve the problem on your own, and
+    makes people more inclined to try to help you.  See also "106.
+    What's this "netiquette"?"
+
+Subject:  102. What is this newsgroup about? (rev: 11 Sep 1993)
+
+    comp.os.msdos.programmer (comp.sys.ibm.pc.programmer until September
+    1990) concerns programming for MS-DOS systems.  The article "USENET
+    Readership report for Aug 93" in news.lists shows 78,000 readers of
+    this newsgroup worldwide.  Traffic (exclusive of crossposts) was 813
+    articles aggregating 1604 Kbytes.
+
+    Much of our traffic is about language products (chiefly from Borland
+    and Microsoft).  More programming topics focus on C than on any one
+    other language, but we are not just for C programmers (see "103. Is
+    comp.os.msdos.programmer just for C programmers?").
+
+    Since most MS-DOS systems run on hardware that is roughly compatible
+    with the IBM PC, on Intel 8088, 80188, or 80x86 chips, we tend to
+    get a lot of questions and answers about programming other parts of
+    the hardware.
+
+Subject:  103. Is comp.os.msdos.programmer just for C programmers? (rev:
+               20 Mar 1994)
+
+    No, it is for all programmers who want to share information about
+    programming in MS-DOS and DOS replacements like 4DOS.  Programs and
+    questions are also posted in Pascal, assembly, and other languages
+    (including MS-DOS batch programming.)
+
+    Why does the newsgroup seem to be so C-oriented sometimes?  There
+    are two reasons.  First, comp.lang.c and comp.lang.pascal have
+    evolved in different directions.  comp.lang.pascal welcomes vendor-
+    specific discussion, such as Turbo Pascal.  Since so many of TP's
+    features are tailored to programming on PCs and in MS-DOS, Turbo
+    Pascal programmers tend to find DOS questions welcomed there, so
+    that comp.os.msdos.programmer gets less of the "DOS in Turbo Pascal"
+    traffic.  On the other hand, comp.lang.c has stayed closer to
+    talking only about the C language, and vendor-specific or operating-
+    system-specific questions are not welcome.  This tends to push
+    questions about disks, DOS file structure, video, the keyboard,
+    TSRs, etc. to comp.os.msdos.programmer even when those programs are
+    written in C.
+
+    This FAQ is definitely C-oriented, not because that's necessarily
+    best but because I tried to stick to what I could verify personally.
+    As a C programmer (with some assembler), I could most carefully
+    verify solutions in C or assembler.  I felt that short, clear
+    programs could be published in just one language and programmers
+    could translate them into their languages of choice.  But the FAQ
+    list also contains several long programs written only in C; this is
+    a defect with no obvious remedy.  Most answers that point to source
+    code at archive sites include both C- and Pascal-language source
+    when available.
+
+Subject:  104. What's the difference from comp.sys.ibm.pc.programmer?
+
+    c.s.i.p.programmer is the old name of comp.os.msdos.programmer, and
+    has been obsolete since September 1990.  However, many systems have
+    not removed the old group, or have removed it but aliased it to the
+    new name.  This means that some people still think they're posting
+    to c.s.i.p.programmer even though they're actually posting to
+    comp.os.msdos.programmer.
+
+    You can easily verify the non-existence of c.s.i.p.programmer by
+    reference to the "List of Active Newsgroups" posted to news.groups.
+    It's available as /pub/usenet/news.answers/active-newsgroups/part1
+    from the archives (see "C06. Where are FAQ lists archived?").
+
+Subject:  105. Is comp.os.msdos.programmer available as a mailing list?
+               (new: 2 Feb 1993)
+
+    Sorry, no.
+
+Subject:  106. What's this "netiquette"? (rev: 20 Mar 1994)
+
+    Netiquette is good Usenet etiquette.  It includes basic rules like
+    the ones below.  (See also "107. How can I learn more about
+    Usenet?")
+
+    - Always read a newsgroup for a reasonable time before you post an
+      article to it.
+
+    - Pick the one right group for your article; don't crosspost unless
+      absolutely necessary.  If you absolutely must post an article to
+      more than one group, do crosspost it and don't post the same
+      article separately to each group.  See "108. What other technical
+      newsgroups should I know about?" when considering where to post an
+      article.
+
+    - Before you post a question, make sure you're posting to the right
+      newsgroup; the best way to do that is to observe the preceding
+      rule.  Check the group's FAQ list (if it has one) to make sure
+      that your question isn't already answered there; see "C06. Where
+      are FAQ lists archived?".
+
+    - When you post a question, if you ask for email responses then
+      promise to post a summary.  Keep your promise.  And make it a real
+      summary: don't just append all the email you got.  Instead, write
+      your own (brief) description of the solution:  this is the best
+      way to make sure you really understand it.
+
+    - Before you post a follow-up, read the other follow-ups.  Very
+      often you'll find that someone else has already made the point you
+      had in mind.
+
+    - When someone posts a question, if you want to know the answer
+      don't post a "me, too".  Instead send email to the poster asking
+      him or her to share responses with you.
+
+    - When posting a follow-up to another posted article, remove all
+      headers and signature lines from the old article; just keep the
+      line "In <article>, so-and-so writes:".  Also cut the original
+      article down as much as possible; just keep enough of it to remind
+      readers of the context.
+
+    - Keep lines in posted articles to 72-75 characters.  Many
+      newsreaders chop off column 81 or arbitrarily insert a newline
+      there, which makes longer lines difficult or impossible to read.
+      But you need to keep well below 80 characters per line to allow
+      for the > characters that get inserted when other people post
+      follow-ups to your article.
+
+    - Keep your signature to 4 lines or less (including any graphics),
+      and for heaven's sake make sure it doesn't get posted twice in
+      your article.
+
+    - Don't post email without first obtaining the permission of the
+      sender.
+
+Subject:  107. How can I learn more about Usenet? (new: 7 Aug 1993)
+
+    There are two important newsgroups for learning about how Usenet and
+    newsreader software works:
+
+    - news.announce.newusers contains periodic postings that everybody
+      is asked to read before posting anything to Usenet.  (In theory,
+      all new users are subscribed to news.announce.newusers
+      automatically.  But in practice not all newsreader software does
+      that, so that many people violate the guidelines given there
+      simply because they don't know about them.)
+
+    - news.newusers.questions is described as "Q & A for users new to
+      the Usenet".  But new and long-time users can ask or answer
+      questions about Usenet and newsreader software there.  There's an
+      important article, "Welcome to news.newusers.questions! (weekly
+      posting)", that everyone is asked to read before posting to
+      news.newusers.questions.  (See below for ways to get a copy of
+      that article.)
+
+    The following postings in news.announce.newusers might be considered
+    the "mandatory course" for new users:
+
+        Introduction to news.announce.newusers
+        What is Usenet?
+        Answers to Frequently Asked Questions
+        Rules for posting to Usenet
+        A Primer on How to Work With the Usenet Community
+        Hints on writing style for Usenet
+        Emily Postnews Answers Your Questions on Netiquette
+
+    The articles mentioned above are downloadable via ftp from
+    rtfm.mit.edu in the following files:
+
+        /pub/usenet/news.answers/news-newusers-intro
+            Welcome to news.newusers.questions! (weekly posting)
+        /pub/usenet/news.answers/news-announce-intro/part1
+            Introduction to news.announce.newusers
+        /pub/usenet/news.answers/what-is-usenet/part1
+            What is Usenet?
+        /pub/usenet/news.answers/usenet-faq/part1
+            Answers to Frequently Asked Questions
+        /pub/usenet/news.answers/posting-rules/part1
+            Rules for posting to Usenet
+        /pub/usenet/news.answers/usenet-primer/part1
+            A Primer on How to Work With the Usenet Community
+        /pub/usenet/news.answers/usenet-writing-style/part1
+            Hints on writing style for Usenet
+        /pub/usenet/news.answers/emily-postnews/part1
+            Emily Postnews Answers Your Questions on Netiquette
+
+    For rtfm.mit.edu instructions, see "C06. Where are FAQ lists
+    archived?"
+
+Subject:  108. What other technical newsgroups should I know about?
+               (rev: 6 Apr 1994)
+
+    Caution:  Some of these newsgroups have specialized charters; you'll
+    probably get flamed (and deserve it) if you post to an inappropriate
+    group.  Most groups have FAQ lists that will tell you what's
+    appropriate.  Don't post a request for the FAQ list; instead,
+    retrieve it yourself: see "C06. Where are FAQ lists archived?"
+
+    - misc.forsale.computers.d and misc.forsale.computers.pc-clone are
+      where you post notices of equipment, software, or computer books
+      that you want to sell.  Please don't post or crosspost those
+      notices to comp.os.msdos.programmer.
+
+    - comp.os.ms-windows.programmer.* groups (formerly part of
+      comp.windows.ms.programmer):  Similar to comp.os.msdos.programmer,
+      but focus on programming for the MS-Windows platform.
+
+    - comp.sys.ibm.pc.hardware is for more hardware-oriented discussions
+      of the machines that run DOS.
+
+    - the various comp.lang.* groups for articles and questions on the
+      programming languages.  Caution:  some groups welcome discussions
+      that are operating-system dependent or vendor specific; others do
+      not.  For example, comp.lang.c is definitely _not_ for questions
+      about programming DOS or PC system features, even if the programs
+      are written in C.  On the other hand, comp.lang.pascal contains
+      much discussion that is specific to Turbo Pascal.
+
+    - comp.binaries.ibm.pc.wanted: AFTER you have looked in the other
+      groups, this is the place to post a request for a particular
+      binary program.
+
+    - comp.archives.msdos.announce (moderated) explains how to use the
+      archive sites, especially Garbo and SimTel, and lists files
+      uploaded to them.  Discussions belong in comp.archives.msdos.d,
+      which replaced comp.binaries.ibm.pc.archives in December 1992.
+
+    - MSDOS-Ann mailing list, for those who cannot subscribe to the
+      comp.archives.msdos.announce newsgroup, lists SimTel and Garbo
+      uploads in digest format.  Instructions are downloadable as
+
+        /pc/MSDOSANN.ZIP from Garbo
+        /pub/msdos/info/msdosann.zip from SimTel.
+
+    - comp.binaries.ibm.pc.d is for discussions about programs posted in
+      comp.binaries.ibm.pc, and only those programs.  This is a good
+      place to report bugs in the programs, but not to ask where to find
+      them (see cbip.wanted, above).  cbip.d is NOT supposed to be a
+      general PC discussion group.
+
+    - comp.sources.misc: a moderated group for source code for many
+      computer systems.  It tends to get lots of Unix stuff, but you may
+      also pick up some DOS-compatible code here.
+
+    - alt.sources: an unmoderated group for source code.  Guidelines are
+      posted periodically.
+
+    - comp.os.msdos.programmer.turbovision is specifically for
+      programming in Turbo Vision.
+
+
+section 2. Compile and link
+===========================
+
+Subject:  201. What the heck is "DGROUP > 64K"? (rev: 18 Apr 1993)
+
+    This Q explains the problem; the next Q gives some remedies.
+
+    DGROUP is a link-time group of data segments, and the compiler
+    typically generates code that expects DS to be pointing to DGROUP.
+    (Exception:  Borland's huge model has no DGROUP.)
+
+    Here's what goes into DGROUP:
+
+    - tiny model (all pointers near):  DGROUP holds the entire program.
+
+    - small and medium models (data pointers near):  DGROUP holds all
+      globals and static variables including string literals, plus the
+      stack and the heap.
+
+    - large, compact, and huge models in Microsoft (data pointers far):
+      DGROUP holds only initialized globals and static variables
+      including string literals, plus the stack and the near heap.
+
+    - large and compact models in Borland (data pointers far): DGROUP
+      holds initialized and uninitialized globals and static variables
+      including string literals, but not the stack or heap.
+
+    - huge model in Borland (data pointers far): there is no DGROUP, so
+      the 64K limit doesn't apply.
+
+    In all of the above, which is to say all six models in Microsoft C
+    and all but huge in Borland C, DGROUP is limited to 64K including
+    string literals (which are treated as static data).  This limitation
+    is due to the Intel CPU's segmented architecture.
+
+    For more information, see topics like "memory models" and "memory
+    management" in the index of your compiler manual.  Also see
+    TI738.asc, downloadable as part of
+
+        /pub/msdos/turbo-c/bchelp10.zip at SimTel
+        /pc/turbopas/bchelp10.zip at Garbo,
+
+    for an extended general discussion of memory usage in Borland C
+    programs, of which much applies to any C compiler in DOS.
+
+Subject:  202. How do I fix "automatic data segment exceeds 64K" or
+               "stack plus data exceed 64K"?
+
+    These messages are a variation of "DGROUP > 64K".  For causes,
+    please see the preceding Q.
+
+    If you get this error in tiny model, your program is simply too big
+    and you must use a different memory model.  If you get this link
+    error in models S, C, M, L, or Microsoft's H, there are some things
+    you can do.  (This error can't occur in Borland's huge model.)
+
+    If you have one or two big global arrays, simply declare them far.
+    The compiler takes this to mean that any references to them will use
+    32-bit pointers, so they'll be in separate segments and no longer
+    part of DGROUP.
+
+    Or you can use the /Gt[number] option with Microsoft or -Ff[=size]
+    with Borland C++ 2.0 and up.  This will automatically put variables
+    above a certain size into their own segments outside of DGROUP.
+
+    Yet another option is to change global arrays to far pointers.  Then
+    at the beginning of your program, allocate them from the far heap
+    (_fmalloc() in Microsoft, farmalloc() in Borland).
+
+    Finally, you can change to huge model (with Borland compilers, not
+    Microsoft).  Borland's H model still uses far pointers by default,
+    but "sets aside the [64K] limit" and has no DGROUP group, according
+    to the BC++ 2.0 Programmer's Guide.  Microsoft's H model does use
+    huge data pointers by default but retains DGROUP and its 64K limit,
+    so switching to the H model doesn't buy you anything if you have
+    DGROUP problems.
+
+Subject:  203. Will Borland C code and Microsoft C code link together?
+               (rev: 15 Aug 1993)
+
+    Typically this question is asked by someone who owns compiler A and
+    is trying to write code to link with a third-party library that was
+    compiled under compiler B.
+
+    The answer to the question is, Not in general.  Here are some of the
+    reasons:
+
+    - "Helper" functions (undocumented functions for stack checking,
+      floating-point arithmetic, and operations on longs) differ between
+      the two compilers.
+
+    - The compilers may embed instructions in the object code that tell
+      the linker to look for their own run-time libraries.  You can use
+      the linker option that says to ignore such instructions: /n in
+      TLINK, /NOD in the Microsoft linker (the one that comes with the C
+      compiler, not the one that used to come with DOS).  But getting
+      around this problem will very likely just reveal other problems,
+      like different helper functions, that have no easy solution.
+
+    Those problems will generate link-time errors.  Others may not show
+    up until run time:
+
+    - Borland's compact, large, and huge models don't assume DS=SS, but
+      Microsoft's do.  The -Fs option on the Borland compiler, or one of
+      the /A options on Microsoft, should take care of this problem--
+      once you know that's what's going on.
+
+    - Check conventions for ordering and packing structure members, and
+      for alignment of various types on byte, word, paragraph, or other
+      boundaries.  Again, you can generally adjust your code to match if
+      you know what conventions were used in compiling the "foreign"
+      libraries.
+
+    - Check the obvious and make sure that your code was compiled under
+      the same memory model as the code you're trying to link with.
+      (That's necessary, but no guarantee.  Microsoft and Borland don't
+      use exactly the same conventions for segments and groups,
+      particularly in the larger memory models.)
+
+    That said, there are some circumstances where you can link hybrids.
+    Your best chance of success comes if you compile in large model with
+    the compiler switch that says to reload DS on entry to each
+    function, avoid longs and floating point, use only 16-bit pointers,
+    suppress stack checking, and specify all libraries used in the link.
+
+Subject:  204. Why did my program bomb at run time with "floating point
+               formats not linked" or "floating point not loaded"? (rev:
+               20 March 1994)
+
+    These messages look similar but have very different causes.
+
+    "floating point not loaded" is Microsoft C's run-time message when
+    the code requires a numeric coprocessor but your computer doesn't
+    have one installed.  If the program is yours, relink it using the
+    xLIBCE or xLIBCA library (where x is the memory model).
+
+    "floating point formats not linked" is a Borland run-time error
+    (Borland C or C++, Turbo C or C++).  Borland's compilers try to be
+    smart and not link in the floating-point (f-p) library unless you
+    need it.  Alas, they all get the decision wrong.  One common case is
+    where you don't call any f-p functions, but you have %f or other f-p
+    formats in scanf() or printf() calls.  The cure is to call an f-p
+    function, or at least force one to be present in the link.
+
+    To do that, define this function somewhere in a source file but
+    don't call it:
+
+        static void forcefloat(float *p) {
+            float f = *p;
+            forcefloat(&f);
+        }
+
+    It doesn't have to be in the module with the main program, as long
+    as it's in a module that will be included in the link.
+
+    If you have Borland C++ 3.0, the README file documents a slightly
+    less ugly work-around.  Insert these statements in your program:
+
+        extern unsigned _floatconvert;
+        #pragma extref _floatconvert
+
+Subject:  205. How can I change the stack size in Borland's C compilers?
+               (rev: 24 March 1994)
+
+    In Turbo C, Turbo C++, and Borland C++, you may not find "stack
+    size" in the index but the global variable _stklen should be there.
+    The manual will instruct you to put a statement like
+
+        extern unsigned _stklen = 54321U;
+
+    in your code, outside of any function.  You must assign the value
+    right in the extern statement; it won't work to assign a value at
+    run time.  The linker may give you a duplicate symbol warning, which
+    you can ignore.
+
+Subject:  206. What's the format of an .OBJ file? (rev: 24 Mar 1994)
+
+    - base .OBJ format:  Intel's document number #121748-001, {8086
+      Relocatable Object Module Formats}.  (not verified)
+
+    Both Microsoft and Borland have extended the .OBJ format, as has IBM
+    for OS/2; and according to the MS-DOS encyclopedia, Microsoft
+    doesn't actually use all the listed formats.
+
+    - Microsoft-specific .OBJ formats:
+
+      * The .OBJ format document dated 14 Dec 1992, a WinHelp file from
+        the Microsoft developer's CD-ROM (266K after unzipping), is
+        downloadable as
+
+        /vendor/microsoft/developer-network/ctech/11-9.zip from
+            ftp.uu.net.
+
+      * A 45-page article can be found in the {MS-DOS Encyclopedia},
+        ISBN 1-55615-049-0, now out of print.
+
+      * "Microsoft Object Module Format (OMF)" Specification, 22 Nov
+        1991, was published by the Microsoft Languages Group.  (not
+        verified)
+
+    - Borland-specific .OBJ formats:  Open Architecture Handbook.  The
+      Borland Developer's Technical Guide, 1991, no ISBN.  Chapter 2,
+      "Object file contents", (pages 27-50) covers the comment records
+      sent to the object file by Borland C++ version 3.0 and other
+      Borland compilers.  The comment records mostly contain information
+      for the Borland debugger. (not verified)
+
+    - A "tutorial on the .OBJ format" comes with the VAL experimental
+      linker, downloadable as
+
+        /pub/msdos/pgmutil/val-link.zip at SimTel
+        /pc/assembler/linker.zoo at Garbo.
+
+      Despite such different names, those files have the same contents,
+      but their contents are dated 18 Feb 1989.  You'd be better off
+      with one of the more recent references listed above.
+
+Subject:  207. What's the format of an .EXE header?
+
+    See PC Magazine 30 June 1992 (xi:12) pages 349-350 for the old and
+    new formats.  For a more detailed layout, look under INT 21 AH=4B in
+    Ralf Brown's interrupt list (Q C03).  That list includes extensions
+    for Borland's TLINK and Borland debugger info.
+
+    Among the books that detail formats of executable files are {DOS
+    Programmer's Reference: 2d Edition} by Terry Dettman and Jim Kyle,
+    ISBN 0-88022-458-4; and {Microsoft MS-DOS Programmer's Reference},
+    ISBN 1-55615-329-5.
+
+Subject:  208. What's the difference between .COM and .EXE formats?
+
+    To oversimplify:  a .COM file is a direct image of core, and an .EXE
+    file will undergo some further relocation when it is run (and so it
+    begins with a relocation header).  A .COM file is limited to 64K for
+    all segments combined, but an .EXE file can have as many segments as
+    your linker will handle and be as large as RAM can take.
+
+    The actual file extension doesn't matter.  DOS knows that a file
+    being loaded is in .EXE format if its first two bytes are MZ or ZM;
+    otherwise it is assumed to be in .COM format.  For instance, DR-DOS
+    6.0's COMMAND.COM is in .EXE format.
+
+
+section 3. Keyboard
+===================
+
+Subject:  301. How can I read a character without echoing it to the
+               screen, and without waiting for the user to press the
+               Enter key?
+
+    The C compilers from Microsoft and Borland offer getch() (or
+    getche() to echo the character); Turbo Pascal has ReadKey.
+
+    In other programming languages, execute INT 21 AH=8; AL is returned
+    with the character from standard input (possibly redirected).  If
+    you don't want to allow redirection, or you want to capture Ctrl-C
+    and other special keys, use INT 16 AH=10; this will return the scan
+    code in AH and ASCII code (if possible) in AL, but  AL=E0 with AH
+    nonzero indicates that one of the grey "extended" keys was pressed.
+    (If your BIOS doesn't support the extended keyboard, use INT 16 AH=0
+    not 10.)
+
+Subject:  302. How can I find out whether a character has been typed,
+               without waiting for one?
+
+    In Turbo Pascal, use KeyPressed.  Both Microsoft C and Turbo C offer
+    the kbhit() function.  All of these tell you whether a key has been
+    pressed.  If no key has been pressed, they return that information
+    to your program.  If a keystroke is waiting, they tell your program
+    that but leave the key in the input buffer.
+
+    You can use the BIOS call, INT 16 AH=01 or 11, to check whether an
+    actual keystroke is waiting; or the DOS call, INT 21 AH=0B, to check
+    for a keystroke from stdin (subject to redirection).  See Ralf
+    Brown's interrupt list (Q C03).
+
+Subject:  303. How can I disable Ctrl-C/Ctrl-Break and/or Ctrl-Alt-Del?
+               (rev: 11 Sep 1993)
+
+    Several utilities are downloadable from /pub/msdos/keyboard at
+    SimTel.  In that directory, cadel.zip contains a TSR (with source
+    code) to disable those keys.  Also, keykill.arc contains two
+    utilities:  keykill.com lets you disable up to three keys of your
+    choice, and deboot.com changes the boot key to leftShift-Alt-Del.
+
+    C programmers who simply want to make sure that the user can't Ctrl-
+    Break out of their program can use the ANSI-standard signal()
+    function; the Borland compilers also offer ctrlbrk() for handling
+    Ctrl-Break.  However, if your program uses normal DOS input such as
+    getch(), ^C will appear on the screen when the user presses Ctrl-C
+    or Ctrl-Break.  You can avoid the ^C echo for Ctrl-C by using
+    _bios_keybrd() in MSC or bioskey() in BC++; however, Ctrl-Break will
+    still terminate the program.
+
+    An alternative approach involves programming input at a lower level.
+    You can use INT 21 AH=7, which allows redirection but doesn't echo
+    the ^C (or any other character, for that matter); or use INT 16 AH=0
+    or 10; or hook INT 9 to discard Ctrl-C and Ctrl-Break before the
+    regular BIOS keyboard handler sees them; etc., etc.
+
+    You should be aware that Ctrl-C and Ctrl-Break are processed quite
+    differently internally.  Ctrl-Break, like all keystrokes, is
+    processed by the BIOS code at INT 9 as soon as the user presses the
+    keys, even if earlier keys are still in the keyboard buffer:  by
+    default the handler at INT 1B is called.  Ctrl-C is not special to
+    the BIOS, nor is it special to DOS functions 6 and 7; it _is_
+    special to DOS functions 1 and 8 when at the head of the keyboard
+    buffer.  You will need to make sure BREAK is OFF to prevent DOS
+    polling the keyboard for Ctrl-C during non-keyboard operations.
+
+    Some good general references are {Advanced MS-DOS} by Ray Duncan,
+    ISBN 1-55615-157-8; {8088 Assembler Language Programming:  The IBM
+    PC}, ISBN 0-672-22024-5, by Willen & Krantz; and {COMPUTE!'s Mapping
+    the IBM PC}, ISBN 0-942386-92-2.
+
+Subject:  304. How can I disable the print screen function?
+
+    There are really two print screen functions:  1) print current
+    screen snapshot, triggered by PrintScreen or Shift-PrtSc or Shift-
+    grey*, and 2) turn on continuous screen echo, started and stopped by
+    Ctrl-P or Ctrl-PrtSc.
+
+    1) Screen snapshot to printer
+
+    The BIOS uses INT 5 for this.  Fortunately, you don't need to mess
+    with that interrupt handler.  The standard handler, in BIOS versions
+    dated December 1982 or later, uses a byte at 0040:0100 (= 0000:0500)
+    to determine whether a print screen is currently in progress.  If it
+    is, pressing PrintScreen again is ignored.  So to disable the screen
+    snapshot, all you have to do is write a 1 to that byte.  When the
+    user presses PrintScreen, the BIOS will think that a print screen is
+    already in progress and will ignore the user's keypress.  You can re-
+    enable PrintScreen by zeroing the same byte.
+
+    Here's some simple code:
+
+        void prtsc_allow(int allow) /* 0=disable, nonzero=enable */ {
+            unsigned char far* flag = (unsigned char far*)0x00400100UL;
+            *flag = (unsigned char)!allow;
+        }
+
+    2) Continuous echo of screen to printer
+
+    If ANSI.SYS is loaded, you can easily disable the continuous echo of
+    screen to printer (Ctrl-P or Ctrl-PrtSc).  Just redefine the keys by
+    "printing" strings like these to the screen (BASIC print, C
+    printf(), Pascal Write statements, or ECHO command in batch files),
+    where <27> stands for the Escape character, ASCII 27:
+
+        <27>[0;114;"Ctrl-PrtSc disabled"p
+        <27>[16;"^P"p
+
+    If you haven't installed ANSI.SYS, I can't offer an easy way to
+    disable the echo-screen-to-printer function.
+
+    Actually, you might not need to disable Ctrl-P and Ctrl-PrtSc.  If
+    your only concern is not locking up your machine, when you see the
+    "Abort, Retry, Ignore, Fail" prompt just press Ctrl-P again and then
+    press I.  As an alternative, install one of the many print spoolers
+    that intercept printer-status queries and always return "Printer
+    ready".
+
+Subject:  305. How can my program turn NumLock (CapsLock, ScrollLock) on
+               or off?
+
+    First, if you just don't want NumLock turned on when you reboot,
+    check your system's setups.  (Use Ctrl-Alt-Enter any time, or press
+    a special key like Del at boot time, or run the setup program
+    supplied with your system.)  Many systems now have an option in
+    setup to turn NumLock off at boot time.
+
+    You need to twiddle bit 5, 6, or 4 of location 0040:0017.  Here's
+    some code:  lck() turns on a lock state, and unlck() turns it off.
+    (The status lights on some keyboards may not reflect the change.  If
+    yours is one, call INT 16 AH=2, "get shift status", and that may
+    update them.  It will certainly do no harm.)
+
+        #define NUM_LOCK  (1 << 5)
+        #define CAPS_LOCK (1 << 6)
+        #define SCRL_LOCK (1 << 4)
+        void lck(int shiftype) {
+            char far* kbdstatus = (char far*)0x00400017UL;
+            *kbdstatus |= (char)shiftype;
+        }
+        void unlck(int shiftype) {
+            char far* kbdstatus = (char far*)0x00400017UL;
+            *kbdstatus &= ~(char)shiftype;
+        }
+
+Subject:  306. How can I speed up the keyboard's auto-repeat? (rev: 24
+               Mar 1994)
+
+    The keyboard speed has two components: delay (before a key that you
+    hold down starts repeating) and typematic rate (the speed once the
+    key starts repeating).  Most BIOS versions since 1986 let software
+    change the delay and typematic rate by calling INT 16 AH=3, "set
+    typematic rate and delay"; see Ralf Brown's interrupt list (Q C03).
+    If you have DOS 4.0 or later, you can use the MODE CON command that
+    you'll find in your DOS manual.
+
+    On 83-key keyboards (mostly XTs), the delay and typematic rate can't
+    easily be changed.  According to PC Magazine 15 Jan 1991 (x:1) page
+    409, to adjust the typematic rate you need "a memory-resident
+    program which simply '[watches]' the keyboard to see if you're
+    holding down a key ... and after a certain time [starts] stuffing
+    extra copies of the held-down key into the buffer."  No source code
+    is given in that issue; but the QUICKEYS utility that PC Magazine
+    published in 1986 does this sort of watching (not verified); source
+    and object code are downloadable in
+
+        /pub/msdos/pcmag/vol5n05.zip from SimTel.
+
+Subject:  307. What is the SysRq key for?
+
+    There is no standard use for the key.  The BIOS keyboard routines in
+    INT 16 simply ignore it; therefore so do the DOS input routines in
+    INT 21 as well as the keyboard routines in libraries supplied with
+    high-level languages.
+
+    When you press or release a key, the keyboard triggers hardware line
+    IRQ1, and the CPU calls INT 9.  INT 9 reads the scan code from the
+    keyboard and the shift states from the BIOS data area.
+
+    What happens next depends on whether your PC's BIOS supports an
+    enhanced keyboard (101 or 102 keys).  If so, INT 9 calls INT 15
+    AH=4F to translate the scan code.  If the translated scan code is 54
+    hex (for the SysRq key) then INT 9 calls INT 15 AH=85 and doesn't
+    put the keystroke into the keyboard buffer.  The default handler of
+    that function does nothing and simply returns.  (If your PC has an
+    older BIOS that doesn't support the extended keyboards, INT 15 AH=4F
+    is not called.  Early ATs have 84-key keyboards, so their BIOS calls
+    INT 15 AH=85 but not 4F.)
+
+    Thus your program is free to use SysRq for its own purposes, but at
+    the cost of some programming.  You could hook INT 9, but it's
+    probably easier to hook INT 15 AH=85, which is called when SysRq is
+    pressed or released.
+
+Subject:  308. How can my program tell what kind of keyboard is on the
+               system?
+
+    Ralf Brown's Interrupt List (Q C03) includes MEMORY.LST, a detailed
+    breakdown by Robin Walker of the contents of the BIOS system block
+    that starts at 0040:0000.  Bit 4 of byte 0040:0096 is "1=enhanced
+    keyboard installed".  C code to test the keyboard type:
+
+        char far *kbd_stat_byte3 = (char far *)0x00400096UL;
+        if (0x10 & *kbd_stat_byte3)
+            /* 101- or 102-key keyboard is installed */
+
+    PC Magazine 15 Jan 1991 (x:1) suggests on page 412 that "for some
+    clones [the above test] is not foolproof".  If you use this method
+    in your program you should provide the user some way to override
+    this test, or at least some way to tell your program to assume a non-
+    enhanced keyboard.  The article suggests a different approach to
+    determining the type of keyboard.
+
+Subject:  309. How can I tell if input, output, or stderr has been
+               redirected? (rev: 24 Mar 1994)
+
+    Normally, input and output are associated with the console (i.e.,
+    with the keyboard and the screen, respectively).  If either is not,
+    you know that it has been redirected.  Some source code to check
+    this is available at the usual archive sites.
+
+    If you program in Turbo Pascal, you'll want this downloadable
+    collection of Turbo Pascal units:
+
+        /pc/ts/tspa33*.zip at Garbo
+        /pub/msdos/turbopas/tspa33*.zip at SimTel.
+
+    (where the * is 70, 60, 55, 50, or 40 for Turbo Pascal 7.0, 6.0,
+    5.5, 5.0, or 4.0 respectively.)  Source code is not included.  Also
+    see the downloadable Frequently Asked Questions files by Timo Salmi:
+
+        /pc/ts/tsfaqp18.zip at Garbo
+        /pub/msdos/info/tsfaqp18.zip at SimTel.
+
+    If you program in C, use isatty() if your implementation has it.
+    Otherwise, /pub/msdos/sysutil/is_con10.zip is downloadable from
+    SimTel; it includes source code.
+
+    Good references for the principles are PC Magazine 16 Apr 1991 (x:7)
+    page 374; Ray Duncan's {Advanced MS-DOS}, ISBN 1-55615-157-8, or
+    Ralf Brown's interrupt list (Q C03) for INT 21 AX=4400; and Terry
+    Dettman and Jim Kyle's {DOS Programmer's Reference: 2d edition},
+    ISBN 0-88022-458-4, pages 602-603.
+
+Subject:  310. How can I increase the size of the keyboard buffer? (new:
+               20 June 1993)
+
+    I tested only one of the many available device drivers that do this,
+    namely BUF160, which extends the keyboard buffer to 160 characters.
+    It performed flawlessly for two years with MS-DOS 5 and Windows 3.1.
+    It's downloadable as
+
+        /pub/msdos/keyboard/buf160_6.zip at SimTel
+        /pc/keyboard/buf160_6.zip at Garbo.
+
+Subject:  311. How can I stuff characters into the keyboard buffer?
+               (new: 15 Aug 1993)
+
+    If your computer has an enhanced keyboard (see "308. How can my
+    program tell what kind of keyboard is on the system?"), put the scan
+    code in CH and the ASCII character in CL, then execute INT 16 AH=5.
+    The return in AL is 0 for success or 1 for buffer full.
+
+
+section 4. Disks and files
+==========================
+
+Subject:  401. What drive was the PC booted from?
+
+    Under DOS 4.0 or later, use INT 21 AX=3305.  DL is returned with an
+    integer indicating the boot drive (1=A:, etc.).
+
+Subject:  402. How can I boot from drive b:? (rev: 24 Mar 1994)
+
+    Downloadable shareware:
+
+        /pub/msdos/diskutil/boot_b.zip from SimTel
+        /pc/bootutil/boot_b.zip from Garbo.
+
+    The included documentation says it works by writing a new boot
+    sector on a disk in your a: drive that redirects the boot to your b:
+    drive.  (A similar utility is bboot.zip in the same directory at
+    Garbo only.)
+
+    If that doesn't work, you can always interchange your a: and b:
+    drives by switching ribbon cables and changing the setup in your
+    BIOS.  From an article posted 27 Jan 1993 on another newsgroup:
+
+    Take the "ribbon" connector, as you call it, and switch them.  To
+    double check, start at the end of the cable that connects to the
+    motherboard or floppy controller.  Follow the cable until you get to
+    the first connector.  Connect this to the drive you want to be b:.
+    After this, there should be a few lines on the cable that get
+    flipped left to right.  (On most cables, they just cut the lines and
+    physically reverse them.  It should be quite obvious from looking at
+    the cable.)  Anyway, the connector after the pins get flipped right
+    to left is the connector for your a: drive.
+
+Subject:  403. Which real and virtual disk drives are valid? (rev: 15
+               Aug 1993)
+
+    Use INT 21 AH=29 (parse filename).  Point DS:SI at a null-terminated
+    ASCII string that contains the drive letter and a colon, point ES:DI
+    at a 37-byte dummy FCB buffer, and call INT 21 AX=2900.  On return,
+    AL is FF if the drive is invalid, something else if the drive is
+    valid.  RAM disks and SUBSTed drives are considered valid.
+
+    You can detect whether the drive is ASSIGNed by using INT 2F
+    AX=0601.  To check whether the drive is SUBSTed, use INT 21 AX=4409;
+    or use INT 21 AH=52 to test for both JOIN and SUBST.  See Ralf
+    Brown's interrupt list (Q C03).
+
+    Unfortunately, the b: drive is considered valid even on a single-
+    diskette system.  You can check that special case by interrogating
+    the BIOS equipment byte at 0040:0010.  Bits 7-6 contain the one less
+    than the number of diskette drives, so if those bits are zero you
+    know that b: is an invalid drive even though function 29 says it's
+    valid.
+
+    Following is some code originally posted by Doug Dougherty to test
+    valid drives (treating SUBSTed and JOINed drives as valid), with my
+    fix for the b: special case, tested in Borland C++ 2.0 (in the small
+    model):
+
+        #include <dos.h>
+        #include <stdio.h>
+        void drvlist(void) {
+            char *s = "A:", fcb_buff[37];
+            int valid;
+            for (   ;  *s<='Z';  (*s)++) {
+                _SI = (unsigned) s;
+                _DI = (unsigned) fcb_buff;
+                _ES = _DS;
+                _AX = 0x2900;
+                geninterrupt(0x21);
+                valid = _AL != 0xFF;
+                if (*s == 'B'  &&  valid) {
+                    char far *equipbyte = (char far *)0x00400010UL;
+                    valid = (*equipbyte & (3 << 6)) != 0;
+                }
+                printf("Drive '%s' is %sa valid drive.\n",
+                        s, valid ? "" : "not ");
+            }
+        }
+
+    I translated this to MSC 7.0 and tested it in small model:
+
+        #include <dos.h>
+        #include <stdio.h>
+        void drvlist(void) {
+            char *s = "A:", fcb_buff[37], *buff=fcb_buff;
+            int valid;
+            for (   ;  *s<='Z';  (*s)++) {
+                __asm mov si,s      __asm mov di,buff
+                __asm mov ax,ds     __asm mov es,ax
+                __asm mov ax,0x2900 __asm int 21h
+                __asm xor ah,ah     __asm mov valid,ax
+                valid = (valid != 0xFF);
+                if (*s == 'B'  &&  valid) {
+                    char far *equipbyte = (char far *)0x00400010UL;
+                    valid = (*equipbyte & (3 << 6)) != 0;
+                }
+                printf("Drive '%s' is %sa valid drive.\n",
+                        s, valid ? "" : "not ");
+            }
+        }
+
+Subject:  404. How can I make my single floppy drive both a: and b:?
+
+    Under any DOS since DOS 2.0, you can put the command
+
+        assign b=a
+
+    into your AUTOEXEC.BAT file.  Then, when you type "dir b:" you'll no
+    longer get the annoying prompt to insert diskette B (and the even
+    more annoying prompt to insert A the next time you type "dir a:").
+
+    You may be wondering why anybody would want to do this.  Suppose you
+    use two different machines, maybe one at home and one at work.  One
+    of them has only a 3.5" diskette drive; the other machine has two
+    drives, and b: is the 3.5" one.  You're bound to type "dir b:" on
+    the first one, and get the nuisance message
+
+        Insert diskette for drive B: and press any key when ready.
+
+    But if you assign drive b: to point to a:, you avoid this problem.
+
+    Caution:  there are a few commands, such as DISKCOPY, that will not
+    work right on ASSIGNed or SUBSTed drives.  See the DOS manual for
+    the full list.  Before typing one of those commands, be sure to turn
+    off the mapping by typing "assign" without arguments.
+
+    The DOS 5.0 manual says that ASSIGN is obsolete, and recommends the
+    equivalent form of SUBST: "subst b: a:\".  Unfortunately, if this
+    command is executed when a: doesn't hold a diskette, the command
+    fails.  ASSIGN doesn't have this problem, so under DOS 5.0 you
+    should disregard that particular bit of advice in the manual.
+
+Subject:  405. How can I disable access to a drive? (new: 15 Aug 1993)
+
+    Reader Eric DeVolder writes that he has made available a program to
+    do this.  I haven't tried it, but it's downloadable as
+
+        /pub/msdos/diskutil/rmdriv20.zip from SimTel
+        /pc/sysutil/rmdriv20.zip at Garbo.
+
+Subject:  406. How can a batch file test existence of a directory? (rev:
+               28 May 1994)
+
+    The standard way, which in fact is documented in the DOS manual, is
+
+        if exist d:\path\nul goto found
+
+    Unfortunately, this is not entirely reliable.  I found it failed in
+    Pathworks (a/k/a PCSA, DEC's network that connects PCs and VAXes),
+    or on a MARS box that uses an OEM version of MS-DOS 5.0.  Readers
+    have reported that it gave the wrong answer on Novell networks, on
+    DR-DOS, and in a DOS window under OS/2.  By "failed" I mean that it
+    "found" a directory that didn't exist, or failed to find one that
+    did exist, or both.  (I'm told that IBM fixed the OS/2 bug in
+    version 2.11 of OS/2.)
+
+    There appears to be no foolproof way to use pure batch commands to
+    test for existence of a directory.  The real solution is to write a
+    program, which returns a value that your batch program can then test
+    with an "if errorlevel".  Reader Duncan Murdoch kindly posted the
+    following Turbo Pascal version:
+
+        program existdir;
+            { Confirms the existence of a directory given on the command
+            line.  Returns errorlevel 2 on error, 1 if not found, 0 if
+            found. }
+
+        uses
+            dos;
+
+        var
+            s : searchrec;
+
+        begin
+            if paramcount <> 1 then
+            begin
+                writeln('Syntax:  EXISTDIR directory');
+                halt(2);
+            end
+            else
+            begin
+                findfirst(paramstr(1),Directory,S);
+                while (Doserror = 0) and ((Directory and S.Attr) = 0) do
+                    findnext(S);
+                if Doserror <> 0 then
+                begin
+                    Writeln('Directory not found.');
+                    halt(1);
+                end
+                else
+                begin
+                    Writeln('Directory found.');
+                    halt(0);
+                end;
+            end;
+        end.
+
+    Timo Salmi also has a Turbo Pascal version in his Turbo Pascal FAQ,
+    which is downloadable as
+
+        /pc/ts/tsfaqp18.zip at Garbo
+        /pub/msdos/info/tsfaqp18.zip at SimTel.
+
+Subject:  407. Why won't my C program open a file with a path?
+
+    You've probably got something like the following code:
+
+        char *filename = "c:\foo\bar\mumble.dat";
+        FILE *fptr;
+        . . .
+        fptr = fopen(filename, "r");
+
+    The problem is that \f is a form feed, \b is a backspace, and \m is
+    m.  Whenever you want a backslash in a string constant in C, you
+    must use two backslashes:
+
+        char *filename = "c:\\foo\\bar\\mumble.dat";
+
+    This is a feature of every C compiler, because Dennis Ritchie
+    designed C this way.  It's a problem only on MS-DOS systems, because
+    only DOS (and Atari ST/TT running TOS) uses the backslash in
+    directory paths.  But even in DOS this backslash convention applies
+    _only_ to string constants in your source code.  For file and
+    keyboard input at run time, \ is just a normal character, so users
+    running your program would type in file specs the same way as in DOS
+    commands, with single \ characters.
+
+    Another possibility is to code all paths in source programs with /
+    rather than \ characters:
+
+        char *filename = "c:/foo/bar/mumble.dat";
+
+    Ralf Brown writes, "All versions of the DOS kernel accept either
+    forward or backslashes as directory separators.  I tend to use this
+    form more frequently than backslashes since it is easier to type and
+    read."  This applies to DOS function calls (and therefore to calls
+    to the file library of every programming language), but not to DOS
+    commands.
+
+Subject:  408. How can I redirect printer output to a file? (rev: 16 Aug
+               1993)
+
+    Recommended: PRN2FILE from PC Magazine, downloadable as:
+
+        /pub/msdos/printer/prn2file.zip at SimTel
+        /pc/printer/prn2file.zip at Garbo.
+
+    PC Magazine has given copies away as part of its utilities disks, so
+    you may already have a copy.
+
+    The directories mentioned above have lots of other utilities to
+    redirect printer output.
+
+Subject:  409. How can I redirect the output of a batch file? (rev: 24
+               Mar 1994)
+
+    Assuming the batch file is called batch.bat, to send its output
+    (stdout) to another file, just invoke COMMAND.COM as a secondary
+    command processor:
+
+        command /c batch parameters_if_any >outfile
+
+    Timo Salmi's notes on this and other batch tricks are downloadable:
+
+        /pub/msdos/batutil/tsbat44.zip at SimTel
+        /pc/ts/tsbat44.zip at Garbo.
+
+Subject:  410. How can I redirect stderr? (rev: 24 Mar 1994)
+
+    Use freopen(..., stderr) and then execute the desired command via
+    system().  There are downloadable versions of programs to do this.
+    I recommend this file, which includes TP4 source and executable:
+
+        /pub/msdos/sysutil/rdstderr.zip from SimTel.
+
+    A C example is downloadable as
+
+        /pub/msdos/c/redirect.c from SimTel.
+
+    I compiled it with MSC 7.0, and it works fine with one exception:
+    Contrary to the included comments, redirected output starts writing
+    at the beginning of the output file rather than appending.  That is
+    easily solved by adding "fseek(stderr, 0L, SEEK_END);" after the
+    freopen() call for stderr.
+
+Subject:  411. How can my program open more files than DOS's limit of
+               20? (rev: 12 Sep 1993)
+
+    This is a summary of an article Ralf Brown posted on 8 August 1992,
+    with some additions from a Microsoft tech note and information from
+    Chin Huang.)
+
+    DOS imposes some limits.  Once you overcome those, which is pretty
+    easy, you may have to take additional measures to overcome the
+    limitations built into your compiler's run-time library.
+
+    1) Limitations imposed by DOS
+
+    There are separate limits on files and file handles.  For example,
+    DOS opens three files but five file handles:  CON (stdin, stdout,
+    and stderr), AUX (stdaux), and PRN (stdprn).
+
+    The limit in FILES= in CONFIG.SYS is a system-wide limit on files
+    opened by all programs (including the three that DOS opens and any
+    opened by TSRs); each process has a limit of 20 handles (including
+    the five that DOS opens).  Example:  CONFIG.SYS has FILES=40.  Then
+    program #1 will be able to open 15 file handles.  Assuming that the
+    program actually does open 15 handles pointing to 15 different
+    files, other programs could still open a total of 22 files (40-3-15
+    = 22), though no one program could open more than 15 file handles.
+
+    If you're running DOS 3.3 or later, you can increase the per-process
+    limit of 20 file handles by a call to INT 21 AH=67, Set Handle
+    Count.  Your program is still limited by the system-wide limit on
+    open files, so you may also need to increase the FILES= value in
+    your CONFIG.SYS file (and reboot).  The run-time library that you're
+    using may have a fixed-size table of file handles, so you may also
+    need to get source code for the module that contains the table,
+    increase the table size, and recompile it.
+
+    2) Limitations in Microsoft C run-time library
+
+    In Microsoft C the run-time library limits you to 20 file handles.
+    To change this, you must be aware of two limits:
+
+    - file handles used with _open(), _read(), etc.: Edit _NFILE_ in
+      CRT0DAT.ASM.
+
+    - stream files used with fopen(), fread(), etc.: Edit _NFILE_ in
+      _FILE.C for DOS or FILE.ASM for Windows/QuickWin.  This must not
+      exceed the value of _NFILE_ in CRT0DAT.ASM.
+
+    (QuickWin uses the constant _WFILE_ in CRT0DAT.ASM and WFILE.ASM for
+    the maximum number of child text windows.)
+
+    After changing the limits, recompile using CSTARTUP.BAT.  Microsoft
+    recommends that you first read README.TXT in the same directory.
+
+    3) Limitations in Borland C++ run-time library
+
+    (Reader Chin Huang provided this information on 12 Sep 1993.)
+
+    To increase the open file limit for a program you compile with
+    Borland C++ 3.1, edit the file _NFILE.H in the include directory and
+    change the _NFILE_ value.  Compile and link the modules FILES.C and
+    FILES2.C from the lib directory into your program.
+
+Subject:  412. How can I read, create, change, or delete the volume
+               label?
+
+    In DOS 5.0 (and possibly in 4.0 as well), there are actually two
+    volume labels: the LABEL command reports only the first but changes
+    both of them.
+
+    - The traditional volume label is an entry with "volume label"
+      attribute in the root directory of the disk.  The DIR, VOL, and
+      LABEL commands report this volume label, and LABEL sets it.
+
+    - There is a second volume label, which may be different, in the
+      boot record along with the serial number. In DOS 4.0 and later,
+      INT 21 AH=69 gets or sets the boot record's serial number and
+      volume label together; see "413. How can I get the disk serial
+      number?"  DIR and VOL ignore this volume label; the LABEL command
+      doesn't report it but does set it.
+
+    The rest of this answer assumes that by "volume label" you mean the
+    traditional one, the one that DIR and VOL display.  Though it's a
+    directory entry in the root directory, you can't change it using the
+    newer DOS file-access functions (INT 21 AH=3C, 41, 43); instead, use
+    the old FCB-oriented directory functions.  Specifically, you need to
+    allocate a 64-byte buffer and a 41- byte extended FCB (file control
+    block).  Call INT 21 AH=1A to find out whether there is a volume
+    label.  If there is, AL returns 0 and you can change the label using
+    DOS function 17 or delete it using DOS function 13.  If there's no
+    volume label, function 1A will return FF and you can create a label
+    via function 16.  Important points to notice are that ? wildcards
+    are allowed but * are not; the volume label must be space filled not
+    null terminated.
+
+    The following MSC 7.0 code worked for me in DOS 5.0; the functions
+    it uses have been around since DOS 2.0.  The function parameter is 0
+    for the current disk, 1 for a:, 2 for b:, etc.  It doesn't matter
+    what your current directory is; these functions always search the
+    root directory for volume labels.  (I didn't try to change the
+    volume label of any networked drives.)
+
+        // Requires DOS.H, STDIO.H, STRING.H
+        void vollabel(unsigned char drivenum) {
+            static unsigned char extfcb[41], dta[64], status, *newlabel;
+            int chars_got = 0;
+            #define DOS(buff,func) __asm { __asm mov dx,offset buff   \
+                __asm mov ax,seg buff  __asm push ds  __asm mov ds,ax \
+                __asm mov ah,func  __asm int 21h  __asm pop ds        \
+                __asm mov status,al }
+            #define getlabel(buff,prompt) newlabel = buff;  \
+                memset(newlabel,' ',11);  printf(prompt);   \
+                scanf("%11[^\n]%n", newlabel, &chars_got);  \
+                if (chars_got < 11) newlabel[chars_got] = ' ';
+
+            // Set up the 64-byte transfer area used by function 1A.
+            DOS(dta, 1Ah)
+            // Set up an extended FCB and search for the volume label.
+            memset(extfcb, 0, sizeof extfcb);
+            extfcb[0] = 0xFF;           // denotes extended FCB
+            extfcb[6] = 8;              // volume-label attribute bit
+            extfcb[7] = drivenum;       // 1=A,2=B,...; 0=current drive
+            memset(&extfcb[8], '?', 11);// wildcard *.*
+            DOS(extfcb,11h)
+            if (status == 0) {          // DTA has volume label's FCB
+                printf("volume label is %11.11s\n", &dta[8]);
+                getlabel(&dta[0x18],
+                    "new label (\"delete\" to delete): ");
+                if (chars_got == 0)
+                    printf("label not changed\n");
+                else if (strncmp(newlabel,"delete  ",11) == 0) {
+                    DOS(dta,13h)
+                    printf(status ? "label failed\n" :
+                                    "label deleted\n");
+                }
+                else {                  // user wants to change label
+                    DOS(dta,17h)
+                    printf(status ? "label failed\n" :
+                                    "label changed\n");
+                }
+            }
+            else {                      // no volume label was found
+                printf("disk has no volume label.\n");
+                getlabel(&extfcb[8], "new label (<Enter> for none): ");
+                if (chars_got > 0) {
+                    DOS(extfcb,16h)
+                    printf(status ? "label failed\n" :
+                                    "label created\n");
+                }
+            }
+        }        // end function vollabel
+
+Subject:  413. How can I get the disk serial number?
+
+    Use INT 21.  AX=6900 gets the serial number; AX=6901 sets it.  See
+    Ralf Brown's interrupt list (Q C03), or PC Magazine July 1992
+    (xi:13) page 496, for details.
+
+    This function also gets and sets the volume label in the boot
+    record, which is not necessarily the same as "the" volume label
+    displayed by the DIR, VOL, and LABEL commands.  For that volume
+    label, see "412. How can I read, create, change, or delete the
+    volume label?"
+
+Subject:  414. What's the format of .OBJ, .EXE., .COM files?
+
+    Please see "206. What's the format of an .OBJ file?"; "207. What's
+    the format of an .EXE header?"; and "208. What's the difference
+    between .COM and .EXE formats?"
+
+Subject:  415. How can I flush the software disk cache?
+
+    Please see "701. How can a program reboot my PC?"
+
+
+section 5. Serial ports (COM ports)
+===================================
+
+Subject:  501. How do I set my machine up to use COM3 and COM4?
+
+    Unless your machine is fairly old, it's probably already set up.
+    After installing the board that contains the extra COM port(s),
+    check the I/O addresses in word 0040:0004 or 0040:0006.  (In DEBUG,
+    type "D 40:4 L4" and remember that every word is displayed low byte
+    first, so if you see "03 56" the word is 5603.)  If those addresses
+    are nonzero, your PC is ready to use the ports and you don't need
+    the rest of this answer.
+
+    If the I/O address words in the 0040 segment are zero after you've
+    installed the I/O board, you need some code to store these values
+    into the BIOS data segment:
+
+        0040:0004  word  I/O address of COM3
+        0040:0006  word  I/O address of COM4
+        0040:0011  byte (bits 3-1): number of serial ports installed
+
+    The documentation with your I/O board should tell you the port
+    addresses.  When you know the proper port addresses, you can add
+    code to your program to store them and the number of serial ports
+    into the BIOS data area before you open communications.  Or you can
+    use DEBUG to create a little program to include in your AUTOEXEC.BAT
+    file, using this script:
+
+        n SET_ADDR.COM      <--- or a different name ending in .COM
+        a 100
+        mov  AX,0040
+        mov  DS,AX
+        mov  wo [0004],aaaa <--- replace aaaa with COM3 address or 0
+        mov  wo [0006],ffff <--- replace ffff with COM4 address or 0
+        and  by [0011],f1
+        or   by [0011],8    <--- use number of serial ports times 2
+        mov  AH,0
+        int  21
+                            <--- this line must be blank
+        rCX
+        1f
+        rBX
+        0
+        w
+        q
+
+Subject:  502. How do I find the I/O address of a COM port? (rev: 24 Mar
+               1994)
+
+    Look in the four words beginning at 0040:0000 for COM1 through COM4.
+    (The DEBUG command "D 40:0 L8" will do this.  Remember that words
+    are stored and displayed low byte first, so a word value of 03F8
+    will be displayed as F8 03.)  If the value is zero, that COM port is
+    not installed (or you've got an old BIOS; see "501. How do I set my
+    machine up to use COM3 and COM4?").  If the value is nonzero, it is
+    the I/O address of the transmit/receive register for the COM port.
+    Each COM port occupies eight consecutive I/O addresses (though many
+    chips use only the first seven).
+
+    Here's some C code to find the I/O address:
+
+        unsigned ptSel(unsigned comport) {
+            unsigned io_addr;
+            if (comport >= 1  &&  comport <= 4) {
+                unsigned far *com_addr = (unsigned far *)0x00400000UL;
+                io_addr = com_addr[comport-1];
+            }
+            else
+                io_addr = 0;
+            return io_addr;
+        }
+
+    You might also want to explore Port Finder, downloadable as
+
+        /pub/msdos/io_util/pf271.zip at SimTel
+        /pub/msdos/utilities/sysutl/pf271.zip at nic.funet.fi
+
+    I haven't tried it myself, but a posted article reviewed it very
+    favorably and said it also lets you swap ports around.
+
+Subject:  503. But aren't the COM ports always at I/O addresses 3F8,
+               2F8, 3E8, and 2E8?
+
+    The first two are usually right (though not always); the last two
+    are different on many machines.
+
+Subject:  504. How do I configure a COM port and use it to transmit
+               data? (rev: 17 Sep 1993)
+
+    Do you want actual code, or do you want books that explain what's
+    going on?
+
+    1) Source code
+
+    First, check your compiler's run-time library.  Many compilers offer
+    functions similar to Microsoft C's _bios_serialcom() or Borland's
+    bioscom(), which may meet your needs.
+
+    Second, check for downloadable resources at SimTel and Garbo.  At
+    SimTel, /pub/msdos/c/pcl4c34.zip (March 1993) is described as
+    "Asynchronous communications library for C"; Garbo has a whole
+    /pc/comm directory.  Also, an extended example is in Borland's
+    TechFax TI445, downloadable as part of
+
+        /pub/msdos/turbo-c/bchelp10.zip at SimTel
+        /pc/turbopas/bchelp10.zip at Garbo.
+
+    Though written by Borland, much of it is applicable to other forms
+    of C, and it should give you ideas for other programming languages.
+
+    2) Reference books
+
+    Highly recommended: Joe Campbell's {C Programmer's Guide to Serial
+    Communications}, ISBN 0-672-22584-0.  He gives complete details on
+    how serial ports work, along with complete programs for doing polled
+    or interrupt-driver I/O.  The book is quite thick, and none of it
+    looks like filler.
+
+    If Campbell's book is overkill for you, you'll find a good short
+    description of serial I/O in {DOS 5: A Developer's Guide}, ISBN
+    1-55851-177-6, by Al Williams.
+
+    Finally, a reader has recommended {Serial Communications Programming
+    in C/C++} by Mark Goodwin (ISBN 1558281983), with source code in the
+    book and on disk.  Topics include the basics, various methods of
+    serial communications on the PC (with consideration of high-speed
+    modems), ANSI screen interface, file transfer protocols (Xmodem and
+    Ymodem), etc.  There is code in C, and that code is extended into a
+    C++ class for those who use C++.  There are also subroutines in
+    Assembly.
+
+    3) Downloadable information files
+
+    A "Serial Port FAQ" is occasionally posted to this newsgroup, and is
+    downloadable as multiple files:
+
+        /pub/usenet/comp.os.msdos.programmer/T_S_P*_3 from rtfm.mit.edu
+        /pub/E-Technik/afd/*Serial* from pfsparc02.phil15.uni-sb.de.
+
+    For rtfm.mit.edu instructions, see "C06. Where are FAQ lists
+    archived?"
+
+    (The uni-sb.de archive administrator warns that the ftp address may
+    change, sometime in the future, to etcip1.ee.uni-sb.de.)
+
+
+section 6. Other hardware questions and problems
+================================================
+
+Subject:  601. Which 80x86 CPU is running my program? (rev: 24 Mar 1994)
+
+    According to an article posted by Michael Davidson, Intel's approved
+    code for distinguishing among 8086, 80286, 80386, and 80486 and for
+    detecting the presence of an 80287 or 80387 is published in Intel's
+    486SX processor manual (order number 240950-001).  David
+    Kirschbaum's improved version of this is downloadable as
+
+        /pub/msdos/sysinfo/cpuid593.zip from SimTel
+        /pc/sysinfo/cpuid593.zip from Garbo.
+
+    According to an article posted by its author, WCPU knows the
+    differences between DX and SX varieties of 386 and 486 chips, and
+    can detect a math coprocessor and a Pentium.  It's downloadable as
+
+        /pub/msdos/sysinfo/wcpu050.zip at SimTel
+        /pc/sysinfo/wcpu050.zip at Garbo.
+
+Subject:  602. How can a C program send control codes to my printer?
+
+    If you just fprintf(stdprn, ...), C will translate some of your
+    control codes.  The way around this is to reopen the printer in
+    binary mode:
+
+        prn = fopen("PRN", "wb");
+
+    You must use a different file handle because stdprn isn't an lvalue.
+    By the way, PRN or LPT1 must not be followed by a colon in DOS 5.0.
+
+    There's one special case, Ctrl-Z (ASCII 26), the DOS end-of-file
+    character.  If you try to send an ASCII 26 to your printer, DOS
+    simply ignores it.  To get around this, you need to reset the
+    printer from "cooked" to "raw" mode.  Microsoft C users must use INT
+    21 AH=44, "get/set device information".  Turbo C and Borland C++
+    users can use ioctl to accomplish the same thing:
+
+        ioctl(fileno(prn), 1, ioctl(fileno(prn),0) & 0xFF | 0x20, 0);
+
+    An alternative approach is simply to write the printer output into a
+    disk file, then copy the file to the printer with the /B switch.
+
+    A third approach is to bypass DOS functions entirely and use the
+    BIOS printer functions at INT 17.  If you also fprintf(stdprn,...)
+    in the same program, you'll need to use fflush() to synchronize
+    fprintf()'s buffered output with the BIOS's unbuffered.
+
+    By the way, if you've opened the printer in binary mode from a C
+    program, remember that outgoing \n won't be translated to carriage
+    return/line feed.  Depending on your printer, you may need to send
+    explicit \n\r sequences.
+
+Subject:  603. How can I redirect printer output to a file?
+
+    Please see "408. How can I redirect printer output to a file?"
+
+Subject:  604. Which video adapter is installed?
+
+    The technique below should work if your BIOS is not too old.  It
+    uses three functions from INT 10, the BIOS video interrupt.  (If
+    you're using a Borland language, you may not have to do this the
+    hard way.  Look for a function called DetectGraph or something
+    similar.)
+
+    Set AX=1200, BL=32 and call INT 10.  If AL returns 12, you have a
+    VGA.  If not, set AH=12, BL=10 and call INT 10 again.  If BL returns
+    0,1,2,3, you have an EGA with 64,128,192,256K memory.  If not, set
+    AH=0F and call INT 10 a third time.  If AL is 7, you have an MDA
+    (original monochrome adapter) or Hercules; if not, you have a CGA.
+
+    This worked when tested with a VGA, but I had no other adapter types
+    to test it with.
+
+Subject:  605. How do I switch to 43- or 50-line mode?
+
+    /pub/msdos/screen/vidmode.zip, downloadable from SimTel, contains
+    .COM utilities and .ASM source code.
+
+Subject:  606. How can I find the Microsoft mouse position and button
+               status?
+
+    Use INT 33 AH=3, described in Ralf Brown's interrupt list (Q C03).
+
+    The Windows manual says that the Logitech mouse is compatible with
+    the Microsoft one, so the interrupt will probably work the same.
+
+    Also, many files are downloadable from
+
+        /pub/msdos/mouse/*.* at SimTel.
+
+Subject:  607. How can I access a specific address in the PC's memory?
+               (rev: 24 March 1994)
+
+    First check the library that came with your compiler.  Many vendors
+    have some variant of peek and poke functions; in Turbo Pascal use
+    the pseudo-arrays Mem, MemW, and MemL.  As an alternative, you can
+    construct a far pointer:  use Ptr in Turbo Pascal; MK_FP in the
+    Turbo C/Borland C family and recent versions of Microsoft C; or
+    FP_OFF and FP_SEG in all versions of Microsoft C.
+
+    Caution:  Turbo C and Turbo C++ also have FP_OFF and FP_SEG macros,
+    but they can't be used to construct a pointer.  In Borland C++ those
+    macros work the same as in Microsoft C, but MK_FP is easier to use.
+
+    By the way, it's not useful to talk about "portable" ways to do
+    this.  Any operation that is tied to a specific memory address is
+    not likely to work on another kind of machine.
+
+Subject:  608. How can I read or write my PC's CMOS memory? (rev: 24 Mar
+               1994)
+
+    There are a great many public-domain utilities that do this.  These
+    are downloadable from SimTel in directory /pub/msdos/at:
+
+        cmos14.zip     5965  920817  Saves/restores CMOS to/from file
+        cmoser11.zip  28323  910721  386/286 enhanced CMOS setup program
+        cmosram.zip   76096  920214  Save AT/386/486 CMOS data to file
+            and restore
+        rom2.zip      15692  900131  Save AT and 386 CMOS data to file
+            and restore
+        setup21.zip   18172  880613  Setup program which modifies CMOS
+            RAM
+        viewcmos.zip  11068  900225  Display contents of AT CMOS RAM,
+            w/C source
+
+    A program to check and display CMOS memory (but not write to it) is
+    downloadable as part of
+
+        /pc/ts/tsutle22.zip at Garbo
+        /pub/msdos/sysutil/tsutle22.zip at SimTel.
+
+    Good reports of CMOS299.ZIP, available in the pc.dir directory of
+    cantva.canterbury.ac.nz [132.181.30.3], have been posted.
+
+    Of the above, my only experience is with CMOSRAM, which seems to
+    work fine.  It contains an excellent (and witty) .DOC file that
+    explains the hardware involved and gives specific recommendations
+    for preventing disaster or recovering from it.  It's $5 shareware.
+
+    Robert Jourdain's {Programmer's Problem Solver for the IBM PC, XT,
+    and AT} has code for accessing the CMOS RAM, according to an article
+    posted in this newsgroup.
+
+Subject:  609. How can I access memory beyond 640K? (rev: 24 Mar 1994)
+
+    PC Magazine 29 June 1993 (xii:12) pages 302-304 carry an article,
+    "How DOS Programs Can Use Over 1MB of RAM".
+
+
+section 7. Other software questions and problems
+================================================
+
+Subject:  701. How can a program reboot my PC? (rev: 24 Mar 1994)
+
+    You can generate a "cold" boot or a "warm" boot.  A cold boot is the
+    same as turning the power off and on; a warm boot is the same as
+    Ctrl-Alt-Del and skips the power-on self 'test.
+
+    For a warm boot, store the hex value 1234 in the word at 0040:0072.
+    For a cold boot, store 0 in that word.  Then, if you want to live
+    dangerously, jump to address FFFF:0000.  Here's C code to do it:
+
+        /* WARNING:  data loss possible */
+        void bootme(int want_warm)  /* arg 0 = cold boot, 1 = warm */ {
+            void (far* boot)(void) = (void (far*)(void))0xFFFF0000UL;
+            unsigned far* type = (unsigned far*)0x00400072UL;
+            *type = (want_warm ? 0x1234 : 0);
+            (*boot)( );
+        }
+
+    What's wrong with that method?  It will boot right away, without
+    closing files, flushing disk caches, etc.  If you boot without
+    flushing a write-behind disk cache (if one is running), you could
+    lose data or trash the file allocation table in your hard drive.
+
+    There are two methods of signaling the cache to flush its buffers:
+    (1) simulate a keyboard Ctrl-Alt-Del in the keystroke translation
+    function of the BIOS (INT 15 AH=4F; but see notes below), and (2)
+    issue a disk reset (DOS function 0D).  Most disk-cache programs hook
+    one or both of those interrupts, so if you use both methods you'll
+    probably be safe.
+
+    When user code simulates a Ctrl-Alt-Del, one or more of the programs
+    that have hooked INT 15 AH=4F can ask that the key be ignored by
+    clearing the carry flag.  For example, HyperDisk does this when it
+    has started but not finished a cache flush.  So if the carry flag
+    comes back cleared, the boot code has to wait a couple of clock
+    ticks and then try again.  (None of this matters on older machines
+    whose BIOS can't support 101- or 102-key keyboards; see the
+    discussion of INT 21 AH=4F in "307. What is the SysRq key for?")
+
+    C code that tries to signal the disk cache (if any) to flush is
+    given below.  Turbo Pascal code by Timo Salmi that does more or less
+    the same job may be found at question 49 (as of this writing) in the
+    Turbo Pascal FAQ in comp.lang.pascal, and is downloadable as file
+    FAQPAS2.TXT, which is part of
+
+        /pc/ts/tsfaqp18.zip at Garbo
+        /pub/msdos/info/tsfaqp18.zip at SimTel.
+
+    Here's C code that reboots after trying to signal the disk cache:
+
+        #include <dos.h>
+        void bootme(int want_warm)  /* arg 0 = cold boot, 1 = warm */ {
+            union REGS reg;
+            void    (far* boot)(void) = (void (far*)(void))0xFFFF0000UL;
+            unsigned far* boottype    =     (unsigned far*)0x00400072UL;
+            char     far* shiftstate  =         (char far*)0x00400017UL;
+            unsigned      ticks;
+            int           time_to_waste;
+            /* Simulate reception of Ctrl-Alt-Del: */
+            for (;;) {
+                *shiftstate |= 0x0C;    /* turn on Ctrl & Alt */
+                reg.h.ah = 0x4F;        /* see notes below */
+                reg.h.al = 0x53;        /* 0x53 = Del's scan code */
+                reg.x.cflag = 1;        /* sentinel for ignoring key */
+                int86(0x15, &reg, &reg);
+                /* If carry flag is still set, we've finished. */
+                if (reg.x.cflag)
+                    break;
+                /* Else waste some time before trying again: */
+                reg.h.ah = 0;
+                int86(0x1A, &reg, &reg);/* system time into CX:DX */
+                ticks = reg.x.dx;
+                for (time_to_waste = 3;  time_to_waste > 0;  ) {
+                    reg.h.ah = 0;
+                    int86(0x1A, &reg, &reg);
+                    if (ticks != reg.x.dx)
+                        ticks = reg.x.dx , --time_to_waste;
+                }
+            }
+            /* Issue a DOS disk reset request: */
+            reg.h.ah = 0x0D;
+            int86(0x21, &reg, &reg);
+            /* Set boot type and boot: */
+            *boottype = (want_warm ? 0x1234 : 0);
+            (*boot)( );
+        }
+
+    Reader Timo Salmi reported (26 July 1993) that the INT 15 AH=4F call
+    may not work on older PCs (below AT, XT2, XT286), according to Ralf
+    Brown's interrupt list (Q C03).
+
+    Reader Roger Fulton reported (1 July 1993) that INT 15 AH=4F hangs
+    even a modern PC "ONLY when ANSI.SYS [is] loaded high using
+    EMM386.EXE.  (Other things loaded high with EMM386.EXE were OK;
+    ANSI.SYS loaded high with QEMM386.SYS was OK; ANSI.SYS loaded low
+    with EMM386.EXE installed was OK.)"  His solution was to use only
+    the disk reset, INT 21 AH=0D, which does flush SMARTDRV, then wait
+    five seconds in hopes that any other disk-caching software would
+    have time to flush its queue.
+
+    Reader Per Bergland reported (10 Sep 1993) that the jump to
+    FFFF:0000 will not work in Windows or other protected-mode programs.
+    (For example, when the above reboot code ran in a DOS session under
+    Windows, a box with "waiting for system shutdown" appeared.  The PC
+    hung and had to be reset by cycling power.)  His solution, which
+    does a cold boot not a warm boot, is to pulse pin 0 of the 8042
+    keyboard controller, which is connected to the CPU's "reset" line.
+    He has tested the following code on various Compaqs, and expects it
+    will work for any AT-class machine; he cautions that you must first
+    flush the disk cache as indicated above.
+
+            cli
+        @@WaitOutReady:   ; Busy-wait until 8042 ready for new command
+            in al,64h         ; read 8042 status byte
+            test al,00000010b ; this bit indicates input buffer full
+            jnz @@WaitOutReady
+            mov al,0FEh       ; Pulse "reset" = 8042 pin 0
+            out 64h,al
+            ; The PC will reboot now
+
+Subject:  702. How can I time events with finer resolution than the
+               system clock's 55 ms (about 18 ticks a second)? (rev: 24
+               Mar 1994)
+
+        The following files, among others, are downloadable from SimTel:
+
+        /pub/msdos/at :
+        atim.zip       4783  881126  Precision program timing for AT
+
+        /pub/msdos/c :
+        millisec.zip  37734  911205  MSC/asm src for millisecond timing
+        mschrt3.zip   53708  910605  High-res timer toolbox for MSC 5.1
+        msec_12.zip    8484  920320  High-def timer v1.2 (C,ASM)
+        ztimer11.zip  77625  920428  Microsecond timer for C, C++, ASM
+            (also at Garbo as /pc/c/ztimer11.zip)
+
+        /pub/msdos/turbo_c :
+        tchrt3.zip    53436  910606  High-res timer for Turbo C 2.0
+        tctimer.zip   15609  891030  High-res timing for Turbo C
+            (same as /pc/c/tctimer.zoo at Garbo; both are version 1.0)
+
+    For Turbo Pascal users, source and object code are downloadable in
+
+        /pub/msdos/turbopas/bonus507.zip at SimTel
+        /pc/turbopas/bonus507.zip at Garbo.
+
+    Also see "Q: How is millisecond timing done?" in FAQPAS.TXT,
+    downloadable as part of
+
+        /pc/ts/tsfaqp18.zip at Garbo
+        /pub/msdos/info/tsfaqp18.zip at SimTel.
+
+Subject:  703. How can I find the error level of the previous program?
+               (rev: 24 Mar 1994)
+
+    First, which previous program are you talking about?  If your
+    current program ran another one, when the child program ends its
+    error level is available to the program that spawned it.  Most high-
+    level languages provide a way to do this; for instance, in Turbo
+    Pascal it's Lo(DosExitCode) and the high byte gives the way in which
+    the child terminated.  In Microsoft C, the exit code of a
+    synchronous child process is the return value of the spawn-type
+    function that creates the process.
+
+    If your language doesn't have a function to return the error code of
+    a child process, you can use INT 21 AH=4D (get return code).  By the
+    way, this will tell you the child's exit code and the manner of its
+    ending (normal, Ctrl-C, critical error, or TSR).
+
+    It's much trickier if the current program wants to get the error
+    level of the program that ran and finished before this one started.
+    G.A.Theall has published source and compiled code to do this; the
+    code is downloadable as
+
+        /pub/msdos/batutil/errlvl13.zip at SimTel
+        /pc/batchutil/errlvl12.zip (an older version) at Garbo.
+
+    (The code uses undocumented features in DOS 3.3 through 5.0.  Theall
+    says in the .DOC file that the values returned under 4DOS or other
+    replacements won't be right.)
+
+Subject:  704. How can a program set DOS environment variables? (rev: 24
+               Mar 1994)
+
+    Program functions that read or write "the environment" typically
+    access only the program's copy of it.  What this Q really wants to
+    do is to modify the active environment, the one that is affected by
+    SET commands in batch files or at the DOS prompt.  You need to do
+    some programming to find the active environment, and that depends on
+    the version of DOS.
+
+    A fairly well-written article in PC Magazine 28 Nov 1989 (viii:20),
+    pages 309-314, explains how to find the active environment, and
+    includes Pascal source code.  The article hints at how to change the
+    environment, and suggests creating paths longer than 128 characters
+    as one application.
+
+    Now as for downloadable source code, there are many possibilities.
+    I looked at some of these, and liked
+
+        /pub/msdos/envutil/rbsetnv1.zip at SimTel
+        /pc/envutil/rbsetnv1.zip at Garbo
+
+    the best.  It includes some utilities to manipulate the environment,
+    with source code in C.  A newer program is
+
+        /pub/msdos/batutil/strings2.zip at SimTel
+        part of /pc/pcmag/vol11n22.zip at Garbo,
+
+    which is the code from PC Magazine 22 Dec 1992 (xi:22).
+
+    You can also use a call to INT 2E, Pass Command to Interpreter for
+    Execution; see Ralf Brown's interrupt list (Q C03) for details and
+    cautions.
+
+Subject:  705. How can I change the switch character to - from /? (rev:
+               20 Mar 1994)
+
+    Under DOS 5.0 and above, you can't--not completely, anyway.  INT 21
+    AX=3700, get switch character, always returns a '/' (hex 2F).  But
+    the DOS commands don't even call that function: they simply hard
+    code '/' as the switch character.
+
+    Some history:  DOS used to let you change the switch character by
+    using SWITCHAR= in CONFIG.SYS or by calling DOS function 3701.  DOS
+    commands and other programs called DOS function 3700 to find out the
+    switch character.  If you changed the switch character to '-' (the
+    usual choice), you could then type "dir c:/c700 -p" rather than "dir
+    c:\c700 /p".  Under DOS 4.0, the DOS commands ignored the switch
+    character but functions 3700 and 3701 still worked and could be used
+    by other programs.  Under DOS 5.0, even those functions no longer
+    work, though all DOS functions still accept '/' or '\' in file
+    specs.
+
+    You can reactivate the functions to get and set switchar by using
+    programs like SLASH.ZIP or the sample TSR called SWITCHAR in
+    amisl091.zip (see "707. How can I write a TSR (terminate-stay-
+    resident utility)?").  DOS commands will still use the slash, but
+    non-DOS programs that call DOS function 3700 will use your desired
+    switch character.  (DOS replacements like 4DOS may honor the switch
+    character for internal commands.)
+
+    Some readers may wonder why this is even an issue.  Making '-' the
+    switch character frees up the front slash to separate names in the
+    path part of a file spec.  This is easier for the ten-fingered to
+    type, and it's one less difference to remember for commuters between
+    DOS and Unix.  The switch character is the only issue, since all the
+    INT 21 functions accept '/' or '\' to separate directory names.
+
+Subject:  706. Why does my interrupt function behave strangely? (rev: 24
+               Sep 1993)
+
+    Interrupt service routines can be tricky, because you have to do
+    some things differently from "normal" programs.  If you make a
+    mistake, debugging is a pain because the symptoms may not point at
+    what's wrong.  Your machine may lock up or behave erratically, or
+    just about anything else can happen.  Here are some things to look
+    for.  (See "707. How can I write a TSR (terminate-stay-resident
+    utility)?" for general techniques that may prevent a problem.)
+
+    First, did you fail to set up the registers at the start of your
+    routine?  When your routine begins executing, you can count on
+    having CS point to your code segment and SS:SP point to some valid
+    stack (of unknown length), and that's it.  In particular, an
+    interrupt service routine must set DS to DGROUP before accessing any
+    data in its data segments.  (If you're writing in a high-level
+    language, the compiler may generate this code for you automatically;
+    check your compiler manual.  For instance, in Borland and Microsoft
+    C, give your function the "interrupt" attribute.)
+
+    Did you remember to turn off stack checking when compiling your
+    interrupt server and any functions it calls?  The stack during the
+    interrupt is not where the stack-checking code expects it to be.
+    (Caution:  Some third-party libraries have stack checking compiled
+    in, so you can't call them from your interrupt service routine.)
+
+    Next, are you calling any DOS functions (INT 21, 25, or 26) in your
+    routine?  DOS is not re-entrant.  This means that if your interrupt
+    happens to be triggered while the CPU is executing a DOS function,
+    calling another DOS function will wreak havoc.  (Some DOS functions
+    are fully re-entrant, as noted in Ralf Brown's interrupt list (Q
+    C03).  Also, your program can test, in a way too complicated to
+    present here, when it's safe to call non-re-entrant DOS functions.
+    See INT 28, INT 21 AH=34, and INT 21 AX=5D06 or 5D0B; and consult
+    {Undocumented DOS} by Andrew Schulman.  Your program must read both
+    the "InDOS flag" and the "critical error flag".)
+
+    Is a function in your language library causing trouble?  Does it
+    depend on some initializations done at program startup that is no
+    longer available when the interrupt executes?  Does it call DOS (see
+    preceding paragraph)?  For example, in both Borland and Microsoft C
+    the memory-allocation functions (malloc(), etc..) call DOS functions
+    and also depend on setups that they can't get at from inside an
+    interrupt; so do the standard I/O functions like scanf() and
+    printf().  Many other library functions have the same problem, so
+    you can't use them inside an interrupt function without special
+    precautions.
+
+    Is your routine simply taking too long?  This can be a problem if
+    you're hooking on to the timer interrupt, INT 1C or INT 8.  That
+    interrupt expects to be called about every 55 ms, which is 18.2
+    times a second.  Therefore your routine, plus any others hooked to
+    the same interrupts, must execute in less than 55 ms.  If they use
+    even a substantial fraction of that time, you'll see significant
+    slowdowns of your foreground program.  A good discussion is
+    downloadable as
+
+        pub/msdos/SIMTEL20-mirror/info/intshare.zip at ni.funet.fi
+        /pub/msdos/info/intshare.zip at SimTel.
+
+    Did you forget to restore all registers at the end of your routine?
+
+    Did you chain improperly to the original interrupt?  You need to
+    restore the stack to the way it was upon entry to your routine, then
+    do a far jump (not call) to the original interrupt service routine.
+    (The process is a little different in high-level languages.)
+
+Subject:  707. How can I write a TSR (terminate-stay-resident utility)?
+               (rev: 24 Mar 1994)
+
+    There are books, and there's code to download.
+
+    First, the books:
+
+    - Ray Duncan's {Advanced MS-DOS}, ISBN 1-55615-157-8, gives a brief
+      checklist intended for experienced programmers.  The ISBN is for
+      the second edition, through DOS 4; but check to see whether the
+      DOS 6 version is available yet.
+
+    - {DOS 5:  A Developer's Guide} by Al Williams, ISBN 1-55851-177-6,
+      goes into a little more detail, 90 pages worth!
+
+    - Pascal programmers might look at {The Ultimate DOS Programmer's
+      Manual} by John Mueller and Wallace Wang, ISBN 0-8306-3534-3, for
+      an extended example in mixed Pascal and assembler.
+
+    - For a pure assembler treatment, check Steven Holzner's {Advanced
+      Assembly Language}, ISBN 0-13-663014-6.  He has a book with the
+      same title out from Brady Press, but it's about half as long as
+      this one.
+
+    Next, the code.  Some of it is companion code to published articles,
+    which are also listed below:
+
+    - The Alternate Multiplex Interrupt Specification, downloadable as
+
+        /pub/msdos/info/altmpx35.zip at SimTel
+        /pc/programming/altmpx35.zip at Garbo
+        /afs/cs/user/ralf/pub/altmpx35.zip at cs.cmu.edu
+
+    - Ralf Brown's assembly-language implementation of the spec, with
+      utilities in C, is downloadable as
+
+        /pub/msdos/asmutil/amisl091.zip at SimTel
+        /pc/c/amisl091.zip at Garbo
+        /afs/cs/user/ralf/pub/amisl091.zip at cs.cmu.edu
+
+    - Douglas Boling's MASM template for a TSR is downloadable as
+
+        /pub/msdos/asmutl/template.zip at SimTel.
+
+    - A posted article mentions Boling's "Strategies and Techniques for
+      Writing State-of-the-Art TSRs that Exploit MS-DOS 5", Microsoft
+      Systems Journal, Jan-Feb 1992, Volume 7, Number 1, pages 41-59,
+      with examples downloadable in
+
+        /pub/msdos/msjournal/msjv7-1.zip at SimTel
+
+    - code for Al Stevens's "Writing Terminate-and-Stay-Resident
+      Programs", Computer Language, February 1988, pages 37-48 and March
+      1988, pages 67-76 is downloadable as
+
+        /pub/msdos/c/tsrc.zip at SimTel
+
+    - software examples to accompany Kaare Christian's "Using Microsoft
+      C Version 5.1 to Write Terminate-and-Stay-Resident Programs",
+      Microsoft Systems Journal, September 1988, Volume 3, Number 5,
+      pages 47-57 are downloadable as
+
+        /pub/msdos/msjournal/msjv3-5.arc at SimTel
+
+    Finally, there are commercial products, of which TesSeRact (for C-
+    language TSRs) is one of the best known.
+
+Subject:  708. How can I write a device driver?
+
+    Many books answer this in detail.  Among them are {Advanced MS-DOS}
+    and {DOS 5: A Developer's Guide}, cited in the preceding Q.  Michael
+    Tischer's {PC System Programming}, ISBN 1-55755-036-0, has an
+    extensive treatment, as does Dettman and Kyle's {DOS Programmer's
+    Reference: 2d Edition}, ISBN 0-88022-458-4.  For a really in-depth
+    treatment, look for a specialized book like Robert Lai's {Writing MS-
+    DOS Device Drivers}, ISBN 0-201-13185-4.
+
+Subject:  709. What can I use to manage versions of software? (rev: 21
+               Aug 1993)
+
+    A port of the Unix RCS utility is downloadable as
+
+        /pub/msdos/gnuish/rcs55ax.zip (EXE and docs) from SimTel
+        /pub/msdos/gnuish/rcs55as.zip (source) from SimTel
+        /pc/unix/alrcs5ex.zip (EXE and docs ?) from Garbo.
+
+    This version of RCS is no longer limited to one-character extensions
+    on filenames (for example, .CPP and .BAS are now OK).
+
+    An RCS56 is available at a number of archive sites, but it appears
+    to be unauthorized.  In response to a query, Keith Petersen, SimTel
+    administrator, said that RCS56 was removed from SimTel at the
+    author's request because it did not contain source code and thus was
+    in violation of the GNU copyleft.
+
+    As for commercial software, I posted a question asking for readers'
+    experiences in July 1993 and seven readers responded.  PVCS from
+    Intersolv (formerly Polymake) got five positive reviews, though
+    several readers commented that it's expensive; RCS from MKS got one
+    positive and one negative review; Burton TLIB got one negative
+    review; DRTS from ILSI got one positive review.
+
+Subject:  710. What's this "null pointer assignment" after my C program
+               executes? (rev: 20 Mar 1994)
+
+    Somewhere in your program, you assigned a value _through_ a pointer
+    without first assigning a value _to_ the pointer.  (This might have
+    been something like a strcpy() or memcpy() with a pointer as its
+    first argument, not necessarily an actual assignment statement.)
+    Your program may look like it ran correctly, but if you get this
+    message you can be certain that there's a bug somewhere.
+
+    Microsoft and Borland C, as part of their exit code (after a call to
+    exit() or a return from your main function), check whether the
+    location 0000 in your data segment contains a different value from
+    what you started with.  If so, they infer that you must have used an
+    uninitialized pointer.  This implies that the message will appear at
+    the end of execution of your program regardless of where the error
+    actually occurred.
+
+    To track down the problem, you can put exit() calls at various spots
+    in the program and narrow down where the uninitialized pointer is
+    being used by seeing which added exit() makes the null-pointer
+    message disappear.  Or, if your program was compiled with small or
+    medium models, which use 16-bit data pointers, tell the debugger to
+    set a watch at location 0000 in your data segment.  (If data
+    pointers are 32 bits, as in the compact and large models, a null
+    pointer will overwrite the interrupt vectors at 0000:0000 and
+    probably lock up your machine.)
+
+    Under MSC/C++ 7.0, you can declare the undocumented library function
+
+        extern _cdecl _nullcheck(void);
+
+    and then sprinkle calls to _nullcheck() through your program at
+    regular intervals.
+
+    Borland's TechFax document TI726 discusses the null pointer
+    assignment from a Borland point of view.  It's one of many documents
+    downloadable as part of
+
+        /pub/msdos/turbo-c/bchelp10.zip at SimTel
+        /pc/turbopas/bchelp10.zip at Garbo.
+
+Subject:  711. How can a batch file tell whether it's being run in a DOS
+               box under Windows? (new: 20 Mar 1994)
+
+    When Windows 3.0 or 3.1 is running, the DOS environment will contain
+    a definition of the string windir, in lower case.  That's not really
+    useful, however, because the batch statement
+
+        if "%windir%" == "" ...
+
+    will test for an environment variable WINDIR in upper case.
+
+    Your only real option is to write a program as suggested by the
+    following Q, and have it return a value which your batch file can
+    test via "if errorlevel".
+
+Subject:  712. How can my program tell if it's running under Windows?
+               (rev: 20 Mar 1994)
+
+    Execute INT 2F AX=4680.  If AX returns 0, you're in Windows real
+    mode or standard mode (or under the DOS shell).  Otherwise, call INT
+    2F AX=1600.  If AL returns something other than 0 or 80, you're in
+    Windows 386 enhanced mode.  See PC Magazine 24 Nov 1992 (xi:20)
+    pages 492-493.
+
+    For more information, see PC Magazine 26 May 1992 (xi:10) pages 345-
+    346.  A program, WINMODE, is available as part of
+
+        /pub/msdos/pcmag/vol11n10.zip at SimTel
+        /pc/pcmag/vol11n10.zip at Garbo.
+
+    PC Magazine 29 March 1994 (xiii:6) pages 312 and 320 published a new
+    program, WINVER.  This would be in
+
+        /pub/msdos/pcmag/vol13n06.zip at SimTel
+        /pc/pcmag/vol13n06.zip at Garbo.
+
+Subject:  713. How can a program tell whether ANSI.SYS is installed?
+               (new: 20 Apr 1994)
+
+    In DOS 4.0 and above, call INT 2F AX=1A00.  If the value FF is
+    returned in AL, ANSI.SYS is installed.  For more information, see
+    Ralf Brown's interrupt list (question C03).
+
+Subject:  799. How do I copyright software that I write? (rev: 9 Sep
+               1993)
+
+    You can download a very comprehensive answer from the Internet.
+    Terry Carroll posts a six-part Copyright FAQ to misc.legal,
+    news.answers and other groups.  A short answer follows, not based on
+    that article.
+
+    Disclaimer: I am not a lawyer, and this is not legal advice.  Also,
+    there are very likely to be differences in copyright law among
+    nations.  No matter where you live, if significant money may be
+    involved, get legal advice.  The following is adapted (and greatly
+    condensed) from chapter 4 of the Chicago Manual of Style (13th
+    edition, ISBN 0-226-10390-0).
+
+    In the U.S. (at least), when you write something, you own the
+    copyright.  (The exception that matters most to programmers is
+    "works made for hire", i.e., code you write because your employer or
+    client pays you to.  A contract, agreed in advance, can vest the
+    copyright in the programmer even if an employee; otherwise the
+    employer owns the copyright.)  You don't have to register the work
+    with the Copyright Office unless (until) the copyright is infringed
+    and you intend to bring suit; however, it is easier to recover
+    damages in court if you did register the work within three months of
+    publication.
+
+    From paragraph 4.16 of the Chicago Manual:  "... the [copyright]
+    notice consists of three parts: (1) the symbol [C-in-a-circle]
+    (preferred because it also suits the requirements of the Universal
+    Copyright Convention), the word 'Copyright', or the abbreviation
+    'Copr.', (2) the year of first publication, and (3) the name of the
+    copyright owner.  Most publishers also add the phrase 'All rights
+    reserved' because it affords some protection in Central and South
+    American countries ...."  Surprise: "(C)" is legally not the same as
+    the C-in-a-circle, so those of us who are ASCII-bound must use the
+    word or the abbreviation.
+
+
+section A. Downloading
+======================
+
+Subject:  A01. What are SimTel, Garbo, and wustl? (rev: 6 Apr 1994)
+
+    These are three of the most popular archive sites, with a few
+    bazillion files available for free downloading by ftp.  (For email
+    access, see "A02. I have no ftp access.  How can I get files from
+    the archives?".)  Many of the files are shareware and you're
+    expected to send a payment directly to the authors if you use them
+    regularly.
+
+    In comp.archives.msdos.d, Samuel Ko posts a two-part "Useful MS-DOS
+    Programs at SIMTEL20 and Garbo"; it's downloadable as
+
+        /pub/msdos/info/useful34.zip at SimTel
+        /pc/filelist/useful34.zip at Garbo
+        /pub/usenet/news.answers/msdos-archives/part* at rtfm.mit.edu.
+
+    For rtfm.mit.edu instructions, see "C06. Where are FAQ lists
+    archived?"
+
+    A few words about file names and versions:  Many files at the
+    archive sites are updated from time to time.  I verified every
+    filename in this FAQ as of 24 Mar 1994 by ftp to the named sites, or
+    by consulting their index files.  If you can't find a file given in
+    these articles as mumble12.zip, perhaps there's a newer version; try
+    mumble13.zip or mumble14.zip, or mumble*.zip if your ftp program
+    supports wildcards (most do so).  Please let me know of any out-of-
+    date file names.
+
+    This FAQ should show both Garbo and SimTel directory and file names,
+    if available, for every file mentioned for downloading.  If you see
+    a listing for only one of them, it means that the file was not found
+    at the other site, or that the other site's catalog shows an old
+    version.
+
+    Also remember that caps and lower case filenames are not
+    interchangeable at most archive sites.
+
+    1) SimTel = oak.oakland.edu is located at the University of
+    Rochester in the USA, and there are also many mirror sites including
+    wuarchive.wustl.edu, archive.orts.edu, ftp.uu.net, nic.funet.fi,
+    archie.au, and nctucca.edu.tw.  For instructions, see these monthly
+    articles in comp.archives.msdos.announce:
+
+        How to find files in the SIMTEL20 msdos collection
+        How to order SIMTEL20 files via e-mail
+        How to upload files to SIMTEL20
+
+    These are downloadable from SimTel as
+
+        /pub/msdos/filedocs/aaaread.me
+        /pub/msdos/filedocs/mailserv.inf
+        /pub/msdos/filedocs/upload.inf.
+
+    2) Garbo = garbo.uwasa.fi [128.214.87.1] is located at the
+    University of Vaasa in Finland and maintained by Timo Salmi
+    (ts@uwasa.fi) and others.  Garbo and SimTel contain many of the same
+    files, but there are many differences too.  Among them: the
+    directory structures differ greatly, and case is significant in
+    directory and file names at Garbo.
+
+    3) wustl = wuarchive.wustl.edu [128.252.135.4] mirrors, among
+    others, Garbo (in /systems/ibmpc/garbo) and SimTel (in
+    /systems/ibmpc/msdos).  As with any mirror site, it may lag by a day
+    or two, so you may not want to try it on the same day you see an
+    upload notice posted.
+
+    4) others:
+
+    A comprehensive list of MS-DOS archive sites is downloadable as
+
+        /pc/pd2/moder35.zip at Garbo
+        /pub/msdos/info/moder35.zip at SimTel.
+
+    For archie.au via Telnet (different from the Archie file-finding
+    mail servers):  Oceanian users should try archie.au first.  Paul
+    Brooks has written to say that it "mirrors Garbo and SimTel-20 (in
+    /micros/pc/simtel-20, /micros/pc/garbo) as well as many other
+    archives.  Telnetting to 'archie.au' and logging on as 'archie' (no
+    password) will access the Oceanic ARCHIE server." Email Craig Warren
+    (ccw@archie.au) for instructions if needed.
+
+Subject:  A02. I have no ftp access.  How can I get files from the
+               archives? (rev: 14 June 1993)
+
+    First, be sure that you have no ftp access before trying email
+    methods.  (Ask your sysadmin, or a knowledgeable user at your site.)
+    ftp is better for you because it's faster, and it uses less net
+    resources too.
+
+    When using an email server, make sure the Reply-to path in your
+    message is valid.  If it's not, you'll get no reply from the server.
+    Do wait a few days before assuming you're not going to get a
+    response; some servers have long pending queues.  After a suitable
+    wait, get your sysadmin's help to correct your reply-to, and send
+    your message again.
+
+    Occasionally a machine goes down for an extended period, which may
+    prevent a timely reply to your message.  If you're sure your message
+    bears a good reply path and you haven't got a reply in a week or so,
+    you might send your message again, once.  Don't post it as an
+    article in a newsgroup.
+
+    For files from SimTel, see "How to order SIMTEL20 files via e-mail",
+    posted monthly in comp.archives.msdos.announce; or send email
+    containing only the word "help" to listserv@vm1.nodak.edu.  For
+    instructions on using Garbo's email server, send a request to Timo
+    Salmi at ts@uwasa.fi.
+
+    The DEC Western Research Labs server will get files from any ftp
+    site by ftp and then email them to you.  Send email containing
+    "help" to ftpmail@decwrl.dec.com.
+
+Subject:  A03. Can I get archives on CD-ROM? (rev: 24 May 1993)
+
+    Copies of the SimTel MS-DOS, Macintosh and Unix-C collections (also
+    of wuarchive, cica, and others) are available from Walnut Creek
+    CDROM, 1547 Palos Verdes, Suite 260, Walnut Creek, CA 94596-2228,
+    telephone (800) 786-9907 or +1 510 674-0783, or FAX +1 510 674-0821,
+    or email rab@cdrom.com.
+
+    For a catalog of disks available, send email to info@cdrom.com, or
+    ftp the catalog as /cdrom/catalog from cdrom.com.
+
+Subject:  A04. Where do I find program <mumble>? (rev: 7 Aug 1993)
+
+    You _are_ asking about shareware, freeware, or public-domain
+    programs, right?  Commercial software is not legally distributed
+    through the net, in general.  (Occasionally vendors will make
+    patches available, but these are useful only to upgrade software you
+    already own.)
+
+    That said, there are several newsgroups to help you find a program.
+    comp.binaries.ibm.pc.wanted is generally the best place to ask your
+    question.  Please review the guidelines in "108. What other
+    technical newsgroups should I know about?"
+
+    Download and check the indexes from SimTel and Garbo (see "A05. How
+    can I check SimTel or Garbo before I post a request for a
+    program?").  Unless what you're looking for is commercial software,
+    there's a good chance it will be at one or both of those sites.  The
+    Archie servers maintain directories of many (not all) ftp sites
+    worldwide.  You can Telnet to a server or client to search for
+    files, or perform a search by email.
+
+Subject:  A05. How can I check SimTel or Garbo before I post a request
+               for a program? (rev: 24 Mar 1994)
+
+    SimTel and Garbo have indexes of their contents, which you can
+    download and then search off line.
+
+    Garbo's index file, /pc/INDEX.ZIP, contains an annotated list, often
+    updated, of the MS-DOS files there.  The news file /pc/pd2/news-pd2
+    contains selected news on all MS-DOS directories at Garbo.
+
+    SimTel's index files, in /pub/msdos/filedocs, are updated several
+    times a month.  simlist.zip contains a list in text format.  But you
+    may prefer the file simindex.zip, which is comma-delimited for easy
+    use with any of these search facilities:
+
+    - Two downloadable search programs are simtel35.zip and
+      simdir22.zip.
+
+    - dBASE III or IV users can load the index from simindex.zip using
+      instructions in simibm.inf and simibm.db3.
+
+    - PC-FILE users should get simibm.hdr, which tells how to use
+      simibm.ibm.
+
+Subject:  A06. How do I download and decode a program I found? (rev: 7
+               Aug 1993)
+
+    See the "Starter kit" and "Beginner's guide to binaries" in
+    comp.binaries.ibm.pc, usually posted on the first and 15th of every
+    month.  Please wait for these articles to come around; don't post a
+    request.  If you can't wait, they are downloadable from
+
+        Garbo as /pc/doc-net/starter.kit and bin.man
+        rtfm.mit.edu in /pub/usenet/comp.binaries.ibm.pc .  The file
+            names are quite long; try look for names of the form
+            *starter.kit* and *bin.man*
+
+    For rtfm.mit.edu instructions, see "C06. Where are FAQ lists
+    archived?"
+
+    Most binaries are posted and sent through email in 'uuencode'
+    format.  The starter kit contains a uudecode program to turn this
+    file back into binary.  Since the uuencoded file is bigger than the
+    binary, you'll save connect time if you can uudecode it and then
+    download the binary file.  Remember to set file type to binary.
+
+Subject:  A07. Where is UUDECODE?
+
+    You can find it at SimTel and Garbo, but it's easier to take it from
+    the "starter kit" mentioned in the preceding Q.
+
+    If you're logged in at a Unix site, there's almost certainly a
+    uudecode there:  just type "uudecode" followed by a space and the
+    file name.  The binary file is 25% smaller than the uuencoded file,
+    so you'll save connect time if you can uudecode it on the Unix host
+    and then download the binary file.  Remember: set file type binary.
+
+Subject:  A08. Why do I get errors when extracting from a ZIP file I
+               downloaded? (rev: 20 Mar 1994)
+
+    There are many possible causes, but two of them probably account for
+    95% of all problems.
+
+    1) File transmission:  You must tell the archive site to transfer
+    ZIP files in binary mode.  Depending on your software, you may also
+    need to set your local software to receive files in binary mode.
+
+    2) Unzipping program:  Make sure you aren't using an obsolete
+    version.  In <9303290853.kp28285@tacom-emh1.army.mil> on 29 Mar
+    1993, Keith Petersen, SimTel administrator, wrote:  "SIMTEL20 has
+    standardized on the Info-ZIP group's ZIP and UNZIP because they are
+    freely distributable and they have no restrictions on exporting.
+    The latest version of Info-ZIP's ZIP and UNZIP can always be found
+    in directory" /pub/msdos/zip "and will always have the name 'Info-
+    ZIP' in the description to make them easy to locate."  PKUNZIP
+    version 1.10 may not unzip newer stuff from archive sites because
+    site administrators have now embraced version 2.04.  Also see "B03.
+    What's the current version of UNZIP?"
+
+
+section B. Vendors and products
+===============================
+
+Subject:  B01. How can I contact Borland? (rev: 6 Sep 1993)
+
+    Borland has set up these email addresses.  However, none of them is
+    for technical support such as help with finding your own programming
+    errors and explaining compiler messages.
+
+    - bp7-info@borland.com will reply to any message with 17K of info on
+      Borland Pascal with Objects 7.0 and Turbo Pascal 7.0.
+
+    - customer-support@borland.com is for questions about prices and
+      features of products, replacing bad or missing disks, info on
+      upgrades, etc.  They do not accept emailed credit-card numbers.
+
+    - bugs@borland.com will take "a well-documented bug report" and send
+      an automated response, but will not give you a workaround or a
+      scheduled fix date or even confirm that it is or is not considered
+      a bug.  "The purpose of bugs@borland.com is to improve future
+      products sooner, not as a substitute for tech support channels."
+
+    Email tech support is available only through Compuserve (GO BOR).
+
+    Telephone support is provided through separate phone numbers for
+    most products.  If you're calling from the U.S., dial (800) 841-8180
+    for a recorded list of toll numbers to call.  Borland's BBS is at +1
+    408 439 9096.  The surface-mail address is Technical Support
+    Department, Borland International, P.O. Box 660001, Scotts Valley CA
+    95067-0001, USA.
+
+    You'll need to give your product's name, version, and serial number.
+
+    Patches for Borland products are archived at ftp.cica.indiana.edu in
+    directory /pub/pc/borland .  (I haven't verified this personally.)
+
+    Borland's TechFax documents are also available for download:
+
+        /pub/msdos/turbo-c/bchelp10.zip at SimTel
+        /pc/turbopas/bchelp10.zip at Garbo.
+
+    These documents are detailed answers to common questions about Turbo
+    C and Borland C products, and aggregate several hundred Kbytes.
+
+Subject:  B02. How can I contact Microsoft? (rev: 18 Sep 1993)
+
+    Individual employees of Microsoft (not MicroSoft, please!) post here
+    sometimes.  Their addresses all take the form person@microsoft.com.
+    However, Microsoft as a company does not answer individual questions
+    via email through the Internet.
+
+    1) information available via anonymous ftp
+
+    The company maintains an anonymous FTP server, ftp.microsoft.com.
+    Effective 1 Oct 1993 the server will support "Microsoft development
+    tools and advanced systems products, including Windows NT, the Win32
+    SDX, the Windows 3.1 SDK, Visual C++, Visual Basic, LAN Manager, SQL
+    Server, and others," according to {Microsoft Developer News} for
+    September 1993.  The server contains "the complete Developer
+    Knowledge Base with articles written and used by Microsoft Support
+    Engineers.  You will also find device drivers, patches, code
+    samples, help files, and white papers."  Readme files will "give an
+    overview of the directory structure," which appears to be different
+    from what was put in place in July 1993.  For further information,
+    says Microsoft, call (800) 936-5300.
+
+    "Microsoft Developer Network technical articles and selected sample
+    code files are available ... at ftp.uu.net ... in the subdirectory
+    ~ftp/vendor/microsoft/developer-network" according to {Microsoft
+    Developer News} for September 1993.
+
+    2) information via U.S. Mail
+
+    Microsoft Product Support is at 16011 NE 36th Way, Box 97017,
+    Redmond WA 98073-9717, USA.
+
+    You can subscribe to the {Microsoft Developer News} by mailing a
+    request to Microsoft Developer Network, P.O. Box 51812, Boulder CO
+    80322-1812, U.S.A.  The nearest I can figure, this is free;
+    certainly I've never paid for it or been asked to.
+
+    3) tech support via modem
+
+    On Compuserve, GO MICROSOFT; or call Microsoft's BBS at +1 206 936-
+    6735 in the U.S., or +1 416 507-3022 in Canada.
+
+    4) tech support via voice telephone lines
+
+    If you want to place an order or get general pre-sales information,
+    call the appropriate sales and service number:
+
+        U.S. end-user sales                   (800) 426-9400
+        U.S. corporate/gov't/reseller/
+                 educational sales            (800) 227-4679
+        Canadian sales                        (800) 568-3503
+        International sales                  +1 206 936-8661
+
+    For tech support you must make an ordinary long-distance phone call.
+    Microsoft has separate incoming phone numbers for many products.
+    Since it's your nickel, first check your documentation to see if a
+    phone number is listed.  Here are phone numbers (as of 1 June 1992)
+    for a few products of most interest to the readers of this group:
+
+        C/C++               (206) 635-7007
+        MASM                (206) 646-5109
+        DOS Upgrade Users   (206) 646-5104 (for 90 days after first
+            call)
+        Windows Users       (206) 637-6098
+
+    If you can't find the direct number any other way, call the "master"
+    numbers below or the sales numbers a few paragraphs above.  You'll
+    get the "voice mail phone tree from h-ll" but you'll eventually get
+    to the right department.  They don't provide technical assistance,
+    but a voice menu will help you find the current phone number for the
+    department you need.
+
+        U.S. end-user product support         (206) 454-2030
+        U.S. languages support                (206) 637-7096
+
+Subject:  B03. What's the current version of UNZIP? (rev: 17 Mar 1994)
+
+    Since April 1993, the administrators of Garbo and SimTel have
+    accepted uploads in the ZIP 2.0 format.  You can use the free Info-
+    ZIP versions, or PKZIP 2.04g (not 2.04c or 2.04e).  SimTel has
+    standardized on the Info-ZIP versions for several reasons, as
+    explained in an article posted 29 Mar 1993 in
+    comp.archives.msdos.announce.
+
+    Info-ZIP versions ZIP 2.0 and UNZIP 5.1 are now current.  Those
+    programs, ZIP 1.9, UNZIP 5.0, and PKZIP 2.04g all work with the same
+    file formats.
+
+    The primary source of the free Info-ZIP programs is at ftp.uu.net,
+    directory /pub/archiving/zip; or at quest.jpl.nasa.gov, directory
+    /pub.  Files are in those directories or in subdirectories as shown
+    below.  The DOS executable for UNZIP is self extracting; all others
+    require UNZIP 5.0 or 5.1:
+
+        MSDOS/unzip51x.exe - DOS executable and doc, UNZIP 5.1
+        unzip51.zip - source code for UNZIP 5.1, all platforms
+        MSDOS/zip20x.zip - DOS exe and doc, ZIP without crypt support
+        zip201.zip - source code for ZIP 2.0, all platforms
+        MSDOS/zcryp20x.zip - DOS exe and doc, ZIP with crypt support
+        zcrypt21.zip - source code for ZIP crypt support
+        WINDOWS/wunz20x.zip - Windows 3.1 WIZUNZIP 2.0 exe and help file
+        WINDOWS/wunz20sr.zip - Windows 3.1 WIZUNZIP 2.0 source
+
+    The essential files are also available at SimTel in /pub/msdos/zip
+    and at Garbo in /pc/arcers.
+
+    PKZIP and PKUNZIP are shareware products of PKWARE Inc.  The current
+    version is 2.04g, which is the third official version after 1.10.
+    They are downloadable
+
+        from PKWARE's bulletin board, +1 414 354 8670, or
+        from Garbo as /pc/arcers/pkz204g.exe
+        from SimTel as /pub/msdos/zip/pkz204g.exe
+
+    By the way, if you want to develop your own utilities, you will find
+    the ZIP 2.0 data structures described in the downloadable file
+
+        /pub/msdos/zip/appnote.zip at SimTel.
+
+Subject:  B04. What is the phone number for a vendor's BBS? (rev: 24 Mar
+               1994)
+
+    Robert Baker (rbakerpc@delphi.com) uploaded a list of 800 bulletin-
+    board support numbers operated by software vendors as of August
+    1993.  It is downloadable as /pub/msdos/bbslist/bbs_9308.zip from
+    SimTel.
+
+
+section C. More information
+===========================
+
+Subject:  C01. Are there any good on-line references for PC hardware
+               components? (rev: 28 July 1993)
+
+    Good reports of HELPPC21 have been posted.  It is downloadable as
+
+        /pub/msdos/info/helppc21.zip at SimTel
+        /pc/programming/helppc21.zip at Garbo.
+
+    This hypertext system contains much information on ports and other
+    hardware, as well as some overlap with Ralf Brown's interrupt list
+    (Q C03).  It is shareware ($25).
+
+Subject:  C02. Are there any good on-line references for PC interrupts?
+
+    The definitive work is Ralf Brown's interrupt list; see Q C03.
+
+Subject:  C03. What and where is "Ralf Brown's interrupt list"? (rev: 5
+               Apr 1994)
+
+    This is megabytes of information on documented and (officially)
+    undocumented BIOS and DOS interrupts, DOS tables, and interrupts
+    hooked by many software packages.
+
+    The interrupt list comes from cs.cmu.edu [128.2.222.173] in
+    /afs/cs/user/ralf/pub (switch there with a single command) as
+    inter40a.zip, inter40b.zip, and inter40c.zip; the separate file
+    inter40d.zip contains utilities.  The list is also downloadable as
+
+        /pub/msdos/info/inter*.zip from SimTel
+        /pc/programming/inter*.zip from Garbo.
+
+    These versions were uploaded in early February 1994; updates are
+    announced every few months in comp.archives.msdos.announce.
+
+Subject:  C04. Where can I find lex, yacc, and language grammars?
+
+    The FAQ list of the comp.compilers newsgroup answers this for Basic,
+    C, Pascal, and other languages.  See "C06. Where are FAQ lists
+    archived?"
+
+Subject:  C05. What's the best book to learn programming?
+
+    Sorry, this FAQ list cannot settle religious arguments.
+
+    Much of the heat over this topic arises because each person believes
+    that the book that he or she learned from is the best book.  But
+    different people have very different experiences of the same book.
+    The only person who can tell you which is the best book for learning
+    a given topic is you.
+
+    Your best bet is to go to a fairly well-stocked bookstore when you
+    have a couple of hours to spare.  Start at one end of the shelf and
+    work your way methodically through every book that looks like it
+    might cover what you want to learn.  Look at the tables of contents;
+    read a page or two from each book.  Then make your decision.  If
+    money is a problem, or if you're not sure of your choice, check out
+    your top two or three from your library.
+
+Subject:  C06. Where are FAQ lists archived? (rev: 29 Mar 1994)
+
+    Very possibly the FAQ list you want is already at your site.  Check
+    the newsgroup news.answers; if your site doesn't carry news.answers,
+    check comp.answers, rec.answers, etc., according to the top-level
+    name in the FAQ list's "home" newsgroup.  Articles are posted to the
+    *.answers groups in a way that should make them last until the next
+    versions are posted.  If they expire sooner at your site, you might
+    want to lobby your sysadmin to treat the moderated *.answers groups
+    as a special case and grant them longer expiration times than other
+    groups.
+
+    To ftp most FAQ lists, connect to rtfm.mit.edu, and change to
+    directory /pub/usenet/news.answers.  The name of the file that you
+    want is the Archive-name from the top of the article.  For instance,
+    if the Archive-name is software-eng/part1 you would retrieve
+    /pub/usenet/news.answers/software-eng/part1.
+
+    By email (only if you have no ftp access, please), the server is
+    mail-server@rtfm.mit.edu .  It accepts "send" commands that omit the
+    leading "/pub/" from file names; for example:
+
+        send usenet/news.answers/software-eng/part1
+
+    For full instructions about the mail server, send it a message
+    consisting of these two lines:
+
+        help
+        index
+
+    Not just FAQ lists, but every article listed in the "List of
+    Periodic Informational Postings" (LoPIP) can be obtained by ftp or
+    email from rtfm.mit.edu.  If you have an old copy of an
+    informational article, look for an "Archive-name" at the beginning;
+    rtfm.mit.edu stores it under that name in /pub/usenet/news.answers.
+    If the article has no Archive-name, check the first name on the
+    Newsgroups line and change to that directory under /pub/usenet.
+
+    Or send email >>> with valid reply-to address << to brown@ncoast.org
+    and you'll receive my canned instructions (about 8K) for retrieving
+    FAQ lists for most newsgroups, including a few that aren't archived
+    at rtfm.mit.edu.  (This offer may be withdrawn without notice
+    depending on system constraints.)
+
+Subject:  C07. Where can I get the latest copy of this FAQ list? (rev:
+               30 Mar 1994)
+
+    You can retrieve the latest version of this list as
+
+        /pub/msdos/info/faqp*.zip from SimTel
+        /pc/doc-net/faqp*.zip from Garbo.
+
+    Check the date before downloading, to make sure that the archived
+    version is actually newer than what you have.
+
+    Like most FAQ lists, this one is archived at rtfm.mit.edu and a
+    number of mirror sites.  If you have ftp access, retrieve either of
+    these identical files:
+
+        /pub/usenet/news.answers/msdos-programmer-faq/faq
+        /pub/usenet/comp.os.msdos.programmer/dos-faq
+
+    If you have no ftp access, see "C06. Where are FAQ lists archived?"
+    for instructions on retrieving it by email.
+
+Subject:  C08. How do I use ftp? (rev: 6 Apr 1994)
+
+    I was much impressed with {The Whole Internet User's Guide and
+    Catalog} by Ed Krol (O'Reilly & Associates, second edition ISBN
+    1-56592-063-5).  It gives lots of information on using ftp, email,
+    Telnet, Archie, etc.  As a new user of ftp (January 1993), I found
+    the information made me productive quickly.  (Disclosure:  Though I
+    don't believe it has biased my judgment, you should know that
+    O'Reilly sent me a free evaluation copy.)
+
+    You may also want to look for the "Beginner's Guide to FTP", posted
+    periodically in comp.binaries.ibm.pc.  You can retrieve it from
+    rtfm.mit.edu (see "C06. Where are FAQ lists archived?"), in
+    /pub/usenet/comp.binaries.ibm.pc, as *ftp.man*.
+
+    When downloading a file by ftp, make sure you have write access to
+    your working directory on your local machine, and that your disk has
+    enough space to hold the files.  Also make sure that if it's a ZIP
+    file or other binary file type, you set the protocol to binary
+    before downloading the file.
+
+(end of comp.os.msdos.programmer FAQ)
+-- 
+Stan Brown, Oak Road Systems                    brown@Ncoast.ORG
+Can't find FAQ lists?  ftp to 'rtfm.mit.edu' and look in /pub/usenet
+(or email me >>> with valid reply-to address <<< for instructions).
+I can also send "newbie" information on Usenet--just ask if you want it.
+

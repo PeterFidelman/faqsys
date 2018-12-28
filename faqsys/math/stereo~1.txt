@@ -1,0 +1,105 @@
+                           Stereoscopic Projection
+
+                               By Ian Romanick
+                           Email: idr@cs.pdx.edu
+
+Stereoscopic projection is the technique of creating two different
+projectsion of the same scene such that one is viewed with the left eye, and
+the other is viewed with the right eye. This technology is far from new. It
+has been used for more that a century to create the illusion of 3D from two
+2D pictures. It has been used in everything from children's toys to horror
+films. The question is often brought up in the many graphics programming
+related Usnet news groups, "How does it work?" I will make an attempt to
+answer this question in a way that will be both clear and useful.
+----------------------------------------------------------------------------
+Physics of the Eyes
+
+Nearly every human being is equiped with two eyes. They are          [Image]
+generally placed about 650 mm apart. Each eye, therefore, will have
+a slightly different view of its surroundings. The brain uses this
+difference to gauge distance. For example, figure 1 shows that an individual
+object is at a different location in each eye's field of vision. While it is
+not totally understood how the brain does it, it is known that the
+difference between the two images is used to gauge depth. It is also know
+that a stereo pair does more to give the impression of depth than color
+cueing and size cueing put together.
+----------------------------------------------------------------------------
+Mathematics of Projection
+
+When a point is projected from 3D to 2D, it is essentially mapped    [Image]
+from a truncated-pyramidal volume to a rectangular plane, as shown
+in figure 2a. The is done as though the camera points is at the crest of the
+pyramid. This is simple enough to do, and can be done using two multiplies,
+two adds, and two divides. To create a stereo display, a point needs to be
+projected twice: once for each eye. It the eyes are a distance X apart, then
+we can model them as being at a distance of X/2 on either side of the
+original camera point, as shown in figure 2b. For a given point to be
+correctly projected for a given eye, it must first be transformed to that
+eye's view space. Using simple geometry, it can be seen that this is done by
+moving the point towards the other eye by a distance of X/2. Figures 3a and
+3b show the left and right eye images generated using this method.
+                                   [Image]
+----------------------------------------------------------------------------
+Stereo Hardware
+
+Due to the fact that, when using stereoscopic projection, each eye needs to
+see a different image, some sort of special display hardware is needed.
+Typical hardware ranges from the very cheep to the very very expensive. At
+the low-end, there is either red-green or red-blue filtering. This method
+involves covering one eye with a red filter and the other with either a
+green or a blue filter. On the screen, both images are displayed, but the
+image for the red-filter-eye is drawn in blue (or green), and the image for
+the blue-filter-eye is drawn in red. This way the lenses will prevent either
+eye from seeing the other eye's image. The method has a number of drawbacks,
+the most important one being that you can only use ``gray scale'' display.
+That is, you get one hue that can vary intensities.
+
+Another method, that is a bit more expensive and can be dangerous, is the
+use of shutter glasses. Anyone who owned a Sega Master System in the 80's
+know what this device is. The general pricipal behind it is that one eye is
+covered while the other eye's image is displayed. The obvious advantages to
+this method are that all available colors of the display can be used and
+that each point doesn't need to be projected twice pre frame, as with the
+red-green filters. While this may seem to be a very good sollution, it has
+its drawbacks. First of all, some sort of device needs to be available to
+sync the shutters with the video display. The SMS had one built in, but the
+Amiga does not, so some sort of adapter would need to be built. Typical PC
+adapters connect to the sierial port. The other problem is that there is
+some risk involved in having small pieces of plastic spinning at 60Hz less
+than four centemeters from a persons eyes!
+
+The other popular device is by far the most expensive, costing from $500US
+to $10,000US, and most complex to interface. This device is the head mounted
+display. HMD's generally contain two small LCD monitors, on which each eye's
+image is displayed. In this case some problems are solved, but others are
+introduced. The biggest problems, other than the prohibitive cost, are that
+the resolution and color capabilities of LCD's are very low. The display
+pitch of a typical LCD is so bad, that the user would be legally blind. The
+other problem is that, even the lightest HMD's, are very heavy to have on
+one's head for an extended period of time. The final issues are that two
+complete images need to be generated every frame and some sort of Zorro II
+or Zorro III card would be needed to interface a HMD to an Amiga.
+----------------------------------------------------------------------------
+How Sweet It Is
+
+In spite of all its drawbacks, stereoscopic projection can new depth to
+nearly any 3D display. The example program shows how effective stereoscopic
+projection can be, even with just the red-green glasses method. When used
+with position tracking and a head mounted display, stereoscopic projection
+can be used to create a very realistic, very submersive, 3D environment.
+
+In the file stereo.zip I have included a demonstration program that shows
+simple stereoscopic projection.
+
+                               [Image][Image]
+----------------------------------------------------------------------------
+References
+
+Aukstakalis S. and Blatner D. 1992. Silicon Mirage: The Art and
+    Science of Virtual Reality, Peachpit Press, Inc., Berkeley, CA.
+
+Foley, J. D. and A. van Dam, et. al. 1990. Computer Graphics
+    Principles and Practice, Addicon-Wesley, Reading, MA.
+
+----------------------------------------------------------------------------
+Return to the Epsilon Graphics Page.

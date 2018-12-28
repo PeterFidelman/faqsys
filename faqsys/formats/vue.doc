@@ -1,0 +1,193 @@
+Autodesk 3D Studio
+                        .VUE file format
+
+The .VUE file is an ASCII file which acts as a script for the
+Renderer during command-line rendering.  Command line/batch file
+rendering is described in the Readme.doc file included on the
+Autodesk 3D Studio release disks.  Creation of the .VUE file is
+described on page 8-113 of the Autodesk 3D Studio Reference
+Manual.
+
+The following document describes the commands and arguements
+contained in the .VUE file.
+
+The .VUE file describes a sequence of frames to be rendered. 
+Each frame is described by a sequence of commands beginning with
+a "frame" command, specifying the frame number, and ending with a
+viewport command describing the view to be rendered (e.g., "top,"
+"camera," etc.).  Between these two command are any number of
+"transform", "light", "spotlight", and "morph" commands.
+
+The .VUE file commands are as follows
+
+     frame     <n>       
+     transform <object name> <transform matrix>
+     morph     <master object name> <morph number> <object 1
+               name> <weight 1> ... <object N name> <weight N>
+               <transform matrix>
+     light     <light name> <x> <y> <z> <r> <g> <b>
+     spotlight <light name> <x> <y> <z> <tox> <toy> <toz> <r> <g>
+               <b> <hot angle> <falloff angle> <shadow flag>
+     top       <x> <y> <z> <width>
+     bottom    <x> <y> <z> <width>
+     left      <x> <y> <z> <width>
+     right     <x> <y> <z> <width>
+     front     <x> <y> <z> <width>
+     back      <x> <y> <z> <width>
+     camera    <x> <y> <z> <tox> <toy> <toz> <roll> <focal> 
+
+Examples of how the above commands are formatted can found by
+creating your own .VUE files in Autodesk 3D Studio. The following
+section describes each of these commands and their values.
+
+Frame command (begins each frame description with the frame
+number):
+
+     frame  <n>               
+
+Transform command (move the object to a given orientation and
+display):
+
+     transform <object name> <transform matrix>
+
+          <object name>  is the name corresponding to one of the
+                         objects in the corresponding .3DS file,
+                         in double quotes.
+
+          <transform matrix> is composed of 12 numbers:
+
+                    r1 r2 r3 r4 r5 r6 r7 r8 r9 tx ty tz
+     
+               The first nine numbers, r1-r9, describe the
+               rotation and scaling to apply to the object.  The
+               last three, tx,ty,tz, describe its position in
+               universe coordinates.    
+
+Morphing command (display weighted average of up to four objects
+-- objects must have same number of vertices):
+
+     morph <master object name> <morph number> <object 1 name>
+     <weight 1> <object 2 name> <weight 2>...<object N name>
+     <weight N> <transform matrix>
+
+          <master object name>     is the name of the master
+                                   object, from which surface
+                                   properties are derived.
+
+          <morph number>           is the number of objects to
+                                   average: 2, 3, or 4.
+
+          <object 1 name>          is the name of the first
+                                   object to be averaged.
+
+          <weight 1>               is weight to be applied to the
+                                   first object.
+
+          <object N name>          is the name of the Nth object
+                                   to be averaged.
+
+          <weight N>               is weight to be applied to the
+                                   Nth object (up to four).
+
+          <transform matrix>       (See above.)
+     
+
+     Note: The weights are decimal fractions (0 - 1.0)
+     representing averages of the up to four morphed objects on
+     either side of the current frame.  Each of these numbers
+     describes how much of the object in the current frame is
+     made up of the other four objects.  In most cases, the total
+     of these numbers will be 1.0.
+
+
+Omni-directional light command:
+
+     light <light name> <x> <y> <z> <r> <g> <b>
+
+          <light name.        the name of the light.
+
+          <x> <y> <z>         the coordinates of the light
+                              position.
+
+          <r> <g> <b>         the red, green, and blue components
+                              of the light color, expressed as
+                              decimal fractions ranging from 0 to
+                              1.0.
+
+Spot-Light command:
+
+     spotlight <light name> <x> <y> <z> <tox> <toy> <toz> <r> <g>
+     <b> <hot angle> <falloff angle> <shadow flag>
+
+          <x> <y> <z>         the coordinates of the light
+                              position.
+
+          <tox> <toy> <toz>   the coordinates of the light target
+                              position.
+
+          <r> <g> <b>         the red, green, and blue components
+                              of the light color, expressed as
+                              decimal fractions ranging from 0 to
+                              1.0.
+
+          <hot angle>         the angle defining the size of the
+                              light's hot spot, in degrees.
+
+          <falloff angle>     the angle defining the size of the
+                              light's falloff area, in degrees.
+
+          <shadow flag>       1 if the light casts shadows, 0
+                              otherwise. 
+
+Orthogonal viewport commands ( Render a particular orthogonal
+view):
+     
+     top <x> <y> <z> <width>
+     bottom <x> <y> <z> <width>
+     left <x> <y> <z> <width>
+     right <x> <y> <z> <width>
+     front <x> <y> <z> <width>
+     back <x> <y> <z> <width>
+
+          <x> <y> <z>         the coordinates of the view center
+                              point.
+
+          <width>             the width of the rendered image in
+                              universe units.
+
+User viewport command (render the User view):
+
+     user <x> <y> <z> <horiz> <vert> <roll> <width>
+
+          <x> <y> <z>         the coordinates of the user
+                              viewport center point.
+
+          <horiz>             the horizontal angle.
+
+          <vert>              the vertical angle.
+
+          <roll>              the roll angle.  (This is an
+                              "empty" parameter and must always
+                              be zero.  Use a Camera viewport to
+                              implement roll.)
+
+          <width>             the width of the rendered image in
+                              universe units.
+
+Camera (perspective) view command. (Renders a view with specified
+camera)
+
+     camera <x> <y> <z> <tox> <toy> <toz> <roll> <focal> 
+          
+          <x> <y> <z>         the coordinates of the camera
+                              position.
+
+          <tox> <toy> <toz>   the coordinates of the camera
+                              target position.
+
+          <roll>              the camera roll angle, in degrees.
+
+          <focal>             the camera focal length, in
+                              millimeters.
+
+

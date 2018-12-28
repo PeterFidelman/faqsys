@@ -1,0 +1,215 @@
+From - Fri Jun  5 12:01:39 1998
+Path: ifi.uio.no!news-feed.ifi.uio.no!uninett.no!news.powertech.no!not-for-mail
+From: Mats Byggmastar <mats@moesarc.NOJUNK.no>
+Newsgroups: comp.graphics.algorithms,comp.sys.ibm.pc.demos
+Subject: Re: Tile Texture Mapping Doc
+Date: Thu, 04 Jun 1998 10:41:39 +0200
+Organization: Moesarc Technology AS, Oslo, Norway
+Lines: 198
+Message-ID: <35765DC3.AD0AC4A1@moesarc.NOJUNK.no>
+References: <3573B1E3.F39AD040@NOSPAM.ipeca8.elet.polimi.it>
+NNTP-Posting-Host: mrhide.moesarc.no
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-Mailer: Mozilla 4.04 [en] (Win95; I)
+Xref: ifi.uio.no comp.graphics.algorithms:69637 comp.sys.ibm.pc.demos:58411
+
+Luca Gerli wrote:
+
+> I only wanted to say that I uploaded to ftp.cdrom.com
+> a little doc that explains how to do tiled texture mapping
+> for pow2 texture sizes, with wrapping. It is basically an
+> extension to what was presented by MRI in fatmap2.zip.
+> You can find the doc at:
+> 
+> ftp://ftp.cdrom.com/pub/demos/incoming/code/tiletmap.zip
+
+
+Yup, this all looks good.
+I also worked with the same thing a while back and wrote
+some text so I wouldn't forget it. Here it is:
+
+
+
+    Vertical cache tiled texture mapper
+    -----------------------------------
+
+Texture map layout
+------------------
+
+Each tile has the same height as the texture map and is 4 pixel 
+(8 byte as I only consider hi-color these days) wide. This means 
+that the Pentium processor can hold a 4x4 pixel texture block in 
+the same L1 cache-line. Each cache-line is 32 byte and aligned on 
+32 byte boundary. The texture map sould therefore be aligned on 
+32 byte.
+
+Let's take the following 128x128 pixel texture map as example. The 
+128 pixel width will give 32 vertical tiles as each tile is only 
+4 pixels wide. The height can be any power of 2 size from 8 to 512  
+pixels as it don't affect the structure of the tiles, it just makes 
+them longer.
+
+            |---------width-------------------- - - ----------|
+
+    ---     +-------+-------+-------+-------+-- - - --+-------+
+     |      |       |       |       |       |         |       |
+     |      | tile0 | tile1 | tile2 | tile3 |   ...   | tile31|
+     |      |       |       |       |       |         |       |
+     |      |       |       |       |       |         |       |
+   height   |       |       |       |       |         |       |
+     |      |       |       |       |       |         |       |
+     |      |       |       |       |       |         |       |
+     |      |       |       |       |       |         |       |
+     |      |       |       |       |       |         |       |
+    ---     +-------+-------+-------+-------+-- - - --+-------+
+
+Each tile is a 4x128 pixel texture map and the whole texture map an
+array of 32 4x128 pixel texture maps.
+
+
+Bit layout
+----------
+
+First of all we will assume that each pixel is 1 byte even though 
+they are 2 byte in hi-color and even 4 byte in some true-color modes. 
+This is no problem because we can use *2 or *4 in the assembler 
+instructions to access the texture map.
+
+To access a pixel in a 4x128 pixel texture map we need 2 bits for U 
+and 7 bits for V:
+
+                VVVVVVV UU
+
+We have 32 tiles so we need 5 bits to access each tile:
+
+          TTTTT VVVVVVV UU
+
+TTTTT and UU bits will access the texture in the horizontal direction 
+and the VVVVVVV bits in the vertical direction.
+
+In general the following number of bits are needed.
+
+U = 2             Always fixed to 2 because each tile is 4 pixel wide.
+V = log2(height)  Height must be power of 2 (8,16,32,64,128,256,512).
+T = log2(width/4) Width must be power of 2 (8,16,32,64,128,256,512).
+
+
+If we use 18 bits for texture pointer and 13 bit for fraction + 1 bit 
+for a bitgap we can handle textures up to 512x512 pixels in any 
+width,height combination down to 8x8 pixel. It is also possible to 
+have sizes of 1024x256, 2048x128, etc.
+
+The complete bit format for our example in a 32 bit register is now:
+
+    0000 TTTTT VVVVVVV UU 0 FFFFFFFFFFFFF
+
+
+
+/*
+ *  Info block for cache-tiled texture mappers
+ */
+
+typedef struct 
+{
+    unsigned int v_bits;        // number of V bits
+    unsigned int v_mask;        // mask out V bits
+    unsigned int t_mask;        // mask out T bits
+    unsigned int u_bitfill;     // fill bitgaps in dU (delta setup)
+    unsigned int v_bitfill;     // fill bitgaps in dV (delta setup)
+    unsigned int u_bitclear;    // clear bitgaps in U (inner loop)
+    unsigned int v_bitclear;    // clear bitgaps in V (inner loop)
+
+} Htilpara;
+
+
+/*
+ *  Function calculates til-parameters for textures from 8x8 to 
+ *  512x512 in any width,height combination (pow2).
+ *
+ *  Returns 0 if legal combination of width,height
+ */
+
+int HCalcTilPara(Htilpara * til, int width, int height)
+{
+    unsigned int n, tbits, ubits, vbits;
+
+    ubits = 0;
+    vbits = 0;
+    for(n=3; n <= 18; n++) {
+        if((1 << n) == width)  ubits = n;
+        if((1 << n) == height) vbits = n;
+    }
+    if(ubits == 0  ||  vbits == 0  ||  (ubits + vbits > 18))
+        return -1;
+
+    tbits = ubits - 2;
+    ubits = 2;
+
+    til->v_bits = vbits;
+    til->v_mask = ((1 << vbits) - 1) << (2+1+13);
+    til->t_mask = ((1 << tbits) - 1) << (vbits+2+1+13);
+    til->u_bitclear = til->t_mask | 0x0000c000 | 0x00001fff;
+    til->v_bitclear = til->v_mask | 0x00001fff;
+    til->u_bitfill = ~til->u_bitclear;
+    til->v_bitfill = ~til->v_bitclear;
+
+    return 0;
+}
+
+
+
+Conversion
+----------
+
+u,v         - texture u,v in 18:14 bit fixed point
+tu,tv       - texture u,v in tiled format
+dudx,dvdx   - delta u,v in 18:14 bit fixed point
+tdudx,tdvdx - delta u,v in tiled format for inner loop
+
+    tu = ((u << til->v_bits) & til->t_mask) |
+         ((u >> 1) & 0x00001fff) | (u & 0x0000c000);
+
+    tv = ((v << 2) & til->v_mask) |
+         ((v >> 1) & 0x00001fff);
+
+ tdudx = ((dudx << til->v_bits) & til->t_mask) |
+         ((dudx >> 1) & 0x00001fff) | (dudx & 0x0000c000) | 
+         til->u_bitfill;
+
+ tdvdx = ((dvdx << 2) & til->v_mask) |
+         ((dvdx >> 1) & 0x00001fff) | til->v_bitfill;
+
+
+
+Innerloop
+---------
+
+    ofs = tu + tv;
+    do {
+        tu += tdudx;
+        tv += tdvdx;
+        ofs >>= 14;
+        tu &= til->u_bitclear;
+        tv &= til->v_bitclear;
+        *dest++ = bitmap[ofs];
+        ofs = tu + tv;
+    } while(--width);
+
+
+Note! There might be typos in this text. The HCalcTilPara() 
+      functions should be correct though as it was copied 
+      directly from my source.
+
+
+
+
+
+MRI / Doomsday
+
+
+-------------------------------------------
+Mats Byggmastar, B.Sc., software developer
+Moesarc Technology, GSM/DAMPS testequipment
+mats@moesarc.NOJUNK.no, tel: (+47) 22516974

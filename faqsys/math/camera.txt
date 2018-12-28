@@ -1,0 +1,115 @@
+From - Fri Aug 29 12:14:00 1997
+Path: ifi.uio.no!sn.no!uninett.no!news-feed.inet.tele.dk!cpk-news-hub1.bbnplanet.com!news.bbnplanet.com!news-peer.sprintlink.net!news-pull.sprintlink.net!news-in-east.sprintlink.net!news.sprintlink.net!Sprint!206.154.70.8!news.webspan.net!usenet
+From: "mr_phreak" <mr_phreak@geocities.com>
+Newsgroups: comp.graphics.algorithms,rec.games.programmer
+Subject: Re: Virtual Camera
+Date: 29 Aug 1997 01:02:02 GMT
+Organization: WebSpan Inc., New Jersey
+Lines: 99
+Message-ID: <01bcb416$b368c7c0$d4589ace@particle>
+References: <1375.7179T1340T2054@aix.pacwan.net>
+NNTP-Posting-Host: usr6-12.bay.ny.webspan.net
+X-Report-Abuse-To: abuse@mail.webspan.net
+NNTP-Posting-Date: 28 Aug 1997 21:02:05 EDT
+X-Newsreader: Microsoft Internet News 4.70.1161
+Xref: ifi.uio.no comp.graphics.algorithms:56607 rec.games.programmer:154114
+
+ok... he're what I think you're looking for... 
+
+(this is just my fast way C copy... )
+
+matrix set_rotations(matrix m, vector d, vector u){
+	float t;
+	vector D,U,R;
+	D.x = d.x;
+	D.y = d.y;
+	D.z = d.z;
+	NormalizeVector(&D);
+	U.x = u.x;
+	U.y = u.y;
+	U.z = u.z;
+	t = U.x * D.x+U.y * D.y+U.z * D.z;
+	U.x -= D.x *t;
+	U.y -= D.y *t;
+	U.z -= D.y *t;
+	NormalizeVector(&U);
+	VectorCrossProduct(&R,&U,&D);
+	m._11 = R.x;
+	m._12 = R.y;
+	m._21 = U.x;
+	m._22 = U.y;
+	m._31 = D.x;
+	m._32 = D.y;
+	m._33 = D.z;
+	m._13 = R.z;
+	m._23 = U.z;
+	return m;
+}
+
+ok... what this thing does is: make the d (in parameter), vector, 
+your Z vector,.. and the u (in parameter) vector, into your Y vector.
+
+ok.. say you have 2 points...  5, 10, 20... for campera. and 
+100,200,300, for point... 
+
+you do something like... 
+set_rotation(m,point-camera,up_vector)
+that would make a rotation matrix, which will make the 
+point-camera vector your current Z...   the up_vector
+is somethign you'll have to figure out..... it's 
+your "roll".. (I think that's what it is.. ).. 
+put your ear to your shoulder... (that's what that is... )
+
+well... the source can be found in one of those DX samples.
+
+hope it works... (never actually tried it myself... )
+-- 
+Particle
+mr_phreak@geocities.com
+http://www.geocities.com/SiliconValley/Way/8593
+
+
+Frederic Calendini       <fcalendini@aix.pacwan.net> wrote in article
+<1375.7179T1340T2054@aix.pacwan.net>...
+> Hi !
+> 
+> I would like to implement a virtual camera in my 3D viewing system, but
+don't
+> know exactly how to do it.
+> 
+> Currently my system uses three angles (theta, phi and psi). So I must
+provide
+> these 3 angles to determine the angle from which my world is seen; this
+angles
+> system is not very intuitive, and I'd prefer give a point to look at
+instead.
+> 
+> So I think it's not very difficult to determine the 3 needed theta, phi,
+psi
+> angles when I know the positions of my camera and the point I want to
+look at,
+> but I can't figure the correct formula by myself (I suppose that cos and
+sin are
+> used, but I'm not that good at maths, unfortunately).
+> 
+> So could someone help me ? To sum up, I'm looking for formulas that would
+give
+> me the correct theta, phi and psi rotation angles, so the z axis of my
+observer
+> system points to a given point (so by rotating my observer system with
+these
+> angles, my camera would look at the desired point).
+> 
+> Thank you very much for your help (and sorry if this topic was already
+> discussed, but I'm new to 3D ;-)).
+> 
+> Best regards,
+> 
+> *****************************************************
+> *                                                   *
+> *  Fred. Calendini :  fcalendini@aix.pacwan.net     *
+> *                     fcalendini@amiganews.com      *
+> *                                                   *
+> *****************************************************
+> 
+> 

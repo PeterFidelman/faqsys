@@ -1,0 +1,89 @@
+                Finding the normal at the surface of the set
+
+----------------------------------------------------------------------------
+
+Given a surface S = { Q ; f(Q) = 0 } , for instance, the normal N(Q) at Q is
+defined as the vector being orthogonal to the surface near Q. For all Q'
+belonging to the surface and infinitly close to Q, N(Q) . QQ' = 0 . This
+quantity is used with the computations of lighting properties of objects.
+
+How do we get it for a fractaly defined set ? Well, for a REAL fractal set,
+this vector shouldn't exist, most of the time, since the surface of the set
+is infinitly 'folded' at almost every point. But for fractal like those
+computers deal with, it get some sense. Here is the method:
+
+[Image] We have built a sequence of point Q(n) out of the first, tested,
+point Qo. The rule is: Q(n+1) = Fc ( Q(n) ). Now, after N successful
+iterations, we find that |Q(N)| has just the desired exit value (say Eo)
+that separate inner points from outer ones. So, Qo is on the surface. And we
+want its normal.
+
+Q(N) depends from Qo in a certain manner (polynomically, for Julia set...).
+And we have the function f that define the surface via S = { Q ; f(Q) = 0 }
+:
+
+                 f(Qo) = |Q(N)|^2 - Eo^2
+
+A theorem states that the normal to S at the point Qo will be the gradient
+of f (except on seldom, degenerated, cases):
+
+                 N(Qo) = [(d/dxo , d/dyo , d/dzo , d/dwo ) f ] (Qo)
+
+where Qo = ( xo , yo , zo , wo ).
+
+Warning: here f is a scalar function of a vectorial variable Qo.
+
+But the dependancy of f(Qo) with Qo is really difficult to explicit (that's
+where the fractality comes from !), so the gradient won't be easy to
+compute. One will have to use an iterative method:
+
+[Image] Using composition of derivates, one has, at the nth stage of
+iteration, the tensor:
+
+         d/dxj Qi(n)(xo,yo,zo,wo) = d/dxj Fic( Q(n-1)(xo,yo,zo,wo ) )
+                    = sum over k { d/dxk Fic( Q(n-1) ) . d/dxj Qk(n-1) }
+
+
+We've written explicitly the (xo,yo,zo,wo)-dependance of the nth point Q(n).
+Qi is the i-th component of the point Q, xj stands for the j-th coordinate,
+and Fic is the i-th component of our vectorial map Fc.
+
+So, one can see that we can build a tensor sequence Tij(n)= d/dxj Qi(n)
+iteratively, at the same time we're constructing the sequence of iterition
+points Q(n), with the recursion rule:
+
+      Q(0) = Qo  ( the point tested ).
+      Tij(0) = Identity
+
+      Q(n+1) = Fc[ Q(n) ].
+      Tij(n+1) = sum over k { d/dxk Fic( Q(n) ) . Tkj(n) }
+
+[Image] What was the use of computing this matrix d/dxj Q(n) ? Well, now, we
+can compute the vectorial normal of the scalar function f with this matrix.
+it's:
+
+       Grad f = 2. Q(n) . Grad Q(n).
+
+coming from the definition of the (squared) norm |Q(N)|^2 we've taken the
+gradient of...
+
+Moreover, if the point wasn't in the set, the normal still exist ! It's not
+the normal of the actual set, but rather an 'equi-potential' set of it.
+Anyway, It can than be used in a Newton-Raphson convergence scheme toward
+the set. That's an useful trick when using ray-tracing...
+
+[Image] Implementation detail:
+
+A good compromise between memory and CPU load is first to compute time the
+sequence Q(n) alone. If the point tested, Qo, is too far from the set,
+there's no need to compute the normal. On the contrary, if Qo is a good
+candidate, we've got the Q(n) sequence that greatly eases the computation of
+the Tij(n) sequence.
+
+Jij = d/dxj Fic is a (polynomial, in case of Julia sets) constant map (the
+Jacobian) that can be stored once for all, or hard-coded, allowing
+optimizations...
+
+----------------------------------------------------------------------------
+
+[Image]  [Image] [Image]   [mirror]

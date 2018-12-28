@@ -1,0 +1,345 @@
+From: mikem@uhccux.uhcc.hawaii.edu (Mike Morton)
+Newsgroups: comp.graphics
+Subject: summary: rotating bitmaps
+Date: 11 Nov 88 23:05:12 GMT
+Organization: University of Hawaii
+
+Not long ago, I asked for ideas on how to quickly rotate a bitmapped
+image by an arbitrary angle.  Quite a response!
+
+Thanks to all, including several whose messages don't appear here
+because they were subsets of other messages I got.
+
+First, for those of you who prefer the library, here's a summary of
+the references I got.  Following are some of the responses, several
+of which are quite detailed.
+----------------------------------------------------------------------
+REFERENCES
+
+Fant, K.M.   (1986)  IEEE Computer Graphics & Applications 6,1  71-80.
+	"A nonaliasing, real-time spatial transform technique."
+
+Foley & Van Dam "Fundamentals of Interactive Computer Graphics" chapter 8
+
+Jackson, T.    (1987)  Graphics and Image Processing Algorithms for the
+	miniDAP.  BSc. Project Report, Dept. Computer SCience & Statistics,
+	Queen Mary College, London University, Mile End Rd., London.
+
+Alan Paeth, ``A Fast Algorithm for General Raster Rotation,'' Graphics
+	Interface '86, pp. 77-81, May 1986.
+
+A. Tanaka, M. Kameyama, S. Kazama, and O. Watanabe, ``A Rotation Method
+	for Raster Image Using Skew Transformation,'' Proc. IEEE Conference
+	on Computer Vision and Pattern Recognition, pp. 272-277, June 1986.
+----------------------------------------------------------------------
+From: David Fox <fox@garfield.cs.columbia.edu>
+Organization: Columbia University CS Department
+
+The idea is that you compose the functions "shear" and "transpose".
+"Shear" takes a bitmap like this
+a-----b
+|     |
+|     |
+|     |
+c-----d
+and shears it by a given angle x to give this
+a-----b
+ \     \
+->\     \
+   \     \
+--> c-----d
+Transpose rotates that about the diagonal to give this
+a
+ |\
+ | \
+ |  \
+b|   |c
+  \  |
+   \ |
+    \|d
+Then a shear in the other direction gives this
+-->   /\a
+     /  \
+    /    \
+->b/      \c
+   \      /
+    \    /
+     \  /
+     d\/
+Finally, another transpose yields the rotated bitmap
+
+    /\b
+   /  \
+  /    \
+a/      \d
+ \      /
+  \    /
+   \  /
+   c\/
+
+I did not invent this algorithm, so please don't attribute it to me.
+Let me know what kind of replies you get, I'm curious whether this
+algorithm is widely known (and whose it is), or unknown, or whether
+there are other algorithms to do this.  Enjoy.
+
+David Fox
+fox@cs.columbia.edu
+----------------------------------------------------------------------
+From: jeff@lorrie.atmos.washington.edu (Jeff Bowden)
+
+See Foley & Van Dam "Fundamentals of Interactive Computer Graphics" chapter 8
+(I think).
+
+For a 2D rotate about the origin, multiply all coordinates by this matrix:
+
+( x y )	(                   )
+	(  cos(r)    sin(r) )
+	( 		    )
+	( -sin(r)    cos(r) )
+	(		    )
+
+method 1:  (slow) Pass each pixel through the above matrix.
+
+method 2: (faster) Pass the endpoints of each horizontal line in your image
+through the matrix.  Use bresenham's algorithm to plot the points in between
+but instead of plotting all of the pixels the same color, iterate through your
+source line and use the values you find there.
+
+method 3: (fastest) Rotate the corner coordinates of your rectangle, use
+bresenham to generate the coordinates of the endpoints of your rotated
+(previously horizontal) lines, and apply method 2 using these endpoints.
+
+NOTE: I have no actual experience with these methods on bitmaps.  I only use
+the coordinate transformation matrix on lines and triangles.  There may be
+problems with bresenham not generating the same number of points for the
+rotated line as the horizontal source line.  If there is a difference it
+should be only 1 or 2 pixels, you need to study its behaviour before you will
+know.  I contemplated implementing method 3 at one point and actually coded
+some of it before I got sidetracked with other things.  No, I don't have the
+code anywhere anymore.
+----------------------------------------------------------------------
+From: oster%SOE.Berkeley.EDU@jade.berkeley.edu (David Phillip Oster)
+
+for gray scale images, of course, this reduces to a simple interpolation
+problem: each destination pixel is the weighted sum of some small
+neighborhood of source pixels. You need to compute the weights, and come
+up with an efficient algorithm for marching through the bitmap.
+----------------------------------------------------------------------
+From: mcvax!cwi.nl!edwin@uunet.UU.NET (Edwin Blake)
+Organization: CWI, Amsterdam
+
+In reply to your question I have made the following summary (its still
+too long!).  If you would like more implementation details please
+contact me.
+
+What I did not mention is that there is a three-pass method (suited to
+SIMD machines) which Jackson [see below] develops but this is probably
+irrelevant for you as well.
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+8th November, 1988			E.H.Blake  <edwin@cwi.nl>
+
+	Two-dimensional Image Transformations.
+	======================================
+
+The general linear transformations of images (translations, rotations
+shear etc) can be achieved by a vector addition, and multiplication by a
+2x2 matrix.
+
+Clearly we wish to separate out translations of images since they are by
+far the easiest and cheapest transformation.
+
+We are now left with the transformations represented by the same two-
+dimensional matrix applied to the coordinates of each point in the
+image.  It might be convenient to separate this into components which
+can be dealt with in different ways: i.e. change in the size in the x
+and y directions, shear in those directions and pure rotation.
+
+Since we are going to deal with images on a raster questions about re-
+sampling and aliasing will arise.  We shall present two fundamentally
+different approaches.  The one approach deals with fractional pixels and
+attempts to minimise sampling errors by distributing parts of a source
+pixel amongst the destination pixels.  The other approach deals only
+with whole pixels and reduces temporal aliasing (i.e. flicker) at the
+expense of spatial resolution.  When shearing images the whole pixel
+method produces pixels might not be quite right for their position but
+no pixels are lost or duplicated.
+
+The whole pixel approach can also be used for overall size changes in
+the images.  When the size of the image changes we either cull or dupli-
+cate certain pixels.  Particularly with size reduction this can lead to
+unacceptable results because certain features in the image may disap-
+pear.  This leads us to adopt the fractional pixel resampling approach.
+
+There is another important difference between the two approaches how-
+ever:  the fractional pixel approach has to examine and interpret pixel
+values and must be able to combine them.  The whole pixel approach for
+shearing combined with a duplicate/cull method of size change is
+independent of the values of the pixels.  This value independence (which
+is really a type independence) is important where the pixel values are
+themselves isolated points in a much bigger colour space.  For example,
+if the pixels are pointers into a colour table then we cannot in general
+expect to be able to average the two pointers and come up with a pointer
+to the intermediate colour.
+
+These simple operations repeated over a large number of pixels make them
+ideal candidates for special purpose VLSI or SIMD machines.  In fact the
+routines described below are partly inspired by algorithms originally
+intended for the miniDAP (a 32x32 SIMD machine) [Jackson, 1987] or for a
+special purpose processor [Fant, 1986].
+
+
+Composition of Image Transformations.
+=====================================
+
+The 2x2 transformation matrix can be written as a composition of
+transformations in a number of ways.  The decomposition used depends on
+the order in which the transformations are applied.  The basic image
+transformation which leaves its source unchanged is the unit matrix.
+
+If we first shear in the y direction, then in the x direction and
+finally scale the image the decomposition is as follows:
+
+       | a   b |   =   | m   0 |  *  | 1   x |  *  | 1   0 |            (1)
+       | c   d |       | 0   n |     | 0   1 |     | y   1 |
+
+                   =   | m + mxy   mx |
+                       |   ny      n  |
+
+In the decomposition y is a shear parallel to the y-axis, x is a shear
+parallel to the x-axis, n represents a scaling in the y dimension and m
+a scaling in the x dimension.  By identifying terms we can see that:
+
+      n  =  d
+     and provided d  !=  0
+      y  =   c/d        &      m  =  a -  bc/d                          (2)
+     and provided ad - bc is non-zero
+      x  =   db/(ad - bc)
+
+If the determinant, ad - bc, is zero then the transformation is singu-
+lar.  This means that the image need not be treated as a plane.  If the
+transformation is non-singular but d = 0, then we can rotate the image
+by ninety degrees and exchange -b for d.
+
+If on the other hand we first apply all the y-direction changes (shear
+and scaling) and then the x-direction changes, the decomposition is as
+follows:
+
+       | a   b |  =  | e   f |  *  | 1   0 |                           (3)
+       | c   d |     | 0   1 |     | g   h |
+
+                  =  | e + fg  fh |
+                     |   g      h |
+
+In the decomposition g is a shear parallel to the y-axis and h the scal-
+ing in that direction, f is a shear parallel to the x-axis and e the
+corresponding scaling. Then:
+
+      h  =  d
+      g  =  d                                                         (4)
+and provided d  !=  0
+      f  =  b/d
+      e  =  bc/(a -  d)
+
+Similar considerations as in (2) regarding d apply to (4).
+
+
+Fast, Pixel Preserving Image Transformation:  "QUICK"
+=====================================================
+
+In order to refer to this method of image transformation easily it will
+be called the "Quick" method.  The quick method always moves whole pix-
+els without interpretation, it is thus independent of the underlying
+type of the representation.  There are four basic kinds of operation we
+shall need:
+
+1.   Pixel shear (translation) according to position.
+
+2.   Shearing of pixels in two dimensions together, without writing out
+     the intermediate results.
+
+3.   Selective pixel duplication to achieve fractional size increases.
+
+4.   Selective pixel culling to achieve fractional decreases in image
+     size.
+
+A common theme to all these transformations is distributing a fraction
+of an integral set of operations over an interval.  For example, choos-
+ing which pixels to duplicate to get 10% size increase, or which lines
+to shift for a fractional shear.  This has a very efficient solution in
+Bresenham's well known algorithm, which is mainly used for line drawing
+[see any textbook, e.g. Newman & Sproull].
+
+The other problem is combining two shears in two-dimensions.  The sim-
+plest way would be to write out the intermediate image and then
+transform it a second time.  However, by tracing the jagged path which
+an output line follows we can derive a scanline algorithm which produces
+the sheared image.  By duplicating or neglecting selected pixels and
+then duplicating or neglecting selected lines we have an efficient and
+general image transformation method.  The algorithm notionally employed
+the decomposition of equation 2 but without writing out any intermediate
+results.
+
+This algorithm was fully implemented and its combination of features may
+very well be unique.
+
+
+Two-Pass, Anti-Aliased Image Transformation:  "PERFECT"
+=======================================================
+
+This image transformation writes out its intermediate results.  The
+pixel values are interpreted, which means that colour errors can occur
+from resampling.  For grey level images however the output is much
+better, because anti-aliased, than the previous method.  For brevity it
+will be referred to as the "Perfect" method.
+
+The algorithm interpolates a selected window of input pixels to produce
+the desired view of output pixels.  The columns of the image are first
+processed and then the rows of the resulting intermediate image.
+Because of the two pass nature of the algorithm shears can be done
+easily for each dimension separately.  The "perfect" method is well
+suited to VLSI implementations [Fant, 1986], and the reader is referred
+to Fant's article for more details.  The decomposition derived in equa-
+tions 3 and 4 apply to this algorithm.  Using the decomposition into the
+shear and scaling components avoids the rather laborious procedure used
+by Fant which involved calculating the positions of the four corners of
+an image.
+
+
+Simple Averaging Image Transformation.    "PRETTY"
+==================================================
+
+Because the two pass algorithm was so slow there was an attempt to
+produce an intermediate algorithm.  This algorithm is essentially the
+same as "Quick" except that pixels are not culled when the image
+decreases in size.  Instead a simple averaging is performed.  Successive
+pixels which would be discarded are accumulated and averaged with the
+normal output pixel of a location.  The algorithm was only used for
+images which decreased in size.  This was the most common bad case for
+the "Quick" method.  Whether this method is worth the extra code is not
+clear.
+----------------------------------------------------------------------
+From: Alan Wm Paeth <awpaeth%watcgl.waterloo.edu@RELAY.CS.NET>
+Organization: U. of Waterloo, Ontario
+
+I presented a paper on this in Graphics Interface '86. The code can run on a
+framebuffer (we have an Adage/Ikonas) or a mainframe (Vax implementation).
+Three passes over the data are made; each "shear" the data without scaling.
+This allows simple resampling and all integer math (as opposed to the
+previously known 2-pass varients). It also is good to ninety degrees (the two
+pass version breaks down rapidly after 45). In the 90 deg case, the rotate
+becomes a simple "shuffle", as done on the "Blit".
+
+I can send you the source code or the "troff" text of the paper.  [Alan
+said in a later note that this offer is for anyone, not just me. - MM]
+
+    /Alan "Aha! Planet!" Paeth
+    Computer Graphics Laboratory
+    University of Waterloo
+----------------------------------------------------------------------
+Enjoy...
+
+ -- Mike Morton // P.O. Box 11378, Honolulu, HI  96828, (808) 676-6966 HST
+      Internet: msm@ceta.ics.hawaii.edu
+    (anagrams): Mr. Machine Tool; Ethical Mormon; Chosen Immortal; etc.

@@ -1,0 +1,245 @@
+[Home] [Articles] [Benchmarks] [Information] [Resources] [VPR]
+---------------------------------------------------------------------------
+
+ [Articles] Pentium Secrets
+
+---------------------------------------------------------------------------
+
+The Pentium collects lots of information about code execution, and now you
+can get access to it
+
+Terje Mathisen
+
+When Intel announced the Pentium processor in March 1993, I immediately
+ordered the three-volume user's manual. For people like me, who wanted to
+write the fastest, most efficient code possible, volume 3 appeared to be
+the most useful. Imagine my chagrin, then, when every interesting section
+on optimization contained a reference to Appendix H, which consists of a
+single, illuminating paragraph stating that the information I desired is
+"considered Intel confidential and proprietary." This information is only
+available to those willing to sign a nondisclosure agreement with Intel.
+
+From the published Pentium documentation and other sources, I knew that the
+Pentium could return detailed statistics on all major parts of its
+CPU--just the type of information that is essential for code optimization.
+The best place to look for such information was in the new, documented
+RDMSR (read machine-specific register) and WRMSR (write machine-specific
+register) instructions. These instructions work on a set of 64-bit MSRs
+(machine-specific registers) contained in the Pentium.
+
+To use RDMSR and WRMSR, you move the register identifier (i.e., the number)
+of the desired MSR into register ECX. Invoking RDMSR will then transfer the
+contents of the indicated MSR into the paired registers EDX:EAX, while
+WRMSR copies EDX:EAX into the internal register. The Pentium user's manual
+documents MSRs 0h, 1h, and 0Eh, and also states that MSRs 3h and 0Fh, as
+well as values above 13h, are reserved and illegal. I felt sure the
+undocumented registers held the key to the optimization information I
+wanted.
+
+As the first step in deciphering the undocumented registers, I wrote a test
+program that dumped the contents of the MSRs. (I quickly discovered that
+any attempt to read MSR 0Ah halted my PC, so until somebody finds a use for
+it, I suggest leaving that one alone.) Running the test program, I found
+that the content of most of the registers was static. The exception was MSR
+10h, which was changing rapidly indeed. Guessing that MSR 10h might contain
+a running cycle count, I divided the value contained in 10h by my
+processor's 60-MHz clock speed. My hunch paid off when I ended up with a
+nice display of the number of seconds since I had last powered-up.
+
+Using RDMSRto read MSR10h gives you the highest precision counter available
+to 80x86 programs. By reading the value in MSR10h before and after a block
+of code, you'll know exactly how long the processor took to execute the
+block, down to the last cycle.
+
+These results parallel the ones you get when you use the RDTSC (read time
+stamp counter) (0F/31) instruction. Mike Schmid revealed the existence of
+this instruction in the January issue of Dr. Dobb's Journal. As with many
+of the MSRs, RDTSC is not documented anywhere, except in the instruction
+decoding tables, where it fits right between WRMSR (0F/30) and RDMSR
+(0F/32). A quick comparison of RDTSC and RDMSR shows that both access the
+same running cycle count, with RDTSC being an alternative and slightly
+faster way to retrieve the data.
+
+Unfortunately, RDMSR and RDTSC are kernel mode (ring 0) instructions. My PC
+crashed when I ran these instructions inside a DOS box or with a memory
+manager. I am guessing that you can enable ring 3 access to RDTSC, maybe by
+using MSR 0Eh (test register 12 in the Intel manual), which is documented
+as "new feature control," or MSR 0Dh, which seems to contain a value
+similar to MSR 0Eh; however, I have yet to discover how to enable ring 3
+access.
+
+Counter Culture
+
+My next break in deciphering the MSRs came during a visit to a U.S-based
+developer. There, I saw a utility that displayed a number of interesting
+statistics about programs running on a Pentium machine. The utility could
+dynamically display one or two internal counters from a list of 38
+different hardware events. The statistics were all related to different
+aspects of processor performance and were just the information I needed to
+perform informed code optimization on the Pentium.
+
+For example, when the developers used the utility to profile another
+program, the utility revealed that the target program was generating a lot
+of accesses to misaligned memory variables. A simple recompile of the
+target program, using doubleword (4-byte) alignment, resulted in a 2
+1/2-times speedup.
+
+The developers realized that the utility would be useful for other
+programmers, so they obtained permission from Intel to distribute the
+program, as long as the source code was kept secret. I obtained a copy of
+the executable file to see if I could figure out how it accessed the
+Pentium statistics.
+
+My first obstacle was creating a disassembled listing. I converted the
+program code into a list of Define Byte (DB xxh) statements. I encapsulated
+this naked code within an assembly program wrapper, ran Borland's TASM
+(Turbo Assembler), and then converted the object file into a listing. Next,
+I located the RDMSR and WRMSR byte sequences (the Pentium wasn't around
+when my object disassembler was written) and started working backwards from
+there. After a few days of tracing and testing, I found out how the
+internal counters work.
+
+The controller for the Pentium hardware counters is MSR 11h; more
+specifically, the lower 32 bits of MSR 11h. The first 16 bits determines
+the data that will end up in MSR 12h, while the second 16 bits determines
+the counter that will report its results in MSR 13h, which is the
+nineteenth and last MSR on a Pentium. An obvious extension for Intel's next
+CPU, the P6 (Hexium, anyone?) would be to use all 64 bits of MSR 11h and
+add two more stat counters as MSR 14h and 15h. The lack of more MSRs limits
+you to accessing no more than two counters at a time.
+
+The encoding of each 16-bit block of MSR 11h is identical. The first 6 bits
+(0 to 5) are an index into the list of available hardware events (see the
+table "Pentium Counters" on page 191). When set, bit 6 enables counting of
+events in the operating-system rings 0, 1, and 2, while bit 7 enables ring
+3 monitoring.
+
+Bit 8 indicates whether you want to collect the number of hardware events
+or the CPU cycles that the events use. Thus by setting up both counters to
+track the same item, with one counting events and the other counting
+cycles, you get a measurement of the average time it takes to complete the
+tracked event.
+
+Using this information, I wrote P5Stat, a profiling program that accesses
+the Pentium hardware counters. P5Stat accepts another program name on the
+command line and then sets out to execute the indicated program 20 times.
+The first time through ensures that all the caches are loaded, while on
+each of the next 19 runs P5Stat collects two of the 38 different hardware
+counters available. After the last run, P5Stat dumps all the results to
+standard output, where it can be redirected to a file for later use.
+
+P5Stat has proven useful in code optimization. For example, I recently used
+it on WC 5.26, a freeware word count program that I wrote almost three
+years ago. I discovered that without optimization the dual-pipeline Pentium
+gave a 43 percent speedup compared to running all the code in a single pipe
+(i.e., on a 486). Using P5Stat to identify crucial bottlenecks, I
+rearranged the inner loop of the counting function for the new version, WC
+5.40. This required more instructions, but P5Stat showed that I had
+achieved nearly 100 percent filling of the dual pipes, resulting in an
+actual counting speed of 1.5 cycles per byte, or 40 MBps on my 60-MHz
+Pentium. This is a 33 percent speedup over the previous Pentium version of
+WC. (See the "Program Listings" on page 9 for information on how to obtain
+P5Stat and WC 5.40.)
+
+The profiling information available to Pentium programmers is a powerful
+aid in software development. With the information in this article, you can
+access these features and use them to identify bottlenecks and inefficient
+coding practices in your programs. I hope Intel makes official information
+available to all programmers and that such useful features are incorporated
+into other architectures such as Alpha, PowerPC, and SPARC.
+---------------------------------------------------------------------------
+
+Pentium Counters
+
+Index   Name
+0       Data read
+1       Data write
+2       Data TLB (translation look-aside buffer) miss
+3       Data read miss
+4       Data write miss
+5       Write (hit) to M or E state lines
+6       Data cache lines written back
+7       Data cache snoops
+8       Data cache snoop hits
+9       Memory accesses in both pipes
+A       Bank conflicts
+B       Misaligned data memory references
+C       Code read
+D       Code TLB miss
+E       Code cache miss
+F       Any segment register load
+12      Branches
+13      BTB (branch target buffer) hits
+14      Taken branch or BTB hit
+15      Pipeline flushes
+16      Instructions executed
+17      Instructions executed in the v-pipe
+18      Bus utilization (clocks)
+19      Pipeline stalled by write backup
+1A      Pipeline stalled by data memory read
+1B      Pipeline stalled by write to E or M line
+1C      Locked bus cycle
+1D      I/O read or write cycle
+1E      Noncacheable memory references
+1F      AGI (Address Generation Interlock)
+22      Floating-point operations
+23      Breakpoint 0 match
+24      Breakpoint 1 match
+25      Breakpoint 2 match
+26      Breakpoint 3 match
+27      Hardware interrupts
+28      Data read or data write
+29      Data read miss or data write miss
+
+---------------------------------------------------------------------------
+
+Using the Hardware Counters
+
+First, define macros for the new instructions:
+        RDMSR MACRO
+                db 0fh, 032h
+        ENDM
+        WRMSR MACRO
+                db 0fh, 030h
+        ENDM
+
+Then when you want to use the specific counters, I suggest that you read the current value of MSR 11h first and only modify the part you need to set up your co
+        mov ecx,11h
+        RDMSR
+        and eax,0FE00FE00h; save the upper 7 bits in each half
+        or eax,Nr1_idx+Nr1_ctrl+(Nr2_idx+Nr2_ctrl) shl 16
+        WRMSR
+
+Now any read of MSR 12 will retrieve the current value of hardware event Nr1, while MSR 13h contains event Nr2:
+        mov ecx, 13h
+        RDMSR
+        push edx
+        push eax
+        dec ecx
+        RDMSR
+        push edx
+        push eax
+
+Finally, insert the code to be tested here.
+        mov ecx, 12h
+        RDMSR
+        pop ebx
+        sub eax,ebx
+        pop ebx
+        sbb edx,ebx
+        call disp64; display first count
+        inc ecx
+        rdmsr
+        pop ebx
+        sub eax,ebx
+        pop ebx
+        sbb edx,ebx
+        call disp64; display second count
+
+---------------------------------------------------------------------------
+Terje Mathisen is a systems architect for Norsk Hydro in Norway and has
+been developing high-performance IBM-compatible software since 1981. You
+can reach him on the Internet or BIX at terjem@hda.hydro.com.
+---------------------------------------------------------------------------
+ [Uplevel] [Prev]  [Next] [Search]  [Comment]   Copyright © 1994-1996
+ [Logo]

@@ -1,0 +1,286 @@
+Q: Given a cubic bezier defined by four points P0 to P3, and a parameter
+   value t, what is the expression which gives the length of the curve
+   from its origin at P0 to the parameter value t?
+
+A: Part I: Theory
+--------------------------------------------------
+
+From: capelli@vnet.IBM.COM (Ron Capelli)
+
+The length of a segment of a parametric curve P(t) = [x(t) y(t) z(t)]
+is:
+         /t1
+    s =  \  |P'(t)| dt
+         /               where P'(t) is the curve tangent vector at t
+          t0
+                                               dx(t)  dy(t)  dz(t)
+                         P'(t) = [x' y' z'] = [-----  -----  -----]
+                                                dt     dt     dt
+Using equivalent alternative notations:
+
+         /t1
+    s =  \  sqrt(P'(t) .dot. P'(t)) dt
+         /
+          t0
+
+         /t1
+      =  \  sqrt(x'*x' + y'*y' + z'*z') dt
+         /
+          t0
+
+There is no closed-form solution, in general, to this integral
+for cubic polynomial curves.  It is common to use Gauss-Legendre
+quadrature to efficiently evaluate the integral.
+
+Once you have a function to evaluate curve length, you can constrain
+the length of a parametric curve defined by control points using an
+iterative numerical procedure.  If you are using Bezier or Hermite
+curves, it is straightforward, for example, to fix the start and end
+control points and tangent vector directions, while adjusting the
+tangent vector magnitudes to converge to the desired curve length
+constraint (ie., for cubic Bezier curves, slide the two intermediate
+control points along the lines defined by the tangents at the start
+and end control points).  The minimum curve length, of course, is the
+straight line distance between the start and end control points.  The
+curve length is a monotonically increasing function of start and end
+control point tangent vector magnitudes, so convergence should not be
+a problem for any reasonable iterative numerical method.
+_______________________________________________________________________
+
+Part II: Practice
+
+From: Milton Friedman <uncle@stein.u.washington.edu>
+
+
+Here's a simple approximation algorithm based on Simpson:
+
+
+#define sqr(x) (x * x)
+
+#define _ABS(x) (x < 0 ? -x : x)
+
+const double TOLERANCE = 0.0000001;  // Application specific tolerance
+
+extern double sqrt(double);
+
+struct point2d {
+    double x, y;
+};
+
+double q1, q2, q3, q4, q5;  // These belong to balf()
+
+
+//---------------------------------------------------------------------------
+double balf(double t)           // Bezier Arc Length Function
+{
+    double result = q5 + t*(q4 + t*(q3 + t*(q2 + t*q1)));
+    result = sqrt(result);
+    return result;
+}
+
+//---------------------------------------------------------------------------
+double Simpson(double (*f)(double), double a, double b, int n_limit, double TOLERANCE)
+// NOTES:   TOLERANCE is a maximum error ratio
+//          if n_limit isn't a power of 2 it will be act like the next higher
+//          power of two.
+{
+    int n = 1;
+    double multiplier = (b - a)/6.0;
+    double endsum = f(a) + f(b);
+    double interval = (b - a)/2.0;
+    double asum = 0;
+    double bsum = f(a + interval);
+    double est1 = multiplier * (endsum + 2 * asum + 4 * bsum);
+    double est0 = 2 * est1;
+
+    while(n < n_limit 
+          && (_ABS(est1) > 0 && _ABS((est1 - est0) / est1) > TOLERANCE)) {
+        n *= 2;
+        multiplier /= 2;
+        interval /= 2;
+        asum += bsum;
+        bsum = 0;
+        est0 = est1;
+        double interval_div_2n = interval / (2.0 * n);
+
+        for (int i = 1; i < 2 * n; i += 2) {
+            double t = a + i * interval_div_2n;
+            bsum += f(t);
+        }
+
+        est1 = multiplier*(endsum + 2*asum + 4*bsum);
+    }
+
+    return est1;
+}
+
+//
+//---------------------------------------------------------------------------
+//
+double BezierArcLength(point2d p1, point2d p2, point2d p3, point2d p4)
+{
+    point2d k1, k2, k3, k4;
+
+    k1 = -p1 + 3*(p2 - p3) + p4;
+    k2 = 3*(p1 + p3) - 6*p2;
+    k3 = 3*(p2 - p1);
+    k4 = p1;
+
+    q1 = 9.0*(sqr(k1.x) + sqr(k1.y));
+    q2 = 12.0*(k1.x*k2.x + k1.y*k2.y);
+    q3 = 3.0*(k1.x*k3.x + k1.y*k3.y) + 4.0*(sqr(k2.x) + sqr(k2.y));
+    q4 = 4.0*(k2.x*k3.x + k2.y*k3.y);
+    q5 = sqr(k3.x) + sqr(k3.y);
+
+    double result = Simpson(balf, 0, 1, 1024, 0.001);
+    return result;
+}
+------------------------------------------------------
+
+From: Jens Gravesen <gravesen@mat.dth.dk>
+
+
+By subdividing the curve at parameter value t you only have to find
+the length of a full Bezier curve. 
+
+If you denote the length of the control polygon by L1 i.e.:
+    L1 = |P0 P1| +|P1 P2| +|P2 P3| 
+and the length of the cord by L0 i.e.:
+    L0 = |P0 P3|
+
+then 
+    L = 1/2*L0 + 1/2*L1
+
+is a good approximation to the length of the curve, and the difference
+    
+    ERR = L1-L0
+
+is a measure of the error. If the error is to large, then you just
+subdivide curve at parameter value 1/2, and find the length of each
+half. 
+
+If m is the number of subdivisions then the error goes to zero as
+    2^-4m. 
+
+If you dont have a cubic curve but a curve of degree n then you put
+
+    L = (2*L0 + (n-1)*L1)/(n+1)
+
+A reference is:
+
+Jens Gravesen: "Adaptive subdivision and the length of Bezier curves"
+mat-report no. 1992-10, Mathematical Institute, The Technical
+University of Denmark.
+----------------------------------------
+
+Part III: What I did
+
+The last suggestion by Gravesen is pretty nifty, and I think it's a
+candidate for the next Graphics Gems.  I hacked out the following
+quick implementation, using the .h and libraries definitions from
+Graphics Gems I (If you haven't got that book then you have no
+business mucking with with this stuff :-)) The function "bezsplit" is
+lifted shamelessly from Schneider's Bezier curve-fitter.
+
+
+/************************ split a cubic bezier in two ***********************/
+  
+static void bezsplit(V, Left, Right)
+    point    *V;                          /* Control pts      */
+    point    *Left;                       /* RETURN left half ctl pts */
+    point    *Right;                      /* RETURN right half ctl pts  */
+{
+    int   i, j;                               /* Index variables  */
+    point   Vtemp[4][4];                      /* Triangle Matrix */
+    
+    /* Copy control points  */
+    
+    for (j =0; j <= 3; j++) 
+      Vtemp[0][j] = V[j];
+    
+
+    /* Triangle computation */
+    for (i = 1; i <= 3; i++) {  
+    for (j =0 ; j <= 3 - i; j++) {
+        Vtemp[i][j].x =
+            0.5 * Vtemp[i-1][j].x + 0.5 * Vtemp[i-1][j+1].x;
+        Vtemp[i][j].y =
+            0.5 * Vtemp[i-1][j].y + 0.5 * Vtemp[i-1][j+1].y;
+          
+    }                                                   /* end for i */
+    }                                                   /* end for j */
+    
+    for (j = 0; j <= 3; j++) 
+        Left[j]  = Vtemp[j][0];
+      
+    for (j = 0; j <= 3; j++) 
+        Right[j] = Vtemp[3-j][j];
+    
+}                                                       /* end splitbez */
+
+/********************** add polyline length if close enuf *******************/
+
+static void addifclose(V,length, error) 
+                      point  *V; 
+                      double  *length; 
+                      double error;
+
+{
+  point left[4], right[4];                            /* bez poly splits */
+  
+  double len = 0.0;                                   /* arc length */
+  double chord;                                       /* chord length */
+
+  
+  int index;                                          /* misc counter */
+  
+  for (index = 0; index <= 2; index++)
+    len = len + V2DistanceBetween2Points(&V[index],&V[index+1]);
+
+  chord = V2DistanceBetween2Points(&V[0],&V[3]);
+
+  if((len-chord) > error)
+  {
+    bezsplit(V,left,right);                 /* split in two */
+    addifclose(left, length, error);                  /* try left side */
+    addifclose(right, length, error);               /* try right side */
+    return;
+  }
+  
+  *length = *length + len;
+
+  return;
+  
+  
+}                                                     /* end addifclose */
+
+/************************* arc length of a 2d bezier ************************/
+
+double arclen(V, error) point  *V; double error;
+{
+  double length;                                    /* length of curve */
+  
+  addifclose(V, &length, error);                    /* kick off recursion */
+  
+  return(length);                                   /* that's it! */
+  
+}                                                   /* end arclen */
+
+-----------------------------------------
+
+The same code can be used for a quick Bezier plot routine by replacing
+"addifclose" with a "drawifclose" that draws the polygon instead of
+adding the length to the arc length.  The value of "error" can be
+based on your screen parameters.  My thanks to Jens for replying, and
+I hope his method at least gets into some FAQ because it deserves to be
+better known.  Again, my code is a quick hack and *seems* to work; if
+it sends your process into hyperspace please email me the corrections
+so I can fix my version :-)
+
+There were a couple of other responses.  Several suggested plotting
+the curve as a polyline and adding up the lengths, which is what I was
+doing and which is *slow* compared to the Gravesen method.  A couple
+of people also recommended the book "Curves and Surfaces for Computer
+Aided Geometric Design" by Gerald Farin.  I have one on order and will
+post a review when I get it.  The recommendations have been such that
+it, too, seems a candidate for a FAQ.

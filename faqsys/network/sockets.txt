@@ -1,0 +1,190 @@
+SOCKETS for windows/dos/unix
+version 0.3, 28th.may 1998
+
+This document was written by The Joker of Crusaders, a.k.a. Richard Kvalsvik.
+I take no blame in either typos, server-crashes, accidentaly deaths,
+torture of chipsets, burnt-out networkcard and so on.
+english : You fuck up, your fault
+
+This document will take you to the world of tcp/ip mainly.
+It will not be _VERY_ advanced, since I have only been studying it for a
+week or so, but I discovered one thing : incredible lack of information
+about this subject. So, after I have searched for quite some while, I found
+some information about winsock 2.x, and it seemed to me that
+microsoft (of course) that wrote the document, assumed that you could
+program winsock 1.x when you read it. And yeah..  You ever tried to read
+the documents of microsoft??  What medication are those people on, if you
+ask me.
+
+So. I just started to write something, and ofcourse. it took days before it
+even did as much as compile.  Then I gave up and started to search for
+unix-information, and then (doh) one of my friends gave me some info he
+got from the school.  This was all unix, but C is C, and it worked at first
+try. And if you find some errors, please mail me (joker@crusaders.no) and let
+me know, I'm merely a beginner in sockets.  This document should, however,
+get more people to code programs for networks, and that is good!
+
+
+To connect to any server, you need the following:
+a socket and a connection. To get a socket, simply do the following:
+--------------------------------------------------------------------
+
+#include <windows.h>
+#include <winsock.h>
+
+char TCPIP_Initialize(void)
+{
+   WSADATA wskData;
+   int error;
+
+   error=WSAStartup(1, &wskData) && (wskData.wVersion == 1);
+//  this line initializes the whole winsock-shit.  If you're running unix,
+//  you dont need to run this initialization procedure, since unix rocks
+   if(error==SOCKET_ERROR)
+   {
+      return 0;
+   }
+   return 1;
+}
+
+
+Client part
+-----------
+
+void main(void)
+{
+    int tcpip_socket;
+    struct sockaddr_in s_in:
+    struct hostent  hp;
+    char *Buffer;
+    int length;
+    
+    TCPIP_Initialize();
+    memset(&s_in,0,sizeof(s_in));   
+//  if you forget to empty this variable, you're on your own.  J
+
+    hp=gethostbyname("ftp.crusaders.no");
+    s_in.sin_family=AF_INET;
+    s_in.sin_addr.s_addr = ((struct in_addr*)(hp->h_addr))->s_addr;
+    s_in.sin_port=htons(21);
+// this is now configured to crusaders's ftp-server
+// (ok, I know it doesn't really exist yet) at port 21.
+
+    cprintf("connecting to %s.",inet_ntoa(cin.sin_addr));
+
+
+    tcpip_socket =socket(AF_INET, SOCK_STREAM,0);
+//  AF_INET and SOCK_STREAM is the typical tcp/ip-configuration.
+//  We concentrate on this.
+
+    if(tcpip_socket==SOCKET_ERROR)
+    {
+       cprintf("Couldn't get socket initialized");
+       exit(1);
+    }
+    if(connect(tcpip_socket,&s_in,sizeof(s_in))==SOCKET_ERROR)
+    {
+       cprintf("Couldn't get connected. Try again later, thank you for calling.");
+       exit(1);
+    }
+// well..  What can I say?   You've just connected to your first server.
+// ( only if you didn't try ftp.crusaders.no, tho )
+// concidering it suffer from the lack of excistence.
+// Let's try some more stuff..
+ 
+    Buffer=malloc(512);  //512 bytes should be overkill enough
+    sprintf(Buffer,"This message will get sendt to the server.\r\n");
+
+    send(tcpip_socket,Buffer,strlen(Buffer),0);
+    length=recv(tcpip_socket,Buffer,512,0);  
+//  What the two lines above just did, was to send the string to the server,
+//  the `0' at the end means that it should be sendt the usual way.
+//  the receive, however, is more complicated, but not a lot, the trick is
+//  that it returns the number of bytes received.
+//  and you have to tell the minimum amount of ram allocated to the buffer,
+//  or else you might overwrite some important data, which happens as often
+//  as possible. The `0' at the end of receive means that it'll be received
+//  on the normal way, and it empties the buffer after itselves.
+//  A MSG_PEEK will not empty the buffer.
+
+//  This is the absolutely simplest way to send and receive data with tcpp/ip.
+    Close(tcpip_socket);
+    WSACleanup(); 
+//  then we simply close the tcp/ip interface and the socket.
+}
+
+
+Server part
+-----------
+
+void main(void)
+{
+    int server_socket;
+    int client_socket;
+    struct sockaddr_in s_in:
+    struct hostent  hp;
+    char *Buffer;
+    int length;
+
+
+
+    TCPIP_Initialize(void);
+
+
+    memset(&s_in,0,sizeof(s_in));   
+//  if you forget to empty this variable, you're on your own.  J
+
+    s_in.sin_family=AF_INET;
+    s_in.sin_addr.s_addr = INADDR_ANY;
+    s_in.sin_port=htons(21);
+// this is now configured to check for connections on all ip's at port 21
+  
+    server_socket =socket(AF_INET, SOCK_STREAM,0);
+    if(tcpip_socket==SOCKET_ERROR)
+    {
+       cprintf("Couldn't get socket initialized");
+       exit(1);
+    }
+// as you can see, the socket is gotten on the exact same way as on a client.
+
+     If(bind(server_socket,&s_in,sizeof(s_in))==SOCKET_ERROR)
+     {
+       cprintf("Couldn't bind to socket");
+       exit(1);
+     }  
+// hah!  I never found any documentation on what this does, but listen()
+// requires that I do this first.
+
+
+    while(Listen(server_socket,5)==SOCKET_ERROR);
+//  5 here means the queuesize, 5 is max, 1 is minimum.  Of you enter a
+//  number outside that limit, the
+//  Interface choose the closest legal size.  This loop will end when
+//  someone attempts to connect.
+
+    Length=sizeof(s_in);
+    Client_Socket=accept(Server_socket,&s_in,&length);
+    if(Client_socket==SOCKET_ERROR)
+    {
+       cprintf("Couldn't get socket properly connected");
+       exit(1);
+    }
+
+//  and now that same as earlier
+    send(client_ocket,Buffer,strlen(Buffer),0);
+    length=recv(client_socket,Buffer,512,0);  
+    Close(tcpip_socket);
+    WSACleanup(); 
+}
+
+
+
+ok. this was the basics about this stuff. I will update this document later,
+and tell you more. Please don't hesitate to mail me if you find something
+that is really wrong. I don't expect the code above to compile either,
+since I just wrote it from my head.
+
+-TJ
+
+ICQ : 1153212
+email : joker@crusaders.no

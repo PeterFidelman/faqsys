@@ -1,0 +1,4356 @@
+                Persistence of Vision Ray Tracer (POV-Ray)
+
+                                Version 2.0
+
+                           User's Documentation
+                            
+
+                        Copyright 1993 POV-Ray Team   
+
+
+5.0   SCENE DESCRIPTION LANGUAGE REFERENCE
+==========================================
+
+The Scene Description Language allows the user to describe the world in a 
+readable and convenient way.  Files are created in plain ASCII text using 
+an editor of your choice.  POV-Ray reads the file, processes it by creating 
+an internal model of the scene and the renders the scene.
+
+
+5.1   LANGUAGE BASICS
+---------------------
+
+The POV-Ray language consists of identifiers, reserved keywords, floating 
+point literals, string literals, special symbols and comments.  The text of 
+a POV-Ray scene file is free format.  You may put statements on separate 
+lines or on the same line as you desire.  You may add blank lines, spaces 
+or indentations as long as you do not split any keywords or identifiers.
+
+
+5.1.1 IDENTIFIERS AND KEYWORDS
+
+POV-Ray allows you to define identifiers for later use in the file.  An 
+identifier may be 1 to 40 characters long.  It may consist of upper or 
+lower case letters, the digits 0 through 9 or an underscore character.  The 
+first character must be an alphabetic character.  The declaration of 
+identifiers is covered later.
+
+POV-Ray has a number of reserved words which are used in the language.  All 
+reserved words are fully lower case.  Therefore it is recommended that your 
+identifiers contain at least 1 upper case character so it is sure to avoid 
+conflict with reserved words.
+
+The following keywords are reserved in POV-Ray:
+
+adaptive               height_field           rgbf                  
+agate                  hexagon                right                 
+agate_turb             iff                    ripples               
+all                    image_map              rotate                
+alpha                  include                roughness             
+ambient                interpolate            scale                 
+area_light             intersection           sky                   
+background             inverse                smooth                
+bicubic_patch          ior                    smooth_triangle       
+blob                   jitter                 specular              
+blue                   lambda                 sphere                
+bounded_by             leopard                spotlight             
+box                    light_source           spotted               
+bozo                   location               sturm                 
+brilliance             looks_like             texture               
+bumps                  look_at                tga                   
+bump_map               mandel                 threshold             
+bump_size              map_type               tightness             
+camera                 marble                 tile2                 
+checker                material_map           tiles                 
+clipped_by             max_intersections      torus                 
+clock                  max_trace_level        translate             
+color                  merge                  triangle              
+color_map              metallic               turbulence            
+colour                 normal                 type                  
+colour_map             no_shadow              union                 
+component              object                 up                    
+composite              octaves                use_color             
+cone                   omega                  use_colour            
+crand                  once                   use_index             
+cubic                  onion                  u_steps               
+cylinder               open                   version               
+declare                phase                  v_steps               
+default                phong                  water_level           
+dents                  phong_size             waves                 
+difference             pigment                wood                  
+diffuse                plane                  wrinkles              
+direction              point_at               x                     
+disc                   poly                   y                     
+distance               pot                    z                     
+dump                   quadric               
+falloff                quartic               
+filter                 quick_color           
+finish                 quick_colour          
+flatness               radial                
+fog                    radius                
+frequency              raw                   
+gif                    red                   
+gradient               reflection            
+granite                refraction            
+green                  rgb                   
+                       
+                       
+5.1.2 COMMENTS
+
+Comments are text in the scene file included to make the scene file easier 
+to read or understand. They are ignored by the ray tracer and are there for 
+humans to read.  There are two types of comments in POV-Ray.
+
+Two slashes are used for single line comments.  Anything on a line after a 
+double slash // is ignored by the ray tracer.  For example:
+
+  // This line is ignored
+
+You can have scene file information on the line in front of the comment, as 
+in:
+
+  object { FooBar }  // this is an object
+
+The other type of comment is used for multiple lines.  This type of comment 
+starts with /* and ends with */ everything in-between is ignored.  For 
+example:
+
+/* These lines
+    Are ignored 
+    By the
+    Raytracer */
+
+This can be useful if you want to temporarily remove elements from a scene 
+file.   /*...*/ comments can "comment out" lines containing the other // 
+comments, and thus can be used to temporarily or permanently comment out 
+parts of a scene.  /*..*/ comments can be nested, the following is legal:
+
+/* This is a comment
+    // This too
+    /* This also */
+ */
+
+Use comments liberally and generously. Well used, they really improve the 
+readability of scene files.
+
+
+5.1.3 INCLUDE FILES
+
+The language allows include files to be specified by placing the line:
+
+    #include "filename.inc"
+
+at any point in the input file. The filename must be enclosed in double 
+quotes and may be up to 40 characters long (or your computer's limit), 
+including the two double-quote (") characters. 
+
+The include file is read in as if it were inserted at that point in the 
+file. Using include is the same as actually cutting and pasting the entire 
+contents of this file into your scene. 
+
+Include files may be nested. You may have at most 10 nested include files.  
+There is no limit on un-nested include files.
+
+Generally, include files have data for scenes, but are not scenes in 
+themselves. By convention scene files end in .pov and include files end 
+with .inc.
+
+
+5.1.4 FLOAT EXPRESSIONS
+
+Many parts of the POV-Ray language require you to specify one or more 
+floating point numbers.  A floating point number is a number with a decimal 
+point.  Float literals are represented by an optional sign (-), some 
+digits, an optional decimal point, and more digits.  If the number is an 
+integer you may omit the decimal point and trailing zero.  If it is all 
+fractional you may omit the leading zero.  POV-Ray supports scientific 
+notation for very large or very small numbers.  The following are all valid 
+float literals:
+
+      1.0   -2.0  -4    34    3.4e6       2e-5        .3    0.6
+
+Float identifiers may be declared and used anywhere a float can be used.  
+See section 5.1.7 on declaring identifiers.  
+
+Complex float expressions can be created using + - * / ( ) with float 
+literals or identifiers.  Assuming the identifiers have been previously 
+declared as floats, the following are valid float expressions:
+
+      1+2+3       2*5         1/3         Row*3       Col*5
+
+      (Offset-5)/2            This/That+Other*Thing
+
+Expressions are evaluated left to right with innermost parenthesis 
+evaluated first, then unary + or -, then multiply or divide, then add or 
+subtract.
+
+There are two built-in float identifiers.  The identifier "version" is the 
+current setting of the version compatibility switch (See +MV under command-
+line switches).  This allows you to save and restore the previous version 
+switch.  For example suppose MYSTUFF.INC is in version 1.0 format.  At the 
+top of the file you could put:
+
+  #declare Temp_Vers = version    // Save previous value
+  #version 1.0                    // Change to 1.0 mode
+
+  ...   // Version 1.0 stuff goes here...
+
+  #version Temp_Vers              // Restore previous version
+
+The other float identifier is "clock".  Its value is set by the +K command-
+line switch. (See +K under command-line switches).  This allows you to do 
+limited animation control.  For example you could move an object using:
+
+   translate <0.1*clock,0,0>
+
+and render successive frames with +K1, +K2, +K3 etc.  In each frame the 
+object would move 1/10th of a unit.
+
+
+5.1.5 VECTOR EXPRESSIONS
+
+POV-Ray operates in a 3D x,y,z coordinate system.  Often you will need to 
+specify x, y and z values.  A "vector" is a set of three float values used 
+for such specification.  Vectors consist of three float expressions that 
+are bracketed by angle brackets < and >.  The three terms are separated by 
+commas.  For example:
+
+     < 1.0, 3.2, -5.4578 >
+
+The commas are necessary to keep the program from thinking that the 2nd 
+term is "3.2-5.4578" and that there is no 3rd term.  If you see an error 
+message "Float expected but '>' found instead" it probably means two floats 
+were combined because a comma was missing.
+
+The three values correspond to the x, y and z directions respectively. For 
+example, the vector <1,2,3> means the point that's 1 unit to the right, 2 
+units up, and 3 units in front the center of the "universe" at <0,0,0>. 
+Vectors are not always points, though. They can also refer to an amount to 
+size, move, or rotate a scene element.
+
+Vectors may also be combined in expressions the same as float values.  For 
+example <1,2,3>+<4,5,6> evaluates as <5,7,9>.  Subtraction, multiplication 
+and division are also performed on a term-by-term basis.  You may also 
+combine floats with vectors.  For example 5*<1,2,3> evaluates as <5,10,15>.
+
+Sometimes POV-Ray requires you to specify floats and vectors side-by-side.  
+Thus commas are required separators whenever an ambiguity might arise.  For 
+example <1,2,3>-4 evaluates as <-3,-2,-1> but <1,2,3>,-4 is a vector 
+followed by a float.
+
+Vector identifiers may be declared and used anywhere a vector can be used.  
+See section 5.1.7 on declaring identifiers.
+
+Because vectors almost always refer to the x, y and z coordinates, POV-Ray 
+has three built-in vector identifiers "x "y" and "z".  Like all POV-Ray 
+keywords they must be lower case.  The vector identifier x is equivalent to 
+the vector <1,0,0>.  Similarly y is <0,1,0> and z is <0,0,1>.
+
+Thus an expression like 5*x evaluates to 5*<1,0,0> or <5,0,0>.  The use of 
+these identifiers can make the scene file easier to read.
+
+
+5.1.6 TRANSFORMATIONS
+
+Vectors are used not only as a notation for a point in space but are used 
+in the transformations scale, rotate, and translate. Scale sizes a texture 
+or object. Translate moves a texture or object. And rotate turns a texture 
+or object.
+
+
+5.1.6.1     Translate
+
+An object or texture pattern may be moved by adding a "translate" 
+parameter.  It consists of the keyword "translate" followed by a vector.  
+The terms of the vector specify the number of units to move in each of the 
+x, y, and z directions.  Translate moves the element relative to it's 
+current position. For example,
+
+  sphere { <10, 10, 10>, 1 
+    pigment { Green }
+    translate <-5, 2, 1>
+  }
+
+Will move the sphere from <10, 10, 10> to <5, 12, 11>.  It does not move it 
+to absolute location <5, 2, 1>. Translating by zero will leave the element 
+unchanged on that axis. For example,
+
+  sphere { <10, 10, 10>, 1 
+    pigment { Green }
+    translate <0, 0, 0>
+  }
+
+Will not move the sphere at all.
+
+
+5.1.6.2     Scale
+
+You may change the size of an object or texture pattern by adding a "scale" 
+parameter.  It consists of the keyword "scale" followed by a vector or a 
+single float value.  If a vector is used, terms of the vector specify the 
+amount of scaling in each of the x, y, and z directions.  If a float value 
+is used, the item is uniformly scaled by the same amount in all directions.
+
+Scale, is used to "stretch" or "squish" an element. Values larger than 1 
+stretch the element on that axis. Values smaller than one are used to 
+squish the element on that axis. Scale is relative to the current element 
+size. If the element has been previously re-sized using scale, then scale 
+will size relative to the new size. Multiple scale values may used.
+
+
+5.1.6.3     Rotate
+
+You may change the orientation of an object or texture pattern by adding a 
+"rotate" parameter.  It consists of the keyword "rotate" followed by a 
+vector.  The three terms of the vector specify the number of degrees to 
+rotate about each of the x, y, and z axes.  
+
+Note that the order of the rotations does matter.  Rotations occur about 
+the x axis first, then the y axis, then the z axis.  If you are not sure if 
+this is what you want then you should use multiple rotation statements to 
+get a correct rotation. You should only rotate on one axis at a time. As 
+in,
+
+   rotate <0, 30, 0>  // 30 degrees around Y axis then,
+   rotate <-20, 0, 0> // -20 degrees around X axis then,
+   rotate <0, 0, 10>  // 10 degrees around Z axis.
+
+Rotation is always performed relative to the axis.  Thus if an object is 
+some distance from the axis of rotation, its will not only rotate but it 
+will "orbit" about the axis as though it was swinging around on an 
+invisible string.  
+
+To work out the rotation directions, you must perform the famous "Computer 
+Graphics Aerobics" exercise. Hold up your left hand. Point your thumb in 
+the positive direction of the axis of rotation. Your fingers will curl in 
+the positive direction of rotation. Similarly if you point your thumb in 
+the negative direction of the axis your fingers will curl in the negative 
+direction of rotation.  This is the famous "left-hand coordinate system". 
+
+               ^
+             +Y|   +Z/ _
+               |    /_| |_  _
+               |   _| | | |/ \
+               |  | | | | |  |
+               | /| | | | |  V
+     -X        |/ | | | | |    +X
+    <----------+--|-|-|-|-|------>
+              /|  |       \____
+             / |  |         ___|
+            /  |  \        /
+           /   |   |      /
+        -Z/  -Y|
+         /     |
+
+In this illustration, the left hand is curling around the X axis. The thumb 
+points in the positive X direction and the fingers curl over in the 
+positive rotation direction.
+
+If you want to use a right hand system, as some CAD systems such as AutoCAD 
+do, the "right" vector in the camera specification needs to be changed. See 
+the detailed description of the camera.  In a right handed system you use 
+your right hand for the "Aerobics". 
+
+
+5.1.6.4     Transforming Textures and Objects
+
+When an object is transformed, all textures attached to the object AT THAT 
+TIME are transformed as well. This means that if you have a translate, 
+rotate, or scale in an object BEFORE a texture, the texture will not be 
+transformed. If the scale, translate, or rotate is AFTER the texture then 
+the texture will be transformed with the object.  If the transformation is 
+INSIDE the "texture { }" statement then ONLY THE TEXTURE is affected.  The 
+shape remains the same.  For example:
+
+   sphere { <0, 0, 0>, 1
+     texture { White_Marble }  // texture identifier from TEXTURES.INC
+     scale 3                   // This scale affects both the 
+                               // shape and texture 
+   }
+
+   sphere { <0, 0, 0>, 1
+     scale 3             // This scale affects the shape only
+     texture { White_Marble }  
+   }
+
+   sphere { <0, 0, 0>, 1
+     texture { 
+       White_Marble      
+       scale 3           // This scale affects the texture only
+     }  
+   }
+
+Transformations may also be independently applied to pigment patterns and 
+surface normal (bump) patterns.  Note scaling a normal pattern affects only 
+the width and spacing.  It does not affect the height or depth.  For 
+example:
+
+   box { <0, 0, 0>, <1, 1, 1>
+     texture { 
+       pigment {
+         checker color Red color White
+         scale 0.25  // This affects only the color pattern
+       }
+       normal {
+         bumps 0.3   // This specifies apparent height of bumps
+         scale 0.2   // Scales diameter and space between bumps but not 
+                     //  not the height. Has no effect on color pattern.
+       }
+       rotate y*45   // This affects the entire texture but not
+     }               //  the object. 
+   }
+
+
+5.1.6.5     Transformation Order
+
+Because rotations are always relative to the axis and scaling is relative 
+to the origin, you will generally want to create an object at the origin 
+and scale and rotate it first.  Then you may translate it into its proper 
+position.  It is a common mistake to carefully position an object and then 
+to decide to rotate it.  Because a rotation of an object causes it to orbit 
+the axis, the position of the object may change so much that it orbits out 
+of the field of view of the camera!
+
+Similarly scaling after translation also moves an object unexpectedly. If 
+you scale after you translate, the scale will multiply the translate 
+amount. For example:
+
+  translate <5, 6, 7>
+  scale 4 
+
+Will translate to 20, 24, 28 instead of 5, 6, 7. Be careful when 
+transforming to get the order correct for your purposes.
+
+
+5.1.7 DECLARE
+
+The parameters used to describe the scene elements can be tedious to use at 
+times. Some parameters are often repeated and it seems wasteful to have to 
+type them over and over again. To make this task easier, the program allows 
+users to create identifiers as synonyms for a pre-defined set of parameters 
+and use them anywhere the parameters would normally be used. For example, 
+the color white is defined in the POV-Ray language as:
+
+   color red 1 green 1 blue 1
+
+This can be pre-defined in the scene as:
+
+   #declare White = color red 1 green 1 blue 1
+
+and then substituted for the full description in the scene file, for 
+example:
+
+   sphere { 
+     <0, 0, 0>, 1
+     pigment { color red 1 green 1 blue 1 }
+   }
+
+becomes:
+
+   #declare White = color red 1 green 1 blue 1
+
+   sphere { 
+     <0, 0, 0>, 1
+     pigment { color White }
+   }
+
+This is much easier to type and to read. The pre-defined element may be 
+used many times in a scene.
+
+You use the keyword "declare" to pre-define a scene element and give it a 
+one-word identifier. This pre-defined scene element is not used in the 
+scene until you invoke its identifier. Textures, objects, colors, numbers 
+and more can be predefined.
+
+In most cases when you invoke an identifier you simply use the form 
+"keyword{identifier}" where the keyword used is the type of statement that 
+was declared. For example:
+
+  #declare Shiny = finish {phong 0.8 phong_size 50 reflection 0.2}
+
+  sphere {
+     <0, 0, 0>, 1
+     pigment { color White }
+     finish { Shiny }
+   }
+
+The identifier "Shiny" was declared as a "finish" and is invoked by placing 
+it inside a "finish { }" statement.
+
+One exception is object identifiers.  If you declare any object of any kind 
+such as sphere, box, union, intersection etc. you should invoke it by 
+placing it in an "object { }" statement.  Thus you might have:
+
+  #declare Thing = intersection {...}
+
+  object {Thing}  // not "intersection{Thing}"
+
+Pre-defined elements may be modified when they are used, for example:
+
+  #declare Mickey = // Pre-define a union object called Mickey
+     union {
+       sphere { < 0, 0, 0>, 2 }
+       sphere { <-2, 2, 0>, 1 }
+       sphere { < 2, 2, 0>, 1 }
+     }
+
+  // Use Mickey
+     object{        // Note use of "object", not "union" keyword
+       Mickey
+       scale 3
+       rotate y*20
+       translate <0, 8, 10>
+       pigment {color red 1}
+       finish {phong .7}
+     }
+
+This scene will only have one "Mickey", the Mickey that is described 
+doesn't appear in the scene. Notice that Mickey is scaled, rotated, 
+translated, and a texture is added to it. The Mickey identifier could be 
+used many times in a scene file, and each could have a different size, 
+position, orientation, and texture.
+
+Declare is especially powerful when used to create a complex object. Each 
+part of the object is defined separately using declare. These parts can be 
+tested, rotated, sized, positioned, and textured separately then combined 
+in one shape or object for the final sizing, positioning, etc. For example, 
+you could define all the parts of a car like this:
+
+  #declare Wheel = object {...}
+  #declare Seat = object {...}
+  #declare Body = object {...}
+  #declare Engine = object {...}
+  #declare Steering_Wheel = object {...}
+
+  #declare Car = 
+    union {
+       object { Wheel translate < 1, 1, 2>}
+       object { Wheel translate <-1, 1, 2>}
+       object { Wheel translate < 1, 1,-2>}
+       object { Wheel translate <-1, 1,-2>}
+       object { Seat translate < .5, 1.4, 1>}
+       object { Seat translate <-.5, 1.4, 1>}
+       object { Steering_Wheel translate <-.5, 1.6, 1.3>}
+       object { Body texture { Brushed_Steel } }
+       object { Engine translate <0, 1.5, 1.5> 
+    }
+
+and then it like this:
+ 
+  // Here is a car
+  object {
+    Car 
+    translate <4, 0, 23>
+  }
+
+Notice that the Wheel and Seat are used more than once. A declared element 
+can be used as many times as you need. Declared elements may be placed in 
+"include" files so they can be used with more than one scene.
+
+There are several files included with POV-Ray that use declare to pre-
+define many shapes, colors, and textures. See the archive INCLUDE for more 
+info.
+
+NOTE: Declare is not the same as the C language's define. Declare creates 
+an internal object of the type specified that POV-Ray can copy for later 
+use.  The "define" used in C creates a text substitution macro.
+
+Here's a list of what can be declared, how to declare the element, and how 
+to use the declaration. See the reference section for element syntax.
+
+Objects: (Any type may be declared, sphere, box, height_field, blob, etc.)
+  #declare Tree = union {...}
+  #declare Ball = sphere {...}
+  #declare Crate= box {...}
+ 
+  object {
+    Tree
+    (OBJECT_MODIFIERS...) 
+  }
+
+  object {
+    Ball
+    (OBJECT_MODIFIERS...) 
+  }
+
+  object {
+    Crate
+    (OBJECT_MODIFIERS...) 
+  }
+
+Textures:
+  #declare Fred = texture {...} 
+
+  sphere { <0, 0, 0>, 1 
+    texture {
+      Fred 
+      (texture_modifiers) 
+    }
+  }
+
+Layered textures:
+  #declare Fred = 
+     texture {...} 
+     texture {...} 
+     texture {...} (etc.)
+
+  sphere { <0, 0, 0>, 1 
+    texture {
+      Fred 
+      (texture_modifiers) 
+    }
+  }
+
+Pigment:
+  #declare Fred = pigment {checker color Red color White} 
+
+  sphere { <0, 0, 0>, 1 
+    pigment {
+      Fred 
+      (pigment_modifiers) 
+    }
+  }
+
+Normal:
+  #declare Fred = normal {bumps 0.5} 
+
+  sphere { <0, 0, 0>, 1 
+    pigment {White}
+    normal {
+      Fred 
+      (normal_modifiers) 
+    }
+  }
+
+Finish:
+  #declare Fred = finish {phong 0.7 reflection 0.2} 
+
+  sphere { <0, 0, 0>, 1 
+    pigment {White}
+    finish {
+      Fred 
+      (finish_items) 
+    }
+  }
+
+Colors:
+  #declare Fred = color red 1 green 1 blue 1 
+
+  sphere { <0, 0, 0>, 1 
+    pigment { color Fred }
+  }
+
+Color_map:
+  #declare Rainbow = 
+    color_map {
+      [0.0 color Cyan]
+      [1/3 color Yellow]
+      [2/3 color Magenta]
+      [1.0 color Cyan]
+    }
+
+  sphere { <0, 0, 0>, 1 
+    pigment { radial color_map{Rainbow} rotate -90*x}
+  }
+
+Float Values:
+  #declare Fred  = 3.45
+  #declare Fred2 = .02
+  #declare Fred3 = .5
+
+ // Use the numeric value identifier 
+ // anywhere a number would go
+  sphere { <-Fred, 2, Fred>, Fred 
+    pigment { color red 1 }
+    finish { phong Fred3 }
+  }
+
+Camera:
+  #declare Fred = camera {..}
+
+  camera { Fred }
+
+Vectors:
+   #declare Fred = <9, 3, 2>
+   #declare Fred2 = <4, 1, 4>
+
+   sphere { Fred, 1  // Note do not put < > brackets
+     scale Fred2     // around vector identifiers
+   }
+
+
+5.2   OBJECTS
+-------------
+
+Objects are the building blocks of your scene.  There are 20 different 
+types of objects supported by POV-Ray.  Seven of them are finite solid 
+primitives, 4 are finite patch primitives, 5 are infinite solid polynomial 
+primitives, 3 are types of Constructive Solid Geometry types and one is a 
+specialized object that is a light source.
+
+The basic syntax of an object is a keyword describing its type, some 
+floats, vectors or other parameters which further define its location 
+and/or shape and some optional object modifiers such as texture, pigment, 
+normal, finish, bounding, clipping or transformations.
+
+The texture describes what the object looks like, ie. its material.  
+Textures are combinations of pigments, normals and finishes.  Pigment is 
+the color or pattern of colors inherent in the material.  Normal is a 
+method of simulating various patterns of bumps, dents, ripples or waves by 
+modifying the surface normal vector.  Finish describes the reflective and 
+refractive properties of a material.
+
+Bounding shapes are finite, invisible shapes which wrap around complex, 
+slow rendering shapes in order to speed up rendering time.  Clipping shapes 
+are used to cut away parts of shapes to expose a hollow interior.  
+Transformations tell the ray tracer how to move, size or rotate the shape 
+and/or the texture in the scene.
+
+
+5.2.1 SOLID FINITE PRIMITIVES
+
+There are 7 different solid finite primitive shapes: blob, box, cone, 
+cylinder, height_field, sphere, and torus. These have a well-defined 
+"inside" and can be used in Constructive Solid Geometry. Because these 
+types are finite, POV-Ray can use automatic bounding on them to speed up 
+rendering time.  
+
+
+5.2.1.1     Spheres
+
+Since spheres are so common in ray traced graphics, POV-Ray has a highly 
+optimized sphere primitive which renders much more quickly than the 
+corresponding polynomial quadric shape. The syntax is:
+
+     sphere { <CENTER>, RADIUS }
+
+Where <CENTER> is a vector specifying the x,y,z coordinates of the center 
+of the sphere and RADIUS is a float value specifying the radius.  You can 
+also add translations, rotations, and scaling to the sphere. For example, 
+the following two objects are identical:
+
+  sphere { <0, 25, 0>, 10
+    pigment {Blue}
+  }
+
+  sphere { <0, 0, 0>, 1.0
+    pigment {Blue}
+    scale 10
+    translate y*25
+  }
+
+Note that Spheres may be scaled unevenly giving an ellipsoid shape. 
+
+Because spheres are highly optimized they make good bounding shapes. 
+Because they are finite they respond to automatic bounding. As with all 
+shapes, they can be translated, rotated and scaled.
+
+
+5.2.1.2     Boxes
+
+A simple box can be defined by listing two corners of the box like this:
+
+  box { <CORNER1>, <CORNER2> }
+
+Where <CORNER1> and <CORNER2> are vectors defining the x,y,z coordinates of 
+opposite corners of the box.  For example:
+
+  box { <0, 0, 0>, <1, 1, 1> }
+
+Note that all boxes are defined with their faces parallel to the coordinate 
+axes.  They may later be rotated to any orientation using a rotate 
+parameter.
+
+Each element of CORNER1 should always be less than the corresponding 
+element in CORNER2. If any elements of CORNER1 are larger than CORNER2, the 
+box will not appear in the scene.
+
+Boxes are calculated efficiently and make good bounding shapes. Because 
+they are finite they respond to automatic bounding. As with all 
+shapes, they can be translated, rotated and scaled.
+
+
+5.2.1.3     Cylinders
+
+A finite length cylinder with parallel end caps may be defined by.
+
+   cylinder { <END1>, <END2>, RADIUS }
+
+Where <END1> and <END2> are vectors defining the x,y,z coordinates of the 
+center of each end of the cylinder and RADIUS is a float value for the 
+radius.  For example:
+
+   cylinder { <0,0,0>, <3,0,0>, 2}
+
+is a cylinder 3 units long lying along the x axis from the origin to x=3 
+with a radius of 2.
+
+Normally the ends of a cylinder are closed by flat planes which are 
+parallel to each other and perpendicular to the length of the cylinder.  
+Adding the optional keyword "open" after the radius will remove the end 
+caps and results in a hollow tube.
+
+Because they are finite they respond to automatic bounding. As with all 
+shapes, they can be translated, rotated and scaled.
+
+
+5.2.1.4     Cones
+
+A finite length cone or a frustum (a cone with the point cut off) may be 
+defined by.
+
+   cone { <END1>, RADIUS1, <END2>, RADIUS2 }
+
+Where <END1> and <END2> are vectors defining the x,y,z coordinates of the 
+center of each end of the cone and RADIUS1 and RADIUS2 are float values for 
+the radius of those ends.  For example:
+
+   cone { <0,0,0>,2 <0,3,0>, 0}
+
+is a cone 3 units tall pointing up the y axis from the origin to y=3.  The 
+base has a radius of 2.  The other end has a radius of 0 which means it 
+comes to a sharp point.  If neither radius is zero then the results look 
+like a tapered cylinder or a cone with the point cut off.
+
+Like a cylinder, normally the ends of a cone are closed by flat planes 
+which are parallel to each other and perpendicular to the length of the 
+cone.  Adding the optional keyword "open" after RADIUS2 will remove the end 
+caps and results in a tapered hollow tube like a megaphone or funnel.
+
+Because they are finite they respond to automatic bounding. As with all 
+shapes, they can be translated, rotated and scaled.
+
+
+5.2.1.5     Torus
+
+A torus is a 4th order quartic polynomial shape that looks like a donut or 
+inner tube.  Because this shape is so useful and quartics are difficult to 
+define, POV-Ray lets you take a short-cut and define a torus by:
+
+   torus { MAJOR, MINOR }
+
+where MAJOR is a float value giving the major radius and MINOR is a float 
+specifying the minor radius.  The major radius extends from the center of 
+the hole to the mid-line of the rim while the minor radius is the radius of 
+the cross-section of the rim.  The torus is centered at the origin and lies 
+in the X-Z plane with the Y-axis sticking through the hole.
+
+        ----------- - - - - - - - ----------              +Y       
+       /          \              /          \              |       
+      /            \            /            \             |       
+     |              |          |       |<-B-->|       -X---|---+X  
+      \            /            \            /             |       
+       \__________/_ _ _ _ _ _ _ \__________/              |       
+                         |<-----A----->|                  -Y       
+
+      A = Major Radius
+      B = Minor Radius
+
+Internally the torus is computed the same as any other quartic or 4th order 
+polynomial however a torus defined this way will respond to automatic 
+bounding while a quartic must be manually bound if at all.  As with all 
+shapes, a torus can be translated, rotated and scaled.  Calculations for 
+all higher order polynomials must be very accurate.  If this shape renders 
+improperly you may add the keyword "sturm" after the MINOR value to use 
+POV-Ray's slower-yet-more-accurate Sturmian root solver.
+
+
+5.2.1.6     Blob
+
+Blobs are an interesting shape type. Their components are "flexible" 
+spheres that attract or repel each other creating a "blobby" organic 
+looking shape. The spheres' surfaces actually stretch out smoothly and 
+connect, as if coated in silly putty (honey? glop?) and pulled apart.
+
+Picture each blob component as a point floating in space.  Each point has a 
+field around it that starts very strong at the center point and drops off 
+to zero at some radius. POV-Ray adds together the field strength of each 
+component and looks for the places that the strength of the field is 
+exactly the same as the "threshold" value that was specified.  Points with 
+a total field strength greater than the threshold are considered inside the 
+blob.  Those less than the threshold are outside.  Points equal to the 
+threshold are on the surface of the blob.
+
+A blob is defined as follows:
+
+  blob {
+     threshold THRESHOLD_VALUE
+     component STRENGTH, RADIUS, <CENTER>
+     component STRENGTH, RADIUS, <CENTER>  // Repeat for any number  
+     component STRENGTH, RADIUS, <CENTER>  //  of components         
+  }
+
+The keyword "threshold" is followed by a float THRESHOLD_VALUE.  Each 
+component begins with the keyword "component".  STRENGTH is a float value 
+specifying the field strength at its center.  The strength may be positive 
+or negative. A positive value will make that component attract other 
+components. Negative strength will make that component repel other 
+components. Components in different, separate blob shapes do not affect 
+each other.  The strength tapers off to zero at the value specified by the 
+float RADIUS.  The vector <CENTER> specifies the x,y,z coordinates of the 
+component. For example:
+
+  blob {
+    threshold 0.6
+    component 1.0, 1.0, <.75, 0, 0>
+    component 1.0, 1.0, <-.375, .64952, 0>
+    component 1.0, 1.0, <-.375, -.64952, 0>
+    scale 2 
+  }
+
+If you have a single blob component then the surface you see will look just 
+like a sphere, with the radius of the surface being somewhere inside the 
+"radius" value you specified for the component. The exact radius of this 
+sphere-like surface can be determined from the blob equation listed below 
+(you will probably never need to know this, blobs are more for visual 
+appeal than for exact modeling).
+
+If you have a number of blob components, then their fields add together at 
+every point in space - this means that if the blob components are close 
+together the resulting surface will smoothly flow around the components.
+
+The various numbers that you specify in the blob declaration interact in 
+several ways.  The meaning of each can be roughly stated as:
+
+THRESHOLD:
+     This is the total density value that POV-Ray is looking for. By 
+following the ray out into space and looking at how each blob component 
+affects the ray, POV-Ray will find the points in space where the density is 
+equal to the "threshold" value.
+
+     1) "threshold" must be greater than 0. POV-Ray only looks for positive 
+densities.
+     2) If "threshold" is greater than the strength of a component, then 
+the component will disappear.
+     3) As "threshold" gets larger the surface you see gets closer to the 
+centers of the components.
+     4) As "threshold" gets smaller, the surface you see gets closer to the 
+spheres at a distance of "radius" from the centers of the components.
+
+STRENGTH:
+     Each component has a strength value - this defines the density of the 
+component at the center of the component. Changing this value will usually 
+have only a subtle effect.
+
+     1) "strength" may be positive or negative. Zero is a bad value, as the 
+net result is that no density was added - you might just as well have not 
+used this component.
+     2) If "strength" is positive, then POV-Ray will add its density to the 
+space around the center of the component. If this adds enough density to be 
+greater than "threshold you will see a surface.
+     3) If "strength" is negative, then POV-Ray will subtract its density 
+from the space around the center of the component. This will only do 
+something if there happen to be positive components nearby. What happens is 
+that the surface around any nearby positive components will be dented away 
+from the center of the negative component.
+
+RADIUS: 
+     Each component has a radius of influence. The component can only 
+affect space within "radius" of its center. This means that if all of the 
+components are farther than "radius" from each other, you will only see a 
+bunch of spheres.  If a component is within the radius of another 
+component, then the two components start to affect each other. At first 
+there is only a small bulge outwards on each of the two components, as they 
+get closer they bulge more and more until they attach along a smooth neck.  
+If the components are very close (i.e. their centers are on top of each 
+other), then you will only see a sphere (this is just like having a 
+component of more strength. bigger than the size of each of the component 
+radii)
+     1) "radius" must be bigger than 0.
+     2) As "radius" increases the apparent size of the component will 
+increase.
+
+CENTER:
+     This is simply a point in space.  It defines the center of a blob 
+component.  By changing the x/y/z values of the center you move the 
+component around.
+
+THE FORMULA
+     For the more mathematically minded, here's the formula used internally 
+by POV-Ray to create blobs. You don't need to understand this to use blobs. 
+
+The formula used for a single blob component is:
+
+      density = strength * (1 - radius^2)^2
+
+This formula has the nice property that it is exactly equal to strength" at 
+the center of the component and drops off to exactly 0 at a distance of 
+"radius" from the center of the component. The density formula for more 
+than one blob component is just the sum of the individual component 
+densities:
+
+      density = density1 + density2 + ...
+
+Blobs can be used in CSG shapes and they can be scaled, rotated and 
+translated. Because they are finite they respond to automatic bounding.  
+The calculations for blobs must be very accurate.  If this shape renders 
+improperly you may add the keyword "sturm" after the last component to use 
+POV-Ray's slower-yet-more-accurate Sturmian root solver.
+
+
+5.2.1.7     Height Fields
+
+Height fields are fast, efficient objects that are generally used to create 
+mountains or other raised surfaces out of hundreds of triangles in a mesh.  
+
+A height field is essentially a 1 unit wide by 1 unit long box with a 
+mountainous surface on top.  The height of the mountain at each point is 
+taken from the color number (palette index) of the pixels in a graphic 
+image file. 
+
+
+                    ________  <---- image index 255
+                  /        /|
+            +1y  ---------- |
+                 |        | |
+                 |        | |+1z <- Image upper-right
+                 |        | /
+            0,0,0---------- +1x
+                 ^
+                 |____ Image lower-left
+
+
+    NOTE: Image resolution is irrelevant to the scale of the heightfield.
+
+The mesh of triangles corresponds directly to the pixels in the image file. 
+In fact, there are two small triangles for every pixel in the image file. 
+The Y (height) component of the triangles is determined by the palette 
+index number stored at each location in the image file. The higher the 
+number, the higher the triangle. The maximum height of an un-scaled height 
+field is 1 unit.
+
+The higher the resolution of the image file used to create the height 
+field, the smoother the height field will look. A 640 X 480 GIF will create 
+a smoother height field than a 320 x 200 GIF.  The size/resolution of the 
+image does not affect the size of the height field. The un-scaled height 
+field size will always be 1x1. Higher resolution image files will create 
+smaller triangles, not larger height fields.
+
+There are three types files which can define a height field as follows:
+
+   height_field { gif "filename.gif" }
+   height_field { tga "filename.tga" }
+   height_field { pot "filename.pot" }
+
+The image file used to create a height field can be a GIF, TGA or POT 
+format file. The GIF format is the only one that can be created using a 
+standard paint program.
+
+In a GIF file, the color number is the palette index at a given point. Use 
+a paint program to look at the palette of a GIF image. The first color is 
+palette index zero, the second is index 1, the third is index 2, and so on. 
+The last palette entry is index 255. Portions of the image that use low 
+palette entries will be lower on the height field.  Portions of the image 
+that use higher palette entries will be higher on the height field. For 
+example, an image that was completely made up of entry 0 would be a flat 
+1x1 square. An image that was completely made up of entry 255 would be a 
+1x1x1 cube.
+
+The maximum number of colors in a GIF are 256, so a GIF height field can 
+have any number of triangles, but they will only 256 different height 
+values. 
+
+The color of the palette entry does not affect the height of the pixel. 
+Color entry 0 could be red, blue, black, or orange, but the height of any 
+pixel that uses color entry 0 will always be 0. Color entry 255 could be 
+indigo, hot pink, white, or sky blue, but the height of any pixel that uses 
+color entry 255 will always be 1.
+
+You can create height field GIF images with a paint program or a fractal 
+program like "Fractint".  If you have access to an IBM-PC, you can get 
+Fractint from most of the same sources as POV-Ray.
+
+A POT file is essentially a GIF file with a 16 bit palette. The maximum 
+number of colors in a POT file is greater than 32,000. This means a POT 
+height field can have over 32,000 possible height values. This makes it 
+possible to have much smoother height fields. Note that the maximum height 
+of the field is still 1 even though more intermediate values are possible.
+
+At the time of this writing, the only program that created POT files was a 
+freeware IBM-PC program called Fractint. POT files generated with this 
+fractal program create fantastic landscapes. If you have access to an IBM-
+PC, you can get Fractint from most of the same sources as POV-Ray.
+
+The TGA file format may be used as a storage device for 16 bit numbers 
+rather than an image file. The TGA format uses the red and green bytes of 
+each pixel to store the high and low bytes of a height value. TGA files are 
+as smooth as POT files, but they must be generated with special custom-made 
+programs. Currently, this format is of most use to programmers, though you 
+may see TGA height field generator programs arriving soon.  There is 
+example C source code included with the POV-Ray source archive to create a 
+TGA file for use with a height field.  
+
+It is nearly impossible to take advantage of the 16 bits of resolution 
+offered by the use of tga files in height fields when the tga file is 
+created in a paint program.  A gif file is a better choice for paint 
+created height fields in 8 bits.  Also see Appendix B.5 for a tip on 
+creating tga files for height fields.
+
+An optional "water_level" parameter may be added after the file name.  It 
+consists of the keyword "water_level" followed by a float value tells the 
+program not to look for the height field below that value. Default value is 
+0, and legal values are between 0 and 1. For example, "water_level .5" 
+tells POV-Ray to only render the top half of the height field. The other 
+half is "below the water" and couldn't be seen anyway. This term comes from 
+the popular use of height fields to render landscapes. A height field would 
+be used to create islands and another shape would be used to simulate water 
+around the islands. A large portion of the height field would be obscured 
+by the "water" so the "water_level" parameter was introduced to allow the 
+ray-tracer to ignore the unseen parts of the height field. Water_level is 
+also used to "cut away" unwanted lower values in a height field. For 
+example, if you have an image of a fractal on a solid colored background, 
+where the background color is palette entry 0, you can remove the 
+background in the height field by specifying, "water_level .001" 
+
+Normally height fields have a rough, jagged look because they are made of 
+lots of flat triangles.  Adding the keyword "smooth" causes POV-Ray to 
+modify the surface normal vectors of the triangles in such a way that the 
+lighting and shading of the triangles will give a smooth look.  This may 
+allow you to use a lower resolution file for your height field than would 
+otherwise be needed.
+
+Height fields can be used in CSG shapes and they can be scaled, rotated and 
+translated. Because they are finite they respond to automatic bounding.  
+
+Here are a notes and helpful hints on height fields from their creator, 
+Doug Muir:
+
+The height field is mapped to the x-z plane, with its lower left corner 
+sitting at the origin. It extends to 1 in the positive x direction and to 1 
+in the positive z direction. It is maximum 1 unit high in the y direction. 
+You can translate it, scale it, and rotate it to your heart's content. 
+
+When deciding on what water_level to use, remember, this applies to the un-
+transformed height field. If you are a Fractint user, the water_level 
+should be used just like the water_level parameter for 3d projections in 
+Fractint.
+
+Here's a detailed explanation of how the ray-tracer creates the height 
+field. You can skip this if you aren't interested in the technical side of 
+ray-tracing. This information is not needed to create or use height fields.
+
+To find an intersection with the height field, the ray tracer first checks 
+to see if the ray intersects the box which surrounds the height field. 
+Before any transformations, this box's two opposite vertexes are at (0, 
+water_level, 0) and (1, 1, 1). If the box is intersected, the ray tracer 
+figures out where, and then follows the line from where the ray enters the 
+box to where it leaves the box, checking each pixel it crosses for an 
+intersection. 
+
+It checks the pixel by dividing it up into two triangles. The height vertex 
+of the triangle is determined by the color index at the corresponding 
+position in the GIF, POT, or TGA file.
+
+If your file has a uses the color map randomly, your height field is going 
+to look pretty chaotic, with tall, thin spikes shooting up all over the 
+place. Not every GIF will make a good height field.
+
+If you want to get an idea of what your height field will look like, I 
+recommend using the IBM-PC program Fractint's 3d projection features to do 
+a sort of preview. If it doesn't look good there, the ray tracer isn't 
+going to fix it. For those of you who can't use Fractint, convert the image 
+palette to a gray scale from black at entry 0 to white at entry 255 with 
+smooth steps of gray in-between. The dark parts will lower than the 
+brighter parts, so you can get a feel for how the image will look as a 
+height field.
+
+
+5.2.2 FINITE PATCH PRIMITIVES
+
+There are 4 totally thin, finite objects which have NO well-defined inside.  
+They may be combined in CSG union but cannot be use in other types of CSG.  
+They are bicubic_patch, disc, smooth_triangle and triangle.  Because these 
+types are finite, POV-Ray can use automatic bounding on them to speed up 
+rendering time.  
+
+
+5.2.2.1     Triangle and Smooth_triangle 
+
+The triangle primitive is available in order to make more complex objects 
+than the built-in shapes will permit.  Triangles are usually not created by 
+hand, but are converted from other files or generated by utilities. 
+
+A triangle is defined by:
+
+   triangle { <CORNER1>, <CORNER2>, <CORNER3> }
+
+where <CORNERn> is a vector defining the x,y,z coordinates of each corner 
+of the triangle.
+
+Because triangles are perfectly flat surfaces it would require extremely 
+large numbers of very small triangles to approximate a smooth, curved 
+surface.  However much of our perception of smooth surfaces is dependent 
+upon the way light and shading is done.  By artificially modifying the 
+surface normals we can simulate as smooth surface and hide the sharp-edged 
+seams between individual triangles. 
+
+The smooth_triangle primitive is used for just such purposes.  The 
+smooth_triangles use a formula called Phong normal interpolation to 
+calculate the surface normal for any point on the triangle based on normal 
+vectors which you define for the three corners.  This makes the triangle 
+appear to be a smooth curved surface. A smooth_triangle is defined by:
+
+  smooth_triangle {
+    <CORNER1>, <NORMAL1>,
+    <CORNER2>, <NORMAL2>,
+    <CORNER3>, <NORMAL3>
+  }
+
+where the corners are defined as in regular triangles and <NORMALn> is a 
+vector describing the direction of the surface normal at each corner.
+
+These normal vectors are prohibitively difficult to compute by hand.  
+Therefore smooth_triangles are almost always generated by utility programs.  
+To achieve smooth results, any triangles which share a common vertex should 
+have the same normal vector at that vertex.  Generally the smoothed normal 
+should be the average of all the actual normals of the triangles which 
+share that point.
+
+
+5.2.2.2     Bicubic_patch
+
+A bicubic patch is a 3D curved surface created from a mesh of triangles. 
+POV-Ray supports a type of bicubic patch called a Bezier patch.  A bicubic 
+patch is defined as follows:
+
+  bicubic_patch { 
+     type PATCH_TYPE
+     flatness FLATNESS_VALUE
+     u_steps NUM_U_STEPS
+     v_steps NUM_V_STEPS
+     <CP1>,  <CP2>,   <CP3>,   <CP4>,
+     <CP5>,  <CP6>,   <CP7>,   <CP8>,
+     <CP9>,  <CP10>,  <CP11>,  <CP12>,
+     <CP13>, <CP14>,  <CP15>,  <CP16>
+  }
+
+The keyword "type" is followed by a float PATCH_TYPE which currently must 
+be either 0 or 1.  For type 0 only the control points are retained within 
+POV-Ray. This means that a minimal amount of memory is needed, but POV-Ray 
+will need to perform many extra calculations when trying to render the 
+patch.  Type 1 preprocesses the patch into many subpatches.  This results 
+in a significant speedup in rendering, at the cost of memory.
+
+These 4 parameters: type, flatness, u_steps & v_steps, may appear in any 
+order.  They are followed by 16 vectors that define the x,y,z coordinates 
+of the 16 control points which define the patch.  The patch touches the 4 
+corner points <CP1>, <CP4>, <CP13> and <CP16> while the other 12 points 
+pull and stretch the patch into shape.
+
+The keywords "u_steps" and "v_steps" are each followed by float values 
+which tell how many rows and columns of triangles are the minimum to use to 
+create the surface.  The maximum number of individual pieces of the patch 
+that are tested by POV-Ray can be calculated from the following:
+
+   sub-pieces = 2^u_steps * 2^v_steps
+
+This means that you really should keep "u_steps" and "v_steps" under 4 or 
+5.  Most patches look just fine with "u_steps 3" and "v_steps 3", which 
+translates to 64 subpatches (128 smooth triangles).
+
+As POV-Ray processes the Bezier patch, it makes a test of the current piece 
+of the patch to see if it is flat enough to just pretend it is a rectangle.  
+The statement that controls this test is: "flatness xxx".  Typical flatness 
+values range from 0 to 1 (the lower the slower).
+
+If the value for flatness is 0, then POV-Ray will always subdivide the 
+patch to the extend specified by u_steps and v_steps.  If flatness is 
+greater than 0, then every time the patch is split, POV-Ray will check to 
+see if there is any need to split further.
+
+There are both advantages and disadvantages to using a non-zero flatness.  
+The advantages include:
+
+   If the patch isn't very curved, then this will be detected and POV-Ray
+   won't waste a lot of time looking at the wrong pieces.
+
+   If the patch is only highly curved in a couple of places, POV-Ray will
+   keep subdividing there and concentrate it's efforts on the hard part.
+
+The biggest disadvantage is that if POV-Ray stops subdividing at a 
+particular level on one part of the patch and at a different level on an 
+adjacent part of the patch, there is the potential for "cracking".  This is 
+typically visible as spots within the patch where you can see through.  How 
+bad this appears depends very highly on the angle at which you are viewing 
+the patch.
+
+Like triangles, the bicubic patch is not meant to be generated by hand.  
+These shapes should be created by a special utility. You may be able to 
+acquire utilities to generate these shapes from the same source from which 
+you obtained POV-Ray. 
+
+Example:
+  bicubic_patch { 
+     type 1 
+     flatness 0.01
+     u_steps 4
+     v_steps 4
+     <0, 0, 2>, <1, 0, 0>, <2, 0, 0>, <3, 0,-2>,
+     <0, 1  0>, <1, 1, 0>, <2, 1, 0>, <3, 1, 0>,
+     <0, 2, 0>, <1, 2, 0>, <2, 2, 0>, <3, 2, 0>,
+     <0, 3, 2>, <1, 3, 0>, <2, 3, 0>, <3, 3, -2>
+  }
+
+The triangles in a POV-Ray bicubic_patch are automatically smoothed using 
+normal interpolation but it is up to the user (or the user's utility 
+program) to create control points which smoothly stitch together groups of 
+patches.  
+
+As with the other shapes, bicubic_patch objects can be translated, rotated, 
+and scaled.  Because they are finite they respond to automatic bounding.  
+Since it's made from triangles, a bicubic_patch cannot be used in CSG 
+intersection or difference types or inside a clipped_by modifier because 
+triangles have no clear "inside". The CSG union type works acceptably.
+
+
+5.2.2.3     Disc
+
+One other flat, finite object type is available with POV-Ray.  Note that a 
+disc is infinitely thin.  It has no thickness.  If you want a disc with 
+true thickness you should use a very short cylinder.  A disc shape may be 
+defined by:
+ 
+  disc { <CENTER>, <NORMAL>, RADIUS }
+
+or 
+
+  disc { <CENTER>, <NORMAL>, RADIUS, HOLE_RADIUS }
+
+The vector <CENTER> defines the x,y,z coordinates of the center of the 
+disc.  The <NORMAL> vector describes its orientation by describing its 
+surface normal vector.  This is followed by a float specifying the RADIUS.  
+This may be optionally followed by another float specifying the radius of a 
+hole to be cut from the center of the disc.
+
+Example:
+  disc {
+    <-2,-0.5, 0>,    //center location
+    <0,  1,   0>,    //normal vector
+    2                //radius         
+    pigment { color Cyan }
+  }
+
+  disc {
+    <0, 1, 0>,       //center location
+    <-1, 3, -2>,     //normal vector  
+    1.5,             //radius         
+    0.5              //hole radius (optional)
+    pigment { color Yellow }
+  }
+
+As with the other shapes, discs can be translated, rotated, and scaled.  
+Because they are finite they respond to automatic bounding.  Disc cannot be 
+used in CSG intersection or difference types or inside a clipped_by 
+modifier because it has no clear "inside". The CSG union type works 
+acceptably.
+
+
+5.2.3 INFINITE SOLID PRIMITIVES
+
+There are 5 polynomial primitive shapes that are possibly infinite and do 
+not respond to automatic bounding.  They do have a well defined inside and 
+may be used in CSG.  They are plane, cubic, poly, quadric, and quartic.  
+
+
+5.2.3.1     Plane 
+
+The plane primitive is a fast, efficient way to define an infinite flat 
+surface.  The plane is specified as follows:
+
+  plane { <NORMAL>, DISTANCE }
+
+The <NORMAL> vector defines the surface normal of the plane.  A surface 
+normal is a vector which points up from the surface at a 90 degree angle.  
+This is followed by a float value that gives the distance along the normal 
+that the plane is from the origin.  For example:
+
+  plane { <0,1,0>,4 }
+
+This is a plane where "straight up" is defined in the positive y direction.  
+The plane is 4 units in that direction away from the origin.  Because most 
+planes are defined with surface normals in the direction of an axis, you 
+will often see planes defined using the "x", "y", or "z" built-in vector 
+identifiers.  The example above could be specified as:
+
+  plane { y,4 }
+
+The plane extends infinitely in the x and z directions.  It effectively 
+divides the world into two pieces.  By definition the normal vector points 
+to the outside of the plane while any points away from the vector are 
+defined as inside.  This inside/outside distinction is only important when 
+using planes in CSG.
+
+As with the other shapes, planes can be translated, rotated, and scaled.  
+Because they are infinite they do not respond to automatic bounding.  Plane 
+can be used freely in CSG because it has a clear defined "inside". 
+
+A plane is called a "polynomial" shape because it is defined by a first 
+order polynomial equation.  Given a plane:
+
+  plane { <A, B, C>, D }
+
+it can be represented by the formula:
+
+   A*x + B*y + C*z = D
+
+Therefore our example "plane {y,4}" is actually the polynomial equation 
+"y=4".  You can think of this as a set of all x,y,z points where all have y 
+values equal to 4, regardless of the x or z values.
+
+This equation is a "first order" polynomial because each term contains only 
+single powers of x, y or z.  A second order equation has terms like x^2, 
+y^2, z^2, xy, xz and yz.  Another name for a 2nd order equation is a 
+quadric equation.  Third order polys are called cubics.  A 4th order 
+equation is a quartic.  Such shapes are described in the sections below.
+
+
+5.2.3.2     Quadric 
+
+Quadric surfaces can produce shapes like ellipsoids, spheres, cones, 
+cylinders, paraboloids (dish shapes), and hyperboloids (saddle or hourglass 
+shapes).  NOTE: Do not confuse "quaDRic" with "quaRTic".  A quadric is a 
+2nd order polynomial while a quartic is 4th order.
+
+A quadric is defined in POV-Ray by:
+
+  quadric { <A,B,C>, <D,E,F>, <G,H,I>, J }
+
+where A through J are float expressions.  
+
+This defines a surface of x,y,z points which satisfy the equation:
+
+       A x^2   + B y^2   + C z^2
+     + D xy    + E xz    + F yz
+     + G x     + H y     + I z    + J = 0
+
+Different values of A,B,C,...J will give different shapes. So, if you take 
+any three dimensional point and use its x, y, and z coordinates in the 
+above equation, the answer will be 0 if the point is on the surface of the 
+object. The answer will be negative if the point is inside the object and 
+positive if the point is outside the object. Here are some examples: 
+
+     X^2 + Y^2 + Z^2 - 1 = 0  Sphere
+     X^2 + Y^2 - 1 = 0        Infinitely long cylinder along the Z axis 
+     X^2 + Y^2 - Z^2 = 0      Infinitely long cone along the Z axis
+
+The easiest way to use these shapes is to include the standard file 
+"SHAPES.INC" into your program. It contains several pre-defined quadrics 
+and you can transform these pre-defined shapes (using translate, rotate, 
+and scale) into the ones you want.
+
+You can invoke them by using the syntax,
+
+  object { Quadric_Name }
+
+The pre-defined quadrics are centered about the origin <0, 0, 0> and have a 
+radius of 1. Don't confuse radius with width. The radius is half the 
+diameter or width making the standard quadrics 2 units wide.
+
+Some of the pre-defined quadrics are,
+
+ Ellipsoid
+ Cylinder_X, Cylinder_Y, Cylinder_Z
+ QCone_X, QCone_Y, QCone_Z
+ Paraboloid_X, Paraboloid_Y, Paraboloid_Z
+
+For a complete list, see the file SHAPES.INC.
+
+
+5.2.3.3     Poly, Cubic and Quartic.  
+
+Higher order polynomial surfaces may be defined by the use of a poly shape.  
+The syntax is:
+
+  poly { ORDER, <T1, T2, T3, .... Tm> }
+
+Where ORDER is a whole number from 2 to 7 inclusively that specifies the 
+order of the equation.  T1, T2... Tm are float values for the coefficients 
+of the equation.  There are "m" such terms where 
+
+    m=((ORDER+1)*(ORDER+2)*(ORDER+3))/6
+
+An alternate way to specify 3rd order polys is:
+
+  cubic { <T1, T2,... T20> }
+
+Also 4th order equations may be specified with:
+
+  quartic { <T1, T2,... T35> }
+
+Here's a more mathematical description of quartics for those who are 
+interested.  Quartic surfaces are 4th order surfaces, and can be used to 
+describe a large class of shapes including the torus, the lemniscate, etc. 
+The general equation for a quartic equation in three variables is (hold 
+onto your hat):
+
+  a00 x^4 + a01 x^3 y + a02 x^3 z+ a03 x^3 + a04 x^2 y^2+ 
+  a05 x^2 y z+ a06 x^2 y + a07 x^2 z^2+a08 x^2 z+a09 x^2+
+  a10 x y^3+a11 x y^2 z+ a12 x y^2+a13 x y z^2+a14 x y z+ 
+  a15 x y + a16 x z^3 + a17 x z^2 + a18 x z + a19 x+
+  a20 y^4 + a21 y^3 z + a22 y^3+ a23 y^2 z^2 +a24 y^2 z+ 
+  a25 y^2 + a26 y z^3 + a27 y z^2 + a28 y z + a29 y+ 
+  a30 z^4 + a31 z^3 + a32 z^2 + a33 z + a34
+
+To declare a quartic surface requires that each of the coefficients (a0 -> 
+a34) be placed in order into a single long vector of 35 terms. 
+
+As an example let's define a torus the hard way.  A Torus can be 
+represented by the equation:
+
+ x^4 + y^4 + z^4 + 2 x^2 y^2 + 2 x^2 z^2 + 2 y^2 z^2
+ -2 (r0^2 + r1^2) x^2 + 2 (r0^2 - r1^2) y^2 
+ -2 (r0^2 + r1^2) z^2 + (r0^2 - r1^2)^2 = 0
+
+Where r0 is the "major" radius of the torus - the distance from the hole of 
+the donut to the middle of the ring of the donut, and r1 is the "minor" 
+radius of the torus - the distance from the middle of the ring of the donut 
+to the outer surface. The following object declaration is for a torus 
+having major radius 6.3 minor radius 3.5 (Making the maximum width just 
+under 10). 
+
+//Torus having major radius sqrt(40), minor radius sqrt(12)
+
+   quartic {
+      < 1,   0,   0,   0,   2,   0,   0,   2,   0, 
+     -104,   0,   0,   0,   0,   0,   0,   0,   0, 
+        0,   0,   1,   0,   0,   2,   0,  56,   0, 
+        0,   0,   0,   1,   0, -104,  0, 784 >
+      sturm
+      bounded_by { // bounded_by speeds up the render,
+                   // see bounded_by
+                   // explanation later 
+                   // in docs for more info.
+       sphere { <0, 0, 0>, 10 }
+      }
+   }
+
+Poly, cubic and quartics are just like quadrics in that you don't have to 
+understand what one is to use one. The file SHAPESQ.INC has plenty of pre-
+defined quartics for you to play with. The most common one is the torus or 
+donut. The syntax for using a pre-defined quartic is:
+ 
+    object { Quartic_Name }
+
+As with the other shapes, these shapes can be translated, rotated, and 
+scaled.  Because they are infinite they do not respond to automatic 
+bounding.  They can be used freely in CSG because they have a clear defined 
+"inside". 
+
+Polys use highly complex computations and will not always render perfectly. 
+If the surface is not smooth, has dropouts, or extra random pixels, try 
+using the optional keyword "sturm" in the definition. This will cause a 
+slower, but more accurate calculation method to be used. Usually, but not 
+always, this will solve the problem. If sturm doesn't work, try rotating, 
+or translating the shape by some small amount. See the sub-directory MATH 
+for examples of polys in scenes.
+
+There are really so many different quartic shapes, we can't even begin to 
+list or describe them all. If you are interested and mathematically 
+inclined, an excellent reference book for curves and surfaces where you'll 
+find more quartic shape formulas is:
+
+   "The CRC Handbook of Mathematical Curves and Surfaces"
+   David von Seggern
+   CRC Press
+   1990
+
+
+5.2.4 CONSTRUCTIVE SOLID GEOMETRY (CSG)
+
+POV-Ray supports Constructive Solid Geometry (also called Boolean 
+operations) in order to make the shape definition abilities more powerful.
+
+
+5.2.4.1     About CSG
+       
+The simple shapes used so far are nice, but not terribly useful on their 
+own for making realistic scenes. It's hard to make interesting objects when 
+you're limited to spheres, boxes, cylinders, planes, and so forth. 
+       
+Constructive Solid Geometry (CSG) is a technique for taking these simple 
+building blocks and combining them together. You can use a cylinder to bore 
+a hole through a sphere. You can start with solid blocks and carve away 
+pieces.  Objects may be combined in groups and treated as though they were 
+single objects.
+       
+Constructive Solid Geometry allows you to define shapes which are the 
+union, intersection, or difference of other shapes.  Additionally you may 
+clip sections of objects revealing their hollow interiors.
+       
+Unions superimpose two or more shapes. This has the same effect as defining 
+two or more separate objects, but is simpler to create and/or manipulate. 
+In POV-Ray 2.0 the union keyword may be used anyplace composite was used in 
+previous versions of POV-Ray.  Also a new type of union called "merge" can 
+eliminate internal surfaces on transparent or clipped objects.
+       
+Intersections define the space where the two or more surfaces overlap.
+       
+Differences allow you to cut one object out of another.
+       
+CSG intersections, unions, and differences can consist of two or more 
+shapes. For example:
+       
+          union {
+            object{O1}
+            object{O2}
+            object{O3}  // any number of objects 
+            texture{T1}
+          }
+       
+CSG shapes may be used in CSG shapes. In fact, CSG shapes may be used 
+anyplace that a standard shape is used.
+       
+The order of the component shapes with the CSG doesn't matter except in a 
+difference shape. For CSG differences, the first shape is visible and the 
+remaining shapes are cut out of the first.
+       
+Constructive solid geometry shapes may be translated, rotated, or scaled in 
+the same way as any shape. The shapes making up the CSG shape may be 
+individually translated, rotated, and scaled as well.
+       
+When using CSG, it is often useful to invert a shape so that it's inside-
+out. The appearance of the shape is not changed, just the way that POV-Ray 
+perceives it. The inverse keyword can be used to do this for any shape. 
+When inverse is used, the "inside" of the shape is flipped to become the 
+"outside". For planes, "inside" is defined to be "in the opposite direction 
+to the "normal" or "up" direction. 
+       
+Note that performing an intersection between a shape and some other inverse 
+shapes is the same as performing a difference. In fact, the difference is 
+actually implemented in this way in the code.
+       
+
+5.2.4.2     Inside and outside
+
+Most shape primitives, like spheres, boxes, and blobs, divide the world 
+into two regions. One region is inside the surface and one is outside.  
+(The exceptions to this rule are triangles, disc and bezier patches - we'll 
+talk about this later.)
+       
+Given any point in space, you can say it's either inside or outside any 
+particular primitive object (well, it could be exactly on the surface, but 
+numerical inaccuracies will put it to one side or the other). 
+       
+Even planes have an inside and an outside. By definition, the surface 
+normal of the plane points towards the outside of the plane. (For a simple 
+floor, for example, the space above the floor is "outside" and the space 
+below the floor is "inside". For simple floors this in un-important, but 
+for planes as parts of CSG's it becomes much more important). CSG uses the 
+concepts of inside and outside to combine shapes together. Take the 
+following situation:
+       
+Note: The diagrams shown here demonstrate the concepts in 2D and are 
+intended only as an analogy to the 3D case. 
+       
+Note that the triangles and triangle-based shapes cannot be used as solid 
+objects in CSG since they have no clear inside and outside.
+
+In this diagram, point 1 is inside object A only.  Point 2 is inside B 
+only.  Point 3 is inside both A and B while point 0 is outside everything.
+       
+         * = Object A
+         % = Object B
+       
+                            *  0
+                           * *    %
+                          *   *  % %
+                         *     *%   %
+                        *  1   %*    %
+                       *      %  * 2  %
+                      *      % 3  *    %
+                     *******%*******    %
+                           %             %
+                          %%%%%%%%%%%%%%%%%
+       
+       
+Complex shapes may be created by combining other shapes using a technique 
+called "Constructive Solid Geometry" (or CSG for short).  The CSG shapes 
+are difference, intersection, and union. The following gives a simple 2D 
+overview of how these functions work. 
+
+5.2.4.3     Union  
+
+Unions are simply "glue", used bind two or more shapes into a single entity 
+that can be manipulated as a single object.  The diagram above shows the 
+union of A and B.  The new object created by the union operation can then 
+be scaled, translated, and rotated as a single shape.  The entire union can 
+share a single texture, but each object contained in the union may also 
+have its own texture, which will override any matching texture statements 
+in the parent object:
+
+      union {
+        sphere { <0, 0.5, 0> 1 pigment { Red } }
+        sphere { <0, 0.0, 0> 1 }
+        sphere { <0,-0.5, 0> 1 }
+        pigment { Blue }
+        finish { Shiny }
+      }
+
+This union will contain three spheres.  The first sphere is explicitly 
+colored Red while the other two will be shiny blue.  Note that the shiny 
+finish does NOT apply to the first sphere.  This is because the 
+"pigment{Red}" is actually shorthand for "texture{pigment{Red}}".  It 
+attaches an entire texture with default normals and finish.  The textures 
+or pieces of textures attached to the union apply ONLY to components with 
+no textures.  These texturing rules also apply to intersection, difference 
+and merge as well.
+
+Earlier versions of POV-Ray placed restrictions on unions so you often had 
+to combine objects with composite statements.  Those earlier restrictions 
+have been lifted so composite is no longer needed.  Composite is still 
+supported for backwards compatibility but it is recommended that union now 
+be used in it's place since future support for the composite keyword is not 
+guarantied.
+
+
+5.2.4.4     Intersection
+
+A point is inside the intersection if it's inside both A AND B. This 
+"logical AND's" the shapes and gets the common part, most useful for 
+"cutting" infinite shapes off.  The diagram below consists of only those 
+parts common to A and B.
+       
+       
+                               %*
+                              %  *
+                             % 3  *
+                            %*******
+       
+For example:
+
+     intersection {
+       sphere {<-0.75,0,0>,1}
+       sphere {< 0.75,0,0>,1}
+       pigment {Yellow}
+     }
+
+
+5.2.4.5     Difference
+
+A point is inside the difference if it's inside A but not inside B. The 
+results is a "subtraction" of the 2nd shape from the first shape:
+       
+                            *
+                           * *
+                          *   *
+                         *     *
+                        *  1   %
+                       *      %
+                      *      %
+                     *******%
+       
+For example:
+
+     difference {
+       sphere {<-0.75,0,0>,1}
+       sphere {< 0.75,0,-0.25>,1}
+       pigment {Yellow}
+     }
+
+
+5.2.4.6     Merge
+
+As can be seen in the diagram for union, the inner surfaces where the 
+objects overlap is still present.  On transparent or clipped objects these 
+inner surfaces cause problems.  A merge object works just like union but it 
+eliminates the inner surfaces like this:
+
+                            *  
+                           * *    %
+                          *   *  % %
+                         *     *%   %
+                        *            %
+                       *              %
+                      *                %
+                     *******%           %
+                           %             %
+                          %%%%%%%%%%%%%%%%%
+       
+       
+
+5.2.5 LIGHT SOURCES
+
+The last object we'll cover is the light source.  Light sources have no 
+visible shape of their own.  They are just points or areas which emit 
+light.
+
+
+5.2.5.1     Point Lights
+
+Most light sources are infinitely small points which emit light.  Point 
+light sources are treated like shapes, but they are invisible points from 
+which light rays stream out. They light objects and create shadows and 
+highlights. Because of the way ray tracing works, lights do not reflect 
+from a surface.  You can use many light sources in a scene, but each light 
+source used will increase rendering time. The brightness of a light is 
+determined by its color. A bright color is a bright light, a dark color, a 
+dark one. White is the brightest possible light, Black is completely dark 
+and Gray is somewhere in the middle.
+
+The syntax for a light source is:
+
+    light_source { <X, Y, Z> color red #, green #, blue #}
+
+Where X, Y and Z are the coordinates of the location and "color" is any 
+color or color identifier. For example,
+
+    light_source { <3, 5, -6> color Gray50}
+
+is a 50% Gray light at X=3, Y=5, Z=-6.
+
+Point light sources in POV-Ray do not attenuate, or get dimmer, with 
+distance.
+
+
+5.2.5.2     Spotlights
+
+A spotlight is a point light source where the rays of light are constrained 
+by a cone. The light is bright in the center of the spotlight and falls 
+off/darkens to soft shadows at the edges of the circle.
+
+The syntax is:
+
+Syntax:   light_source { <CENTER>
+              color red #, green #, blue #
+              spotlight
+              point_at <POINT>
+              radius #
+              falloff #
+              tightness #
+          }
+
+A spotlight is positioned using two vectors.  The first vector is the usual 
+<CENTER> vector that you would use to position a point light source.
+
+The second vector is the point_at <POINT>, the vector position of
+the point the light is pointing at, similar to the look_at in a camera 
+description.
+
+The following illustrations will be helpful in understanding how these 
+values relate to each other:
+
+
+           (+) Spotlight <center>
+           / \
+          /   \
+         /     \
+        /       \
+       /         \
+      /           \
+      +-----*-----+
+            ^ point_at <point>
+
+The center is specified the same way as a normal point light_source.
+
+Point_at <POINT> is the location that the cone of light is
+aiming at.
+
+Spotlights also have three other parameters: radius, falloff, and 
+tightness.
+
+If you think of a spotlight as two nested cones,  the inner cone would be 
+specified by the radius parameter, and would be fully lit.  The outer cone 
+would be the falloff cone and beyond it would be totally unlit.  The values 
+for these two parameters are specified in degrees of the half angle at the 
+peak of each cone:
+
+
+           (+) Spotlight <center>
+            |\ <-----  angle measured here
+            | \
+            || \
+            ||  \      shaded area = radius cone
+            |||  \     outer line = falloff cone
+            ||||  \
+            |||||  \
+            +-------+
+
+The radius# is the radius, in degrees, of the bright circular hotspot at 
+the center of the spotlight's area of affect.
+
+The falloff# is the falloff angle of the radius of the total spotlight 
+area, in degrees. This is the value where the light "falls off" to zero 
+brightness.  Falloff should be larger than the radius. Both values should 
+be between 1 and 180.
+
+The tightness value specifies how quickly the light dims, or falls off, in 
+the region between the radius (full brightness) cone and the falloff (full 
+darkness) cone.  The default value for tightness is 10.  Lower tightness 
+values will make the spot have very soft edges. High values will make the 
+edges sharper, the spot "tighter".  Values from 1 to 100 are acceptable.
+
+Spotlights may used anyplace that a normal light source is used. Like 
+normal light sources, they are invisible points. They are treated as shapes 
+and may be included in CSG shapes.  They may also be used in conjunction 
+with area_lights.
+
+Example:
+   // This is the spotlight.
+   light_source {
+      <10, 10, 0>
+      color red 1, green 1, blue 0.5
+      spotlight
+      point_at <0, 1, 0>
+      tightness 50
+      radius 11
+      falloff 25
+     }
+
+
+
+5.2.3.3     Area Lights
+
+Regular light sources in POV-Ray are modeled as point light sources, that 
+is they emit light from a single point in space. Because of this the 
+shadows created by these lights have the characteristic sharp edges that 
+most of us are use to seeing in ray traced images. The reason for the 
+distinct edges is that a point light source is either fully in view or it 
+is fully blocked by an object. A point source can never be partially 
+blocked.
+
+Area lights on the other hand occupy a finite area of space. Since it is 
+possible for an area light to be partially blocked by an object the shadows 
+created will have soft or "fuzzy" edges. The softness of the edge is 
+dependent on the dimensions of the light source and it's distance from the 
+object casting the shadow.
+
+The area lights used in POV-Ray are rectangular in shape, sort of like a 
+flat panel light. Rather than performing the complex calculations that 
+would be required to model a true area light, POV-Ray approximates an area 
+light as an array of "point" light sources spread out over the area 
+occupied by the light. The intensity of each individual point light in the 
+array is dimmed so that the total amount of light emitted by the light is 
+equal to the light color specified in the declaration.
+
+
+Syntax:
+
+light_source {
+   <X, Y, Z> color red # green # blue #
+
+   area_light <X1, Y1, Z1>, <X2, Y2, Z2>, N1, N2
+   adaptive #
+   jitter
+
+   [optional spotlight parameters]
+}
+
+The light's location and color are specified in the same way as a
+regular light source.
+
+The area_light command defines the size and orientation of the area light 
+as well as the number of lights in the light source array.  The vectors 
+<X1,Y1,Z1> and <X2,Y2,Z2> specify the lengths and directions of the edges 
+of the light. Since the area lights are rectangular in shape these vectors 
+should be perpendicular to each other. The larger the size of the light the 
+thicker that the soft part of the shadow will be. The numbers N1 and N2 
+specify the dimensions of the array of point lights. The larger the number 
+of lights you use the smoother your shadows will be but the longer they 
+will take to render.
+
+The adaptive command is used to enable adaptive sampling of the light 
+source. By default POV-Ray calculates the amount of light that reaches a 
+surface from an area light by shooting a test ray at every point light 
+within the array. As you can imagine this is VERY slow. Adaptive sampling 
+on the other hand attempts to approximate the same calculation by using a 
+minimum number of test rays. The number specified after the keyword 
+controls how much adaptive sampling is used. The higher the number the more 
+accurate your shadows will be but the longer they will take to render. If 
+you're not sure what value to use a good starting point is 'adaptive 1'.  
+The adaptive command only accepts integer values and cannot be set lower 
+than 0. Adaptive sampling is explained in more detail later.
+
+The jitter command is optional. When used it causes the positions of the 
+point lights in the array to be randomly jittered to eliminate any shadow 
+banding that may occur. The jittering is completely random from render to 
+render and should not be used when generating animations.
+
+Note: It's possible to specify spotlight parameters along with area_light 
+parameters to create "area spotlights." Using area spotlights is a good way 
+to speed up scenes that use area lights since you can confine the lengthy 
+soft shadow calculations to only the parts of your scene that need them.
+
+
+Example:
+
+light_source {
+   <0, 50, 0> color White
+
+   area_light <5, 0, 0>, <0, 0, 10>, 5, 5
+   adaptive 1
+   jitter
+}
+
+This defines an area light that extends 5 units along the x axis and 10 
+units along the z axis and is centered at the location <0,50,0>. The light 
+consists of a 5 by 5 jittered array of point sources for a total of 25 
+point lights. A minimum of 9 shadow rays will be used each time this light 
+is tested.
+
+                     / * * * * *
+                   / * * * * *           Y
+        <0,0,10> / * * * * *             |     Z
+               / * * * * *               |   /
+             / * * * * *                 | /
+           +----------->                 +------X
+              <5,0,0>
+
+
+An interesting effect that can be created using area lights is a linear 
+light. Rather than having a rectangular shape, a linear light stretches 
+along a line sort of like a thin fluorescent tube. To create a linear light 
+just create an area light with one of the array dimensions set to 1.
+
+Example:
+
+light_source {
+   <0, 50, 0> color White
+
+   area_light <40, 0, 0>, <0, 0, 1>, 100, 1
+   adaptive 4
+   jitter
+}
+
+This defines a linear light that extends from <-40/2,50,0> to <+40/2,50,0> 
+and consists of 100 point sources along it's length. The vector <0,0,1> is 
+ignored in this case since a linear light has no width. Note: If the linear 
+light is fairly long you'll usually need to set the adaptive parameter 
+fairly high as in the above example.
+
+When performing adaptive sampling POV-Ray starts by shooting a test ray at 
+each of the four corners of the area light. If the amount of light received 
+from all four corners is approximately the same then the area light is 
+assumed to be either fully in view or fully blocked. The light intensity is 
+then calculated as the average intensity of the light received from the 
+four corners.  However, if the light intensity from the four corners 
+differs significantly then the area light is partially blocked. The light 
+is the split into four quarters and each section is sampled as described 
+above. This allows POV-Ray to rapidly approximate how much of the area 
+light is in view without having to shoot a test ray at every light in the 
+array.
+
+While the adaptive sampling method is fast (relatively speaking) it can 
+sometimes produces inaccurate shadows. The solution is to reduce the amount 
+of adaptive sampling without completely turning it off. The number after 
+the adaptive keyword adjusts the number of times that the area light will 
+be split before the adaptive phase begins. For example if you use "adaptive 
+0" a minimum of 4 rays will be shot at the light. If you use "adaptive 1" a 
+minimum of 9 rays will be shot (adaptive 2 = 25 rays, adaptive 3 = 81 rays, 
+etc). Obviously the more shadow rays you shoot the slower the rendering 
+will be so you should use the lowest value that gives acceptable results.
+
+The number of rays never exceeds the values you specify for rows and 
+columns of points.  For example: area_light x,y,4,4 specifies a 4 by 4 
+array of lights.  If you specify adaptive 3 it would mean that you should 
+start with a 5 by 5 array.  In this case no adaptive sampling is done.  The 
+4 by 4 array is used.
+
+
+5.2.3.4     Looks_like
+
+Normally the light source itself has no visible shape.  The light simply 
+radiates from an invisible point or area.  You may give a light source a 
+any shape by adding a "looks_like{OBJECT}" statement.  For example:
+
+        light_source {
+           <100,200,-300> color White
+           looks_like {sphere{<0,0,0>,1 texture{T1}}
+        }
+
+This creates a visible sphere which is automatically translated to the 
+light's location <100,200,-300> even though the sphere has <0,0,0> as its 
+center.  There is an implied "no_shadow" also attached to the sphere so 
+that light is not blocked by the sphere.  Without the automatic no_shadow, 
+the light inside the sphere would not escape. The sphere would, in effect, 
+cast a shadow over everything.
+       
+If you want the attached object to block light then you should attach it 
+with a union and not a looks_like as follows:
+
+        union {
+          light_source {<100,200,-300> color White}
+          object {My_Lamp_Shade}
+        }
+
+Presumably parts of the lamp shade are open to let SOME light out.
+
+
+5.3   OBJECT MODIFIERS
+----------------------
+
+A variety of modifiers may be attached to objects.  Transformations such as 
+translate, rotate and scale have already been discussed.  Textures are in a 
+section of their own below.  Here are three other important modifiers: 
+clipped_by, bounded_by and no_shadow.  Although the examples below use 
+object statements and object identifiers, these modifiers may be used on 
+any type of object such as sphere, box etc.
+
+
+5.3.1 CLIPPED_BY
+   
+The "clipped_by" statement is technically an object modifier but it 
+provides a type of CSG similar to CSG intersection.  You attach a clipping 
+object like this:
+
+        object {
+           My_Thing
+           clipped_by{plane{y,0}}
+        }
+
+Every part of the object "My_Thing" that is inside the plane is retained 
+while the remaining part is clipped off and discarded.  In an intersection 
+object, the hole is closed off.  With clipped_by it leaves an opening.  For 
+example this diagram shows our object "A" being clipped_by a plane{y,0}.
+
+
+
+                       *       *
+                      *         *
+                     *           *
+                    ***************
+    
+Clipped_by may be used to slice off portions of any shape. In many cases it 
+will also result in faster rendering times than other methods of altering a 
+shape.
+
+Often you will want to use the clipped_by and bounded_by options with the 
+same object.  The following shortcut saves typing and uses less memory.
+
+        object {
+           My_Thing
+           bounded_by{box{<0,0,0>,<1,1,1>}}
+           clipped_by{bounded_by}
+        }
+
+This tells POV-Ray to use the same box as a clip that was used as a bounds.
+
+
+5.3.1 BOUNDED_BY
+
+The calculations necessary to test if a ray hits an object can be quite 
+time consuming.  Each ray has to be tested against every object in the 
+scene.  POV-Ray attempts so speed up the process by building a set of 
+invisible boxes, called bounding slabs, which cluster the objects together.  
+This way a ray that travels in one part of the scene doesn't have to be 
+tested against objects in another far away part of the scene.  When large 
+number objects are present the slabs are nested inside each other.  POV-Ray 
+can use slabs on any finite object.  However infinite objects such as 
+plane, quadric, quartic, cubic & poly cannot be automatically bound.  Also 
+CSG objects cannot be efficiently bound by automatic methods.  By attaching 
+a bounded_by statement to such shapes you can speed up the testing of the 
+shape and make it capable of using bounding slabs.
+
+If you use bounding shapes around any complex objects you can speed up the 
+rendering. Bounding shapes tell the ray tracer that the object is totally 
+enclosed by a simple shape. When tracing rays, the ray is first tested 
+against the simple bounding shape. If it strikes the bounding shape, then 
+the ray is further tested against the more complicated object inside. 
+Otherwise the entire complex shape is skipped, which greatly speeds 
+rendering.  
+
+To use bounding shapes, simply include the following lines in the 
+declaration of your object:
+       
+            bounded_by {
+                 object { ... }
+            }
+       
+       An example of a Bounding Shape:
+       
+            intersection {
+                sphere {<0,0,0>, 2}
+                plane  {<0,1,0>, 0}
+                plane  {<1,0,0>, 0}
+                bounded_by {sphere {<0,0,0>, 2}}
+            }
+       
+The best bounding shape is a sphere or a box since these shapes are highly 
+optimized, although, any shape may be used.  If the bounding shape is 
+itself a finite shape which responds to bounding slabs then the object 
+which it encloses will also be used in the slab system.
+
+CSG shapes can benefit from bounding slabs without a bounded_by statement 
+however they may do so inefficiently in intersection, difference and merge.  
+In these three CSG types the automatic bound used covers all of the 
+component objects in their entirety.  However the result of these 
+intersections may result in a smaller object.  Compare the sizes of the 
+illustrations for union and intersection in the CSG section above.  It is 
+possible to draw a much smaller box around the intersection of A and B than 
+the union of A and B yet the automatic bounds are the size of union{A B} 
+regardless of the kind of CSG specified.
+
+While it is almost always a good idea to manually add a bounded_by to 
+intersection, difference and merge, it is often best to NOT bound a union.  
+If a union has no bounded_by and no clipped_by then POV-Ray can internally 
+split apart the components of a union and apply automatic bounding slabs to 
+any of its finite parts.  Note that some utilities such as RAW2POV may be 
+able to generate bounds more efficiently than POV-Ray's current system.  
+However most unions you create yourself can be easily bounded by the 
+automatic system.  For technical reasons POV-Ray cannot split a merge 
+object.  It is probably best to hand bound a merge, especially if it is 
+very complex.
+
+Note that if bounding shape is too small or positioned incorrectly, it may 
+clip the object in undefined ways or the object may not appear at all.  To 
+do true clipping, use clipped_by as explained above. Often you will want to 
+use the clipped_by and bounded_by options with the same object.  The 
+following shortcut saves typing and uses less memory.
+
+        object {
+           My_Thing
+           clipped_by{box{<0,0,0>,<1,1,1>}}
+           bounded_by{clipped_by}
+        }
+
+This tells POV-Ray to use the same box as a bounds that was used as a clip.
+
+5.3.2 NO_SHADOW
+
+You may specify the no_shadow keyword in object and that object will not 
+cast a shadow.  This is useful for special effects and for creating the 
+illusion that a light source actually is visible.  This keyword was 
+necessary in earlier versions of POV-Ray which did not have the 
+"looks_like" statement.  Now it is useful for creating things like laser 
+beams or other unreal effects.
+
+Simply attach the keyword as follows:
+
+        object {
+          My_Thing
+          no_shadow
+        }
+
+
+5.4   TEXTURES
+--------------
+
+Textures are the materials from which the objects in POV-Ray are made. They 
+specifically describe the surface coloring, shading, and properties like 
+transparency and reflection.
+
+You can create your own textures using the parameters described below, or 
+you can use the many pre-defined high quality textures that have been 
+provided in the files TEXTURES.INC and STONES.INC. The tutorial in section 
+4 above introduces the basics of defining textures and attaching them to 
+objects.  It explains how textures are made up of three portions, a color 
+pattern called "pigment", a bump pattern called "normal", and surface 
+properties called "finish". 
+
+The most complete form for defining a texture is as follows:
+
+  texture {
+    TEXTURE_IDENTIFIER
+    pigment {...}
+    normal {...}
+    finish {...}
+    TRANSFORMATIONS...
+  }
+
+Each of the items in a texture are optional but if they are present, the 
+identifier must be first and the transformations bust be last.  The 
+pigment, normal and finish parameters modify any pigment, normal and finish 
+already specified in the TEXTURE_IDENTIFIER.  If no texture identifier is 
+specified then the pigment, normal and finish statements modify the current 
+default values.  TRANSFORMATIONs are translate, rotate and scale 
+statements.  They should be specified last.
+
+The sections below describe all of the options available in pigments, 
+normals and finishes.
+
+
+5.4.1 PIGMENT
+
+The color or pattern of colors for an object is defined by a pigment 
+statement.  A pigment statement is part of a texture specification.  
+However it can be tedious to type "texture{pigment{...}}" just to add a 
+color to an object.  Therefore you may attach a pigment directly to an 
+object without explicitly specifying that it as part of a texture.  For 
+example...
+
+ this...                        can be shortened to this...
+
+  object {                           object {                   
+    My_Object                          My_Object                
+    texture {                          pigment {color Purple} 
+      pigment {color Purple}         }                        
+    }                                  
+  }                                                           
+
+The color you define is the way you want it to look if fully illuminated.  
+You pick the basic color inherent in the object and POV-Ray brightens or 
+darkens it depending on the lighting in the scene.  The parameter is called 
+"pigment" because we are defining the basic color the object actually IS 
+rather than how it LOOKS.
+
+The most complete form for defining a pigment is as follows:
+
+  pigment {
+    PIGMENT_IDENTIFIER
+    PATTERN_TYPE
+    PIGMENT_MODIFIERS
+    TRANSFORMATIONS...
+  }
+
+Each of the items in a pigment are optional but if they are present, they 
+should be in the order shown above to insure that the results are as 
+expected.  Any items after the PIGMENT_IDENTIFIER modify or override 
+settings given in the IDENTIFIER.  If no identifier is specified then the 
+items modify the pigment values in the current default texture.  
+TRANSFORMATIONs are translate, rotate and scale statements.  They apply 
+only to the pigment and not to other parts of the texture.  They should be 
+specified last.
+
+The various PATTERN_TYPEs fall into roughly 4 categories.  Each category is 
+discussed below.  They are solid color, color list patterns, color mapped 
+patterns and image maps.
+
+
+5.4.1.1     Color
+
+The simplest type of pigment is a solid color.  To specify a solid color 
+you simply put a color specification inside a pigment.  For example...
+
+  pigment {color Orange}
+
+A color specification consists of the keyword "color" followed a color 
+identifier or by a specification of the amount or red, green, blue and 
+transparency in the surface.  For example:
+
+  color red 0.5   green 0.2   blue 1.0
+
+The float values between 0.0 and 1.0 are used to specify the intensity of 
+each primary color of light.  Note that we use additive color primaries 
+like the color phosphors on a color computer monitor or TV.  Thus...
+
+  color red 1.0   green 1.0   blue 1.0 
+
+ ...specifies full intensity of all primary colors which is white light.  
+The primaries may be given in any order and if any primary is unspecified 
+its value defaults to zero.
+
+In addition to the primary colors a 4th value called "filter" specifies the 
+amount of transparency.  For example a piece of red tinted cellophane might 
+have...
+
+  color red 1.0  filter 1.0
+
+Lowering the filter value would let less light through.  The default value 
+if no filter is specified is 0.0 or no transparency.  Note that the example 
+has an implied "green 0.0  blue 0.0" which means that no green or blue 
+light can pass through.  Often users mistakenly specify a clear object 
+by...
+ 
+  color filter 1.0
+
+but this has implied red, green and blue values of zero.  You've just 
+specified a totally black filter so no light passes through.  The correct 
+way is...
+
+  color red 1.0   green 1.0   blue 1.0   filter 1.0
+
+Note in earlier versions of POV-Ray the keyword "alpha" was used for 
+transparency.  However common usage of "alpha" in this context usually 
+means that light passes through unaffected.  In POV-Ray however, light is 
+filtered when it passes through a colored surface.  The program works the 
+same as it always did but the keyword has been changed to make its meaning 
+clearer.
+
+A short-cut way to specify a color is...
+
+  color rgb<0.2, 0.5, 0.9>
+
+      or
+
+  color rgbf<0.2, 0.8, 1.0, 0.7>
+
+Color specifications are used elsewhere in POV-Ray.  Unless stated 
+otherwise, all of the above information on color specs given above applies 
+to any color spec.
+
+Color identifiers may be declared.  For examples see COLORS.INC.  A color 
+identifier contains red, blue, green and filter values even if they are not 
+explicitly specified.  For example:
+
+  color filter 1.0 My_Color // here My_Color overwrites the filter
+
+  color My_Color filter 1.0 // this changes My_Color's filter value to 1.0
+
+When using a color specification to give an object a solid color pigment, 
+the keyword "color" may be omitted.  For example...
+
+  pigment {red 1  blue 0.5}
+        or
+  pigment {My_Color}
+
+are legal.
+
+
+5.4.1.2     Color List Patterns -- checker and hexagon
+
+Two of the simplest color patterns available are the checker and hexagon 
+patterns.  These patterns take a simple list of colors one after the other.  
+For example a checker pattern is specified by...
+
+  pigment {checker color C1  color C2}
+
+This produces a checkered pattern consisting of alternating squares of 
+color C1 and C2.  If no colors are specified then default blue and green 
+colors are used.
+
+All color patterns in POV-Ray are 3 dimensional.  For every x,y,z point in 
+space, the pattern has a unique color.  In the case of a checker pattern it 
+is actually a series of cubes that are one unit in size.  Imagine a bunch 
+of 1 inch cubes made from two different colors of modeling clay.  Now 
+imagine arranging the cubes in an alternating check pattern and stacking 
+them in layer after layer so that the colors still alternated in every 
+direction.  Eventually you would have a larger cube.  The pattern of checks 
+on each side is what the POV-Ray checker pattern produces when applied to a 
+box object.  Finally imagine cutting away at the cube until it is carved 
+into a smooth sphere or any other shape.  This is what the checker pattern 
+would look like on an object of any kind.
+
+Color patterns do not wrap around the surfaces like putting wallpaper on an 
+object.  The patterns exist in 3-d and the objects are carved from them 
+like carving stacked colored cubes.  In a later section we describe wood 
+and marble patterns for example.  The wood grain or stone swirls exist 
+through the whole object but they appear only at the surface.
+
+Another pattern that uses a list of colors is the hexagon pattern.  A 
+hexagon pattern is specified by...
+
+  pigment {hexagon color C1  color C2  color C3}
+
+Hex pattern generates a repeating pattern of hexagons in the XZ plane.  In 
+this instance imagine tall rods that are hexagonal in shape and are 
+parallel to the Y axis and grouped in bundles like this...
+
+           _____              
+          /     \              
+         /   C2  \_____             
+        |\       /     \        
+        | \_____/   C3  \
+        | /     \       /|      
+         /   C1  \_____/ |
+        |\       /|    | |
+        | \_____/ |    | |
+        | |     | |    | |
+        | |     | |    | |
+        | |     | |    | |
+        | |     | |    | |
+        | |     | |    |
+        | |     | |    |
+          |     |
+          |     |
+
+
+The three colors will repeat the pattern shown above with hexagon C1 
+centered at the origin.  Each side of the hexagon is one unit long.  The 
+hexagonal "rods" of color extend infinitely in the +Y and -Y directions.  
+If no colors are specified then default blue, green, and red colors are 
+used.
+
+
+5.4.1.3     Color Mapped Patterns
+
+Most of the color patterns do not use abrupt color changes of just two or 
+three colors like those in the checker or hexagon patterns.  They instead 
+use smooth transitions of many colors that gradually change from one point 
+to the next.  The colors are defined in a color map that describes how the 
+pattern blends from one color to the next.  
+
+
+5.4.1.3.1   Gradient 
+
+This simplest such pattern is the "gradient" pattern.  It is specified as 
+follows...
+
+  pigment {gradient VECTOR}
+
+where VECTOR is a vector pointing in the direction that the colors blend.  
+For example:
+
+      sphere {
+        <0, 1, 2>, 2
+        pigment { gradient x } // bands of color vary as you move
+                               // along the "x" direction.
+      }
+
+This produces a series of smooth bands of color that look like layers of 
+color next to each other.  Points at x=0 are black.  As the X location 
+increases it smoothly turns to white at x=1.  Then it starts over with 
+black and gradually turns white at x=2.  The pattern reverses for negative 
+values of X.  Using "gradient y" or "gradient z" makes the colors blend 
+along the y or z axis.  Any vector may be used but x, y and z are most 
+common.
+
+
+5.4.1.3.2   Color Maps
+
+The gray scale default colors of the gradient pattern isn't a very 
+interesting sight.  The real power comes from specifying a color map to 
+define how the colors should blend.
+
+Each of the various pattern types available is in fact a mathematical 
+function that takes any x,y,z location and turns it into a number between 
+0.0 and 1.0.  That number is used to specify what mix of colors to use from 
+the color map.
+
+A color map is specified by...
+
+      color_map {
+        [ NUM_1 color C1]
+        [ NUM_2 color C2]
+        [ NUM_3 color C3]
+         ... 
+        }
+
+Where NUM_1, NUM_2... are float values between 0.0 and 1.0 inclusive.  C1, 
+C2 ... are color specifications.  NOTE: the [] brackets are part of the 
+actual statement.  They are not notational symbols denoting optional parts.  
+The brackets surround each entry in the color map.  There may be from 2 to 
+20 entries in the map. 
+
+For example,
+
+      sphere {
+        <0,1,2>, 2
+        pigment { 
+          gradient x 
+          color_map {
+            [0.1  color Red]
+            [0.3  color Yellow]
+            [0.6  color Blue]
+            [0.6  color Green]
+            [0.8  color Cyan]
+          }
+        }
+      }
+
+The pattern function is evaluated and the result is a value from 0.0 to 
+1.0.  If the value is less than the first entry (in this case 0.1) then the 
+first color (Red) is used.  Values from 0.1 to 0.3 use a blend of red and 
+yellow using linear interpolation of the two colors.  Similarly values from 
+0.3 to 0.6 blend from yellow to blue.  Note that the 3rd and 4th entries 
+both have values of 0.6.  This causes an immediate abrupt shift of color 
+from blue to green.  Specifically a value that is less than 0.6 will be 
+blue but exactly equal to 0.6 will be green.  Moving along, values from 0.6 
+to 0.8 will be a blend of green and cyan.  Finally any value greater than 
+or equal to 0.8 will be cyan.
+
+If you want areas of unchanging color you simply specify the same color for 
+two adjacent entries.  For example:
+
+      color_map {
+        [0.1  color Red]
+        [0.3  color Yellow]
+        [0.6  color Yellow]
+        [0.8  color Green]
+      }
+
+In this case any value from 0.3 to 0.6 will be pure yellow.
+
+
+5.4.1.3.3   Marble
+
+A "gradient x" pattern uses colors from the color map from 0.0 up to 1.0 at 
+location x=1 but then jumps back to the first color for x=1.00000001 (or 
+some tiny fraction above 1.0) and repeats the pattern again and again.  The 
+marble pattern is similar except that it uses the color map from 0 to 1 but 
+then it reverses the map and blends from 1 back to zero.  For example:
+
+      pigment { 
+        gradient x 
+        color_map {
+          [0.0  color Yellow]
+          [1.0  color Cyan]
+        }
+      }
+
+This blends from yellow to cyan and then it abruptly changes back to yellow 
+and repeats.  However replacing "gradient x" with "marble" smoothly blends 
+from yellow to cyan as the x coordinate goes from 0.0 to 0.5 and then 
+smoothly blends back from cyan to yellow by x=1.0.
+
+When used with a "turbulence" modifier and an appropriate color map, this 
+pattern looks like veins of color of real marble, jade or other types of 
+stone. By default, marble has no turbulence.
+
+
+5.4.1.3.4   Wood
+
+Wood uses the color map to create concentric cylindrical bands of color 
+centered on the Z axis.  These bands look like the growth rings and veins 
+in real wood.  Small amounts of turbulence should be added to make it look 
+more realistic. By default, wood has no turbulence.
+
+Like marble, wood uses color map values 0 to 1 then repeats the colors in 
+reverse order from 1 to 0.
+
+
+5.4.1.3.5   Onion
+
+Onion is a pattern of concentric spheres like the layers of an onion.  It 
+uses colors from a color map from 0 to 1, 0 to 1 etc without reversing.
+
+
+5.4.1.3.6   Leopard 
+
+Leopard creates regular geometric pattern of circular spots.  It uses 
+colors from a color map from 0 to 1, 0 to 1 etc without reversing.
+
+
+5.4.1.3.7   Granite 
+
+This pattern uses a simple 1/f fractal noise function to give a pretty darn 
+good granite pattern. Typically used with small scaling values (2.0 to 
+5.0).  This pattern is used with creative color maps in STONES.INC to 
+create some gorgeous layered stone textures. By default, granite has no 
+turbulence.  It uses colors from a color map from 0 to 1, 0 to 1 etc 
+without reversing.
+
+
+5.4.1.3.8   Bozo 
+
+The bozo color pattern takes a noise function and maps it onto the surface 
+of an object. It uses colors from a color map from 0 to 1, 0 to 1 etc 
+without reversing.
+
+Noise in ray tracing is sort of like a random number generator, but it has 
+the following properties:
+
+  1) It's defined over 3D space i.e., it takes x, y, and z and returns the 
+noise value there.
+  2) If two points are far apart, the noise values at those points are 
+relatively random.
+  3) If two points are close together, the noise values at those points are 
+close to each other.
+
+You can visualize this as having a large room and a thermometer that ranges 
+from 0.0 to 1.0. Each point in the room has a temperature. Points that are 
+far apart have relatively random temperatures. Points that are close 
+together have close temperatures. The temperature changes smoothly, but 
+randomly as we move through the room. 
+
+Now, let's place an object into this room along with an artist. The artist 
+measures the temperature at each point on the object and paints that point 
+a different color depending on the temperature. What do we get? A POV-Ray 
+bozo texture!
+
+
+5.4.1.3.9   Spotted 
+
+This uses the same noise pattern as bozo but it is unaffected by 
+turbulence.  It uses colors from a color map from 0 to 1, 0 to 1 etc 
+without reversing.
+
+
+5.4.1.3.10  Agate 
+
+This pattern is very beautiful and similar to marble, but uses a different 
+turbulence function. The turbulence keyword has no effect, and as such it 
+is always very turbulent. You may control the amount of the built-in 
+turbulence by adding the "agate_turb" keyword followed by a float value.  
+For example:
+
+      pigment { 
+        agate
+        agate_turb 0.5
+        color_map {
+          ...
+        }
+      }
+
+
+5.4.1.3.11  Mandel
+
+The mandel pattern computes the standard Mandelbrot fractal pattern and 
+projects it onto the X-Y plane.  It uses the X and Y coordinates to compute 
+the Mandelbrot set.  The pattern is specified with the keyword mandel 
+followed by an integer number.  This number is the maximum number of 
+iterations to be used to compute the set.  Typical values range from 10 up 
+to 256 but any positive integer may be used.  For example:
+
+      sphere { 
+       <0, 0, 0>, 1 
+       pigment {
+         mandel 25
+         color_map {
+           [0.0  color Cyan]
+           [0.3  color Yellow]
+           [0.6  color Magenta]
+           [1.0  color Cyan]
+         }
+         scale .5
+       }
+      }
+
+The value passed to the color map is computed by the formula:
+
+	value = number_of_iterations / max_iterations
+
+The color extends infinitely in the Z direction similar to a planar image 
+map.  
+
+
+5.4.1.3.12  Radial
+
+The radial pattern is a radial blend that wraps around the +Y axis.  The 
+color for value 0.0 starts at the +X direction and wraps the color map 
+around from east to west with 0.25 in the -Z direction, 0.5 in -X, 0.75 at 
++Z and back to 1.0 at +X.  See the "frequency" and "phase" pigment 
+modifiers below for examples.
+
+
+5.4.1.4     Image Maps
+
+When all else fails and none of the above pigment pattern types meets your 
+needs, you can use an image map to wrap a 2-D bit-mapped image around your 
+3-D objects.
+
+
+5.4.1.4.1   Specifying an image map.
+
+The syntax for image_map is...
+
+  pigment {
+    image_map {
+      FILE_TYPE "filename"
+      MODIFIERS...
+    }
+  }
+
+Where FILE_TYPE is one of the following keywords "gif", "tga", "iff" or 
+"dump".  This is followed by the name of the file in quotes.  Several 
+optional modifiers may follow the file specification.  The modifiers are 
+described below.  Note: Earlier versions of POV-Ray allowed some modifiers 
+before the FILE_TYPE but that syntax is being phased out in favor of the 
+syntax described here.
+
+Filenames specified in the image_map statements will be searched for in the 
+home (current) directory first, and if not found, will then be searched for 
+in directories specified by any "-L" (library path) options active. This 
+would facilitate keeping all your image maps files in a separate 
+subdirectory, and giving an "-L" option on the command line to where your 
+library of image maps are. 
+
+By default, the image is mapped onto the X-Y plane.  The image is 
+"projected" onto the object as though there were a slide projector 
+somewhere in the -Z direction.  The image exactly fills the square area 
+from x,y coordinates (0,0) to (1,1) regardless of the image's original size 
+in pixels.  If you would like to change this default, you may translate, 
+rotate or scale the pigment or texture to map it onto the object's surface 
+as desired. 
+
+In the section 5.4.1.2 above when we explained checker pigment patterns, we 
+described the checks as solid cubes of colored clay from which objects are 
+carved.  With image maps you should imagine that each pixel is a long, 
+thin, square, colored rod that extends parallel to the Z axis.  The image 
+is made from rows and columns of these rods bundled together and the object 
+is then carved from the bundle.
+
+If you would like to change this default orientation, you may translate, 
+rotate or scale the pigment or texture to map it onto the object's surface 
+as desired. 
+
+
+5.4.1.4.2   The "once" option.
+
+Normally there are an infinite number of repeating images created over 
+every unit square of the X-Y plane like tiles.  By adding the keyword 
+"once" after a file name, you can eliminate all other copies of the image 
+except the one at (0,0) to (1,1).  Areas outside this unit square are 
+treated as fully transparent.
+
+Note: The "once" keyword may also be used with bump_map and material_map 
+statements.
+
+
+5.4.1.4.3   The "map_type" option.
+
+The default projection of the image onto the X-Y plane is called a "planar 
+map type".  This option may be changed by adding the "map_type" keyword 
+followed by a number specifying the way to wrap the image around the 
+object.
+
+A "map_type 0" gives the default planar mapping already described.
+
+A "map_type 1" is a spherical mapping.  It assumes that the object is a 
+sphere of any size sitting at the origin.  The Y axis is the north/south 
+pole of the spherical mapping.  The top and bottom edges of the image just 
+touch the pole regardless of any scaling.  The left edge of the image 
+begins at the positive X axis and wraps the image around the sphere from 
+"west" to "east" in a -Y rotation.  The image covers the sphere exactly 
+once.  The "once" keyword has no meaning for this type.
+
+With "map_type 2" you get a cylindrical mapping.  It assumes that a 
+cylinder of any diameter lies along the Y axis.  The image wraps around the 
+cylinder just like the spherical map but the image remains 1 unit tall from 
+y=0 to y=1.  This band of color is repeated at all heights unless the 
+"once" keyword is applied.
+
+Finally "map_type 5" is a torus or donut shaped mapping.  It assumes that a 
+torus of major radius 1 sits at the origin in the X-Z plane.  The image is 
+wrapped around similar to spherical or cylindrical maps.  However the top 
+and bottom edges of the map wrap over and under the torus where they meet 
+each other on the inner rim.
+
+Types 3 and 4 are still under development.
+
+Note: The "map_type" option may also be applied to bump_map and 
+material_map statements.
+
+
+5.4.1.4.4   The "filter" options.
+
+To make all or part of an image map transparent, you can specify filter 
+values for the color palette/registers of GIF or IFF pictures (at least for 
+the modes that use palettes/color maps). You can do this by adding the 
+keyword "filter" following the filename.  The keyword is followed by two 
+numbers.  The first number is the palette/register number value and 2nd is 
+the amount of transparency. The values should be separated by a comma.  For 
+example:
+
+   image_map { 
+     gif "mypic.gif"
+     map_type 0 
+     filter 0, 0.5 // Make color 0 50% transparent
+     filter 5, 1.0 // Make color 5 100% transparent
+     filter 8, 0.3 // Make color 8 30% transparent
+    }
+
+You can give the entire image a filter value using "filter all VALUE".  For 
+example:
+
+   image_map { 
+     gif "stnglass.gif"
+     map_type 0 
+     filter all 0.9
+    }
+
+NOTE: Transparency works by filtering light by its original color.  Adding 
+"filter" to the color black still leaves you with black no matter how high 
+the filter value is. If you want a color to be clear, add filter 1 to the 
+color white.
+
+
+5.4.1.4.5   The "interpolate" option.
+
+Adding the "interpolate" keyword can smooths the jagged look of an image or 
+bump map.  When POV-Ray asks a color or bump amount for an image or bump 
+map, it often asks for a point that is not directly on top of one pixel, 
+but sort of between several different colored pixels.  Interpolations 
+returns an "in-between" value so that the steps between the pixels in the 
+image or bump map will look smoother.
+
+There are currently two types of interpolation:
+
+   Normalized Distance -- interpolate 4
+   Bilinear            -- interpolate 2
+
+Default is no interpolation. Normalized distance is the slightly faster of 
+the two, bilinear does a better job of picking the between color. Normally, 
+bilinear is used.
+
+If your bump or image map looks jaggy, try using interpolation instead of 
+going to a higher resolution image.  The results can be very good.  For 
+example:
+
+   image_map { 
+     gif "mypic.gif"
+     map_type 0 
+     interpolate 2
+    }
+
+
+5.4.1.5     Pigment Modifiers
+
+After specifying the pigment type such as marble, wood etc and adding an 
+optional color map, you may add any of several modifiers.
+
+
+5.4.1.5.1   Turbulence
+
+The keyword "turbulence" followed by a float or vector may be used to stir 
+up the color pattern.  Typical values range from the default 0.0 which is 
+no turbulence to 1.0 which is very turbulent.  If a vector is specified 
+then different amounts of turbulence are applied in the x, y and z 
+directions.  For example "turbulence <1.0, 0.6, 0.1>" has much turbulence 
+in the x direction, a moderate amount in the y direction and a small amount 
+in the z direction.
+
+Turbulence uses a noise function called DNoise.  This is sort of like noise 
+used in the bozo pattern except that instead of giving a single value it 
+gives a direction. You can think of it as the direction that the wind is 
+blowing at that spot.
+
+Turbulence which uses DNoise to push a point around a few times.  We locate 
+the point we want to color (P), then push it around a bit using turbulence 
+to get to a final point (Q) then look up the color of point Q in our 
+ordinary boring textures. That's the color that's used for the point P.
+
+It in effect says "Don't give me the color at this spot... take a few 
+random steps in a different direction and give me that color.  Each step is 
+typically half as long as the one before.  For example:
+
+         P ------------------------->
+                  First Move        /
+                                   /
+                                  /
+                                 /Second
+                                /  Move
+                               /
+                        ______/
+                        \
+                         \
+                          Q - Final point.
+
+
+The magnitude of these steps is controlled by the turbulence value.
+
+
+5.4.1.5.2   Octaves
+
+The number of steps used by turbulence is controlled by the "octaves" 
+value.  The values may range from 1 up to 10.  The default value of 
+"octaves 6" is fairly close to the upper limit; you won't see much change 
+by setting it to a higher value because the extra steps are too small.  You 
+can achieve some very interesting wavy effects by specifying lower values. 
+Setting octaves higher can slow down rendering because more steps are 
+computed.
+
+
+5.4.1.5.3   Omega
+
+The keyword "omega" followed by a float value may be added to change the 
+turbulence calculations.  Each successive octave of turbulence is 
+multiplied by the omega value. The default "omega 0.5" means that each 
+octave is 1/2 the size of the previous one.  Higher omega values mean that 
+2nd, 3rd, 4th and up octaves contribute more turbulence giving a sharper, 
+"krinkly" look while smaller omegas give a fuzzy kind of turbulence that 
+gets blury in places.
+
+
+5.4.1.5.4   Lambda
+
+The lambda parameter controls how statistically different the random move 
+of an octave is compared to its previous octave.  The default value for 
+this is "lambda 2".  Values close to lambda 1.0 will straighten out the 
+randomness of the path in the diagram above.  Higher values can look more 
+"swirly" under some circumstances.  More tinkering by POV-Ray users may 
+lead us to discover ways to make good use of this parameter.  For now just 
+tinker and enjoy.
+
+
+5.4.1.5.5   Quick_color
+
+When developing POV-Ray scenes its often useful to do low quality test runs 
+that render faster.  The +Q command line switch can be used to turn off 
+some time consuming color pattern and lighting calculations to speed things 
+up.  However all settings of +Q5 or lower turns off pigment calculations 
+and creates gray objects.
+
+By adding a "quick_color" to a pigment you tell POV-Ray what solid color to 
+use for quick renders instead of a patterned pigment.  For example:
+
+   pigment {
+     gradient x
+     color_map{
+       [0 color Yellow][0.3 color Cyan][0.6 color Magenta][1 color Cyan]
+     }
+     turbulence 0.5  lambda 1.5  omega 0.75  octaves 8
+     quick_color Neon_Pink
+   }
+
+This tells POV-Ray to use solid Neon_Pink for test runs at quality +Q5 or 
+lower but to use the turbulent gradient pattern for rendering at +Q6 and 
+higher.
+
+Note that solid color pigments such as:
+
+   pigment {color Magenta}
+
+automatically set the quick_color to that value.  You may override this if 
+you want.  Suppose you have 10 spheres on the screen and all are Yellow.  
+If you want to identify them individually you could give each a different 
+quick_color like this:
+
+   sphere {<1,2,3>,4 pigment {color Yellow  quick_color Red}}
+
+   sphere {<-1,-2,-3>,4 pigment {color Yellow  quick_color Blue}}
+
+ ...and so on.  At +Q6 or higher they will all be Yellow but at +Q5 or 
+lower each would be different colors so you could identify them.
+
+
+5.4.1.5.6   Frequency and Phase
+
+The frequency and phase keywords were originally intended for the normal 
+patterns ripples and waves discussed in the next section.  With version 2.0 
+they were extended to pigments to make the radial and mandel pigment 
+pattern easier to use.  As it turned out it was simple to make them apply 
+to any color map pattern.
+
+The frequency keyword adjusts the number of times that a color map repeats 
+over one cycle of a pattern.  For example gradient x covers color map 
+values 0 to 1 over the range x=0 to x=1.  By adding "frequency 2" the color 
+map repeats twice over that same range.  The same effect can be achieved 
+using "scale x*0.5" so the frequency keyword isn't that useful for patterns 
+like gradient. 
+
+However the radial pattern wraps the color map around the +Y axis once.  If 
+you wanted two copies of the map (or 3 or 10 or 100) you'd have to build a 
+bigger map.  Adding "frequency 2" causes the color map to be used twice per 
+revolution.  Try this:
+
+      sphere {<0,0,0>,3
+        pigment { 
+          radial
+          color_map{[0.5 color Red][0.5 color White]}
+          frequency 6
+        }
+        rotate -x*90
+      }
+
+The result is 6 sets of red and white radial stripes evenly spaced around 
+the sphere.
+
+Note "frequency -1" reverses the entries in a color_map.
+
+The phase keyword takes values from 0.0 to 1.0 and rotates the color map 
+entries.  In the example above if you render successive frames at phase 0 
+then phase 0.1, phase 0.2 etc you could create an animation that rotates 
+the stripes.  The same effect can be easily achieved by rotating the radial 
+pigment using "rotate y*Angle" but there are other uses where phase can be 
+handy.  
+
+Sometimes you create a great looking gradient or wood color map but you 
+want the grain slightly adjusted in or out.  You could re-order the color 
+map entries but that's a pain.  A phase adjustment will shift everything 
+but keep the same scale.  Try animating a mandel pigment for a color 
+palette rotation effect.
+
+
+5.4.1.5.7   Transforming pigments
+
+You may modify pigment patterns with "translate", "rotate" and "scale" 
+commands.  Note that placing these transforms inside the texture but 
+outside the pigment will transform the entire texture.  However placing 
+them inside the pigment transforms just the pigment.  For example:
+
+      sphere {<0,0,0>,3
+        texture {
+          pigment { 
+            checker color Red color White
+            scale <2,1,3>  // affects pigment only... not normal
+          }
+          normal {
+            bumps 0.3
+            scale 0.4      // affects bump normal only... not pigment
+          }
+          finish {Shiny}
+          translate 5*x    // affects entire texture
+        }
+        translate y*2      // affects object and texture
+      }
+
+Note that transforms affect the entire pigment regardless of the ordering 
+of other parameters.  For example:
+
+  This...                         ...is the same as this...
+
+     pigment {                          pigment {                    
+       bozo                               bozo                       
+       turbulence 0.3                     scale 2                              
+       scale 2                            turbulence 0.3   
+     }                                  }                            
+
+The scaling before or after turbulence makes no difference.  In general it 
+is best to put all transformations last for the sake of clarity.
+
+
+5.4.2 NORMAL
+
+Ray tracing is known for the dramatic way it depicts reflection, refraction 
+and lighting effects.  Much of our perception depends on the reflective 
+properties of an object.  Ray tracing can exploit this by playing tricks on 
+our perception to make us see complex details that aren't really there.
+
+Suppose you wanted a very bumpy surface on the object.  It would be very 
+difficult to mathematically model lots of bumps.  We can however simulate 
+the way bumps look by altering the way light reflects off of the surface.  
+Reflection calculations depend on a vector called a "surface normal" 
+vector.  This is a vector which points away from the surface and is 
+perpendicular to it.  By artificially modifying (or perturbing) this normal 
+vector you can simulate bumps.  
+
+The "normal {...}" statement is the part of a texture which defines the 
+pattern of normal perturbations to be applied to an object.  Like the 
+pigment statement, you can omit the surrounding texture block to save 
+typing.  Do not forget however that there is a texture implied. For 
+example...
+
+ this...                        can be shortened to this...
+
+  object {                           object {                   
+    My_Object                          My_Object                
+    texture {                          pigment {color Purple} 
+      pigment {color Purple}           normal {bumps 0.3}                        
+      normal {bumps 0.3}             }
+    }                                  
+  }                                                           
+
+Note that attaching a normal pattern does not really modify the surface.  
+It only affects the way light reflects or refracts at the surface so that 
+it looks bumpy.
+
+The most complete form for defining a normal is as follows:
+
+  normal {
+    NORMAL_IDENTIFIER
+    NORMAL_PATTERN_TYPE
+    NORMAL_MODIFIERS
+    TRANSFORMATIONS...
+  }
+
+Each of the items in a normal are optional but if they are present, they 
+should be in the order shown above to insure that the results are as 
+expected.  Any items after the NORMAL_IDENTIFIER modify or override 
+settings given in the IDENTIFIER.  If no identifier is specified then the 
+items modify the normal values in the current default texture.  
+TRANSFORMATIONs are translate, rotate and scale statements.  They apply 
+only to the normal and not to other parts of the texture.  They should be 
+specified last.
+
+There are 6 different NORMAL_PATTERN_TYPEs discussed below.  They are 
+bumps, dents, ripples, waves, wrinkles and bump_map.  
+
+
+5.4.2.1     Bumps
+
+A smoothly rolling random pattern of bumps can be created with the "bumps" 
+normal pattern.  Bumps uses the same random noise function as the bozo and 
+spotted pigment patterns, but uses the derived value to perturb the surface 
+normal or, in other words, make the surface look bumpy. This gives the 
+impression of a "bumpy" surface, random and irregular, sort of like an 
+orange. 
+
+After the bumps keyword, you supply a single floating point value for the 
+amount of surface perturbation.  Values typically range from 0.0 (No Bumps) 
+to 1.0 or greater (Extremely Bumpy). For example:
+
+      sphere {
+        <0, 1, 2>, 2
+        texture {
+          pigment {color Yellow}  
+          normal {bumps 0.4   scale 0.2}
+          finish {phong 1}
+        }
+      }
+
+This tells POV-Ray to use a bump pattern to modify the surface normal.  The 
+value 0.4 controls the apparent depth of the bumps.  Usually the bumps are 
+about 1 unit wide which doesn't work very well with a sphere of radius 2.  
+The scale makes the bumps 1/5th as wide but does not affect their depth. 
+
+
+5.4.2.2     Dents
+
+The "dents" pattern is especially interesting when used with metallic 
+textures, it gives impressions into the metal surface that look like dents 
+have been beaten into the surface with a hammer. A single value is supplied 
+after the dents keyword to indicate the amount of denting required. Values 
+range from 0.0 (Showroom New) to 1.0 (Insurance Wreck). Scale the pattern 
+to make the pitting more or less frequent.
+
+
+5.4.2.3     Ripples
+
+The ripples bump pattern make a surface look like ripples of water. The 
+ripples option requires a value to determine how deep the ripples are.  
+Values range from 0.0 to 1.0 or more.  The ripples radiate from 10 random 
+locations inside the unit cube area <0,0,0> to <1,1,1>.  Scale the pattern 
+to make the centers closer or farther apart.  
+
+The frequency keyword changes the spacing between ripples.  The phase 
+keyword can be used to move the ripples outwards for realistic animation.
+
+
+5.4.2.4     Waves
+
+This works in a similar way to ripples except that it makes waves with 
+different frequencies. The effect is to make waves that look more like deep 
+ocean waves.  The waves option requires a value to determine how deep the 
+waves are.  Values range from 0.0 to 1.0 or more.  The waves radiate from 
+10 random locations inside the unit cube area <0,0,0> to <1,1,1>.  Scale 
+the pattern to make the centers closer or farther apart.  
+
+The frequency keyword changes the spacing between waves.  The phase keyword 
+can be used to move the waves outwards for realistic animation.
+
+
+5.4.2.5     Wrinkles
+
+This is sort of a 3-D bumpy granite. It uses a similar 1/f fractal noise 
+function to perturb the surface normal in 3-D space. With a transparent 
+color pattern, could look like wrinkled cellophane. Requires a single value 
+after the wrinkles keyword to indicate the amount of wrinkling desired. 
+Values from 0.0 (No Wrinkles) to 1.0 (Very Wrinkled) are typical. 
+
+
+5.4.2.6     Bump_map
+
+When all else fails and none of the above normal pattern types meets your 
+needs, you can use a bump map to wrap a 2-D bit-mapped bump pattern around 
+your 3-D objects.
+
+Instead of placing the color of the image on the shape like an image_map, 
+bump_map perturbs the surface normal based on the color of the image at 
+that point. The result looks like the image has been embossed into the 
+surface.  By default, bump_map uses the brightness of the actual color of 
+the pixel. Colors are converted to gray scale internally before calculating 
+height.  Black is a low spot, white is a high spot. The image's index 
+values may be used instead (see use_index) below.  
+
+
+5.4.2.6.1   Specifying a bump map.
+
+The syntax for bump_map is...
+
+  normal {
+    bump_map {
+      FILE_TYPE "filename"
+      MODIFIERS...
+    }
+  }
+
+Where FILE_TYPE is one of the following keywords "gif", "tga", "iff" or 
+"dump".  This is followed by the name of the file in quotes.  Several 
+optional modifiers may follow the file specification.  The modifiers are 
+described below.  Note: Earlier versions of POV-Ray allowed some modifiers 
+before the FILE_TYPE but that syntax is being phased out in favor of the 
+syntax described here.
+
+Filenames specified in the bump_map statements will be searched for in the 
+home (current) directory first, and if not found, will then be searched for 
+in directories specified by any "-L" (library path) options active. This 
+would facilitate keeping all your bump maps files in a separate 
+subdirectory, and giving an "-L" option on the command line to where your 
+library of bump maps are. 
+
+By default, the bump is mapped onto the X-Y plane.  The bump is "projected" 
+onto the object as though there were a slide projector somewhere in the -Z 
+direction.  The bump exactly fills the square area from x,y coordinates 
+(0,0) to (1,1) regardless of the bump's original size in pixels.  If you 
+would like to change this default, you may translate, rotate or scale the 
+normal or texture to map it onto the object's surface as desired. 
+
+If you would like to change this default orientation, you may translate, 
+rotate or scale the normal or texture to map it onto the object's surface 
+as desired. 
+
+
+5.4.2.6.2   Bump_size
+
+The relative bump_size can be scaled using bump_size modifier. The 
+bump_size number can be any number other than 0. Valid numbers are 2, .5, 
+-33, 1000, etc. For example:
+
+  normal {
+    bump_map { 
+      gif "stuff.gif" 
+      bump_size 5
+    }
+  }
+
+
+5.4.2.6.3   Use_index & use_color
+
+Usually the bump_map converts the color of the pixel in the map to a 
+grayscale intensity value in the range 0.0 to 1.0 and calculates the bumps 
+based on that value.  If you specify use_index, bump_map uses the color's 
+palette number to compute as the height of the bump at that point. So, 
+color #0 would be low and color #255 would be high. The actual color of the 
+pixels doesn't matter when using the index.  The "use_color" keyword may be 
+specified to explicitly note that the color methods should be used instead.
+
+
+5.4.2.6.4   The "once" option.
+
+Normally there are an infinite number of repeating bump_maps created over 
+every unit square of the X-Y plane like tiles.  By adding the keyword 
+"once" after a file name, you can eliminate all other copies of the 
+bump_map except the one at (0,0) to (1,1).  Areas outside this unit square 
+are treated as fully transparent.
+
+Note: The "once" keyword may also be used with image_map and material_map 
+statements.
+
+
+5.4.2.6.5   The "map_type" option.
+
+The default projection of the bump onto the X-Y plane is called a "planar 
+map type".  This option may be changed by adding the "map_type" keyword 
+followed by a number specifying the way to wrap the bump around the object.
+
+A "map_type 0" gives the default planar mapping already described.
+
+A "map_type 1" is a spherical mapping.  It assumes that the object is a 
+sphere of any size sitting at the origin.  The Y axis is the north/south 
+pole of the spherical mapping.  The top and bottom edges of the bump_map 
+just touch the pole regardless of any scaling.  The left edge of the 
+bump_map begins at the positive X axis and wraps the pattern around the 
+sphere from "west" to "east" in a -Y rotation.  The pattern covers the 
+sphere exactly once.  The "once" keyword has no meaning for this type.
+
+With "map_type 2" you get a cylindrical mapping.  It assumes that a 
+cylinder of any diameter lies along the Y axis.  The bump pattern wraps 
+around the cylinder just like the spherical map but remains 1 unit tall 
+from y=0 to y=1.  This band of bumps is repeated at all heights unless the 
+"once" keyword is applied.
+
+Finally "map_type 5" is a torus or donut shaped mapping.  It assumes that a 
+torus of major radius 1 sits at the origin in the X-Z plane.  The bump 
+pattern is wrapped around similar to spherical or cylindrical maps.  
+However the top and bottom edges of the map wrap over and under the torus 
+where they meet each other on the inner rim.
+
+Types 3 and 4 are still under development.
+
+Note: The "map_type" option may also be applied to image_map and 
+material_map statements.
+
+
+5.4.2.6.6   The "interpolate" option.
+
+Adding the "interpolate" keyword can smooths the jagged look of a bump map.  
+When POV-Ray asks bump amount for a bump map, it often asks for a point 
+that is not directly on top of one pixel, but sort of between several 
+different colored pixels.  Interpolations returns an "in-between" value so 
+that the steps between the pixels in the bump map will look smoother.
+
+There are currently two types of interpolation:
+
+   Normalized Distance -- interpolate 4
+   Bilinear            -- interpolate 2
+
+Default is no interpolation. Normalized distance is the slightly faster of 
+the two, bilinear does a better job of picking the between color. Normally, 
+bilinear is used.
+
+If your bump map looks jaggy, try using interpolation instead of going to a 
+higher resolution image.  The results can be very good.
+
+
+5.4.2.7     Normal Modifiers
+
+After specifying the normal type such as bumps, dents etc you may add any 
+of several modifiers.
+
+
+5.4.2.7.1   Turbulence
+
+The keyword "turbulence" followed by a float or vector may be used to stir 
+up the color pattern.  Typical values range from the default 0.0 which is 
+no turbulence to 1.0 which is very turbulent.  If a vector is specified 
+then different amounts of turbulence is applied in the x, y and z 
+directions.  For example "turbulence <1.0, 0.6, 0.1>" has much turbulence 
+in the x direction, a moderate amount in the y direction and a small amount 
+in the z direction.
+
+A complete discussion of turbulence is given under Pigment Modifiers in 
+section 5.4.1.5 above.  The "octaves", "omega", and "lambda" options are 
+also available as normal modifiers.  They discussed under that section as 
+well.
+
+
+5.4.2.7.2   Frequency and Phase
+
+Both waves and ripples respond to a parameter called phase. The phase 
+option allows you to create animations in which the water seems to move. 
+This is done by making the phase increment slowly between frames. The range 
+from 0.0 to 1.0 gives one complete cycle of a wave.
+
+The waves and ripples textures also respond to a parameter called 
+frequency. If you increase the frequency of the waves, they get closer 
+together. If you decrease it, they get farther apart. 
+
+Bumps, dents, wrinkles and bump_map do not respond to frequency or phase.
+
+
+5.4.2.7.3   Transforming normals
+
+You may modify normal patterns with "translate", "rotate" and "scale" 
+commands.  Note that placing these transforms inside the texture but 
+outside the normal will transform the entire texture.  However placing them 
+inside the normal transforms just the normal.  See section 5.4.1.5.7 
+Transforming Pigments for examples:
+
+
+5.4.3 FINISH
+
+The finish properties of a surface can greatly affect its appearance.  How 
+does light reflect?  What happens when light passes through?  What kind of 
+highlights are visible.  To answer these questions you need a finish 
+statement.
+
+The "finish {...}" statement is the part of a texture which defines the 
+various finish properties to be applied to an object.  Like the pigment or 
+normal statement, you can omit the surrounding texture block to save 
+typing.  Do not forget however that there is a texture implied. For 
+example...
+
+ this...                        can be shortened to this...
+
+  object {                           object {                   
+    My_Object                          My_Object                
+    texture {                          pigment {color Purple} 
+      pigment {color Purple}           finish {phong 0.3}                        
+      finish {phong 0.3}             }
+    }                                  
+  }                                                           
+
+The most complete form for defining a finish is as follows:
+
+  finish {
+    FINISH_IDENTIFIER
+    FINISH_ITEMS...
+  }
+
+The FINISH_IDENTIFIER is optional but should proceed all other items.  Any 
+items after the FINISH_IDENTIFIER modify or override settings given in the 
+IDENTIFIER.  If no identifier is specified then the items modify the finish 
+values in the current default texture.  Note that transformations are not 
+allowed inside a finish because finish items cover the entire surface 
+uniformly.  
+
+
+5.4.3.1     Diffuse Reflection Items
+
+When light reflects off of a surface, the laws of physics say that it 
+should leave the surface at the exact same angle it came in.  This is 
+similar to the way a billiard ball bounces off a bumper of a pool table.  
+This perfect reflection is called "specular" reflection.  However only very 
+smooth polished surfaces reflect light in this way.  Most of the time, 
+light reflects and is scattered in all directions by the roughness of the 
+surface.  This scattering is called "diffuse reflection" because the light 
+diffuses or spreads in a variety of directions.  It accounts for the 
+majority of the reflected light we see.
+
+In the real world, light may come from any of three possible sources.  1)It 
+can come directly from actual light sources which are illuminating an 
+object.  2)It can bounce from other objects such as mirrors via specular 
+reflection.  For example shine a flashlight onto a mirror.  3)It can bounce 
+from other objects via diffuse reflections. Look at some dark area under a 
+desk or in a corner.  Even though a lamp may not directly illuminate that 
+spot you can still see a little bit because light comes from diffuse 
+reflection off of nearby objects.
+
+
+5.4.3.1.1   Diffuse
+
+POV-Ray and most other ray tracers can only simulate directly, one of these 
+three types of illumination.  That is the light which comes directly from 
+the light source which diffuses in all directions.  The keyword "diffuse" 
+is used in a finish statement to control how much light of this direct 
+light is reflected via diffuse reflection.  For example:
+
+      finish {diffuse 0.7}
+
+means that 70% of the light seen comes from direct illumination from light 
+sources.  The default value is diffuse 0.6.
+
+
+5.4.3.1.2   Brilliance
+
+The amount of direct light that diffuses from an object depends upon the 
+angle at which it hits the surface.  When light hits at a shallow angle it 
+illuminates less.  When it is directly above a surface it illuminates more.  
+The "brilliance" keyword can be used in a finish statement to vary the way 
+light falls off depending upon the angle of incidence.  This controls the 
+tightness of the basic diffuse illumination on objects and slightly adjusts 
+the appearance of surface shininess.  Objects may appear more metallic by 
+increasing their brilliance. The default value is 1.0. Higher values from 
+3.0 to about 10.0 cause the light to fall off less at medium to low angles.  
+There are no limits to the brilliance value. Experiment to see what works 
+best for a particular situation. This is best used in concert with 
+highlighting.
+
+
+5.4.3.1.3   Crand Graininess
+
+Very rough surfaces, such as concrete or sand, exhibit a dark graininess in 
+their apparent color.  This is caused by the shadows of the pits or holes 
+in the surface.  The "crand" keyword can be added to cause a minor random 
+darkening the diffuse reflection of direct illumination.  Typical values 
+range from "crand 0.01" to "crand 0.5" or higher.  The default value is 0.  
+For example:
+
+      finish {crand 0.05}
+
+The grain or noise introduced by this feature is applied on a pixel-by-
+pixel basis.  This means that it will look the same on far away objects as 
+on close objects.  The effect also looks different depending upon the 
+resolution you are using for the rendering.  For these reasons it is not a 
+very accurate way to model the rough surface effect, but some objects still 
+look better with a little crand thrown in.
+
+In previous versions of POV-Ray there was no "crand" keyword.  Any lone 
+float value found inside a texture{...} which was not preceded by a keyword 
+was interpreted as a randomness value.
+
+NOTE: This should not be used when rendering animations.  This is the one 
+of a few truly random features in POV-Ray, and will produce an annoying 
+flicker of flying pixels on any textures animated with a "crand" value.
+       
+
+5.4.3.1.4   Ambient
+
+The light you see in dark shadowed areas comes from diffuse reflection off 
+of other objects.  This light cannot be directly modeled using ray tracing.  
+However we can use a trick called "ambient lighting" to simulate the light 
+inside a shadowed area.  
+
+Ambient light is light that is scattered everywhere in the room. It bounces 
+all over the place and manages to light objects up a bit even where no 
+light is directly shining.  Computing real ambient light would take far too 
+much time, so we simulate ambient light by adding a small amount of white 
+light to each texture whether or not a light is actually shining on that 
+texture.
+
+This means that the portions of a shape that are completely in shadow will 
+still have a little bit of their surface color. It's almost as if the 
+texture glows, though the ambient light in a texture only affects the shape 
+it is used on. 
+
+The default value is very little ambient light (0.1). The value can range 
+from 0.0 to 1.0.  Ambient light affects both shadowed and non-shadowed 
+areas so if you turn up the ambient value you may want to turn down the 
+diffuse value.
+
+Note that this method doesn't account for the color of surrounding objects.  
+If you walk into a room that has red walls, floor and ceiling then your 
+white clothing will look pink from the reflected light.  POV-Ray's ambient 
+shortcut doesn't account for this.  There is also no way to model specular 
+reflected indirect illumination such as the flashlight shining in a mirror.
+
+
+5.4.3.2     Specular Reflection Items
+
+When light does not diffuse and it DOES reflect at the same angle as it 
+hits an object, it is called "specular reflection".  Such mirror-like 
+reflection is controlled by the "reflection" keyword in a finish statement.  
+For example:
+
+      finish {reflection 1.0  ambient 0  diffuse 0}
+
+This gives the object a mirrored finish. It will reflect all other 
+elements in the scene.  The value can range from 0.0 to 1.0. By default 
+there is no reflection.
+
+Adding reflection to a texture makes it take longer to render because an 
+additional ray must be traced.  
+
+NOTE: Although such reflection is called "specular" it is not controlled by 
+the POV-Ray "specular" keyword.  That keyword controls a "specular" 
+highlight.
+
+
+5.4.3.3     Highlights
+
+A highlights are the bright spots that appear when a light source reflects 
+off of a smooth object.  They are a blend of specular reflection and 
+diffuse reflection.  They are specular-like because they depend upon 
+viewing angle and illumination angle.  However they are diffuse-like 
+because some scattering occurs.  In order to exactly model a highlight you 
+would have to calculate specular reflection off of thousands of microscopic 
+bumps called micro facets.  The more that micro facets are facing the 
+viewer, the shinier the object appears, and the tighter the highlights 
+become. POV-Ray uses two different models to simulate highlights without 
+calculating micro facets.  They are the specular and phong models.
+
+Note that specular and phong highlights are NOT mutually exclusive. It is 
+possible to specify both and they will both take effect. Normally, however, 
+you will only specify one or the other.
+
+
+5.4.3.3.1   Phong Highlights
+
+The "phong" keyword controls the amount of Phong highlighting on the 
+object.  It causes bright shiny spots on the object that are the color of 
+the light source being reflected.
+
+The Phong method measures the average of the facets facing in the mirror 
+direction from the light sources to the viewer. 
+
+Phong's value is typically from 0.0 to 1.0, where 1.0 causes complete 
+saturation to the light source's color at the brightest area (center) of 
+the highlight. The default phong 0.0 gives no highlight.
+
+The size of the highlight spot is defined by the phong_size value.  The 
+larger the phong_size, the tighter, or smaller, the highlight and the 
+shinier the appearance. The smaller the phong_size, the looser, or larger, 
+the highlight and the less glossy the appearance.
+
+Typical values range from 1.0 (Very Dull) to 250 (Highly Polished) though 
+any values may be used. Default phong_size is 40 (plastic) if phong_size is 
+not specified.  For example:
+
+      finish {phong 0.9  phong_size 60}
+
+If "phong" is not specified then "phong_size" has no effect.
+
+
+5.4.3.3.2   Specular Highlight
+
+A specular highlight is very similar to Phong highlighting, but uses 
+slightly different model.  The specular model more closely resembles real 
+specular reflection and provides a more credible spreading of the 
+highlights occur near the object horizons. 
+
+Specular's value is typically from 0.0 to 1.0, where 1.0 causes complete 
+saturation to the light source's color at the brightest area (center) of 
+the highlight. The default specular 0.0 gives no highlight.
+
+The size of the spot is defined by the value given for roughness.  Typical 
+values range from 1.0 (Very Rough -- large highlight) to 0.0005 (Very 
+Smooth -- small highlight). The default value, if roughness is not 
+specified, is 0.05 (Plastic).
+
+It is possible to specify "wrong" values for roughness that will generate 
+an error when you try to render the file. Don't use 0 and if you get 
+errors, check to see if you are using a very, very small roughness value 
+that may be causing the error.  For example:
+
+      finish {specular 0.9  roughness 0.02}
+
+If "specular" is not specified then "roughness" has no effect.
+
+
+5.4.3.3.3   Metallic Highlight Modifier
+
+The keyword "metallic" may be used with phong or specular highlights.  This 
+keyword indicates that the color of the highlights will be filtered by the 
+surface color instead of directly using the light_source color. Note that 
+the keyword has no numeric value after it.  You either have it or you 
+don't.  For example:
+
+      finish {phong 0.9  phong_size 60  metallic}
+
+If "phong" or "specular" is not specified then "metallic" has no effect.
+
+
+5.4.3.4     Refraction
+
+When light passes through a surface either into or out of a dense medium, 
+the path of the ray of light is bent.  Such bending is called refraction.  
+Normally transparent or semi-transparent surfaces in POV-Ray do not refract 
+light.  Adding "refraction 1.0" to the finish statement turns on 
+refraction.  
+
+Note: It is recommended that you only use "refraction 0" or "refraction 1".  
+Values in between will darken the refracted light in ways that do not 
+correspond to any physical property.  Many POV-Ray scenes were created with 
+intermediate refraction values before this "bug" was discovered so the 
+"feature" has been maintained.  A more appropriate way to reduce the 
+brightness of refracted light is to change the "filter" value in the colors 
+specified in the pigment statement.  Note also that "refraction" does not 
+cause the object to be transparent.  Transparency is only occurs if there 
+is a non-zero "filter" value in the color.
+
+The amount of bending or refracting of light depends upon the density of 
+the material.  Air, water, crystal, diamonds all have different density and 
+thus refract differently.  The "index of refraction" or "ior" value is used 
+by scientists to describe the relative density of substances.  The "ior" 
+keyword is used in POV-Ray to specify the value.  For example:
+
+      texture {
+        pigment { White filter 0.9 }
+        finish {
+          refraction 1
+          ior 1.5
+        }
+      }
+
+The default ior value of 1.0 will give no refraction.  The index of 
+refraction for air is 1.0, water is 1.33, glass is 1.5, and diamond is 2.4. 
+The file IOR.INC pre-defines several useful values for ior.
+
+NOTE: If a texture has a filter component and no value for refraction and 
+ior are supplied, the renderer will simply transmit the ray through the 
+surface with no bending.  In layered textures, the refraction and ior 
+keywords MUST be in the last texture, otherwise they will not take effect.
+
+
+5.4.4 SPECIAL TEXTURES
+
+Most textures consist of a single pigment, normal and finish specification 
+which applies to the entire surface.  However two special textures have 
+been implemented that extend the "checker" and "image_map" concepts to 
+cover not just pigment but the entire texture.
+
+
+5.4.4.1     Tiles
+
+This first special texture is the "tiles" texture.  It works just like the 
+"checker" pigment pattern except it colors the blocks with entire textures 
+rather than solid colors.
+
+The syntax is:
+
+      texture{
+        tiles {
+          texture {... put in a texture here ... } 
+        tile2
+          texture {... this is the second tile texture } 
+        } 
+       // Optionally put translate, rotate or scale here
+      }
+
+For example:
+
+    texture{
+       tiles {
+          texture { Jade }
+       tile2
+          texture { Red_Marble }
+       } 
+    }
+
+The textures used in each tile may be any type of texture including more 
+tiles or regular textures made from pigment, normal and finish statements.  
+Note that no other pigment, normal or finish statements may be added to the 
+texture.  This is illegal:
+
+      texture {
+        tiles {
+          texture {T1}
+        tile2
+          texture {T2}
+        }
+        finish {phong 1.0}
+      }
+
+The finish must be individually added to each texture.
+
+Note that earlier versions of POV-Ray used only the pigment parts of the 
+textures in the tiles.  Normals and finish were ignored.  Also layered 
+textures were not supported.  In order to correct these problems the above 
+restrictions on syntax were necessary.  This means some POV-Ray 1.0 scenes 
+using tiles many need minor modifications that cannot be done automatically 
+with the version compatibility mode.
+
+The textures within a tiles texture may be layered but tiles textures do 
+don't work as part of a layered texture.
+
+
+5.4.4.2     Material_Map
+
+The "material_map" special texture extends the concept of "image_map" to 
+apply to entire textures rather than solid colors.  A material_map allows 
+you to wrap a 2-D bit-mapped texture pattern around your 3-D objects.
+
+Instead of placing a solid color of the image on the shape like an 
+image_map, an entire texture is specified based on the index or color of 
+the image at that point.  You must specify a list of textures to be used 
+like a "texture palette" rather than the usual color palette.  
+
+When used with mapped file types such as GIF, the index of the pixel is 
+used as an index into the list of textures you supply.  For unmapped file 
+types such as TGA, the 8 bit value of the red component in the range 0-255 
+is used as an index.  
+
+If the index of a pixel is greater than the number of textures in your list 
+then the index is taken modulo N where N is the length of your list of 
+textures.  
+
+
+5.4.4.2.1   Specifying a material map.
+
+The syntax for material_map is...
+
+      texture {
+        material_map {
+          FILE_TYPE "filename"
+          MODIFIERS...
+          texture {...} // First used for index 0
+          texture {...} // Second texture used for index 1
+          texture {...} // Third texture used for index 2
+          texture {...} // Fourth texture used for index 3
+                        // and so on for however many used.
+        }
+        TRANSFORMATION...
+      }
+
+If particular index values are not used in an image then it may be 
+necessary to supply dummy textures.  It may be necessary to use a paint 
+program or other utility to examine the map file's palette to determine how 
+to arrange the texture list.
+
+In the syntax above, FILE_TYPE is one of the following keywords "gif", 
+"tga", "iff" or "dump".  This is followed by the name of the file in 
+quotes.  Several optional modifiers may follow the file specification.  The 
+modifiers are described below.  Note: Earlier versions of POV-Ray allowed 
+some modifiers before the FILE_TYPE but that syntax is being phased out in 
+favor of the syntax described here.
+
+Filenames specified in the material_map statements will be searched for in 
+the home (current) directory first, and if not found, will then be searched 
+for in directories specified by any "-L" (library path) options active. 
+This would facilitate keeping all your material maps files in a separate 
+subdirectory, and giving an "-L" option on the command line to where your 
+library of material maps are. 
+
+By default, the material is mapped onto the X-Y plane.  The material is 
+"projected" onto the object as though there were a slide projector 
+somewhere in the -Z direction.  The material exactly fills the square area 
+from x,y coordinates (0,0) to (1,1) regardless of the material's original 
+size in pixels.  If you would like to change this default, you may 
+translate, rotate or scale the normal or texture to map it onto the 
+object's surface as desired. 
+
+If you would like to change this default orientation, you may translate, 
+rotate or scale the texture to map it onto the object's surface as desired. 
+
+Note that no other pigment, normal or finish statements may be added to the 
+texture outside the material_map.  This is illegal:
+
+      texture {
+        material_map {
+          gif "matmap.gif"
+          texture {T1}
+          texture {T2}
+          texture {T3}
+        }
+        finish {phong 1.0}
+      }
+
+The finish must be individually added to each texture.
+
+Note that earlier versions of POV-Ray allowed such specifications but they 
+were ignored.  The above restrictions on syntax were necessary for various 
+bug fixes.  This means some POV-Ray 1.0 scenes using material_maps many 
+need minor modifications that cannot be done automatically with the version 
+compatibility mode.
+
+The textures within a material_map texture may be layered but material_map 
+textures do don't work as part of a layered texture.  To use a layered 
+texture inside a material_map you must declare it as a texture identifier 
+and invoke it in the texture list.
+
+
+5.4.4.2.2   Material_map options.
+
+The "once" and "map_type" options may be used with material_maps exactly 
+like image_map or bump_map.  The "interpolate" keyword also is allowed but 
+it interpolates the map indices rather than the colors.  In most cases this 
+results in a worse image instead of a better image.  Future versions will 
+fix this problem.
+
+
+5.4.5 LAYERED TEXTURES
+
+It is possible to create a variety of special effects using layered 
+textures.  A layered texture is one where several textures that are 
+partially transparent are laid one on top of the other to create a more 
+complex texture. The different texture layers show through the transparent 
+portions to create the appearance of one texture that is a combination of 
+several textures.
+
+You create layered textures by listing two or more textures one right after 
+the other. The last texture listed will be the top layer, the first one 
+listed will be the bottom layer. All textures in a layered texture other 
+than the bottom layer should have some transparency.  For example:
+
+      object {
+        My_Object
+        texture {T1}  // the bottom layer
+        texture {T2}  // a semi-transparent layer
+        texture {T3}  // the top semi-transparent layer
+      }
+
+In this example T2 shows only where T3 is transparent and T1 shows only 
+where T2 and T3 are transparent.
+
+The color of underlying layers is filtered by upper layers but the results 
+do not look exactly like a series of transparent surfaces.  If you had a 
+stack of surfaces with the textures applied to each, the light would be 
+filtered twice: once on the way in as the lower layers are illuminated by 
+filtered light and once on the way out.  Layered textures do not filter the 
+illumination on the way in.  Other parts of the lighting calculations work 
+differently as well.  The result look great and allow for fantastic looking 
+textures but they are simply different from multiple surfaces.  See 
+STONES.INC in the standard include files for some magnificent layered 
+textures.
+
+Note layered textures must use the "texture{...}" wrapped around any 
+pigment, normal or finish statements.  Do not use multiple pigment, normal 
+or finish statements without putting them inside the texture statement.
+
+Layered textures may be declared.  For example:
+
+      #declare Layered_Examp=
+            texture {T1}
+            texture {T2}
+            texture {T3}
+
+Then invoke it as follows:
+
+      object {
+        My_Object
+        texture {
+          Layer_Examp
+          // Any pigment, normal or finish here
+          // modifies the bottom layer only.
+        }
+      }
+
+
+5.4.6 DEFAULT TEXTURE
+
+POV-Ray creates a default texture when it begins processing.  You may 
+change those defaults as described below.  Every time you specify a 
+"texture{...}" statement, POV-Ray creates a copy of the default texture.  
+Anything items you put in the texture statement override the default 
+settings.  If you attach a pigment, normal or finish to an object without 
+any texture statement then POV-Ray checks to see if a texture has already 
+been attached.  If it has a texture then the pigment, normal or finish will 
+modify that existing texture.  If no texture has yet been attached to the 
+object then the default texture is copied and the pigment, normal or finish 
+will modify that texture.
+
+You may change the default texture, pigment, normal or finish using the 
+language directive "#default {...}" as follows:
+
+      #default {
+        texture {
+          pigment {...}
+          normal  {...}
+          finish  {...}
+        }
+      }
+
+Or you may change just part of it like this:
+
+      #default {
+         pigment {...}
+      }
+
+This still changes the pigment of the default texture.  At any time there 
+is only one default texture made from the default pigment, normal and 
+finish.  The example above does not make a separate default for pigments 
+alone.  Note: Special textures tiles and material_map may not be used as 
+defaults.
+
+You may change the defaults several times throughout a scene as you wish.  
+Subsequent #default statements begin with the defaults that were in effect 
+at the time.  If you wish to reset to the original POV-Ray defaults then 
+you should first save them as follows:
+
+      //At top of file
+      #declare Original_Default = texture {}
+
+later after changing defaults you may restore it with...
+
+      #default {texture {Original_Default}}
+
+If you do not specify a texture for an object then the default texture is 
+attached when the object appears in the scene.  It is not attached when an 
+object is declared.  For example:
+
+      #declare My_Object=
+        sphere{<0,0,0>,1}  // Default texture not applied
+
+      object{My_Object}    // Default texture added here
+
+You may force a default texture to be added by using an empty texture 
+statement as follows:
+
+      #declare My_Thing=
+        sphere{<0,0,0>,1 texture{}}  // Default texture applied
+
+The original POV-Ray defaults for all items are given throughout the 
+documentation under each appropriate section.
+
+
+5.5   CAMERA
+------------
+
+Every scene in POV-Ray has a camera defined.  If you do not specify a 
+camera then a default camera is used.  The camera definition describes the 
+position, angle and properties of the camera viewing the scene. POV-Ray 
+uses this definition to do a simulation of the camera in the ray tracing 
+universe and "take a picture" of your scene.
+
+The camera simulated in POV-Ray is a pinhole camera. Pinhole cameras have a 
+fixed focus so all elements of the scene will always be perfectly in focus. 
+The pinhole camera is not able to do soft focus or depth of field effects.
+
+A total of 6 vectors may be specified to define the camera but only a few 
+of those are needed to in most cases.  Here is an introduction to simple 
+camera placement.
+
+
+5.5.1 LOCATION AND LOOK_AT
+
+Under many circumstances just two vectors in the camera statement are all 
+you need: location and look_at.  For example:
+
+      camera {
+        location <3,5,-10>
+        look_at  <0,2,1>
+      }
+
+The location is simply the X, Y, Z coordinates of the camera. The camera 
+can be located anywhere in the ray tracing universe.  The default location 
+is <0,0,0>.  The look_at vector tells POV-Ray to pan and tilt the camera 
+until it is looking at the specified X, Y, Z coordinate.  By default the 
+camera looks at a point one unit in the +Z direction from the location. 
+
+The look_at specification should almost always be the LAST item in the 
+camera statement.  If other camera items are placed after the look_at 
+vector then the camera may not continue to look at the specified point.
+
+
+5.5.2 THE SKY VECTOR
+
+Normally POV-Ray pans left or right by rotating about the Y axis until it 
+lines up with the look_at point and then tilts straight up or down until 
+the point is met exactly.  However you may want to slant the camera 
+sideways like an airplane making a banked turn.  You may change the tilt of 
+the camera using the "sky" vector.  For example:
+
+      camera {
+        location <3,5,-10>
+        sky      <1,1,0>
+        look_at  <0,2,1>
+      }
+
+This tells POV-Ray to roll the camera until the top of the camera is in 
+line with the sky vector.  Imagine that the sky vector is an antenna 
+pointing out of the top of the camera.  Then it uses the "sky" vector as 
+the axis of rotation left or right and then to tilt up or down in line with 
+the "sky" vector.  In effect you're telling POV-Ray to assume that the sky 
+isn't straight up.  Note that the sky vector must appear before the look_at 
+vector.  The sky vector does nothing on its own.  It only modifies the way 
+the look_at vector turns the camera.  The default value for sky is <0,1,0>.
+
+
+5.5.3 THE DIRECTION VECTOR
+
+The "direction" vector serves two purposes.  It tells POV-Ray the initial 
+direction to point the camera before moving it with look_at or rotate 
+vectors.  It also controls the field of view.  
+
+Note that this is only the initial direction.  Normally, you will use the 
+look_at keyword, not the direction vector to point the camera in its actual 
+direction. 
+
+The length of the direction vector tells POV-Ray to use a telephoto or 
+wide-angle view.  It is the distance from the camera location to the 
+imaginary "view window" that you are looking through.  A short direction 
+vector gives a wide angle view while a long direction gives a narrow, 
+telephoto view.  
+
+This figure illustrates the effect:
+
+                 |\                                            |\   
+                 | \                                           | \  
+                 |  \                                          |  \ 
+                 |   \                                         |   \
+  Location       |   |            Location                     |   |
+      *------------> |                *--------------------------> |
+        Direction|   |                                         |   |
+                 |   |                                         |   |
+                 |   |                                         |   |
+                  \  |                                          \  |
+                   \ |                                           \ |
+                    \|                                            \|
+
+
+Short direction gives wide view...        long direction narrows view.
+
+The default value is "direction <0,0,1>".
+
+Be careful with short direction vector lengths like 1.0 and less. You may 
+experience distortion on the edges of your images. Objects will appear to 
+be shaped strangely. If this happens, move the location back and make the 
+direction vector longer.
+
+Wide angle example:
+      camera {
+        location  <3,5,-10>
+        direction <0,0,1>
+        look_at   <0,2,1>
+      }
+
+Zoomed in telephoto example:
+      camera {
+        location <3,5,-10>
+        direction <0,0,8>
+        look_at  <0,2,1>
+      }
+
+
+5.5.4 UP AND RIGHT VECTORS
+
+The "up" vector defines the height of the view window.  The "right" vector 
+defines the width of the view window.  This figure illustrates the 
+relationship of these vectors:
+
+      --------------------------
+     |             ^            |
+     |   up <0,1,0>|            |
+     |             |            |
+     |             |            |
+     |             |            |
+     |             |            |
+     |             |            |
+     |------------------------->|
+     |   right<1.33,0,0>        |
+     |             |            |
+     |             |            |
+     |             |            |
+     |             |            |
+     |             |            |
+     |             |            |
+      --------------------------
+
+
+5.5.4.1     Aspect Ratio
+
+Together these vectors define the "aspect ratio" (height to width ratio) of 
+the resulting image.  The default values "up <0,1,0>" and "right 
+<1.33,0,0>" results in an aspect ratio of about 4 to 3.  This is the aspect 
+ratio of a typical computer monitor.  If you wanted a tall skinny image or 
+a short wide panoramic image or a perfectly square image then you should 
+adjust the up and right vectors to the appropriate proportions.
+
+Most computer video modes and graphics printers use perfectly square 
+pixels.  For example Macintosh displays and IBM S-VGA modes 640x480, 
+800x600 and 1024x768 all use square pixels.  When your intended viewing 
+method uses square pixels then the width and height you set with the +W and 
++H switches should also have the same ratio as the right and up vectors.  
+Note that 640/480=4/3 so the ratio is proper for this square pixel mode.
+
+Not all display modes use square pixels however.  For example IBM VGA mode 
+320x200 and Amiga 320x400 modes do not use square pixels.  These two modes 
+still produce a 4/3 aspect ratio image.  Therefore images intended to be 
+viewed on such hardware should still use 4/3 ratio on their up & right 
+vectors but the +W and +H settings will not be 4/3.
+
+For example:
+      camera {
+        location <3,5,-10>
+        up       <0,1,0>
+        right    <1,0,0>
+        look_at  <0,2,1>
+      }
+
+This specifies a perfectly square image.  On a square pixel display like 
+SVGA you would use +W and +H settings such as +W480 +H480 or +W600 +H600.  
+However on the non-square pixel Amiga 320x400 mode you would want to use 
+values of +W240 +H400 to render a square image.
+
+
+5.5.4.2     Handedness
+
+The "right" vector also describes the direction to the right of the camera. 
+It tells POV-Ray where the right side of your screen is.  The sign of the 
+right vector also determines the "handedness" of the coordinate system in 
+use. The default right statement is:
+
+      right <1.33, 0, 0>
+
+This means that the +X direction is to the right.  It is called a "left-
+handed" system because you can use your left hand to keep track of the 
+axes.  Hold out your left hand with your palm facing to your right.  Stick 
+your thumb up.  Point straight ahead with your index finger. Point your 
+other fingers to the right.  Your bent fingers are pointing to the +X 
+direction.  Your thumb now points +Y.  Your index finger points +Z.
+
+To use a right-handed coordinate system, as is popular in some CAD programs 
+and other ray tracers, make the same shape using your right hand.  Your 
+thumb still points up in the +Y direction and your index finger still 
+points forward in the +Z direction but your other fingers now say the +X is 
+to the left.  That means that the "right" side of your screen is now in the 
+-X direction. To tell POV-Ray to compensate for this you should use a 
+negative X value in the "right" vector like this:
+
+      right <-1.33, 0, 0>
+
+Some CAD systems, like AutoCAD, also have the assumption that the Z axis is 
+the "elevation" and is the "up" direction instead of the Y axis. If this is 
+the case you will want to change your "up" and "direction" as well.  Note 
+that the up, right, and direction vectors must always remain perpendicular 
+to each other or the image will be distorted.
+
+
+5.5.5 TRANSFORMING THE CAMERA
+
+The "translate" and "rotate" commands can re-position the camera once 
+you've defined it.
+
+For example:
+      camera {
+        location  < 0,  0,  0>
+        direction < 0,  0,  1>
+        up        < 0,  1,  0>
+        right     < 1,  0,  0>
+        rotate    <30, 60, 30>
+        translate < 5,  3,  4>
+      }                   
+                      
+In this example, the camera is created, then rotated by 30 degrees about 
+the X axis, 60 degrees about the Y axis, and 30 degrees about the Z axis, 
+then translated to another point in space.
+
+
+5.5.6 CAMERA IDENTIFIERS
+
+You may declare several camera identifiers if you wish.  This makes it easy 
+to quickly change cameras.  For example:
+
+      #declare Long_Lens=
+            camera {
+              location -z*100
+              direction z*50
+            }
+      #declare Short_Lens=
+            camera {
+              location -z*50
+              direction z*10
+            }
+
+      camera {
+        Long_Lens    //edit this line to change lenses
+        look_at Here
+      }
+
+
+5.6   MISC FEATURES
+-------------------
+
+Here are a variety of other topics about POV-Ray features.
+
+
+5.6.1 FOG
+
+POV-Ray includes the ability to render fog. To add fog to a scene, place 
+the following declaration outside of any object definitions:
+
+       fog {
+         color Gray70      // the fog color
+         distance 200.0    // distance for 100% fog color
+       }
+
+The fog color is then blended into the current pixel color at a rate 
+calculated as:
+
+          1-exp(-depth/distance) =
+          1-exp(-200/200) =
+          1-exp(-1) =
+          1-.37... =
+          0.63...
+
+So at depth 0, the color is pure (1.0) with no fog (0.0). At the fog 
+distance, you'll get 63% of the color from the object's color and 37% from 
+the fog color. 
+
+Subtle use of fog can add considerable realism and depth cuing to a scene 
+without adding appreciably to the overall rendering times.  Using a black 
+or very dark gray fog can be used to simulate attenuated lighting by 
+darkening distant objects.
+
+
+5.6.2 MAX_TRACE_LEVEL
+
+The "#max_trace_level" directive sets a variable that defines how many 
+levels that POV-Ray will trace a ray. This is used when a ray is reflected 
+or is passing through a transparent object. When a ray hits a reflective 
+surface, it spawns another ray to see what that point reflects, that's 
+trace level 1. If it hits another reflective surface, then another ray is 
+spawned and it goes to trace level 2. The maximum level by default is 5. 
+
+If max trace level is reached before a non-reflecting surface is found, 
+then the color is returned as black. Raise max_trace_level if you see black 
+in a reflective surface where there should be a color.
+
+The other symptom you could see is with transparent objects. For instance, 
+try making a union of concentric spheres with the Cloud_Sky texture on 
+them. Make ten of them in the union with radius's from 1-10 then render the 
+Scene. The image will show the first few spheres correctly, then black. 
+This is because a new level is used every time you pass through a 
+transparent surface.  Raise max_trace_level to fix this problem.  For 
+example:
+
+      #max_trace_level 20
+
+Note: Raising max_trace_level will use more memory and time and it could 
+cause the program to crash with a stack overflow error. Values for 
+max_trace_level are not restricted, so it can be set to any number as long 
+as you have the time and memory. 
+
+
+5.6.3 MAX_INTERSECTIONS
+
+POV-Ray uses a set of internal stacks to collect ray/object intersection 
+points.  The usual maximum number of entries in these "I-Stacks" is 64.  
+Complex scenes may cause these stacks to overflow.  POV-Ray doesn't stop 
+but it may incorrectly render your scene.  When POV-Ray finishes rendering, 
+a number of statistics are displayed.  If you see "I-Stack Overflows" 
+reported in the statistics, you should increase the stack size.  Add a 
+directive to your scene as follows:
+
+      #max_intersections 200
+
+If the "I-Stack Overflows" remain, increase this value until they stop.
+
+
+5.6.4 BACKGROUND
+
+A background color can be specified if desired.  Any ray that doesn't hit 
+an object will be colored with this color.  The default background is 
+black.  The syntax for background is:
+
+      background { color SkyBlue }
+
+Using a colored background takes up no extra time for the ray tracer, 
+making it a very economical, although limited, feature. Only solid colors 
+can be specified for a background. Textures cannot be used.  No shadows 
+will be cast on it, which makes it very useful, but at the same time, it 
+has no "roundness", or shading, and can sometimes cause a scene to look 
+"flat".  Use background with restraint.  It's often better, although a bit 
+slower, to use a "sky sphere", but there are times when a solid background 
+is just what you need.
+
+
+5.6.5 THE #VERSION DIRECTIVE
+
+Although POV-Ray 2.0 has had significant changes to the language over POV-
+Ray 1.0, almost all 1.0 scenes will still work if the compatibility mode is 
+set to 1.0.  The +MV switch described earlier, sets the initial mode.  The 
+default is +MV2.0.  
+
+Inside a scene file you may turn compatibility off or on using the 
+"#version" directive.  For example:
+
+      #version 1.0
+      // Put some version 1.0 statements here
+
+      #version 2.0
+      // Put some version 2.0 statements here
+
+Note you may not change versions inside an object or declaration.
+
+The primary purpose of the switch is to turn off float and expression 
+parsing so that commas are not needed.  It also turns off some warning 
+messages.
+
+Note some changes in tiles and material_maps cannot be fixed by turning the 
+version compatibility on.  It may require hand editing of those statements.  
+See the special texture section for details.
+
+Future versions of POV-Ray may not continue to maintain full backward 
+compatibility.  We strongly encourage you to phase in 2.0 syntax as much as 
+possible.
+

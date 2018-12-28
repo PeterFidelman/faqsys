@@ -1,0 +1,576 @@
+16. Loop Optimation
+===================
+When analyzing a program you often find that 99% of the time consumption 
+lies in the innermost loop. The way to improve the speed is to carefully 
+optimize the most time-consuming loop using ASM language. The rest of the 
+program may be left in high-level language.  
+
+A loop generally contains a counter controlling how many times to iterate, 
+and often array access reading or writing one array element for each 
+iteration. I have chosen as example a procedure which reads integers from an 
+array, changes the sign of each integer, and stores the results in another 
+array.  
+
+A C language code for this procedure would be:
+
+void ChangeSign (int * A, int * B, int N) {
+  int i;
+  for (i=0; i<N; i++) B[i] = -A[i];}
+
+Translating to assembler, we might write the procedure like this: 
+
+Example 1:
+
+_ChangeSign PROCEDURE NEAR
+        PUSH    ESI
+        PUSH    EDI
+A       EQU     DWORD PTR [ESP+12]
+B       EQU     DWORD PTR [ESP+16]
+N       EQU     DWORD PTR [ESP+20]
+
+        MOV     ECX, [N]
+        JECXZ   L2
+        MOV     ESI, [A]
+        MOV     EDI, [B]
+        CLD
+L1:     LODSD
+        NEG     EAX
+        STOSD
+        LOOP    L1
+L2:     POP     EDI
+        POP     ESI
+        RET
+_ChangeSign     ENDP
+
+This looks like a nice solution, but it is not optimal because it uses slow 
+non-pairable instructions. It takes 11 clock cycles per iteration if all 
+data are in the level one cache.  
+
+Using pairable instructions only
+--------------------------------
+
+Example 2:
+
+        MOV     ECX, [N]
+        MOV     ESI, [A]
+        TEST    ECX, ECX
+        JZ      SHORT L2
+        MOV     EDI, [B]
+L1:     MOV     EAX, [ESI]       ; u
+        XOR     EBX, EBX         ; v (pairs)
+        ADD     ESI, 4           ; u
+        SUB     EBX, EAX         ; v (pairs)
+        MOV     [EDI], EBX       ; u
+        ADD     EDI, 4           ; v (pairs)
+        DEC     ECX              ; u
+        JNZ     L1               ; v (pairs)
+L2:
+
+Here we have used pairable instructions only, and scheduled the instruc-
+tions so that everything pairs. It now takes only 4 clock cycles per 
+iteration. We could have obtained the same speed without splitting the NEG 
+instruction, but the other unpairable instructions should be split up.  
+
+Using the same register for counter and index
+---------------------------------------------
+
+Example 3:
+
+        MOV     ESI, [A]
+        MOV     EDI, [B]
+        MOV     ECX, [N]
+        XOR     EDX, EDX
+        TEST    ECX, ECX
+        JZ      SHORT L2
+L1:     MOV     EAX, [ESI+4*EDX]          ; u
+        NEG     EAX                       ; u
+        MOV     [EDI+4*EDX], EAX          ; u
+        INC     EDX                       ; v (pairs)
+        CMP     EDX, ECX                  ; u
+        JB      L1                        ; v (pairs)
+L2:
+
+Using the same register for counter and index gives us fewer instructions in 
+the body of the loop, but it still takes 4 clocks because we have two 
+unpaired instructions.
+
+Letting the counter end at zero
+-------------------------------
+We want to get rid of the CMP instruction in example 3 by letting the 
+counter end at zero and use the zero flag for detecting when we are finished 
+as we did in example 2. One way to do this would be to execute the loop 
+backwards taking the last array elements first. However, data caches are 
+optimized for accessing data forwards, not backwards, so if cache misses are 
+likely, then you should rather start the counter at -N and count through 
+negative values up to zero. The base registers should then point to the end 
+of the arrays rather than the beginning: 
+
+Example 4:
+
+        MOV     ESI, [A]
+        MOV     EAX, [N]
+        MOV     EDI, [B]
+        XOR     ECX, ECX
+        LEA     ESI, [ESI+4*EAX]          ; point to end of array A
+        SUB     ECX, EAX                  ; -N
+        LEA     EDI, [EDI+4*EAX]          ; point to end of array B
+        JZ      SHORT L2
+L1:     MOV     EAX, [ESI+4*ECX]          ; u
+        NEG     EAX                       ; u
+        MOV     [EDI+4*ECX], EAX          ; u
+        INC     ECX                       ; v (pairs)
+        JNZ     L1                        ; u
+L2:
+
+We are now down at five instructions in the loop body but it still takes 4 
+clocks because of poor pairing. (If the addresses and sizes of the arrays 
+are constants we may save two registers by substituting A+SIZE A for ESI and 
+B+SIZE B for EDI). Now let's see how we can improve pairing.  
+
+Pairing calculations with loop overhead
+---------------------------------------
+We may want to improve pairing by intermingling calculations with the loop 
+control instructions. If we want to put something in between INC ECX and 
+JNZ L1, it has to be something that doesn't affect the zero flag. The  MOV 
+[EDI+4*ECX],EBX  instruction after  INC ECX  would generate an AGI delay, 
+so we have to be more ingenious: 
+
+Example 5:
+
+        MOV     EAX, [N]
+        XOR     ECX, ECX
+        SHL     EAX, 2                    ; 4 * N
+        JZ      SHORT L3
+        MOV     ESI, [A]
+        MOV     EDI, [B]
+        SUB     ECX, EAX                  ; - 4 * N
+        ADD     ESI, EAX                  ; point to end of array A
+        ADD     EDI, EAX                  ; point to end of array B
+        JMP     SHORT L2
+L1:     MOV     [EDI+ECX-4], EAX          ; u
+L2:     MOV     EAX, [ESI+ECX]            ; v (pairs)
+        XOR     EAX, -1                   ; u
+        ADD     ECX, 4                    ; v (pairs)
+        INC     EAX                       ; u
+        JNC     L1                        ; v (pairs)
+        MOV     [EDI+ECX-4], EAX
+L3:
+
+I have used a different way to calculate the negative of EAX here: inverting 
+all bits and adding one. The reason why I am using this method is that I can 
+use a dirty trick with the INC instruction: INC doesn't change the carry 
+flag, whereas ADD does. I am using ADD rather than INC to increment my loop 
+counter and testing the carry flag rather than the zero flag. It is then 
+possible to put the INC EAX in between without affecting the carry flag. You 
+may think that we could have used  LEA EAX,[EAX+1]  here in stead of  
+INC EAX,  at least that doesn't change any flags, but the LEA instruction 
+would have an AGI stall so that's not the best solution.  
+
+I have obtained perfect pairing here and the loop now takes only 3 clock 
+cycles. Whether you want to increment the loop counter by 1 (as in example 
+4) or by 4 (as in example 5) is a matter of taste, it makes no difference 
+in loop timing.
+
+Overlapping the end of one operation with the beginning of the next
+-------------------------------------------------------------------
+The method used in example 5 is not very generally applicable so we may look 
+for other methods of improving pairing opportunities. One way is to 
+reorganize the loop so that the end of one operation overlaps with the 
+beginning of the next. Actually, example 5 did pair the last MOV of one 
+iteration with the first MOV of the next, but we want to explore this method 
+further: 
+
+Example 6:
+
+        MOV     ESI, [A]
+        MOV     EAX, [N]
+        MOV     EDI, [B]
+        XOR     ECX, ECX
+        LEA     ESI, [ESI+4*EAX]          ; point to end of array A
+        SUB     ECX, EAX                  ; -N
+        LEA     EDI, [EDI+4*EAX]          ; point to end of array B
+        JZ      SHORT L3
+        XOR     EBX, EBX
+        MOV     EAX, [ESI+4*ECX]
+        INC     ECX
+        JZ      SHORT L2
+L1:     SUB     EBX, EAX                  ; u
+        MOV     EAX, [ESI+4*ECX]          ; v (pairs)
+        MOV     [EDI+4*ECX-4], EBX        ; u
+        INC     ECX                       ; v (pairs)
+        MOV     EBX, 0                    ; u
+        JNZ     L1                        ; v (pairs)
+L2:     SUB     EBX, EAX
+        MOV     [EDI+4*ECX-4], EBX
+L3:
+
+Here we begin reading the second value before we have stored the first, and 
+this of course improves pairing opportunities. The MOV EBX,0 instruction 
+has been put in between INC ECX and JNZ L1 not to improve pairing but to 
+avoid AGI stall.
+
+Rolling out a loop
+------------------
+The most generally applicable way to improve pairing opportunities is to do 
+two operations for each run and do half as many runs. This is called rolling 
+out a loop: 
+
+Example 7:
+
+        MOV     ESI, [A]
+        MOV     EAX, [N]
+        MOV     EDI, [B]
+        XOR     ECX, ECX
+        LEA     ESI, [ESI+4*EAX]          ; point to end of array A
+        SUB     ECX, EAX                  ; -N
+        LEA     EDI, [EDI+4*EAX]          ; point to end of array B
+        JZ      SHORT L2
+        TEST    AL,1                      ; test if N is odd
+        JZ      SHORT L1
+        MOV     EAX, [ESI+4*ECX]          ; N is odd. do the odd one
+        NEG     EAX
+        MOV     [EDI+4*ECX], EAX
+        INC     ECX                       ; make counter even
+        JZ      SHORT L2                  ; N = 1
+L1:     MOV     EAX, [ESI+4*ECX]          ; u
+        MOV     EBX, [ESI+4*ECX+4]        ; v (pairs)
+        NEG     EAX                       ; u
+        NEG     EBX                       ; u
+        MOV     [EDI+4*ECX], EAX          ; u
+        MOV     [EDI+4*ECX+4], EBX        ; v (pairs)
+        ADD     ECX, 2                    ; u
+        JNZ     L1                        ; v (pairs)
+L2:
+
+Now we are doing two operations in parallel which gives the best pairing 
+opportunities. We have to test if N is odd and if so do one operation 
+outside the loop because the loop can only do an even number of operations.  
+
+The loop has an AGI stall at the first MOV instruction because ECX has been 
+incremented in the preceding clock cycle. The loop therefore takes 6 clock 
+cycles for two operations.  
+
+Reorganizing a loop to remove AGI stall
+---------------------------------------
+Example 8:
+
+        MOV     ESI, [A]
+        MOV     EAX, [N]
+        MOV     EDI, [B]
+        XOR     ECX, ECX
+        LEA     ESI, [ESI+4*EAX]          ; point to end of array A
+        SUB     ECX, EAX                  ; -N
+        LEA     EDI, [EDI+4*EAX]          ; point to end of array B
+        JZ      SHORT L3
+        TEST    AL,1                      ; test if N is odd
+        JZ      L2
+        MOV     EAX, [ESI+4*ECX]          ; N is odd. do the odd one
+        NEG     EAX                       ; no pairing opportunity
+        MOV     [EDI+4*ECX-4], EAX
+        INC     ECX                       ; make counter even
+        JNZ     L2
+        NOP                               ; add NOP's if JNZ L2 not predictable
+        NOP
+        JMP     L3                        ; N = 1
+L1:     NEG     EAX                       ; u
+        NEG     EBX                       ; u
+        MOV     [EDI+4*ECX-8], EAX        ; u
+        MOV     [EDI+4*ECX-4], EBX        ; v (pairs)
+L2:     MOV     EAX, [ESI+4*ECX]          ; u
+        MOV     EBX, [ESI+4*ECX+4]        ; v (pairs)
+        ADD     ECX, 2                    ; u
+        JNZ     L1                        ; v (pairs)
+        NEG     EAX
+        NEG     EBX
+        MOV     [EDI+4*ECX-8], EAX
+        MOV     [EDI+4*ECX-4], EBX
+L3:
+
+The trick is to find a pair of instructions that do not use the loop counter 
+as index and reorganize the loop so that the counter is incremented in the 
+preceding clock cycle. We are now down at 5 clock cycles for two operations 
+which is close to the best possible.  
+
+If data caching is critical, then you may improve the speed further by 
+combining the A and B arrays into one structured array so that each B[i] 
+comes immediately after the corresponding A[i]. If the structured array is 
+aligned by at least 8 then B[i] will always be in the same cache line as 
+A[i], so you will never have a cache miss when writing B[i]. This may of 
+course have a tradeoff in other parts of the program so you have to weigh 
+the costs against the benefits.  
+
+
+Rolling out by more than 2
+--------------------------
+You may think of doing more than two operations per iteration in order to 
+reduce the loop overhead per operation. But since the loop overhead in most 
+cases can be reduced to only one clock cycle per iteration, then rolling out 
+the loop by 4 rather than by 2 would only save 1/4 clock cycle per 
+operation, which is hardly worth the effort.  
+
+The drawbacks of excessive loop unrolling are: 
+1.  You need to calculate N MODULO R, where R is the unrolling factor, and 
+    do N MODULO R operations before or after the main loop in order to make 
+    the remaining number of operations divisible by R. This takes a lot of 
+    extra code and poorly predictable branches. And the loop body of course 
+    also becomes bigger.  
+2.  A Piece of code usually takes much more time the first time it executes, 
+    and the penalty of first time execution is bigger the more code you 
+    have, especially if N is small.  
+3.  Excessive code size makes the utilization of the code cache less 
+    effective.  
+
+Handling multiple 8 or 16 bit operands simultaneously in 32 bit registers
+-------------------------------------------------------------------------
+If you need to manipulate arrays of 8 or 16 bit operands, then there is a 
+problem with unrolled loops because you may not be able to pair two memory 
+access operations. For example  MOV AL,[ESI] / MOV BL,[ESI+1]  will not pair 
+if the two operands are within the same dword of memory. But there may be a 
+much smarter method, namely to handle four bytes at a time in the same 32 
+bit register.  
+
+The following example adds 2 to all elements of an array of bytes:
+
+Example 9:
+
+        MOV     ESI, [A]         ; address of byte array
+        MOV     ECX, [N]         ; number of elements in byte array
+        TEST    ECX, ECX         ; test if N is 0
+        JZ      SHORT L2
+        MOV     EAX, [ESI]       ; read first four bytes
+L1:     MOV     EBX, EAX         ; copy into EBX
+        AND     EAX, 7F7F7F7FH   ; get lower 7 bits of each byte in EAX
+        XOR     EBX, EAX         ; get the highest bit of each byte in EBX
+        ADD     EAX, 02020202H   ; add desired value to all four bytes
+        XOR     EBX, EAX         ; combine bits again
+        MOV     EAX, [ESI+4]     ; read next four bytes
+        MOV     [ESI], EBX       ; store result
+        ADD     ESI, 4           ; increment pointer
+        SUB     ECX, 4           ; decrement loop counter
+        JA      L1               ; loop
+L2:
+
+This loop takes 5 clock cycles for every 4 bytes. The array should of course 
+be aligned by 4. If the number of elements in the array is not divisible by 
+four, then you may pad it in the end with a few extra bytes to make the 
+length divisible by four. This loop will always read past the end of the 
+array, so you should make sure the array is not placed at the end of a 
+segment to avoid a general protection error.  
+
+Note that I have masked out the highest bit of each byte to avoid a possible 
+carry from each byte into the next when adding. I am using XOR rather than 
+ADD when putting in the high bit again to avoid carry.  
+
+The  ADD ESI,4  instruction could have been avoided by using the loop 
+counter as index as in example 4. However, this would give an odd number of 
+instructions in the loop body, so there would be one unpaired instruction 
+and the loop would still take 5 clocks. Making the branch instruction 
+unpaired would save one clock after the last operation when the branch is 
+mispredicted, but we would have to spend an extra clock cycle in the prolog 
+code to setup a pointer to the end of the array and calculate -N, so the two 
+methods will be exactly equally fast. The method presented here is the 
+simplest and shortest.  
+
+The next example finds the length of a zero-terminated string by searching 
+for the first byte of zero. It is faster than using REP SCASB: 
+
+Example 10:
+
+STRLEN  PROC    NEAR
+        MOV     EAX,[ESP+4]               ; get pointer
+        MOV     EDX,7
+        ADD     EDX,EAX                   ; pointer+7 used in the end
+        PUSH    EBX
+        MOV     EBX,[EAX]                 ; read first 4 bytes
+        ADD     EAX,4                     ; increment pointer
+L1:     LEA     ECX,[EBX-01010101H]       ; subtract 1 from each byte
+        XOR     EBX,-1                    ; invert all bytes
+        AND     ECX,EBX                   ; and these two
+        MOV     EBX,[EAX]                 ; read next 4 bytes
+        ADD     EAX,4                     ; increment pointer
+        AND     ECX,80808080H             ; test all sign bits
+        JZ      L1                        ; no zero bytes, continue loop
+        TEST    ECX,00008080H             ; test first two bytes
+        JNZ     SHORT L2
+        SHR     ECX,16                    ; not in the first 2 bytes
+        ADD     EAX,2
+L2:     SHL     CL,1                      ; use carry flag to avoid a branch
+        POP     EBX
+        SBB     EAX,EDX                   ; compute length
+        RET                               ; (or RET 4 if pascal)
+STRLEN  ENDP
+
+Again we have used the method of overlapping the end of one operation with 
+the beginning of the next to improve pairing. I have not unrolled the loop 
+because it is likely to repeat relatively few times. The string should of 
+course be aligned by 4. The code will always read past the end of the 
+string, so the string should not be placed at the end of a segment.  
+
+The loop body has an odd number of instructions so there is one unpaired.  
+Making the branch instruction unpaired rather than one of the other 
+instructions has the advantage that it saves 1 clock cycle when the branch 
+is mispredicted.  
+
+The  TEST ECX,00008080H  instruction is non-pairable. You could use the 
+pairable instruction  OR CH,CL  here in stead, but then you would have to 
+put in a NOP or something for the following reason: The loop branch  (JZ L1)  
+is usually mispredicted the last time, when the loop is finished. Executing 
+a branch  (JNZ L2)  in the first clock cycle after a mispredicted branch will 
+give you a penalty of 5-10 clock cycles. Another problem with  OR CH,CL  is 
+that it would cause a partial register stall on a 486 or PentiumPro 
+processor. So I have chosen to keep the unpairable TEST instruction.  
+
+Handling 4 bytes simultaneously can be quite difficult. The code uses an 
+algorithm which generates a nonzero value for a byte if, and only if, the 
+byte is zero. This makes it possible to test all four bytes in one 
+operation. This algorithm involves the subtraction of 1 from all bytes (in 
+the LEA instruction). I have not masked out the highest bit of each byte 
+before subtracting, as I did in the previous example, so the subtraction may 
+generate a borrow to the next byte, but only if it is zero, and this is 
+exactly the situation where we don't care what the next byte is, because we 
+are searching forwards for the first zero. If we were searching backwards 
+then we would have to re-read the dword after detecting a zero, and then 
+test all four bytes to find the last zero, or use BSWAP to reverse the order 
+of the bytes.  
+
+If you want to search for a byte value other than zero, then you may XOR all 
+four bytes with the value you are searching for, and then use the method 
+above to search for zero.  
+
+Handling multiple operands in the same register is easier on the MMX 
+processors because they have special instructions and special 64 bit 
+registers for this purpose. Using the MMX instructions has a high penalty if 
+you are using floating point instructions shortly afterwards, so there may 
+still be situations where you want to use 32 bit registers as in the 
+examples above.  
+
+
+Loops with floating point operations
+------------------------------------
+The methods of optimizing floating point loops are basically the same as for 
+integer loops, although the floating point instructions are overlapping 
+rather than pairing.  
+
+Consider the C language code:
+
+  int i, n;  double * X;  double * Y;  double DA;
+  for (i=0; i<n; i++)  Y[i] = Y[i] - DA * X[i];
+
+This piece of code has been studied extensively because it is the key to 
+solving linear equations.
+
+Example 11:
+
+        MOV     EAX, [N]                  ; number of elements
+        MOV     ESI, [X]                  ; pointer to X
+        MOV     EDI, [Y]                  ; pointer to Y
+        XOR     ECX, ECX
+        LEA     ESI, [ESI+8*EAX]          ; point to end of X
+        SUB     ECX, EAX                  ; -N
+        LEA     EDI, [EDI+8*EAX]          ; point to end of Y
+        JZ      SHORT L3                  ; test for N = 0
+        FLD     QWORD PTR [DA]
+        FMUL    QWORD PTR [ESI+8*ECX]     ; DA * X[0]
+        JMP     SHORT L2                  ; jump into loop
+L1:     FLD     QWORD PTR [DA]
+        FMUL    QWORD PTR [ESI+8*ECX]     ; DA * X[i]
+        FXCH                              ; get old result
+        FSTP    QWORD PTR [EDI+8*ECX-8]   ; store Y[i]
+L2:     FSUBR   QWORD PTR [EDI+8*ECX]     ; subtract from Y[i]
+        INC     ECX                       ; increment index
+        JNZ     L1                        ; loop
+        FSTP    QWORD PTR [EDI+8*ECX-8]   ; store last result
+L3:
+
+Here we are using the same methods as in example 6: Using the loop counter 
+as index register and counting through negative values up to zero. The end 
+of one operation overlaps with the beginning of the next.  
+
+The interleaving of floating point operations work perfectly here: The 2 
+clock stall between FMUL and FSUBR is filled with the FSTP of the previous 
+result. The 3 clock stall between FSUBR and FSTP is filled with the loop 
+overhead and the first two instructions of the next operation. An AGI stall 
+has been avoided by reading the only parameter that doesn't depend on the 
+index in the first clock cycle after the index has been incremented.  
+
+This solution takes 6 clock cycles per operation, which is better than the 
+unrolled solution published by Intel!  
+
+Unrolling floating point loops
+------------------------------
+As explained in section 15, you often have to interleave four threads of 
+floating point instructions in order to remove all stalls. For the same 
+reason you often have to unroll floating point loops by 4. If you experiment 
+with the task of the preceding example, you will find that it is impossible 
+to obtain a stall-free solution when unrolling by 2 or 3.  
+
+Unrolling the loop by four:
+
+Example 12:
+
+        MOV     EAX, [N]                  ; number of elements
+        MOV     ESI, [X]                  ; pointer to X
+        MOV     EDI, [Y]                  ; pointer to Y
+        XOR     ECX, ECX
+        LEA     ESI, [ESI+8*EAX]          ; point to end of X
+        SUB     ECX, EAX                  ; -N
+        LEA     EDI, [EDI+8*EAX]          ; point to end of Y
+        TEST    AL,1                      ; test if N is odd
+        JZ      SHORT L1
+        FLD     QWORD PTR [DA]            ; do the odd operation
+        FMUL    QWORD PTR [ESI+8*ECX]
+        FSUBR   QWORD PTR [EDI+8*ECX]
+        INC     ECX                       ; adjust counter
+        FSTP    QWORD PTR [EDI+8*ECX-8]
+L1:     TEST    AL,2                      ; test for possibly 2 more operations
+        JZ      L2
+        FLD     QWORD PTR [DA]            ; N MOD 4 = 2 or 3. Do two more
+        FMUL    QWORD PTR [ESI+8*ECX]
+        FLD     QWORD PTR [DA]
+        FMUL    QWORD PTR [ESI+8*ECX+8]
+        FXCH
+        FSUBR   QWORD PTR [EDI+8*ECX]
+        FXCH
+        FSUBR   QWORD PTR [EDI+8*ECX+8]
+        FXCH
+        FSTP    QWORD PTR [EDI+8*ECX]
+        FSTP    QWORD PTR [EDI+8*ECX+8]
+        ADD     ECX, 2                    ; counter is now divisible by 4
+L2:     TEST    ECX, ECX
+        JZ      L4                        ; no more operations
+L3:     ; main loop:
+        FLD     QWORD PTR [DA]
+        FLD     QWORD PTR [ESI+8*ECX]
+        FMUL    ST,ST(1)
+        FLD     QWORD PTR [ESI+8*ECX+8]
+        FMUL    ST,ST(2)
+        FLD     QWORD PTR [ESI+8*ECX+16]
+        FMUL    ST,ST(3)
+        FXCH    ST(2)
+        FSUBR   QWORD PTR [EDI+8*ECX]
+        FXCH    ST(3)
+        FMUL    QWORD PTR [ESI+8*ECX+24]
+        FXCH
+        FSUBR   QWORD PTR [EDI+8*ECX+8]
+        FXCH    ST(2)
+        FSUBR   QWORD PTR [EDI+8*ECX+16]
+        FXCH
+        FSUBR   QWORD PTR [EDI+8*ECX+24]
+        FXCH    ST(3)
+        FSTP    QWORD PTR [EDI+8*ECX]
+        FSTP    QWORD PTR [EDI+8*ECX+16]
+        FSTP    QWORD PTR [EDI+8*ECX+8]
+        FSTP    QWORD PTR [EDI+8*ECX+24]
+        ADD     ECX, 4                             ; increment index by 4
+        JNZ     L3                                 ; loop
+L4:
+
+This loop takes 21 clock cycles for four operations. If N is not divisible by 
+four then you will get up to three extra operations outside the loop. These 
+extra operations are slower due to incomplete overlap and possibly mispredicted 
+branches. A general rule for floating point loops is therefore that an 
+unrolled solution is only optimal if N is very high or if the overlapping 
+method (as in example 11) does not yield a stall-free solution.  
+
+
+

@@ -1,0 +1,372 @@
+
+                                 FAQs on fog
+
+Last updated on 1997-11-12                             Started on 1997-01-29
+
+Content
+
+     0. What is this fog FAQ all about
+          0.1. Why a fog FAQ ?
+          0.2. Who are the contributors ?
+          0.3. Where should the contributions be sent ?
+          0.4. Why is this FAQ so grammatically incorrect ?
+          0.5. How comes this FAQ is in English ?
+     1. What is fog
+          1.1. What is the definition for fog ?
+          1.2. What is fog composed of ?
+          1.3. Are there different types of fog ?
+          1.4. What is fog microstructure ?
+     2. How does fog form
+          2.1. How does fog form ?
+          2.2. How does fog dissipate ?
+     3. What are the effects of fog on light propagation
+          3.1. What are the optical effects of fog ?
+     4. What are the visual effects of fog
+          4.1. How does fog affect the intensity of a distant light ?
+          4.2. How does fog affect the luminance of a distant object ?
+          4.3. How does fog affect the contrast of a distant object ?
+          4.4. What is the meteorological visibility range ?
+          4.5. How does fog affect colors ?
+     5. How do you render fog
+          5.1. What is the easiest way to render fog ?
+          5.2. What are the fog rendering techniques ?
+
+----------------------------------------------------------------------------
+
+0. What is this fog FAQ all about ?
+
+     0.1. Why a fog FAQ ?
+
+          I've been studying fog for some time now, mainly trying to figure
+          out in what ways it lowers visibility, for road security issues. I
+          spent quite an amount of energy looking for facts on the WWW,
+          through search engines. But I found the information was scarce. So
+          I decided to pack all the material I gathered on fog issues, and
+          make it available for everybody to use.
+          I'm just starting this FAQ, and far from omniscience on fog
+          matters. But hopefully I'll get plenty of remarks and
+          contributions (to dumont@lcpc.fr), which will all be welcome.
+
+     0.2. Who are the contributors ?
+
+          Anyone is welcome to contribute to this FAQ.
+          Here's the list of the contributors so far:
+             * Dr. Steve Ackerman <stevea@ssec.wisc.edu> (CIMSS)
+             * Bill Maier <stealth@icigames.com>
+
+     0.3. Where should the contributions be sent ?
+
+          All questions, answers, facts, dreams, pictures, insults,
+          comments, critics, or anything else you can think of, should be
+          sent to
+
+                eric Dumont <dumont@lcpc.fr>
+                address: Laboratoire Central des Ponts & Chaussées
+                         58, boulevard Lefèbvre
+                         75732 PARIS Cedex 15
+                         FRANCE
+                    URL: http://www.lcpc.fr/LCPC/Bottin/Alphabetique/Eric.DUMONT
+
+
+     0.4. Why is this FAQ so grammatically incorrect ?
+
+          That's an easy one. Because the author is French ;-)
+
+     0.5. How comes this FAQ is in English ?
+
+          Because the author has no intention in doing twice as much work
+          maintaining, but still wants maximum people to have access to this
+          FAQ. English is the Net's native language. Sorry.
+
+----------------------------------------------------------------------------
+
+1. What is fog ?
+
+     1.1. What is the definition for fog ?
+
+          Webster definition (1a): vapor condensed to fine particles of
+          water suspended in the lower atmosphere that differs from cloud
+          only in being near the ground.
+          Fog is often described by its thickness, or ability to cut off
+          vision. Fog is when the visibility range is under 1km. Otherwise
+          it's haze, or mist.
+
+     1.2. What is fog composition ?
+
+          Usually, fog isn't just composed of plain water droplets. The
+          condensation process occurs more easily with the presence of
+          hygroscopic condensation nuclei in the atmosphere (e.g. dust or
+          salt particles, often caused by pollution).
+          In case of a high concentration of nuclei, the fog will be called
+          smog.
+          Fog is often considered to be composed only of water.
+
+     1.3. Are there different types of fog ?
+
+          The types of fog are named with reference to the method by which
+          they form:
+             * radiation (ground) fog,
+             * advection fog,
+             * upslope fog,
+             * evaporation (or mixing) fog,
+             * steam fog.
+          But the way a fog formed is no clue concerning its microstructure.
+
+     1.4. What is fog microstructure ?
+
+          The microstructure describes the shape and concentration of the
+          water (mainly) droplets in the atmosphere causing the fog.
+          The droplets are usually considered to be spheres.
+          There can be droplets of many different diameters, with different
+          concentrations. The distribution mode varies from 1µm to 20µm
+          (droplets are usually bigger within clouds).
+          The microstructure of a fog depends on the place (nature of
+          hygroscopic condensation nuclei), the time, and the atmospheric
+          conditions. The droplets are small when the fog forms, then grow
+          bigger as condensation occurs.
+
+----------------------------------------------------------------------------
+
+2. How does fog form ?
+from Dr. Steve Ackerman
+
+     2.1. How does fog form ?
+
+          Fog forms in either one or combinations of three ways:
+             * by cooling the air,
+             * by evaporation of water into the air,
+             * mixing of two air parcels.
+          Radiation (ground) fog
+               Produced by the radiational cooling at the surface.
+               Favorable conditions:
+                  * clear nights,
+                  * shallow layer of moist air near the ground,
+                  * long nights,
+                  * light winds.
+               Radiation fogs are common over land in late fall and winter.
+               Radiation fogs also form in low-lying areas (valley fog).
+               Cold air and high moisture content in river valleys make them
+               susceptible to radiation fog. Radiation fogs form at the
+               ground and are deepest around sunrise - sometimes an increase
+               in thickness at sunrise due to the evaporation of dew
+               supplying moisture to the fog.
+          Advection fog
+               Air is cooled to saturation by having warm moist air moving
+               over a cold surface. Pacific Coast has a lot of advection fog
+               since the surface water near the coast is much colder than
+               the water farther off shore. Warm moist air from the Pacific
+               Ocean is advected over the cold coastal waters, chilling the
+               advected air from below. Advection fog, unlike radiation fog
+               always involves the movement of air. Fog, while a traffic
+               hazard, is very important water source for some plants and
+               animals.
+          Upslope fog
+               Forms as moist air flows up an elevated plain, hill or
+               mountain. Upslope fogs may last for several days.
+          (The above methods of forming a fog all require cooling the air.)
+          Evaporation (or mixing) fog
+               Formed by mixing two unsaturated air masses. Moist air coming
+               out of your mouth is an example of mixing fog. Contrails are
+               another example. Saturation vapor pressure depends on the
+               temperature - the higher the temperature the higher the
+               saturation vapor pressure. Warm rain falling into a cool air
+               mass near the surface can form a fog. An example of such a
+               fog is the type that forms in the vicinity of warm fronts.
+          Steam fog
+               Forms when cold air moves over warm water (heated outside
+               swimming pool) water evaporates from the pool into the air,
+               increasing the dew point and if mixing is sufficient the air
+               above becomes saturated. The colder air directly above the
+               water is heated from below and rises forming what appears to
+               be steam. Observed over unfrozen lakes in autumn or winter.
+               Steam fog also forms above a wet surface on a sunny day -
+               over a road after a summer rain shower.
+
+     2.2. How does fog dissipate ?
+
+          Fogs do not "burn off", the sun warms the ground. The air near the
+          ground warms lowering the relative humidity. This warmer drier air
+          mixes upwards destroying the fog. Sometimes the fog does not
+          totally dissipate, but forms a stratus cloud.
+
+----------------------------------------------------------------------------
+
+3. What are the effects of fog on light propagation ?
+
+     3.1. What are the optical effects of fog ?
+
+          When incident light hits a particle in fog, part of the energy is
+          absorbed, and the rest is scattered. When going from one point to
+          another through fog, light will meet many particles that will
+          cause multiple scatterings. The extinction of light is the
+          combined effect of absorption and scattering.
+          Scattering coefficient
+               ks [m-1] describes the part of incident light that's
+               scattered by the turbid medium. It is a function of the
+               microstructure of the fog:
+
+                   [ks = Sum[0..inf](n(r).r^2.qs(r).dr)]
+
+               where r is the droplet radius, n(r) is the fog droplet size
+               distribution, qs(r) is the scattering efficiency, computed by
+               Mie theory (qs -> 2 when r > 2µm).
+          Extinction coefficient
+               ke [m-1] describes the part of incident light that is not
+               transmitted by the turbid medium, due to the combined effects
+               of absorption and scattering.
+
+                   [ke = Sum[0..inf](n(r).r^2.qe(r).dr)]
+
+               where r is the droplet radius, n(r) is the fog droplet size
+               distribution, qe(r) is the extinction efficiency, computed by
+               Mie theory (ke = ks when the fog particles are only water
+               droplets).
+          Absorption coefficient
+               ka [m-1] describes the part of incident light that's absorbed
+               by the turbid medium.
+
+                   ke = ka + ks
+
+               When the fog particles are only water droplets, the absorbed
+               energy is less than 0.5%, and is not accounted for (ka = 0).
+          Albedo
+               a is the fraction of incident light that is scattered by the
+               turbid medium.
+
+                   a = ks / ke
+
+               (a = 1 when the fog particles are only water droplets)
+          Phase function (or scattering function)
+               P describes the fractions of incident light that are
+               scattered in any given direction by a particle (goniometric
+               distribution).
+               If the particle if a sphere, the symmetry about the incident
+               axis allows the description of the whole phase function with
+               only one parameter: the scattering angle, between 0°
+               (forth-scattering) and 180° (back-scattering).
+               The phase function can be obtained from the particle size
+               distribution using Mie electromagnetic equations. Otherwise
+               it is often approximated by the Henyey-Greenstein (1941)
+               expression:
+
+                   [P(tetha) = (1 - g*g) / (1 + g*g - 2*cos(tetha))^1.5]
+
+               where g is the asymmetry factor: g=-1 for backward
+               scattering, g=0 for isotropic scattering, and g=1 for forward
+               scattering.
+
+                   [g = .5*SUM[-1..+1](P(m).m.dm)]
+
+               where [m = cos(theta)].
+
+----------------------------------------------------------------------------
+
+4. What are the visual effects of fog ?
+
+     4.1. How does fog affect the intensity of a distant light ?
+
+          Allard's empirical law (1876):
+
+              E = I exp(-ked) / d²
+
+          where I is the light intensity, d is the distance between the
+          source and the observer, ke is the extinction coefficient of the
+          fog, and E is the illuminance in the eye of the viewer.
+
+     4.2. How does fog affect the luminance of a distant object ?
+
+          Koschmieder's theory (1924):
+
+              L = L0exp(-ked) + Lv(1 - exp(-ked))
+
+          where L0 is the initial luminance, d is the distance between the
+          object and the observer, ke is the extinction coefficient of the
+          fog, Lv is the veiling luminance, and L is the observed luminance.
+
+     4.3. How does fog affect the contrast of a distant object ?
+
+          The classic theory of contrast, derived from Koschmieder's law,
+          gives a simple expression of the apparent contrast of an object on
+          its background.
+
+              C = C0exp(-ked)
+
+          where C0 is the initial contrast, d is the distance between the
+          object and observer, ke is the extinction coefficient of the fog,
+          and C is the observed contrast.
+          We can see this expression is a simplification, because it does
+          not account for the microstructure of the fog (two fogs with the
+          same ke but particles of different sizes will have the same effect
+          on contrast according to this theory).
+
+     4.4. What is the meteorological visibility range ?
+
+          The meteorological visibility range (V) is the parameter
+          meteorologists use to describe the thickness of fog. It is often
+          abusively shortened to visibility range. It is computed using the
+          above theory of contrast applied to a black object with an
+          arbitrary 5% contrast detection threshold, given by the CIE:
+
+              V = - log(0.05) / ke = 3 / ke
+
+          where ke is the extinction coefficient of the fog.
+          Some people use 2% as a threshold (Koshmieder did).
+
+     4.5. How does fog affect colors ?
+
+          Fog has no effect on colors if we consider the particles to be
+          only water droplets, except the desaturation.
+
+----------------------------------------------------------------------------
+
+5. How do you render fog ?
+
+     5.1. What is the easiest way to render fog ?
+
+          You can easily create atmospheric effects by blending the color of
+          the objects in the scene with fog color, based on their distance
+          from the viewer (like depth-cueing).
+
+              COL = COL0.exp(-ked) + COLf.(1 - exp(-ked))
+
+          where COL0 is the color of an object, COLf is the fog color, ke is
+          the fog extinction coefficient and d is the distance between the
+          object and the viewer.
+          This function is now taken care of by graphics chips, which makes
+          it very fast.
+
+          from Bill Maier
+          You can use another easy trick to simulate the materialization of
+          the cone from a car headlight, for example. Make a set of cones,
+          perhaps 5 or so, with the same vertex (point of the cone) at the
+          headlight itself. Have the base of the cone out in front of the
+          vehicle where the light is shining, perhaps 20 meters out. Design
+          the cones with slightly different radii at the base, for example,
+          0.5 meters, 0.75 m, 1.0 m, 1.25, etc. Assign each cone a
+          transparency value so it is translucent. Then when you look at the
+          outer edges of the light cones, you will see only the outermost
+          cone and the light will appear dimmer. At the center of the beam
+          you will see the combined effect of all 5 cones, so it will appear
+          denser. Of course you won't get shadows in the beam, but if you
+          can live with that limitation it's a good method. If you think
+          about it, this is really a sort of cheap way to do volumetric
+          rendering. The more cones you have, the better your resolution
+          (and the more CPU power required!).
+          Here's an example: http://home1.gte.net/ciric/basket.htm
+
+     5.2. What are the rendering techniques dealing with fog ?
+
+          Any CG technique that deals with participating media will do :
+          distributed ray tracing, Monte Carlo light tracing, zonal
+          radiosity...
+
+                               [Working on it...]
+
+----------------------------------------------------------------------------
+ © ED                                          [Commentaires (Comments)...]
+----------------------------------------------------------------------------
+      According to SiteFlow the number of visitors since 14/08/1997 is
+                                      
+  <!C-
+  document.write('<img src=htt<img src=http://www.siteflow.com/hvb2e/counter.cgi?Faq_on_foG,http://solair.eunet.yu/~karadzic/CGGP.htm border=0></a>
+<!C- END COU

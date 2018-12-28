@@ -1,0 +1,4119 @@
+Path: bloom-beacon.mit.edu!apollo.hp.com!lf.hp.com!hpscit.sc.hp.com!news.dtc.hp.com!canyon.sr.hp.com!col.hp.com!simtel!news.kei.com!newshost.marcam.com!usc!howland.reston.ans.net!Germany.EU.net!EU.net!sun4nl!news.nic.surfnet.nl!tudelft.nl!liberator.et.tudelft.nl!einstein.et.tudelft.nl!offerman
+From: offerman@einstein.et.tudelft.nl (Aad Offerman)
+Newsgroups: comp.sys.ibm.pc.hardware.chips,comp.sys.ibm.pc.hardware.systems,comp.sys.ibm.pc.hardware.misc,comp.sys.intel,comp.answers,news.answers
+Subject: Personal Computer CHIPLIST 7.3 part 1 of 4
+Supersedes: <3h5e1a$e96@liberator.et.tudelft.nl>
+Followup-To: poster
+Date: 24 Feb 1995 10:21:49 GMT
+Organization: Delft University of Technology, Dept. of Electrical Engineering
+Lines: 652
+Approved: news-answers-request@MIT.EDU
+Expires: 23 May 1995 00:00:00 WET
+Message-ID: <3ikbvt$lel@liberator.et.tudelft.nl>
+Reply-To: offerman@einstein.et.tudelft.nl
+NNTP-Posting-Host: einstein.et.tudelft.nl
+Summary: This list contains the various CPUs and NPXs and their features,
+         used in the IBM PC, IBM PC/XT, IBM PC/AT, IBM PS/2 and compatibles,
+         and the differences between them.
+Keywords: PC, CPU, NPX
+X-Newsreader: NN version 6.5.0 #2 (NOV)
+Xref: bloom-beacon.mit.edu comp.sys.ibm.pc.hardware.chips:22861 comp.sys.ibm.pc.hardware.systems:15558 comp.sys.ibm.pc.hardware.misc:23244 comp.sys.intel:36442 comp.answers:10273 news.answers:35769
+
+Archive-name: pc-hardware-faq/chiplist/part1
+Last-modified: 1995/02/18
+Version: 7.3
+
+
+
+
+    CHIPLIST 7.3 by Aad Offerman, 23-02-95.
+
+
+                                                       A. Offerman
+                                                       Bonnweg 40
+                                                       3137NE Vlaardingen
+                                                       The Netherlands
+                                                       010-4745386
+
+
+Since there are a lot of questions about the differences between the various
+chips used in the IBM PC, IBM PC/XT, IBM PC/AT, IBM PS/2 and compatibles, this
+list, containing their CPUs and NPXs, has been compiled for the benefit of
+the net community. I hope it can answer some questions.
+
+This list is the result of collecting many snippets of information from
+USENET News and data books. Furthermore, various contributors and others have
+helped to make this list to what it is today. Thank you all.
+
+Any corrections, additions, or comments are welcome. Please reply by E-mail
+to:
+  offerman@einstein.et.tudelft.nl
+
+This list is cross-posted about once every month to the following newsgroups:
+  comp.sys.ibm.pc.hardware.chips
+  comp.sys.ibm.pc.hardware.systems
+  comp.sys.ibm.pc.hardware.misc
+  comp.sys.intel
+  comp.answers
+  news.answers
+
+The latest version of this list can also be obtained from:
+  rtfm.mit.edu  /pub/usenet/news.answers/pc-hardware-faq/chiplist/
+  ftp.twi.tudelft.nl  /pub/texts/chiplist/chiplist.asc
+
+A WWW HTML version of the latest chiplist is available at:
+  http://einstein.et.tudelft.nl/~offerman/chiplist.html
+
+
+
+
+Contents:
+
+
+1  Introduction
+1.1  Identification
+1.2  Packages
+1.3  Semiconductor processes
+1.4  JEDEC (Joint Electronic Device Engeneering Council)
+1.5  Manufacturers
+1.5.1  Intel
+1.5.2  AMD (Advanced Micro Devices)
+1.5.3  IBM (International Bussiness Machines)
+1.5.4  Chips & Technologies
+1.5.5  Cyrix
+1.5.6  Texas Instruments
+1.5.7  IIT (International Information Technologies)
+1.5.8  Motorola
+1.5.9  Apple
+1.5.10  DEC (Digital Equipment Corporation)
+1.5.11  Renaissance Microsystems Inc.
+1.6  Literature
+
+2  CPU (Central Processing Unit)
+2.1  Introduction
+2.2  Intel i4004 CPU
+2.3  Intel i4040 CPU
+2.4  Intel i8008 CPU
+2.5  Intel i8080/i8080A CPU
+2.6  Zilog Z80 CPU
+2.7  Intel i8085A/i8085AH CPU
+2.8  Intel i8086A/i80C86A CPU, Intel i8088A/i80C88A CPU
+2.8.1  Intel i8086A/i80C86A CPU
+2.8.2  Intel i8088A/i80C88A CPU
+2.9  AMD Am8086/Am80C86 CPU, AMD Am8088/Am80C88 CPU
+2.9.1  AMD Am8086/Am80C86 CPU
+2.9.2  AMD Am8088/Am80C88 CPU
+2.10  Harris HS80C86/883 CPU, Harris HS80C88/883 CPU
+2.10.1  Harris HS80C86/883 CPU
+2.10.2  Harris HS80C88/883 CPU
+2.11  Siemens SAB8086 CPU
+2.12  Hitachi H80C88 CPU
+2.13  Contemporary CPUs
+2.14  Intel i80186/i80C186 CPU, Intel i80188/i80C188 CPU
+2.14.1  Intel i80186/i80C186 CPU
+2.14.2  Intel i80188/i80C188 CPU
+2.15  NEC V30/V20 CPU
+2.15.1  NEC V30 CPU
+2.15.2  NEC V20 CPU
+2.16  Siemens SAB80186 CPU, Siemens SAB80188 CPU
+2.16.1  Siemens SAB80186 CPU
+2.16.2  Siemens SAB80188 CPU
+2.17  Intel i80886 CPU
+2.18  Intel i80286 CPU
+2.19  AMD Am80286/Am80C286 CPU
+2.20  Harris 80C286 CPU
+2.21  Siemens SAB80286 CPU
+2.22  Intel i80386 CPU
+2.22.1  Intel i80386/i80386DX CPU
+2.22.2  Intel i80386SX CPU
+2.22.3  Intel i80386SL CPU
+2.22.4  Intel RapidCAD CPU
+2.22.5  Intel i80376 microprocessor
+2.22.6  Intel i386SX microprocessor
+2.22.7  Intel i386CX microprocessor
+2.22.8  Intel i386EX microprocessor
+2.23  AMD Am386 CPU
+2.23.1  AMD Am386DX CPU
+2.23.2  AMD Am386DXL CPU
+2.23.3  AMD Am386DXLV CPU
+2.23.4  AMD Am386SX CPU
+2.23.5  AMD Am386SXL CPU
+2.23.6  AMD Am386SXLV CPU
+2.24  IBM 386 CPU
+2.24.1  IBM 386SLC CPU
+2.25  Chips & Technologies 386 CPU
+2.25.1  Chips & Technologies Super386 38600DX CPU
+2.25.2  Chips & Technologies 38605DX CPU
+2.25.3  Chips & Technologies 38600SX CPU
+2.26  IBM 386/486 hybrid CPU
+2.26.1  IBM 486DLC CPU
+2.26.2  IBM 486DLC2 CPU
+2.26.3  IBM 486SLC CPU
+2.26.4  IBM 486SLC2 CPU
+2.26.5  IBM 486BLX CPU (Blue Lightning)
+2.26.6  IBM 486BLX2 CPU (Blue Lightning)
+2.26.7  IBM 486BLX3 CPU (Blue Lightning)
+2.27  Cyrix 386/486 hybrid CPU
+2.27.1  Cyrix Cx486DLC CPU
+2.27.2  Cyrix Cx486SLC CPU
+2.27.3  Cyrix Cx486SLC/e CPU
+2.27.4  Cyrix Cx486SLC/e-V CPU
+2.27.5  Cyrix Cx486DLC / Cx486SLC CPU incompatibilities
+2.27.6  Cyrix Cx486DRu2 CPU
+2.27.7  Cyrix Cx486DRx2 CPU
+2.27.8  Cyrix Cx486SLC2 CPU
+2.27.9  Cyrix Cx486SRx2 CPU
+2.28  Texas Instruments 386/486 hybrid CPU
+2.28.1  Texas Instruments TI486DLC CPU
+2.28.2  Texas Instruments TI486SLC CPU
+2.28.3  Texas Instruments TI486SXL-S-GA CPU (Potomac)
+2.28.4  Texas Instruments TI486SXL-VS-GA CPU (Potomac)
+2.28.5  Texas Instruments TI486SXL2-S-GA CPU (Potomac)
+2.28.6  Texas Instruments TI486SXL2-VS-GA CPU (Potomac)
+2.28.7  Texas Instruments TI486SXLC-PAF CPU (Potomac)
+2.28.8  Texas Instruments TI486SXLC-V-PAF CPU (Potomac)
+2.28.9  Texas Instruments TI486SXLC2-PAF CPU (Potomac)
+2.28.10  Texas Instruments TI486SXLC2-V-PAF CPU (Potomac)
+2.28.11  Texas Instruments announcements
+2.29  Intel i80486 CPU
+2.29.1  Intel i80486DX CPU
+2.29.2  Intel i80486SL CPU
+2.29.3  Intel i80486DXL CPU
+2.29.4  Intel i80486SX CPU
+2.29.5  Intel i80486SXL CPU
+2.29.6  Intel i80486DX2 P23T CPU
+2.29.7  Intel i80486DX4 P24C CPU
+2.29.8  Intel i80486SX2 CPU
+2.29.9  Intel i80486 CPU announcements
+2.30  AMD Am486 CPU
+2.30.1  AMD Am486DX CPU
+2.30.2  AMD Am486DXL CPU
+2.30.3  AMD Am486DXLV CPU
+2.30.4  AMD Am486DX2 CPU
+2.30.5  AMD Am486DXL2 CPU
+2.30.6  AMD Am486DX3 CPU
+2.30.7  AMD Am486SX CPU
+2.30.8  AMD Am486SXLV CPU
+2.30.9  AMD Am486SX2 CPU
+2.30.10  AMD Am486 CPU announcements
+2.31  IBM 80486 CPU
+2.31.1  IBM 80486DX CPU
+2.31.2  IBM 80486SX CPU
+2.31.3  IBM 80486BLDX2 CPU (Blue Lightning)
+2.32  Cyrix Cx486 CPU
+2.32.1  Cyrix FasCache Cx486D CPU
+2.32.2  Cyrix FasCache Cx486S CPU
+2.32.3  Cyrix FasCache Cx486S-V CPU
+2.32.4  Cyrix FasCache Cx486S2 CPU
+2.32.5  Cyrix FasCache Cx486S2-V CPU
+2.32.6  Cyrix FasCache Cx486DX CPU
+2.32.7  Cyrix FasCache Cx486DX-V33 CPU
+2.32.8  Cyrix FasCache Cx486DX2 CPU
+2.32.9  Cyrix FasCache Cx486DX2-V33 CPU
+2.32.10  Cyrix FasCache Cx486DX2-V CPU
+2.33  Texas Instruments TI486 CPU
+2.33.1  Texas Instruments TI486SXL-GA CPU (Potomac)
+2.33.2  Texas Instruments TI486SXL-V-GA CPU (Potomac)
+2.33.3  Texas Instruments TI486SXL2-GA CPU (Potomac)
+2.33.4  Texas Instruments TI486SXL2-V-GA CPU (Potomac)
+2.34  UMC 486 CPU
+2.34.1  UMC U5S CPU
+2.34.2  UMC U5SD CPU
+2.34.3  UMC U5S-VL CPU
+2.35  Intel Overdrive CPU for Intel i80486 CPU
+2.35.1  Intel i80486DX2 CPU for Intel i80486DX CPU (ODPR)
+2.35.2  Intel i80486DX2 CPU for Intel i80486SX CPU (ODPR)
+2.35.3  Intel i80486DX2 CPU for Intel i80486DX CPU, Intel i80486SX CPU (ODP)
+2.35.4  Intel i80486DX4 CPU for Intel i80486DX CPU, Intel i80486SX CPU,
+        Intel i80486DX2 CPU (ODPR)
+2.35.5  Intel Pentium P24T CPU (ODP)
+2.35.6  Intel Pentium P24CT CPU (ODP)
+2.36  Intel Pentium CPU
+2.36.1  Intel Pentium P5 CPU
+2.36.2  Intel Pentium P54C CPU
+2.36.3  Intel Pentium P55C CPU
+2.36.4  Intel Pentium CPU announcements
+2.37  Intel Overdrive CPU for Intel Pentium CPU
+2.37.1  Intel Pentium P54M CPU
+2.38  AMD K5 CPU (K86 series)
+2.39  Cyrix M1 CPU
+2.40  NexGen Nx586/Nx587 CPU chipset
+2.41  RISC CPU (Reduced Instruction Set Computer)
+2.41.1  DEC DECchip-210 CPU
+2.41.2  MIPS R4000 CPU
+2.41.3  MIPS R4200 CPU
+2.41.4  MIPS R4400 CPU
+2.41.5  MIPS Orion R4600 CPU
+2.41.6  IBM, Motorola PowerPC CPU
+2.41.7  Sun Sparc CPU
+2.41.8  HP PA CPU (Precision Architecture)
+2.42  Motorola CPU
+2.42.1  Motorola MC6800 CPU
+2.42.2  Motorola MC6802 CPU
+2.42.3  Motorola MC68HC11 CPU
+2.42.4  Motorola MC6809 CPU
+2.42.5  Motorola MC68000 CPU
+2.42.6  Motorola MC68008 CPU
+2.42.7  Motorola MC68302 CPU
+2.42.8  Motorola MC68010 CPU
+2.42.9  Motorola MC68340 microprocessor
+2.42.10  Motorola MC68020 CPU
+2.42.11  Motorola MC68030 CPU
+2.42.12  Motorola MC68040 CPU
+2.42.13  Motorola MC68LC040 CPU
+2.42.14  Motorola MC68040V CPU
+2.42.15  Motorola MC68050 CPU
+2.42.16  Motorola MC68060 CPU
+
+3  NPX (Numerical Processor eXtension)
+3.1 Introduction
+3.2  Intel i8087 NPX
+3.3  Intel i80287 NPX
+3.4  AMD Am80287 NPX
+3.4.1  AMD Am80C287 NPX
+3.4.2  AMD Am80EC287 NPX
+3.5  Cyrix Cx287 NPX
+3.6  Intel i80187 NPX
+3.7  Intel i80287XL NPX
+3.8  Cyrix FasMath Cx82S87 NPX
+3.9  IIT IIT-2C87 NPX
+3.10  Intel i80387 NPX
+3.10.1  Intel i80387 NPX
+3.10.2  Intel i80387DX NPX
+3.10.3  Intel i80387SX NPX
+3.10.4  Intel i80387SL Mobile NPX
+3.10.5  Intel i80X87SL Mobile NPX
+3.11  Chips & Technologies SuperMath 38700 NPX
+3.11.1  Chips & Technologies SuperMath 38700DX NPX
+3.11.2  Chips & Technologies SuperMath 38700SX NPX
+3.12  Cyrix 80387 NPX
+3.12.1  Cyrix FasMath Cx83D87 NPX
+3.12.2  Cyrix FasMath Cx387+ NPX
+3.12.3  Cyrix FasMath EMC87 NPX
+3.12.4  Cyrix FasMath 83S87 NPX
+3.12.5  Cyrix Cx387DX NPX
+3.12.6  Cyrix Cx387SX NPX
+3.12.7  Cyrix Cx387 NPX announcements
+3.13  IIT IIT-3C87 NPX
+3.13.1  IIT IIT-3C87 NPX
+3.13.2  IIT IIT-3C87SX NPX
+3.13.3  IIT IIT-XC87DLX2 NPX
+3.14  ULSI Math*Co 83C87 NPX
+3.15  ULSI Math*Co 83S87 NPX
+3.16  Weitek Abacus 1167 NPX
+3.17  Weitek Abacus 3167 NPX
+3.18  RISE 80387 NPX
+3.19  Symphony Laboratories 80387 NPX
+3.20  Cyrix Cx4C87DLC NPX
+3.21  IIT IIT-4C87 NPX
+3.21.1  IIT IIT-4C87DLC NPX
+3.21.2  IIT IIT-4C87 NPX announcements
+3.22  Intel i80487 NPX
+3.22.1  Intel i80487SX NPX
+3.22.2  Intel i80487 NPX
+3.23  Cyrix Cx487S NPX
+3.24  Weitek Abacus 4167 NPX
+
+Credits
+
+
+
+
+    1  Introduction
+
+    1.1  Identification
+
+Manufacturer: name and/or logo.
+Part number.
+Revision number, step level.
+Date: often the week number and the year of manufacturing.
+
+Memory chips: capacity: 64, 256 kbit,
+                        1, 4, 16 Mbit,
+              speed: 10 15, 20, 40, 60, 70, 80, 100, 120, 150 ns.
+
+Orientation: indicated by a hole or a dot; from this indication the pin
+             numbering starts contra clock-wise with number 1.
+
+For microprocessors at boot the chip mask revision number is often left in one
+of the control registers.
+
+In the newer SL enhanced Intel i80486 CPUs (if bit 21 in EFLAGS can be
+toggled) and the Intel Pentium CPUs a CPUID instruction is available:
+  EAX=0: EAX: highest input value recognized by CPUID
+         EBX-EDX: vendor ID string: Intel: "GenuineIntel"
+                                    UMC: "UMC UMC UMC"
+  EAX=1: EAX: bit 0-3: step level
+              bit 4-7: model
+              bit 8-11: family: 4: 486,
+                                5: Pentium
+              bit 12-31: reserved
+         EBX-ECX: reserved
+         EDX (feature bits): bit 0: on-chip FPU
+                             bit 1-6: I/O Breakpoints available
+                                      Page Size extensions (single-level page
+                                        table with 4 Mbyte pages)
+                                      Time Stamp Counter available (RDTSC)
+                                      Machine Specific Registers available
+                                        (RDMSR/WRMSR)
+                             bit 7: Machine Check Exception
+                             bit 8: CMPXCHG8B instruction
+                             bit 9-31: reserved
+
+
+    1.2  Packages
+
+DIP (Dual In-line Package): o o o o o o o o
+
+                            o o o o o o o o
+
+DRAM (Dynamic Random Access Memory): 4116 16 k x 1 (1980),
+                                     4164 64 k x 1 (1982),
+                                     41256 256 k x 1 (1984),
+                                     411000 1 m x 1 (1987, 1988).
+
+CERDIP (CERamic Dual In-line Package).
+
+PQFP (Plastic Quad Flat Package): surface mounted.
+SQFP (Shrink Quad Flat Package): surface mounted, thermally enhanced.
+
+PLCC (Plastic Leaded Chip Carrier).
+
+PGA (Pin Grid Array): o o o o o o o o
+                      o o o o o o o o
+                      o o         o o
+                      o o         o o
+                      o o         o o
+                      o o         o o
+                      o o o o o o o o
+                      o o o o o o o o
+
+ZIP (Zigzag In-line Package): o o o o o o o o
+                               o o o o o o o o
+
+SIMM (Single In-line Memory Module) (Wang): contains a complete RAM bank.
+MAC SIMMs are only 8 bits wide; they don't contain a parity bit.
+However, there are Personal Computers around in which the RAM chips for parity
+checking are build-in on the motherboard, that need 8 bit SIMMs.
+
+  9-chip SIMM: 9 chips of 1 bit wide
+  8-chip SIMM: 8 chips of 1 bit wide (MAC)
+  3-chip SIMM: 2 chips of 4 bits wide and 1 chip of 1 bit wide
+               3 chips of 3 bits wide
+  2-chip SIMM: 2 chips of 4 bits wide (MAC)
+
+If the correct refresh is supplied SIMMs with a different number of chips and
+different speed can be used together.
+
+SIP (Single In-line Package): contains a complete RAM bank.
+
+The orientation of SIMMs and SIPs is indicated by a hole. Starting from this
+indication the numbering of the pins starts with number 1. Apart from the pins
+there is no difference at all between SIMMs and SIPs.
+
+The normal SIMMs and SIPs have 30 pins/pads. There are also 36 pin SIMMs and
+SIPs. The extra pins are used for speed detection by the motherboard.
+
+There are also 72 pin SIMMs. These are 32 bits and 4 parity bits wide. 4 pins
+are assigned for speed detection. They are mostly used in newer Personal
+Computers.
+Capacity: 1, 2, 4, 8, 16 Mwords.
+
+DIMM: 64 bit memory module.
+
+
+    1.3  Semiconductor processes
+
+RTL (Resistor-Transistor Logic): SSI (Small Scale Integration).
+
+DTL (Diode-Transistor Logic): SSI.
+
+TTL (Transistor-Transistor Logic) (Texas Instruments, 1965): bipolar,
+  SSI, MSI (Medium Scale Integration), LSI (Large Scale Integration).
+
+  7400 series: 0 - 70 C.
+  5400 series: -55 - 125 C (military).
+
+  5400, 7400: 10 ns propagation time,
+  54L00, 74L00: Low power: higher resistances, less dissipation: longer
+                propagation time,
+  54H00, 74H00: High power: lower resistances, more dissipation: less
+                sensitivity for noise,
+  54S00, 74S00: Schottky-clamped: faster switching by using Schottky diodes
+                                  to prevent the transistors from saturation,
+  54LS00, 74LS00: Low power, Schottky-clamped,
+  54AS00, 74AS00: Advanced Schottky: faster switching, less dissipation,
+  54ALS00, 74ALS00: Advanced Low power Schottky.
+
+I2L (Integrated Injection Logic) (1972): bipolar,
+  LSI, VLSI (Very Large Scale Integration).
+
+  Vcc: 0.8 V.
+  Propagation time: 20 - 50 ns.
+  Speed-power: 0.5 pJ.
+
+ECL (Emitter Coupled Logic, Current Mode Logic): bipolar.
+
+  Propagation time: 0.5 - 2 ns.
+  Dissipation: 3 - 10 times higher than TTL.
+
+MOS (Metal Oxide Semiconductor): FET (Field-Effect Transistors).
+
+  Maximum frequency: 25 MHz.
+
+PMOS (Positive-channel MOS): LSI, VLSI.
+
+NMOS (Negative-channel MOS): LSI, VLSI.
+
+  Faster than PMOS.
+
+HMOS (High performance n-channel MOS): LSI, VLSI.
+
+CMOS (Complementary MOS): LSI, VLSI, ULSI (Ultra Large Scale Integration).
+
+  Better current management combining n- and p-channels.
+  Originally slower than NMOS.
+
+CMOS-SOS (Silicon On Sapphire).
+
+  Low capitance.
+  100 MHz.
+
+  Developed by military for radiation hardness in space and tactical/strategic
+  nuclear warfare environments.
+
+For a long time 0.6 micron geometries were thought to be a limit imposed by
+the electron microscopes used for mask alignment, but then the X-ray
+lithography was invented...
+
+
+    1.4  JEDEC (Joint Electronic Device Engeneering Council)
+
+JEDEC was first know for their DIP definitions for memory chips.
+
+JEDEC has suggested a new standard of 3.3 V for all electronic components,
+including CPUs. CPUs operating at 3.3 V consume less than 50 % of the power
+of their 5 V equivalents. Intel currently uses a manufacturing process with a
+resolution of 0.8 micron, but is starting production with a 0.6 micron
+process. This produces chips that can only operate reliably at 3.3 V, which
+means that all its future CPUs are likely to operate only at this lower
+voltage.
+
+
+    1.5  Manufacturers
+
+    1.5.1  Intel
+
+The company was founded in 1968 by Gordon Moore, currently the chairman, and
+the late Bob Noyce. The original name was M & N Electronics, but was changed
+to Intel (Integrated Electronics). More information on the history of Intel
+can be found at:
+  http://web.jf.intel.com:80/about-intel/history/
+
+Intel makes the base models: i8086/i8088, i80286, i80386, i80486, Pentium,
+                             i8087, i80287, i80387.
+iapx stands for Intel Advanced Processor architecture.
+
+Intel lost its claim to the `386' and `486' trademarks, which is why the
+Pentium is not called the `586'.
+
+Currently, Intel is fighting to protect its various patents and its copyright
+of the 386 and 486 microcode. The legal situation is complicated by various
+license agreements made by Intel in the past.
+
+SMM (System Management Mode) can be used to manage the CPU's power demands.
+When a CPU enters SMM it saves its current state in a special memory area,
+SMRAM (System Management RAM) and then runs a program, also stored in in
+SMRAM, the SMM handler. Static core is necessary.
+SMM is implemented in all Intel i...SL CPUs. In June 1993, Intel announced
+it was discontinuing its SL range and instead making all its current
+processors SL enhanced. Intel has also introduced an Auto Idle state for its
+clock doubled CPUs: the internal clock can be dropped down to the external
+clock speed while the processor is waiting for data, returning to full speed
+as soon as the data arrives.
+
+In February 1994 Intel opened its $750,000,000 costing Fab 10 in Leixlip,
+Ireland. There the 0.6 micron CMOS Intel i80486DX4 CPU and Intel Pentium CPU
+series are produced. In the future the Intel P6 CPU and Intel P7 CPU series
+will be produced here too.
+Intel has agreed to invest $7,000,000,000 in Ireland over the next five years.
+
+In June 1994 Intel and Hewlett-Packard agreed to develope a new 64 bit RISC
+CPU together (Intel P7 CPU / HP PA9000 CPU). The CPU will be based on the HP
+Precision Architecture (PA) and be able to emulate the Intel X86 architecture.
+Together the both companies will invest $1,000,000,000 in the development of
+the new CPU.
+
+Intel fax-back service: 1-800-628-2283.
+
+Intel WWW server: www.intel.com
+
+
+    1.5.2  AMD (Advanced Micro Devices)
+
+AMD holds a second source license which dates back to the 8086. In the early
+days mainframe companies had a rule that no chip would be used in a design,
+unless it could be bought from at least two companies.
+
+AMD invented a CMOS process that was faster than Intel's and vendors started
+using them as a primary source.
+
+DEC will manufacture 486 chips for AMD, increasing AMD's production.
+
+In October 1994 TSMC agreed to produce AMD Am486 CPUs for AMD in its
+0.5 micron technology. The production of AMD Am486DX3 CPUs in Taiwan will
+start in the third quarter of 1994.
+
+In January 1995 Intel and AMD cancelled all pending lawsuits against
+eachother. AMD can keep on using the 386 and 486 microcode, but not those of
+the later CPUs.
+
+
+    1.5.3  IBM (International Bussiness Machines)
+
+Jack Kuehler, Armonk.
+
+IBM's licensing arrangements with Intel preclude them from selling their CPUs
+directly. They can only sell these CPUs as long as they are sold with a
+minimum amount of `added value'.
+IBM is not allowed to produce any FPUs.
+
+From September 1993 IBM is manufacturing the Cyrix 486 CPUs in their
+0.5 micron CMOS technology. In the future they will also produce the
+Cyrix M1 CPU.
+
+
+    1.5.4  Chips & Technologies
+
+George Taylor.
+Founded in 1984 by Gordon Campbell.
+
+Chips & Technologies has dropped its development of X86 clones.
+
+
+    1.5.5  Cyrix
+
+Cyrix implemented the chips they wanted to manufacture from the specifications
+of the originals (clean room). They had Texas Instruments produce these chips
+for them. A certain number is going to Cyrix to be resold, and the rest is
+sold by Texas Instruments directly.
+
+From September 1993 IBM is manufacturing the Cyrix 486 CPUs and in the future
+they will also produce the Cyrix M1 CPU.
+Currently Cyrix has stopped producing any 486 CPUs, awaiting pending
+lawsuits.
+
+Cyrix fax-back service: 1-800-46-CYRIX (1-800-462-9749).
+
+
+    1.5.6  Texas Instruments
+
+Texas Instruments used to be Cyrix's major producer (SGS-Thomson is the other
+one). Recently, Texas Instruments stopped producing chips for Cyrix and now
+make their own chips under license from Cyrix. Texas Instruments has rights to
+make modifications to these chips.
+
+
+    1.5.7  IIT (International Information Technologies)
+
+
+    1.5.8  Motorola
+
+George Fisher.
+
+
+    1.5.9  Apple
+
+Michael Spindler.
+
+
+    1.5.10  DEC (Digital Equipment Corporation)
+
+
+    1.5.11  Renaissance Microsystems Inc.
+
+Gordon Campbell.
+
+Developping PowerPC clones.
+
+
+    1.6  Literature
+
+Andrew S. Tanenbaum: Structured Computer Organization (Prentice-Hall)
+A.J. van de Goor: Computer Architecture and Design (Addison-Wesley)
+William Stallings: Computer Organization and Architecture (MacMillan)
+John L. Hennessy & David A. Patterson: Computer Architecture, a Quantitative
+  Approach (Morgan Kaufman)
+Norbert Juffa: Performance Comparison Intel 386DX, Intel RapidCAD, C&T 38600DX,
+  Cyrix 486DLC (USENET News)
+Norbert Juffa: Everything you always wanted to know about math coprocessors
+  (USENET News)
+
+
+
+
+Compiled, Copyright 1993, 1994, 1995, by A. Offerman. Permission to use, copy
+or distribute this document in a non-commercial way for non-commercial use is
+hereby granted, provided that this copyright and permission notice appear in
+all copies. All other rights reserved.
+
+This document is provided "as is" without expressed or implied warranty.
+
+The specific products and their respective manufacturers are not to be taken
+as endorsements of, nor commercials for, the manufacturer.
+-- 
+******************************************************************************
+*  A. Offerman    <offerman@einstein.et.tudelft.nl>                          *
+*  Delft University of Technology, Dept. of Comp.Sc., Dept. of Electr.Eng.   *
+*                                                                            *
+*  Maintainer of the Personal Computer CHIPLIST:                             *
+*    http://einstein.et.tudelft.nl/~offerman/chiplist.html                   *
+*                                                                            *
+*  Good writers borrow from others. Great writers, they steal.               *
+******************************************************************************
+Path: bloom-beacon.mit.edu!apollo.hp.com!lf.hp.com!hpscit.sc.hp.com!news.dtc.hp.com!col.hp.com!simtel!news.kei.com!eff!news.duke.edu!agate!howland.reston.ans.net!Germany.EU.net!EU.net!sun4nl!news.nic.surfnet.nl!tudelft.nl!liberator.et.tudelft.nl!einstein.et.tudelft.nl!offerman
+From: offerman@einstein.et.tudelft.nl (Aad Offerman)
+Newsgroups: comp.sys.ibm.pc.hardware.chips,comp.sys.ibm.pc.hardware.systems,comp.sys.ibm.pc.hardware.misc,comp.sys.intel,comp.answers,news.answers
+Subject: Personal Computer CHIPLIST 7.3 part 2 of 4
+Supersedes: <3h5eh4$ebi@liberator.et.tudelft.nl>
+Followup-To: poster
+Date: 24 Feb 1995 10:50:34 GMT
+Organization: Delft University of Technology, Dept. of Electrical Engineering
+Lines: 2143
+Approved: news-answers-request@MIT.EDU
+Expires: 23 May 1995 00:00:00 WET
+Message-ID: <3ikdlq$lkk@liberator.et.tudelft.nl>
+References: <3ikbvt$lel@liberator.et.tudelft.nl>
+Reply-To: offerman@einstein.et.tudelft.nl
+NNTP-Posting-Host: einstein.et.tudelft.nl
+Summary: This list contains the various CPUs and NPXs and their features,
+         used in the IBM PC, IBM PC/XT, IBM PC/AT, IBM PS/2 and compatibles,
+         and the differences between them.
+Keywords: PC, CPU, NPX
+X-Newsreader: NN version 6.5.0 #2 (NOV)
+Xref: bloom-beacon.mit.edu comp.sys.ibm.pc.hardware.chips:22865 comp.sys.ibm.pc.hardware.systems:15559 comp.sys.ibm.pc.hardware.misc:23246 comp.sys.intel:36443 comp.answers:10274 news.answers:35770
+
+Archive-name: pc-hardware-faq/chiplist/part2
+Last-modified: 1994/02/23
+Version: 7.3
+
+
+
+
+    2  CPU (Central Processing Unit)
+
+    2.1  Introduction
+
+The central processing unit (CPU) is the "brain" of the computer. Its function
+is to execute programs stored in the main memory by fetching their
+instructions, examining them, and then executing them one after another.
+
+
+    2.2  Intel i4004 CPU
+
+4 bit data bus.
+12 bit address bus (multiplexed).
+
+1970.
+
+Technology: PMOS.
+Die size: 24 mm2.
+2250 transistors.
+
+First microprocessor ever build.
+
+
+    2.3  Intel i4040 CPU
+
+Intel i4004 CPU with extra features: more instructions,
+                                     interrupt support.
+
+4 bit data bus.
+12 bit address bus (multiplexed).
+
+1972.
+
+Technology: PMOS.
+
+
+    2.4  Intel i8008 CPU
+
+8 bit data bus.
+16 bit address bus.
+
+April 1972.
+
+Technology: PMOS.
+3300 transistors.
+
+
+    2.5  Intel i8080/i8080A CPU
+
+8 bit data bus.
+16 bit address bus.
+Data and address bus are multiplexed.
+
+Intel i8080 CPU: 2 MHz, PMOS.
+Intel i8080A-2 CPU: 2.67 MHz, NMOS.
+Intel i8080A-1 CPU: 3.125 MHz, NMOS.
+Intel iM8080A: military (-55 - 125 C).
+
+Package: 40 pin CERDIP (CERamic Dual In-line Package).
+
+Intel i8080 CPU: 1973, PMOS, 4500 transistors.
+Intel i8080A CPU: 1976, NMOS, 4000 transistors.
+
+
+    2.6  Zilog Z80 CPU
+
+Intel i8080 CPU upward instruction compatible.
+
+Not Intel i8080 CPU pin compatible (included: clock generator).
+
+2.5 MHz: NMOS.
+4 MHz: NMOS.
+6 MHz: NMOS.
+8 MHz: NMOS.
+10 MHz: CMOS.
+
+Package: 40 pin CERDIP (CERamic Dual In-line Package).
+
+
+    2.7  Intel i8085A/i8085AH CPU
+
+Intel i8080 CPU upward instruction compatible.
+Extra instructions: SIM (Set Interrupt Mask),
+                    RIM (Read Interrupt Mask).
+Extra interrupt lines, including NMI (Non-Maskable Interrupt).
+
+8 bit data bus.
+16 bit address bus.
+Data and address bus are multiplexed.
+
+1976.
+
+Intel i8085A CPU: 3 MHz, NMOS.
+Intel iM8085A CPU: military (-55 - 125 C), NMOS.
+Intel i8085AH-2 CPU: 5 MHz, HMOS.
+Intel i8085AH-1 CPU: 6 MHz, HMOS.
+Intel iM8085AH CPU: military (-55 - 125 C), HMOS.
+
+Package: 40 pin CERDIP (CERamic Dual In-line Package).
+
+6200 transistors.
+
+
+    2.8  Intel i8086A/i80C86A CPU, Intel i8088A/i80C88A CPU
+
+1 Mbyte address space, 64 kbyte per segment.
+
+
+    2.8.1  Intel i8086A/i80C86A CPU
+
+16 bit internal data bus.
+16 bit external data bus.
+20 bit address bus.
+Data and address bus are multiplexed.
+
+1978.
+
+Intel i8086A CPU: 4 MHz, NMOS.
+Intel i8086AH CPU: 5 MHz, HMOS.
+Intel i8086AH-2 CPU: 8 MHz, HMOS.
+Intel i8086AH-1 CPU: 10 MHz, HMOS.
+Intel i80C86A CPU: 5 MHz, CMOS.
+Intel i80C86A-2 CPU: 8 MHz, CMOS.
+Intel i80C86A-1 CPU: 10 MHz, CMOS.
+12 Mhz: CMOS.
+Intel iM80C86A CPU: military (-55 - 125 C).
+
+Used in IBM PC clones, IBM PC/XT clones.
+
+Package: 40 pin CERDIP (CERamic Dual In-line Package).
+
+29E3 transistors.
+
+
+    2.8.2  Intel i8088A/i80C88A CPU
+
+16 bit internal data bus.
+8 bit external data bus (can co-operate with all Intel i8085 CPU
+                        periphery chips).
+20 bit address bus.
+Data and address bus are multiplexed.
+
+1979.
+
+Intel i80C88A CPU: 5 MHz, CMOS.
+Intel i80C88A-2 CPU: 8 MHz, CMOS.
+Intel i80C88A-1 CPU: 10 MHz, CMOS.
+12 MHz: CMOS.
+
+Package: 40 pin CERDIP (CERamic Dual In-line Package).
+
+Used in IBM PC (Personal Computer), IBM PC/XT (eXtended Technology).
+
+
+    2.9  AMD Am8086/Am80C86 CPU, AMD Am8088/Am80C88 CPU
+
+    2.9.1  AMD Am8086/Am80C86 CPU
+
+Intel i8086 CPU instruction/pin compatible.
+
+AMD Am8086-1 CPU: 10 MHz, HMOS.
+AMD Am80C86 CPU: 5 MHz, CMOS.
+AMD Am80C86-2 CPU: 8 MHz, CMOS.
+AMD Am80C86-1 CPU: 10 MHz, CMOS.
+
+
+    2.9.2  AMD Am8088/Am80C88 CPU
+
+Intel i8088 CPU instruction/pin compatible.
+
+AMD Am8088 CPU: 5 MHz, HMOS.
+AMD Am8088-2 CPU: 8 MHz, HMOS.
+AMD Am8088-1 CPU: 10 MHz, HMOS.
+
+
+    2.10  Harris HS80C86/883 CPU, Harris HS80C88/883 CPU
+
+    2.10.1  Harris HS80C86/883 CPU
+
+Intel i8086 CPU instruction/pin compatible.
+
+Harris HS80C86/883 CPU: 5 MHz, CMOS.
+Harris HS80C86-2/883 CPU: 8 MHz, CMOS.
+Harris HS80C86-1/883 CPU: 10 MHz, CMOS.
+Harris HSMD80C86 CPU: military (-55 - 125 C), CMOS.
+
+
+    2.10.2  Harris HS80C88/883 CPU
+
+Intel i8088 CPU instruction/pin compatible.
+
+Harris HS80C88/883 CPU: 5 MHz, CMOS.
+Harris HS80C88-2/883 CPU: 8 MHz, CMOS.
+Harris HS80C88-1/883 CPU: 10 MHz, CMOS.
+
+
+    2.11  Siemens SAB8086 CPU
+
+Intel i8086 CPU instruction/pin compatible.
+
+Siemens SAB8086-2P CPU: 8 MHz.
+Siemens SAB8086-1P CPU: 10 MHz.
+
+
+    2.12  Hitachi H80C88 CPU
+
+Intel i8088 CPU instruction/pin compatible.
+
+1982.
+
+Technology: CMOS.
+
+
+   2.13  Contemporary CPUs
+
+Contemporary 16 bit CPUs to 8086/8088 were Zilog Z8000 CPU,
+Fairchild 9445 CPU, Texas Instruments TI9900 CPU and Mil-Std 1750A CPU.
+Last is reason DOD (Department Of Defence) contractors were not interested in
+8086/8088. Mil-Std 1750A CPU was specified in all contracts of 1979 - 1984
+period.
+Texas Instruments TI9900 CPU was probably the best of the lot, but
+Texas Instruments considered it a closed architecture, so no-one used it.
+
+
+    2.14  Intel i80186/i80C186 CPU, Intel i80188/i80C188 CPU
+
+Intel i8086 CPU / Intel i8088 CPU with extra features:
+  2 programmable DMA controllers (Direct Memory Access),
+  3 timers,
+  PIC (Programmable Interrupt Controller),
+  integrated clock generator,
+  Intel i80C186 CPU, Intel i80C188 CPU: DRAM refresh control unit,
+  Intel i80C186 CPU, Intel i80C188 CPU: power save mode,
+  extra instructions: all of the Intel i80286 CPU real mode instructions.
+The Intel i80C188 CPU has no NPX interface.
+
+
+    2.14.1  Intel i80186/i80C186 CPU
+
+16 bit internal data bus.
+16 bit external data bus.
+20 bit address bus.
+
+1983.
+
+Intel i80186 CPU: 6 MHz, NMOS.
+Intel i80186 CPU: 8 MHz, NMOS.
+Intel i80186 CPU: 10 MHz, NMOS.
+Intel i80C186 CPU: 10 MHz, CMOS.
+Intel i80C186-12 CPU: 12.5 MHz, CMOS.
+Intel i80C186-16 CPU: 16 MHz, CMOS.
+Intel iM80C186 CPU: military (-55 - 125 C), 10 MHz, CMOS.
+Intel iM80C186-12 CPU: military (-55 - 125 C), 12.5 MHz, CMOS.
+
+Intel i80C186XL CPU: low power, static core version of the Intel i80C186 CPU:
+  Intel i80C186XL CPU: 10 MHz, CMOS,
+  Intel i80C186XL12 CPU: 12.5 MHz, CMOS,
+  Intel i80C186XL16 CPU: 16 MHz, CMOS,
+  Intel i80C186XL20 CPU: 20 MHz, CMOS.
+
+Intel i80C186EA CPU: Intel i80C186 CPU with extra features: idle mode,
+  power down mode:
+  Intel i80L186EA8 CPU: 3 V, 8 MHz, CMOS,
+  Intel i80C186EA12 CPU: 12.5 MHz, CMOS,
+  Intel i80C186EA16 CPU: 16 MHz, CMOS,
+  Intel i80C186EA20 CPU: 20 MHz, CMOS.
+
+Intel i80C186EB CPU: low power, static core Intel i80C186 CPU with 2 serial
+channels, instead of DMA:
+  Intel i80C186EB-8 CPU: 8 MHz, CMOS,
+  Intel i80L186EB-8 CPU: 3 V, 8 MHz, CMOS,
+  Intel i80C186EB-13 CPU: 13 MHz, CMOS,
+  Intel i80C186EB-16 CPU: 16 MHz, CMOS.
+
+Intel i80C186EC CPU: Intel i80C186 CPU with extra features: low power,
+  static core, 2 serial channels, 4 DMA channels, 32 bit watchdog timer:
+  Intel i80C186EC-13 CPU: 13 MHz, CMOS,
+  Intel i80C186EC-16 CPU: 16 MHz, CMOS.
+
+
+    2.14.2  Intel i80188/i80C188 CPU
+
+16 bit internal data bus.
+8 bit external data bus (can co-operate with all Intel i8085 CPU
+                        periphery chips).
+20 bit address bus.
+
+1983.
+
+Intel i80188 CPU: 6 MHz, NMOS.
+Intel i80188 CPU: 8 MHz, NMOS.
+Intel i80C188 CPU: 10 MHz, CMOS.
+Intel i80C188-12 CPU: 12.5 MHz, CMOS.
+Intel i80C188-16 CPU: 16 MHz, CMOS.
+
+Intel i80C188XL CPU: low power, static core version of the Intel i80C188 CPU:
+  Intel i80C188XL CPU: 10 MHz, CMOS,
+  Intel i80C188XL12 CPU: 12 MHz, CMOS,
+  Intel i80C188XL16 CPU: 16 MHz, CMOS,
+  Intel i80C188XL20 CPU: 20 MHz, CMOS.
+
+Intel i80C188EA CPU: Intel i80C188 CPU with extra features: idle mode,
+  power down mode:
+  Intel i80L188EA8 CPU: 3 V, 8 MHz, CMOS,
+  Intel i80C188EA12 CPU: 12.5 MHz, CMOS,
+  Intel i80C188EA16 CPU: 16 MHz, CMOS,
+  Intel i80C188EA20 CPU: 20 MHz, CMOS.
+
+Intel i80C188EB CPU: low power, static core Intel i80C188 CPU with 2 serial
+channels instead of DMA:
+  Intel i80C188EB-8 CPU: 8 MHz, CMOS,
+  Intel i80L188EB-8 CPU: 3 V, 8 MHz, CMOS,
+  Intel i80C188EB-13 CPU: 13 MHz, CMOS,
+  Intel i80C188EB-16 CPU: 16 MHz, CMOS.
+
+Intel i80C188EC CPU: Intel i80C188 CPU with extra features: low power,
+  static core, 2 serial channels, 4 DMA channels, 32 bit watchdog timer:
+  Intel i80C188EC-13 CPU: 13 MHz, CMOS,
+  Intel i80C188EC-16 CPU: 16 MHz, CMOS.
+
+
+    2.15  NEC V30/V20 CPU
+
+Intel i80186 CPU / Intel i80188 CPU upward instruction compatible.
+Extra features: extra instructions: BCD,
+                Intel i8080 CPU simulation,
+                fewer CPI (Cycles Per Instruction).
+
+
+    2.15.1  NEC V30 CPU
+
+Intel i8086 CPU pin compatible.
+
+10 MHz: $10.
+
+NEC V50 CPU: undefined opcode triggers INT6,
+             same speeds.
+NEC V55 CPU: NEC V50 CPU,
+             speeds up to 16 MHz.
+
+
+    2.15.2  NEC V20 CPU
+
+Intel i8088 CPU pin compatible.
+
+8 MHz.
+10 MHz: $10.
+
+Also made by Sony under license from NEC.
+
+NEC V40 CPU: undefined opcode triggers INT6,
+             same speeds.
+NEC V45 CPU: NEC V40 CPU,
+             speeds up to 16 MHz.
+
+
+    2.16  Siemens SAB80186 CPU, Siemens SAB80188 CPU
+
+    2.16.1  Siemens SAB80186 CPU
+
+Intel i80186 CPU instruction/pin compatible.
+
+Siemens SAB80186-N CPU: 8 MHz.
+Siemens SAB80186-1 CPU: 10 MHz.
+Siemens SAB80186-16 CPU: 16 MHz.
+
+
+    2.16.2  Siemens SAB80188 CPU
+
+Intel i80188 CPU instruction/pin compatible.
+
+Siemens SAB80188-N CPU: 8 MHz.
+Siemens SAB80188-1N CPU: 10 MHz.
+
+
+    2.17  Intel i80886 CPU
+
+
+    2.18  Intel i80286 CPU
+
+Real mode: Intel i8086/i8088 CPU mode.
+Protected mode: 16 MByte address space, 64 kbyte per segment,
+                1 Gbyte virtual memory.
+
+16 bit data bus.
+24 bit address bus.
+
+1982.
+
+6 MHz.
+8 MHz: PLCC (Plastic Leaded Chip Carrier), $4.
+10 MHz: PLCC (Plastic Leaded Chip Carrier), $8.
+12 MHz: PLCC (Plastic Leaded Chip Carrier), $6.
+16 MHz: PLCC (Plastic Leaded Chip Carrier), $9.
+20 MHz.
+
+Package: 68 pin CERDIP (CERamic Dual In-line Package).
+
+Used in IBM PC/AT (Advanced Technology).
+
+Technology: HMOS.
+134E3 transistors.
+
+
+    2.19  AMD Am80286/Am80C286 CPU
+
+Intel i80286 CPU instruction/pin compatible.
+
+AMD Am80286 CPU: 8 MHz, HMOS.
+AMD Am80286 CPU: 10 MHz, HMOS.
+AMD Am80286 CPU: 12 MHz, HMOS.
+AMD Am80286 CPU: 16 MHz, HMOS.
+AMD Am80C286 CPU: 10 MHz, CMOS.
+AMD Am80C286 CPU: 12 MHz, CMOS.
+AMD Am80C286 CPU: 16 MHz, CMOS.
+AMD Am80C286 CPU: 20 MHz, CMOS.
+AMD Am80EC286 CPU: low power version of the AMD Am80C286 CPU.
+
+
+    2.20  Harris 80C286 CPU
+
+Intel i80286 CPU instruction/pin compatible.
+
+10 MHz.
+12.5 MHz.
+16 MHz.
+20 MHz.
+25 MHz.
+
+Technology: CMOS.
+
+
+    2.21  Siemens SAB80286 CPU
+
+Intel i80286 CPU instruction/pin compatible.
+
+Siemens SAB80286 CPU: 8 MHz.
+Siemens SAB80286-1-N CPU: 10 MHz.
+Siemens SAB80286-12-N CPU: 12 MHz.
+Siemens SAB80286-16 CPU: 16 MHz.
+
+
+    2.22  Intel i80386 CPU
+
+Real mode: Intel i8086/i8088 CPU mode.
+Protected mode: 64 Tbyte virtual memory, 4 Gbyte per segment.
+Virtual 8086 mode (V86 mode): parallel simulation of more virtual
+                              Intel i8086/i8088 CPUs.
+
+POPAD bug: EAX register is trashed when there is a memory access instruction
+           directly after the POPAD instruction.
+
+
+    2.22.1  Intel i80386/i80386DX CPU
+
+32 bit internal data bus.
+32 bit external data bus (DX: Double-word eXternal).
+32 bit address bus.
+
+12 MHz: first 16 MHz CPUs had clock speed troubles and were released as
+        12 MHz items.
+16 MHz: early Intel i80386 CPUs had a bug in the 32 bit MUL instruction (MUL
+        bug); it is fixed in the double-sigma step level,
+        no longer available.
+20 MHz: $29, no longer available.
+25 MHz: $29, iCOMP 49.
+33 MHz: 2000 mW, $39, iCOMP 68.
+
+October 1985.
+
+Package: 132 pin PGA (Pin Grid Array).
+
+Technology: CMOS.
+275E3 transistors.
+
+ID: AH = 0x03 (Intel i80386 CPU).
+
+ID: step level A (Intel i80386 CPU): DH = 0x00 (model ID, family ID),
+    step level B0-B10 (Intel i80386 CPU, CMOS III): DH = 0x03 (model ID,
+        family ID), DL = 0x03 (revision),
+    step level D0 (Intel i80386DX CPU, CMOS III): DH = 0x03 (model ID,
+        family ID), DL = 0x05 (revision),
+    step level D1-D2 (Intel i80386DX CPU, CMOS IV): DH = 0x03 (model ID,
+        family ID), DL = 0x08 (revision).
+
+
+    2.22.2  Intel i80386SX CPU
+
+32 bit internal data bus.
+16 bit external data bus (SX: Single-word eXternal).
+24 bit address bus.
+
+June 1988.
+
+16 MHz: $18.
+20 MHz: $27, iCOMP 32.
+25 MHz: $30, iCOMP 39.
+33 MHz.
+
+Package: 100 pin QFP (Quad Flat Package).
+
+Technology: CMOS.
+
+ID: step level A0: DH = 0x23 (model ID, family ID), DL = 0x04 (revision),
+    step level B: DH = 0x23 (model ID, family ID), DL = 0x05 (revision),
+    step level C, D, E: DH = 0x23 (model ID, family ID), DL = 0x08 (revision).
+
+
+    2.22.3  Intel i80386SL CPU
+
+Low power version of the Intel i80386SX CPU: SMM (System Management Mode).
+Static core.
+Extra pins assigned for power management.
+
+Extra features: PI-bus (Peripheral Interface),
+                cache controller, tag RAM,
+                MCU (Memory Control Unit),
+                ISA-bus driver (Industry Standard Architecture).
+
+Intel i80386SX CPU upward pin compatible.
+
+October 1990.
+
+16 MHz.
+20 MHz.
+25 MHz, iCOMP 41.
+33 MHz.
+
+Technology: CMOS.
+
+ID: step level A0: DH = 0x43 (model ID, family ID), DL = 0x10 (revision),
+    step level A1: DH = 0x43 (model ID, family ID), DL = 0x10 (revision),
+    step level A2: DH = 0x43 (model ID, family ID), DL = 0x10 (revision),
+    step level A3: DH = 0x43 (model ID, family ID), DL = 0x10 (revision),
+    step level B0: DH = 0x43 (model ID, family ID), DL = 0x11 (revision),
+    step level B1: DH = 0x43 (model ID, family ID), DL = 0x11 (revision).
+
+Signature register (0x30E, OMCU): step level A0: 0x4300,
+                                  step level A1: 0x4300,
+                                  step level A2: 0x4301,
+                                  step level A3: 0x4302,
+                                  step level B0: 0x4310,
+                                  step level B1: 0x4311.
+
+
+    2.22.4  Intel RapidCAD CPU
+
+Intel i80386 CPU with FPU (Floating Point Unit) (same implementation as
+Intel i80486DX CPU).
+
+The Intel RapidCAD CPU consists of a set of 2 chips. The Intel RapidCAD-1
+(132 pin PGA) contains the Intel i80386 CPU with FPU. The Intel RapidCAD-2
+(68 pin PGA) fits in the Intel i80387DX NPX socket and contains a PLA for the
+FERR signal generation.
+
+Intel i80386DX CPU / Intel i80387DX NPX pin compatible.
+
+1992.
+
+25 MHz.
+33 MHz: 2.6 W typical, 3500 mW max., $239.
+
+800.000 transistors.
+Technology: 0.8 micron CHMOS IV.
+
+ID: step level A: DH = 0x03 (family ID), DL = 0x40 (model ID, revision).
+
+
+    2.22.5  Intel i80376 microprocessor
+
+Embedded version of Intel i80386SX CPU.
+Intel i80386SX CPU pin compatible.
+
+Intel i80386 CPU instruction set, 32 bit protected mode only, no real mode, no
+V86 mode, no 286 mode.
+No MMU (Memory Management Unit).
+
+16 MHz.
+20 MHz.
+
+1988.
+
+Package: 100 pin QFP (Quad Flat Package),
+         88 pin PGA (Pin Grid Array).
+
+ID: step level A0: DH = 0x33 (model ID, family ID), DL = 0x05 (revision),
+    step level B: DH = 0x33 (model ID, family ID), DL = 0x08 (revision).
+
+
+    2.22.6  Intel i386SX microprocessor
+
+Embedded version of Intel i80386SX CPU.
+Static core.
+
+24 bit address bus.
+
+16 MHz: 5 V, 0-16 MHz, 1993, $26.
+20 MHz: 5 V, 0-20 MHz, 1993, $26.
+25 MHz: 5 V, 0-25 MHz, 1993, $26.
+
+Package: 100 pin PQFP (Plastic Quad Flat Package),
+         die,
+         military (-55 - 125 C).
+
+Technology: CMOS.
+
+ID: DH = 0x23 (model ID, family ID), DL = 0x09 (revision).
+
+
+    2.22.7  Intel i386CX microprocessor
+
+Embedded version of Intel i80386SX CPU.
+Static core.
+
+SMM (System Management Mode): system & power management: idle mode, powerdown,
+                                powersave.
+
+26 bit address bus.
+
+12 MHz: 3 V, 0-12 MHz, 1993, $27.
+20 MHz: 3.3 V, 0-20 MHz, 1993, $27.
+25 MHz: 5 V, 0-25 MHz, 1993, $27.
+
+Package: 100 pin PQFP (Plastic Quad Flat Package),
+         100 pin SQFP (Shrink Quad Flat Package),
+         die,
+         military (-55 - 125 C).
+
+Technology: CMOS.
+
+ID: step level A: DH = 0x23 (model ID, family ID), DL = 0x09 (revision).
+
+
+    2.22.8  Intel i386EX microprocessor
+
+Embedded version of Intel i80386SX CPU.
+Static core.
+
+SMM (System Management Mode): system & power management: idle mode, powerdown,
+                                powersave.
+
+26 bit address bus.
+
+16 MHz: 3 V, 0-16 MHz, 1994, $39.
+20 MHz: 3.3 V, 0-20 MHz, 1994, $39.
+25 MHz: 5 V, 0-25 MHz, 1994, $39.
+
+Package: 132 pin PQFP (Plastic Quad Flat Package),
+         144 pin SQFP (Shrink Quad Flat Package),
+         die,
+         military (-55 - 125 C).
+
+Technology: CMOS.
+
+ID: step level A: DH = 0x23 (model ID, family ID), DL = 0x09 (revision).
+
+
+    2.23  AMD Am386 CPU
+
+Intel i80386 CPU instruction compatible.
+Same core and microcode as Intel i80386 CPU.
+
+
+    2.23.1  AMD Am386DX CPU
+
+Low power.
+
+Intel i80386DX CPU instruction/pin compatible.
+Intel i80386DX IV CPU microcode.
+
+March 1991.
+
+16 MHz: 2-16 MHz.
+20 MHz: 2-20 MHz.
+25 MHz: 2-25 MHz.
+33 MHz: 2-33 Mhz.
+40 MHz: 2-40 MHz, $59.
+
+Technology: CMOS.
+
+ID: step level A: DH = 0x03 (model ID, family ID), DL = 0x05 (revision),
+    step level B: DH = 0x03 (model ID, family ID), DL = 0x08 (revision).
+
+
+    2.23.2  AMD Am386DXL CPU
+
+Low power version of AMD Am386DX CPU.
+Static core.
+Intel i80386DX IV CPU microcode.
+
+Intel i80386DX CPU upward pin compatible.
+
+March 1991.
+
+20 MHz.
+25 MHz.
+33 MHz.
+40 MHz.
+
+Technology: CMOS.
+
+ID: step level A: DH = 0x03 (model ID, family ID), DL = 0x05 (revision),
+    step level B: DH = 0x03 (model ID, family ID), DL = 0x08 (revision).
+
+
+    2.23.3  AMD Am386DXLV CPU
+
+Low power (SMM: System Management Mode), low voltage (3.3 V - 4.5 V) version
+of AMD Am386DX CPU.
+Static core.
+
+Intel i80386DX CPU upward pin compatible.
+
+October 1991.
+
+25 MHz.
+33 MHz.
+
+Technology: CMOS.
+
+
+    2.23.4  AMD Am386SX CPU
+
+Low power.
+Extra pins assigned for power management.
+
+Intel i80386SX CPU upward pin compatible.
+
+July 1991.
+
+16 MHz: 2-16 MHz.
+20 MHz: 2-20 MHz.
+25 MHz: 2-25 MHz, $30, no longer available.
+33 MHz: 2-33 MHz.
+40 MHz: 2-40 MHz.
+
+Technology: CMOS.
+
+ID: step level A1: DH = 0x23 (model ID, family ID), DL = 0x05 (revision),
+    step level B: DH = 0x23 (model ID, family ID), DL = 0x08 (revision).
+
+
+    2.23.5  AMD Am386SXL CPU
+
+Low power version of AMD Am386SX CPU.
+Static core.
+
+July 1991.
+
+20 MHz: 0-20 MHz.
+25 MHz: 0-25 MHz.
+33 MHz: 0-33 MHz.
+40 MHz: 0-40 MHz.
+
+Technology: CMOS.
+
+ID: step level A1: DH = 0x23 (model ID, family ID), DL = 0x05 (revision),
+    step level B: DH = 0x23 (model ID, family ID), DL = 0x08 (revision).
+
+
+    2.23.6  AMD Am386SXLV CPU
+
+Low power (SMM: System Management Mode), low voltage (3.3 V - 4.5 V) version
+of AMD Am386SX CPU.
+Static core.
+
+October 1991.
+
+20 MHz.
+25 MHz.
+33 MHz.
+
+Technology: CMOS.
+
+
+    2.24  IBM 386 CPU
+
+Intel i80386 CPU instruction compatible.
+Some instructions are executed faster than when executed by the
+Intel i80386 CPU.
+
+
+    2.24.1  IBM 386SLC CPU
+
+Low power.
+Extra pins assigned for power management.
+
+8 kbyte cache.
+To be enabled via software.
+
+October 1991.
+
+16 MHz.
+20 MHz.
+25 MHz: 2.5 W.
+
+Intel i80386SX CPU upward pin compatible (100 pin MQFP).
+
+Technology: CMOS.
+Die size: 161 mm2.
+
+ID: step level A: DH = 0xA3 (model ID, family ID), DL = 0xXX (revision).
+
+
+    2.25  Chips & Technologies 386 CPU
+
+Intel i80386 CPU instruction compatible, including undocumented
+LOADALL386 instruction.
+Own microcode (clean room).
+Some instructions are executed faster than when executed by the
+Intel i80386 CPU.
+
+
+    2.25.1  Chips & Technologies Super386 38600DX CPU
+
+Co-operation with an appropriate NPX causes communication problems, which
+causes the over-all performance to drop below that of an Intel i80386DX CPU
+with NPX.
+
+Intel i80386DX CPU pin compatible.
+
+33 MHz: $80.
+40 MHz: 1650 mW.
+
+No longer available.
+
+Technology: CMOS.
+
+
+    2.25.2  Chips & Technologies 38605DX CPU
+
+512 byte instruction cache.
+
+32 bit internal data bus.
+32 bit external data bus.
+32 bit address bus.
+Not Intel i80386DX CPU pin compatible.
+
+No longer available.
+
+Package: 144 pin PGA (Pin Grid Array).
+
+Technology: CMOS.
+
+
+    2.25.3  Chips & Technologies 38600SX CPU
+
+Intel i80386SX CPU pin compatible.
+
+Never released.
+
+Technology: CMOS.
+
+
+    2.26  IBM 386/486 hybrid CPU
+
+Intel i80486 CPU instruction compatible, no FPU (Floating Point Unit).
+Intel i80386 CPU bus interface.
+
+
+    2.26.1  IBM 486DLC CPU
+
+Intel i80386 CPU core, enhanced by IBM.
+
+16 kbyte cache: 4-way set associative, write through.
+To be enabled via software (BIOS).
+
+32 bit internal data bus.
+32 bit external data bus.
+32 bit address bus.
+Not Intel i80386DX CPU pin compatible.
+
+Technology: CMOS.
+
+
+    2.26.2  IBM 486DLC2 CPU
+
+Clock doubled version of the IBM 486DLC CPU.
+
+Intel i80386 CPU core, enhanced by IBM.
+
+16 kbyte cache: 4-way set associative, write through.
+To be enabled via software (BIOS).
+
+Intel i80386DX CPU pin compatible.
+
+November 1993.
+
+33/66 MHz.
+
+Technology: CMOS.
+
+
+    2.26.3  IBM 486SLC CPU
+
+Intel i80386 CPU core, enhanced by IBM.
+
+16 kbyte cache: 4-way set associative, write through.
+To be enabled via software (BIOS).
+
+32 bit internal data bus.
+16 bit external data bus.
+24 bit address bus.
+Not Intel i80386SX CPU pin compatible.
+
+16 MHz.
+20 MHz.
+20 MHz: 3.3 V, 1.0 W.
+25 MHz.
+25 MHz: 3.3 V, 1.3 W.
+
+Technology: CMOS.
+
+ID: step level A: DH = 0xA4 (model ID, family ID), DL = 0xXX (revision).
+
+
+    2.26.4  IBM 486SLC2 CPU
+
+Clock doubled version of the IBM 486SLC CPU.
+Low voltage: 3.3 V.
+
+Intel i80386 CPU core, enhanced by IBM.
+
+16 kbyte cache: 4-way set associative, write through, 16 byte line size.
+To be enabled via software (BIOS).
+
+Intel i80386SX CPU pin compatible (100 pin MQFP).
+
+December 1992.
+
+16/32 MHz.
+20/40 MHz: 1.7 W.
+25/50 MHz: 1993, 2.3 W.
+33/66 MHz: 1993.
+40/80 MHz: 1993.
+
+1.349E6 transistors.
+Die size: 69 mm2.
+
+
+    2.26.5  IBM 486BLX CPU (Blue Lightning)
+
+Intel i80486 CPU core and microcode.
+
+16 kbyte cache: 4-way set associative, write through, 16 byte line size.
+To be enabled via software (BIOS).
+
+Low power (3.3 V).
+Power management: SMM (System Management Mode).
+Static core.
+
+15 MHz.
+20 Mhz.
+25 MHz.
+33 MHz.
+
+Intel i80386DX CPU upward pin compatible / AMD Am386DXL/Am386DXLV CPU pin
+compatible (132 pin MQFP).
+
+Technology: 0.8 micron CMOS.
+Die size: 82 mm2.
+1.4E6 transistors.
+
+
+    2.26.6  IBM 486BLX2 CPU (Blue Lightning)
+
+Clock doubled version of the IBM 486BLX CPU.
+
+15/30 MHz.
+20/40 MHz.
+25/50 MHz: 1993.
+33/66 MHz: 1993.
+
+
+    2.26.7  IBM 486BLX3 CPU (Blue Lightning)
+
+Clock tripled version of the IBM 486BLX CPU.
+
+15/45 MHz.
+20/60 MHz.
+25/75 MHz: 1993.
+33/99 MHz: 1993.
+
+ID: step level A: DH = 0x84 (model ID, family ID), DL = 0xXX (revision).
+
+
+    2.27  Cyrix 386/486 hybrid CPU
+
+Intel i80486 CPU instruction compatible, no FPU (Floating Point Unit).
+Own core (clean room): not 100% compatible.
+Intel i80386 CPU bus interface.
+
+
+    2.27.1  Cyrix Cx486DLC CPU
+
+First generation 40 MHz CPUs had a bug: using a NPX (Cyrix FasMath EMC87 NPX,
+Cyrix FasMath Cx83D87 NPX (until November 1991), IIT IIT-3C87 NPX) caused
+crashes. These are caused by synchronisation errors in FSAVE and FSTOR
+instructions. Later, improved CPUs have an AB prefix printed in the lower
+right corner. The Cyrix FasMath 387+ NPX (European name for
+Cyrix FasMath Cx83D87 NPX from November 1991) causes no trouble when
+co-operating with a bad Cyrix Cx486DLC CPU.
+
+Static core.
+
+1 kbyte unified cache: write through / write back,
+                       direct mapped / 2-way set associative,
+                       maximum of 4 non-cachable areas.
+Hit rate: 65% without support of cache by motherboard, because of flush at
+            DMA,
+          85% with support of cache by motherboard (Cache Coherency Support).
+To be enabled via software (BIOS).
+
+Intel i80386DX CPU upward pin compatible.
+
+June 1992.
+
+25 MHz: $55.
+33 MHz: $69.
+40 MHz: 2800 mW, $89.
+
+Clock Skewing Correction Circuit.
+
+Contains a fast extra 16x16 bit multiplier.
+
+Extra pins assigned for cache, power and A20 management:
+  cache management: KEN#,
+                    FLUSH#,
+                    RPLSET#,
+                    RPLVAL#,
+  power management: SUSP#,
+                    SUSPA#,
+  A20 management: A20M#.
+
+Technology: CMOS.
+
+
+    2.27.2  Cyrix Cx486SLC CPU
+
+Static core.
+
+1 kbyte unified cache: write through / write back,
+                       direct mapped / 2-way set associative,
+                       maximum of 4 non-cachable areas.
+hit rate: 65% without support of cache by motherboard, because of flush at
+            DMA,
+          85% with support of cache by motherboard (Cache Coherency Support).
+To be enabled via software (BIOS).
+
+Intel i80386SX CPU upward pin compatible.
+
+March 1992.
+
+20 MHz.
+25 MHz: $128.
+33 MHz: $159.
+40 MHz.
+
+Clock Skewing Correction Circuit.
+
+Contains a fast extra 16x16 bit multiplier.
+
+Extra pins assigned for cache, power and A20 management:
+  cache management: KEN#,
+                    FLUSH#,
+                    RPLSET#,
+                    RPLVAL#,
+  power management: SUSP#,
+                    SUSPA#,
+  A20 management: A20M#.
+
+Technology: CMOS.
+
+ID: step level A: DH = 0x04 (family ID), DL = 0x1X (revision),
+    DH = 0x04 (family ID), DL = 0x2X (revision).
+
+
+    2.27.3  Cyrix Cx486SLC/e CPU
+
+Low power (SMM: System Management Mode) version of Cyrix Cx486SLC CPU.
+Static core.
+
+1 kbyte unified cache: write through / write back,
+                       direct mapped / 2-way set associative,
+                       maximum of 4 non-cachable areas.
+hit rate: 65% without support of cache by motherboard, because of flush at
+            DMA,
+          85% with support of cache by motherboard (Cache Coherency Support).
+To be enabled via software (BIOS).
+
+Intel i80386SX CPU upward pin compatible.
+
+December 1992.
+
+25 MHz: $128.
+33 MHz: $159.
+
+Clock Skewing Correction Circuit.
+
+Contains a fast extra 16x16 bit multiplier.
+
+Extra pins assigned for cache, power and A20 management:
+  cache management: KEN#,
+                    FLUSH#,
+                    RPLSET#,
+                    RPLVAL#,
+  power management: SUSP#,
+                    SUSPA#,
+  A20 management: A20M#.
+
+Technology: CMOS.
+
+
+    2.27.4  Cyrix Cx486SLC/e-V CPU
+
+Low power (SMM: System Management Mode), low voltage (3.3 V) version of
+Cyrix Cx486SLC CPU.
+Static core.
+
+1 kbyte unified cache: write through / write back,
+                       direct mapped / 2-way set associative,
+                       maximum of 4 non-cachable areas.
+hit rate: 65% without support of cache by motherboard, because of flush at
+            DMA,
+          85% with support of cache by motherboard (Cache Coherency Support).
+To be enabled via software (BIOS).
+
+Intel i80386SX CPU upward pin compatible.
+
+December 1992.
+
+20 MHz.
+25 MHz.
+
+Clock Skewing Correction Circuit.
+
+Contains a fast extra 16x16 bit multiplier.
+
+Extra pins assigned for cache, power and A20 management:
+  cache management: KEN#,
+                    FLUSH#,
+                    RPLSET#,
+                    RPLVAL#,
+  power management: SUSP#,
+                    SUSPA#,
+  A20 management: A20M#.
+
+Technology: CMOS.
+
+
+    2.27.5  Cyrix Cx486DLC / Cx486SLC CPU incompatibilities
+
+Same registers.
+Same instruction set.
+Differences in execution time of various instructions, average CPI (Cycles
+Per Instruction) about equal.
+
+Crashes with: NextStep,
+              DBOS 1.0 DOS extender of Salford FTN/386,
+              Fortran compiler.
+
+
+    2.27.6  Cyrix Cx486DRu2 CPU
+
+Direct Replacement Unit.
+`Clock doubled' version of the Cyrix Cx486DLC CPU.
+In fact a Cyrix Cx486DLC CPU with some additional hardware on a little PCB
+that fits in a PGA (Pin Grid Array).
+
+2 kbyte cache.
+
+Intel i80386DX CPU upward pin compatible.
+
+16/32 MHz.
+20/40 MHz.
+25/50 MHz.
+
+
+    2.27.7  Cyrix Cx486DRx2 CPU
+
+Clock doubled version of the Cyrix Cx486DLC CPU.
+
+Incompatibilities: AT&T / Olivetti 386DX-16 and 386DX-20 systems,
+                   Sun i386 systems,
+                   Memorex 386 systems,
+                   IBM PS/2 Model 70/16 MHz (85 ns memory required),
+                   early Compaq Deskpro 386/16 MHz systems with 287 NPX (NPX
+                     to be removed).
+
+September 1993.
+
+16/32 MHz: $279.
+20/40 MHz: heat sink, $329.
+25/50 MHz: heat sink, $370.
+33/66 MHz: $395.
+
+Technology: CMOS.
+
+
+    2.27.8  Cyrix Cx486SLC2 CPU
+
+Clock doubled version of the Cyrix Cx486SLC CPU
+
+Power Management: SMM (System Management Mode).
+Static core.
+
+November 1993.
+
+25/50 MHz.
+
+Technology: CMOS.
+
+
+    2.27.9  Cyrix Cx486SRx2 CPU
+
+Intel i80486 CPU instruction compatible, no FPU (Floating Point Unit).
+Clock doubled.
+
+The chip is placed over the surface mounted 80386SX CPU. The original CPU is
+disabled by using the FLOAT pin. Older 16 MHz 80386SX CPUs can not be
+upgraded (Cyrix can supply a compatibilty test program).
+
+1 kbyte cache.
+
+December 1993.
+
+16/32 MHz.
+20/40 MHz: $300.
+25/50 MHz: $300.
+
+Technology: CMOS.
+
+
+    2.28  Texas Instruments 386/486 hybrid CPU
+
+    2.28.1  Texas Instruments TI486DLC CPU
+
+Cyrix Cx486DLC CPU.
+
+
+    2.28.2  Texas Instruments TI486SLC CPU
+
+Cyrix Cx486SLC CPU.
+
+
+    2.28.3  Texas Instruments TI486SXL-S-GA CPU (Potomac)
+
+Intel i80486 CPU instruction compatible, no FPU (Floating point Unit).
+Intel i80386DX CPU bus interface.
+
+8 kbyte cache: write through, 2-way set associative, 1024 sets,
+               4 bytes per line.
+
+40 MHz: february 1994.
+
+Package: ceramic PGA (Pin Grid Array).
+
+Technology: CMOS.
+
+
+    2.28.4  Texas Instruments TI486SXL-VS-GA CPU (Potomac)
+
+Low power (3.3 V) version of the Texas Instruments TI486SXL-S-GA CPU.
+
+33 MHz: february 1994.
+
+Technology: CMOS.
+
+
+    2.28.5  Texas Instruments TI486SXL2-S-GA CPU (Potomac)
+
+Clock doubled version of the Texas Instruments TI486SXL-S-GA CPU.
+
+20/40 MHz: february 1994, $100 (preliminary).
+25/50 MHz: february 1994, $170 (preliminary).
+
+Technology: CMOS.
+
+
+    2.28.6  Texas Instruments TI486SXL2-VS-GA CPU (Potomac)
+
+Clock doubled, low power (3.3 V) version of the
+Texas Instruments TI486SXL-S-GA CPU.
+
+20/40 MHz: february 1994.
+
+Technology: CMOS.
+
+
+    2.28.7  Texas Instruments TI486SXLC-PAF CPU (Potomac)
+
+Intel i80486 CPU instruction compatible, no FPU (Floating Point Unit).
+Intel i80386SX CPU bus interface.
+
+8 kbyte cache: write through, 2-way set associative, 1024 sets,
+               4 bytes per line.
+
+33 MHz: february 1994.
+
+Package: QFP (Quad Flat Package).
+
+Technology: CMOS.
+
+
+    2.28.8  Texas Instruments TI486SXLC-V-PAF CPU (Potomac)
+
+Low power (3.3 V) version of the Texas Instruments TI486SXLC-PAF CPU.
+
+25 MHz: february 1994.
+33 MHz: february 1994.
+
+Technology: CMOS.
+
+
+    2.28.9  Texas Instruments TI486SXLC2-PAF CPU (Potomac)
+
+Clock doubled version of the Texas Instruments TI486SXLC-PAF CPU.
+
+20/40 MHz: february 1994.
+25/50 MHz: february 1994.
+
+Technology: CMOS.
+
+
+    2.28.10  Texas Instruments TI486SXLC2-V-PAF CPU (Potomac)
+
+Clock doubled, low power (3.3 V) version of the
+Texas Instruments TI486SXLC-PAF CPU.
+
+20/40 MHz: february 1994.
+
+Technology: CMOS.
+
+
+    2.28.11  Texas Instruments announcements
+
+Rio Grande series: Potomac series follow-up.
+
+
+    2.29  Intel i80486 CPU
+
+Intel i80386 CPU upward instruction compatible.
+Extra instructions.
+
+8 kbyte unified cache: write through, 4-way set associative, 128 sets,
+                       16 bytes per cache line, 4 write buffers,
+                       only invalidation of a complete cache line,
+                       96 % hit rate.
+
+32 bit internal data bus.
+32 bit external data bus.
+32 bit address bus.
+
+Execution unit:
+  5-stage pipeline,
+  barrel shifter,
+  branch taken / not taken prediction (BTB: Branch Target Buffer).
+
+Burst mode memory access: first access: 2 clock cycles,
+                          every next access: 1 clock cycle.
+
+CPUID: "GenuineIntel".
+
+
+    2.29.1  Intel i80486DX CPU
+
+Build-in FPU (Floating Point Unit).
+
+April 1989.
+
+20 MHz: CMOS.
+25 MHz: 2600 mW, CHMOS IV, $219, iCOMP 122, no longer available.
+33 MHz: 3500 mW, CHMOS IV, $102/1000.
+50 MHz: 1991, 3875 mW, CHMOS V, $499.
+
+Upgrading: Intel i80486DX2 CPU (ODPR), Intel Overdrive CPU (ODP:
+           Intel i80486DX2 CPU), Intel Overdrive CPU (ODPR: Intel Pentium CPU
+           with Intel i80486DX CPU bus interface), Intel Overdrive CPU (ODP:
+           Intel Pentium CPU).
+
+Package: 168 pin PGA (Pin Grid Array).
+
+1.2E6 transistors.
+
+From June 1993 (Intel i80486DX-S CPU):
+
+  SL Enhanced.
+
+  33 MHz: $261/1000, iCOMP 166.
+  50 MHz: $360/1000, iCOMP 249.
+
+  CPUID: family = 0x4, model = 0x1.
+
+From June 1993:
+
+  SL Enhanced.
+  Low power: 3.3 V.
+
+  33 MHz.
+
+ID (25 - 33 MHz, CMOS IV):
+  step level A0, A1: DH = 0x04 (family ID), DL = 0x00 (model ID, revision),
+  step level B2-B6: DH= 0x04 (family ID), DL = 0x01 (model ID, revision),
+  step level C0: DH = 0x04 (family ID), DL = 0x02 (model ID, revision),
+  step level C1: DH = 0x04 (family ID), DL = 0x03 (model ID, revision),
+  step level D0: DH = 0x04 (family ID), DL = 0x04 (model ID, revision).
+ID (50 MHz, CMOS V):
+  step level cA2, cA3: DH = 0x04 (family ID), DL = 0x10 (model ID, revision),
+  step level cB0, cB1: DH = 0x04 (family ID), DL = 0x11 (model ID, revision).
+
+
+    2.29.2  Intel i80486SL CPU
+
+Intel i80486DX CPU with extra features:
+  DRAM controller,
+  ISA (Industry Standard Architecture) controller,
+  local PI-bus controller (Peripheral Interconnect),
+  power management: SMM (System Management Mode).
+Static core.
+
+25 Mhz.
+33 MHz.
+
+Not Intel i80486DX CPU pin compatible.
+196 pin PQFP (Plastic Quad Flat Package).
+
+Technology: CMOS.
+
+From June 1993 replaced by Intel i80486DX-S CPU.
+
+ID: step level A: DH = 0x04 (family ID), DL = 0x40 (model ID, revision).
+
+
+    2.29.3  Intel i80486DXL CPU
+
+Intel i80486DX CPU with extra features: SMM (System Management Mode),
+                                        stop clock,
+                                        power saving features.
+Static core.
+
+Technology: CMOS.
+
+
+    2.29.4  Intel i80486SX CPU
+
+No build-in FPU (Floating Point Unit):
+  Intel i80486DX CPU die with (defective) FPU disabled,
+  currently FPU not implemented (resulting in a smaller chip, plastic package).
+
+One extra pin assigned to allow an Intel i80487SX NPX to dissable this CPU.
+Not Intel i80486DX CPU upward pin compatible.
+Package: 168 pin PGA (Pin Grid Array).
+
+April 1991.
+
+16 MHz: 1991, no longer available.
+20 MHz: 1991, iCOMP 78, no longer available.
+25 MHz: 1991, $85.
+33 MHz: 1991, $129.
+
+Upgrading: Intel i80486DX CPU (ODPR: Intel i80486DX CPU with
+           Intel i80486SX CPU pin layout), Intel i80486DX2 CPU (ODPR:
+           Intel i80486DX2 CPU with Intel i80486SX CPU pin layout),
+           Intel Overdrive CPU (ODP: Intel i80486DX2 CPU), Intel Overdrive CPU
+           (ODPR: Intel Pentium CPU with Intel i80486SX CPU bus interface),
+           Intel Overdrive CPU (ODP: Intel Pentium CPU).
+
+Package: 168 pin PGA (Pin Grid Array),
+         208 pin PQFP (Plastic Quad Flat Package).
+
+Technology: CMOS.
+
+From June 1993 (Intel i80486SX-S CPU):
+
+  SL Enhanced.
+
+  25 MHz: &12/1000, iCOMP 100 (by define).
+  33 MHz: $85/1000, iCOMP 136.
+
+  CPUID: family = 0x4, model = 0x2.
+
+From June 1993:
+
+  SL Enhanced.
+  Low Power: 3.3 V.
+
+  25 MHz.
+  33 MHz.
+
+ID: step level A0: DH = 0x04 (family ID), DL = 0x20 (model ID, revision),
+    step level B0: DH = 0x04 (family ID), DL = 0x22 (model ID, revision),
+    step level cA0: DH = 0x04 (family ID), DL = 0x27 (model ID, revision),
+    step level cB0: DH = 0x04 (family ID), DL = 0x28 (model ID, revision).
+
+
+    2.29.5  Intel i80486SXL CPU
+
+Intel i80486SX CPU with extra features: SMM (System Management Mode),
+                                        stop clock,
+                                        power saving features.
+static core.
+
+Technology: CMOS.
+
+
+    2.29.6  Intel i80486DX2 P23T CPU
+
+Clock doubled version of the Intel i80486DX CPU.
+Intel i80486DX CPU pin compatible.
+
+March 1992.
+
+20/40 MHz.
+25/50 MHz: 4000 mW, $102/1000.
+33/66 MHz: 4875 mW, $158/1000.
+40/80 MHz (announced).
+50/100 MHz (announced).
+
+Upgrading: Intel Overdrive CPU (ODPR: Intel Pentium CPU with
+           Intel i80486DX CPU bus interface), Intel Overdrive CPU (ODP:
+           Intel Pentium CPU).
+
+Technology: CMOS.
+
+From June 1993 (Intel i80486DX2-S CPU):
+
+  SL Enhanced.
+
+  20/40 MHz: $260/1000, SQFP (Shrink Quad Flat Package).
+  25/50 MHz: $260/1000, iCOMP 231.
+  33/66 MHz: $271/1000, iCOMP 297.
+
+  CPUID: family = 0x4, model = 0x3.
+
+From Nov 1993:
+
+  SL Enhanced.
+  Low power: 3.3 V.
+
+  20/40 MHz.
+  25/50 MHz.
+
+From October 1994:
+
+  Write-back cache.
+  Upward pin compatible.
+  Performance increase: 15 %.
+
+  25/50 MHz: $149
+  33/66 MHz: $199.
+
+ID: step level A0-A2: DH = 0x04 (family ID), DL = 0x32 (model ID, revision),
+    step level B1: DH = 0x04 (family ID), DL = 0x33 (model ID, revision).
+
+
+    2.29.7  Intel i80486DX4 P24C CPU
+
+Clock tripled version of the Intel i80486DX CPU.
+Selection of doubling/tripling by a pin on the chip (CLKMUL: 0, 1). Connecting
+this pin with the BREQ pin makes the core running at 2.5 times the external
+speed (not implemented yet).
+Intel i80486DX CPU upward pin compatible.
+
+5 V external, 3.3 V internal: if the motherboard does not provide the 3.3 V
+                              power to the CPU, the CPU can be installed using
+                              a special socket wired to the 3.3 V output of
+                              your PSU (Power Supply Unit); in either case
+                              another PSU providing the 3.3 V is needed.
+
+16 kbyte cache.
+
+25/75 MHz max: 3.3 V, March 1994, $184/1000, iCOMP 319.
+33/99 MHz max: 51 SPECint92, 27 SPECfp92, 3.3 V, March 1994, $245/1000,
+               iCOMP 435.
+Production cancelled September 1994 in favor of Intel Pentium CPUs.
+
+Power consumption: 4 W typical.
+
+SL Enhanced Intel i80486DX CPU pin compatible.
+Package: 168 pin PGA (Pin Grid Array).
+
+Extra integer multiplier: 5 cycle 16 x 16 multiply.
+
+Package: 168 pin PGA (Pin Grid Array),
+         208 pin SQFP (Shrink Quad Flat Package).
+
+Technology: 4 layer metal, 0.6 micron biCMOS/CHMOS.
+1.6E6 transistors.
+
+ID: step level A: DH = 0x04 (family ID), DL = 0x8X (model ID, revision).
+
+CPUID: step level A: family = 0x4, model = 0x8.
+
+
+    2.29.8  Intel i80486SX2 CPU
+
+Clock doubled version of the Intel i80486SX CPU.
+
+SL Enhanced.
+
+25/50 MHz: $189/1000, iCOMP 180.
+
+ID: step level A: DH = 0x04 (family ID), DL = 0x5X (model ID, revision).
+
+
+    2.29.9  Intel i80486 CPU announcements
+
+3.3 V versions of existing and new Intel i80486 CPUs.
+
+
+    2.30  AMD Am486 CPU
+
+Originally same core and microcode as Intel i80486 CPUs; currently an own
+implementation. In between there are CPUs with recompiled 486 microcode.
+Intel i80486 CPU instruction compatible.
+
+
+    2.30.1  AMD Am486DX CPU
+
+Intel i80486DX CPU instruction/pin compatible.
+
+April 1993.
+
+33 MHz: 8-33 MHz, 1993, $190.
+40 MHz: 8-40 MHz, 1993, $190.
+
+Technology: CMOS.
+
+ID: DH = 0x04 (model ID), DL = 0x12 (model ID, revision).
+
+
+    2.30.2  AMD Am486DXL CPU
+
+Low power version of the AMD Am486DX CPU.
+
+October 1993.
+
+40 MHz.
+
+Technology: CMOS.
+
+
+    2.30.3  AMD Am486DXLV CPU
+
+Low power (SMM: System Management Mode), low voltage (3.0 V) version of the
+AMD Am486DX CPU.
+Static core.
+
+October 1993.
+
+33 MHz: 0-33 MHz, 1993.
+
+Technology: CMOS.
+
+
+    2.30.4  AMD Am486DX2 CPU
+
+Clock doubled version of the AMD Am486DX CPU.
+
+April / October 1993.
+
+25/50 MHz: 1993, $255.
+33/66 MHz: $357.
+40/80 MHz: September 1994.
+
+Technology: CMOS.
+
+ID: DH = 0x04 (family ID), DL = 0x32 (model ID, revision).
+
+
+    2.30.5  AMD Am486DXL2 CPU
+
+Clock doubled version of the AMD Am486DXL CPU.
+Low power (SMM: System Management Mode).
+
+AMD core/microcode.
+
+33/66 MHz: $266/1000.
+40/80 MHz.
+
+Technology: CMOS.
+
+ID: DH = 0x04 (family ID), DL = 0x32 (model ID, revision).
+
+
+    2.30.6  AMD Am486DX3 CPU
+
+Clock tripled version of the AMD Am486DX CPU.
+
+8 kbyte cache.
+
+33/99 MHz: September 1994.
+40/120 MHz (announced: first quarter 1995).
+
+Technology: CMOS.
+
+
+    2.30.7  AMD Am486SX CPU
+
+Intel i80486SX CPU instruction/pin compatible.
+
+AMD microcode.
+
+July 1993.
+
+33 MHz: 1993.
+40 MHz: 1993.
+
+Technology: CMOS.
+
+
+    2.30.8  AMD Am486SXLV CPU
+
+Low power (SMM: System Management Mode), low voltage (3.0 V) version of the
+AMD Am486SX CPU.
+Static core.
+
+AMD microcode.
+
+July 1993.
+
+33 MHz.
+
+Technology: CMOS.
+
+
+    2.30.9  AMD Am486SX2 CPU
+
+Clock doubled version of the AMD Am486SX CPU.
+
+25/50 MHz: February 1994, $165/1000.
+33/66 MHz: April 1994.
+
+
+    2.30.10  AMD Am486 CPU announcements
+
+3,3 V versions of the AMD Am486DX CPU and the AMD Am486SX CPU.
+
+
+    2.31  IBM 80486 CPU
+
+Intel i80486 CPU instruction compatible.
+
+
+    2.31.1  IBM 80486DX CPU
+
+Intel i80486DX CPU instruction/pin compatible.
+
+Technology: CMOS.
+
+
+    2.31.2  IBM 80486SX CPU
+
+Intel i80486SX CPU instruction/pin compatible.
+
+16 kbyte cache.
+
+Technology: CMOS.
+
+
+    2.31.3  IBM 80486BLDX2 CPU (Blue Lightning)
+
+33/66 MHz: Cyrix FasCache Cx486DX2-V-66 CPU.
+40/80 MHz: Cyrix FasCache Cx486DX2-V-80 CPU.
+
+
+    2.32  Cyrix Cx486 CPU
+
+    2.32.1  Cyrix FasCache Cx486D CPU
+
+Intel i80486 CPU instruction compatible, no build-in FPU (Floating Point
+Unit).
+Can piggy-back a Cyrix Cx487S NPX.
+
+2 kbyte cache: write back.
+
+Intel i80486SX CPU upward pin compatible.
+
+On-chip ventilator.
+
+40 MHz: 1993.
+
+Technology: CMOS.
+
+Cyrix M5 CPU.
+
+ID: DH = 0x00 (family ID), DL = 0x05 (model ID).
+
+
+    2.32.2  Cyrix FasCache Cx486S CPU
+
+Intel i80486 CPU instruction compatible, no build-in FPU (Floating Point
+Unit).
+Low Power: SMM (System Management Mode).
+Static core.
+
+2 kbyte cache: write back.
+
+Intel i80486SX CPU upward pin compatible.
+
+May 1993.
+
+33 MHz.
+40 MHz: 1993.
+50 MHz.
+
+Technology: CMOS.
+
+Cyrix M5 CPU.
+
+ID: DH = 0x00 (family ID), DL = 0x05 (model ID).
+
+
+    2.32.3  Cyrix FasCache Cx486S-V CPU
+
+Low voltage (3.3 V) version of the Cyrix FasCache Cx486S CPU.
+
+May 1993.
+
+25 MHz.
+33 MHz.
+
+Technology: CMOS.
+
+
+    2.32.4  Cyrix FasCache Cx486S2 CPU
+
+Clock doubled version of the Cyrix FasCache Cx486S CPU.
+
+October 1993.
+
+20/40 MHz.
+25/50 MHz.
+
+Technology: CMOS.
+
+
+    2.32.5  Cyrix FasCache Cx486S2-V CPU
+
+Low voltage (3.3 V) version of the Cyrix FasCache Cx486S2 CPU.
+
+October 1993.
+
+20/40 MHz.
+25/50 MHz.
+
+Technology: CMOS.
+
+
+Cyrix FasCache Cx486DX/Cx486DX2 CPU FP bug: when a register load instruction
+is followed by an instruction that clears the FP status register (FCLEX), and
+the memory location being referenced is not in the CPU's internal cache, the
+external memory bus cycle is aborted by the FCLEX instruction and the register
+is not loaded properly.
+Since this code sequence is very unlikely to occur in any software, the bug
+will probably not be fixed at all.
+
+    2.32.6  Cyrix FasCache Cx486DX CPU
+
+Intel i80486DX instruction compatible, FPU (Floating Point Unit).
+Low Power: SMM (System Management Mode).
+Static core.
+
+8 kbyte cache: write through / write back.
+
+Intel i80486DX CPU upward pin compatible.
+
+September 1993.
+
+33 MHz: 1993.
+40 MHz: 1993, $235.
+50 MHz.
+
+Technology: CMOS.
+
+Cyrix M6 CPU.
+
+ID: DH = 0x00 (family ID), DL = 0x06 (model ID).
+
+
+    2.32.7  Cyrix FasCache Cx486DX-V33 CPU
+
+Low voltage (3.3 V) version of the Cyrix FasCache Cx486DX CPU.
+
+September 1993.
+
+25 MHz.
+33 MHz.
+
+Technology: CMOS.
+
+
+    2.32.8  Cyrix FasCache Cx486DX2 CPU
+
+Clock doubled Cyrix FasCache Cx486DX CPU.
+
+September 1993.
+
+20/40 MHz.
+25/50 MHz.
+
+Technology: CMOS.
+
+Cyrix M7 CPU.
+
+ID: DH = 0x00 (family ID), DL = 0x07 (model ID).
+
+
+    2.32.9  Cyrix FasCache Cx486DX2-V33 CPU
+
+Low voltage (3.3V) version of the Cyrix FasCache Cx486DX2 CPU.
+
+Technology: CMOS.
+
+
+    2.32.10  Cyrix FasCache Cx486DX2-V CPU
+
+Low voltage (3 V) version of the Cyrix FasCache Cx486DX2 CPU.
+
+Cache: write back.
+
+33/66 MHz (announced: fourth quarter 1994): $220.
+40/80 MHz (announced: fourth quarter 1994): $250.
+
+Technology: IBM 0.65 micron CMOS.
+
+
+    2.33  Texas Instruments TI486 CPU
+
+    2.33.1  Texas Instruments TI486SXL-GA CPU (Potomac)
+
+Intel i80486SX CPU instruction/pin compatible.
+
+8 kbyte cache: write through, 2-way set associative, 1024 sets,
+               4 bytes per line.
+
+40 MHz: february 1994.
+
+Package: ceramic PGA (Pin Grid Array).
+
+Technology: CMOS.
+
+
+    2.33.2  Texas Instruments TI486SXL-V-GA CPU (Potomac)
+
+Low power (3.3 V) version of the Texas Instruments TI486SXL-GA CPU.
+
+33 MHz: february 1994.
+
+Technology: CMOS.
+
+
+    2.33.3  Texas Instruments TI486SXL2-GA CPU (Potomac)
+
+Clock doubled version of the Texas Instruments TI486SXL-GA CPU.
+
+20/40 MHz: february 1994.
+25/50 MHz: february 1994.
+
+Technology: CMOS.
+
+
+    2.33.4  Texas Instruments TI486SXL2-V-GA CPU (Potomac)
+
+Clock doubled, low power (3.3 V) version of the
+Texas Instruments TI486SXL-GA CPU.
+
+20/40 MHz: february 1994.
+
+Technology: CMOS.
+
+
+    2.34  UMC 486 CPU
+
+The UMC 486 CPU does violate some of Intel's patents and will therefore not be
+sold in the USA.
+
+CPUID: "UMC UMC UMC".
+
+
+    2.34.1  UMC U5S CPU
+
+Intel i80486SX CPU instruction/pin compatible, no FPU (Floating Point Unit).
+
+8 kbyte cache.
+4 deep write buffer.
+
+25 MHz: August 1994, $50/1000.
+33 MHz: 2.25 W, August 1994, $70/1000.
+40 MHz: August 1994.
+
+Manufacturing: 0.6 micron CMOS.
+
+CPUID: family = 0x4, model = 0x2.
+
+
+    2.34.2  UMC U5SD CPU
+
+Intel i80486DX CPU pin compatible UMC U5S CPU.
+
+25 MHz: August 1994, $50/1000.
+33 MHz: 2.25 W, August 1994, $70/1000.
+40 MHz: August 1994.
+
+Manufacturing: 0.6 micron CMOS.
+
+CPUID: family = 0x4, model = 0x1.
+
+
+   2.34.3  UMC U5S-VL CPU
+
+3.3 V version of the UMC U5S CPU.
+
+33 MHz: 0.76 W, August 1994.
+
+Manufacturing: 0.6 micron CMOS.
+
+Package: 196 pin PGA (Pin Grid Array).
+
+
+    2.35  Intel Overdrive CPU for Intel i80486 CPU
+
+Many 486 CPU motherboards contain an Intel Overdrive socket in which a more
+powerful CPU can be placed (ODP: OverDrive Processor), this being an
+Intel i80486DX2 CPU or an Intel Pentium CPU. It is possible to remove the old
+CPU while upgrading. All output pins of the original CPU are put in 3-state
+and the power consumption is reduced when the UP# pin (Upgrade Present) is
+activated.
+
+An Intel Overdrive CPU will be made available that will fit in the original
+PGA (Pin Grid Array) (ODPR: OverDrive Processor Replacement), so motherboards
+without an Intel Overdrive socket can be upgraded too.
+
+At this moment it is still unsure if all motherboards with an
+Intel Overdrive socket can indeed be upgraded to an Intel Pentium CPU. The
+Intel Pentium P24T CPU (ODP), the Intel Pentium CPU upgrade for the blue
+238 pin PGA Overdrive socket, appears to produce too much heat for most
+thermally not compliant systems. It is not even sure if there will ever be an
+Intel Pentium CPU upgrade for those motherboards at all. For the newer
+motherboards with a white 237 pin PGA Overdrive socket, that do satisfy the
+heat specifications, there will be an Intel Pentium CPU at 3,3 V with a
+ventilator on the IC. There are also black Overdrive sockets around.
+
+ZIF socket (Zero Insertion Force).
+
+
+    2.35.1  Intel i80486DX2 CPU for Intel i80486DX CPU (ODPR)
+
+20/40 MHz: $285.
+25/50 MHz: $359.
+33/66 MHz: $459.
+
+SL Enhanced from June 1993.
+
+Package: 168 pin PGA (Pin Grid Array).
+
+Technology: CMOS.
+
+
+    2.35.2  Intel i80486DX2 CPU for Intel i80486SX CPU (ODPR)
+
+20/40 MHz: $285.
+25/50 MHz: $359.
+33/66 MHz: $459.
+
+SL Enhanced from June 1993.
+
+Package: 168 pin PGA (Pin Grid Array).
+
+Technology: CMOS.
+
+ID: step level A0-A2: DH = 0x04 (family ID), DL = 0x32 (model ID, revision),
+    step level B1: DH = 0x04 (family ID), DL = 0x33 (model ID, revision).
+
+
+    2.35.3  Intel i80486DX2 CPU for Intel i80486DX CPU, Intel i80486SX CPU
+            (ODP)
+
+16/32 MHz.
+20/40 MHz: &249.
+25/50 MHz: &279.
+33/66 MHz: &398.
+
+SL Enhanced from June 1993.
+
+Package: 169 pin PGA (Pin Grid Array).
+
+Technology: CMOS.
+
+ID: step level A0-A2: DH = 0x04 (family ID), DL = 0x32 (model ID, revision),
+    step level B1: DH = 0x04 (family ID), DL = 0x33 (model ID, revision).
+
+
+    2.35.4  Intel i80486DX4 CPU for Intel i80486DX CPU, Intel i80486SX CPU,
+            Intel i80486DX2 CPU (ODPR)
+
+Built-in voltage regulator: 3.3 V, 5 V.
+
+25/75 MHz max: October 1994, $549.
+33/99 MHz max: October 1994, $649.
+
+
+    2.35.5  Intel Pentium P24T CPU (ODP)
+
+5 V.
+
+
+    2.35.6  Intel Pentium P24CT CPU (ODP)
+
+32 kbyte cache: 16 kbyte code, 16 kbyte data.
+
+25/63 MHz: 3.3 V, January 1994, 235 pin PGA (Pin Grid Array), $449.
+33/83 MHz (announced: fourth quarter 1995): 237/238 pin PGA (Pin Grid Array).
+
+
+
+
+Compiled, Copyright 1993, 1994, 1995, by A. Offerman. Permission to use, copy
+or distribute this document in a non-commercial way for non-commercial use is
+hereby granted, provided that this copyright and permission notice appear in
+all copies. All other rights reserved.
+
+This document is provided "as is" without expressed or implied warranty.
+
+The specific products and their respective manufacturers are not to be taken
+as endorsements of, nor commercials for, the manufacturer.
+-- 
+******************************************************************************
+*  A. Offerman    <offerman@einstein.et.tudelft.nl>                          *
+*  Delft University of Technology, Dept. of Comp.Sc., Dept. of Electr.Eng.   *
+*                                                                            *
+*  Maintainer of the Personal Computer CHIPLIST:                             *
+*    http://einstein.et.tudelft.nl/~offerman/chiplist.html                   *
+*                                                                            *
+*  Good writers borrow from others. Great writers, they steal.               *
+******************************************************************************
+Path: bloom-beacon.mit.edu!apollo.hp.com!lf.hp.com!hpscit.sc.hp.com!news.dtc.hp.com!col.hp.com!simtel!news.kei.com!news.mathworks.com!news.alpha.net!uwm.edu!vixen.cso.uiuc.edu!howland.reston.ans.net!Germany.EU.net!EU.net!sun4nl!news.nic.surfnet.nl!tudelft.nl!liberator.et.tudelft.nl!einstein.et.tudelft.nl!offerman
+From: offerman@einstein.et.tudelft.nl (Aad Offerman)
+Newsgroups: comp.sys.ibm.pc.hardware.chips,comp.sys.ibm.pc.hardware.systems,comp.sys.ibm.pc.hardware.misc,comp.sys.intel,comp.answers,news.answers
+Subject: Personal Computer CHIPLIST 7.3 part 3 of 4
+Supersedes: <3h5eji$ebp@liberator.et.tudelft.nl>
+Followup-To: poster
+Date: 24 Feb 1995 10:51:16 GMT
+Organization: Delft University of Technology, Dept. of Electrical Engineering
+Lines: 638
+Approved: news-answers-request@MIT.EDU
+Expires: 23 May 1995 00:00:00 WET
+Message-ID: <3ikdn4$lkn@liberator.et.tudelft.nl>
+References: <3ikbvt$lel@liberator.et.tudelft.nl>
+Reply-To: offerman@einstein.et.tudelft.nl
+NNTP-Posting-Host: einstein.et.tudelft.nl
+Summary: This list contains the various CPUs and NPXs and their features,
+         used in the IBM PC, IBM PC/XT, IBM PC/AT, IBM PS/2 and compatibles,
+         and the differences between them.
+Keywords: PC, CPU, NPX
+X-Newsreader: NN version 6.5.0 #2 (NOV)
+Xref: bloom-beacon.mit.edu comp.sys.ibm.pc.hardware.chips:22866 comp.sys.ibm.pc.hardware.systems:15560 comp.sys.ibm.pc.hardware.misc:23247 comp.sys.intel:36444 comp.answers:10275 news.answers:35771
+
+Archive-name: pc-hardware-faq/chiplist/part3
+Last-modified: 1995/02/23
+Version: 7.3
+
+
+
+
+    2.36  Intel Pentium CPU
+
+2-issue 5-stage superscalar with 8-stage pipelined FPU (Floating Point Unit).
+Intel i80486 CPU upward instruction compatible.
+
+Multiprocessor support.
+Upgrading: adding more Intel Pentium CPUs.
+
+Parity checking at busses.
+
+Branch prediction (BTB: Branch Target Buffer).
+
+8 kbyte instruction cache, 8 kbyte data cache (Harvard architecture).
+Both 2-way set associative, write back, no write allocate.
+
+32 bit internal data bus (CPU - MMU (Memory Management Unit, including cache))
+64 bit external data bus (MMU (Memory Management Unit, including cache)
+                         - memory).
+32 bit address bus.
+
+Package: 296 pin PGA (Pin Grid Array).
+
+In October 1994 Dr. Thomas R. Nicely, Professor of Mathematics at the
+Lynchburg College, Lynchburg, Virginia (nicely@acavax.lynchburg.edu), reported
+a bug present in the FPU of all Intel Pentium CPUs. The double precision part
+of the mantissa is not computed correctly when dividing in some areas of the
+mantissa space of the divisor. The bug is fixed in Intel Pentium CPUs produced
+after November 1994.
+
+
+    2.36.1  Intel Pentium P5 CPU
+
+May 1993.
+
+60 MHz (Intel Pentium 510\60 CPU): 17-13 W, $273/1000, iCOMP 510.
+66 MHz (Intel Pentium 567\66 CPU): 16-13 W, $289/1000, iCOMP 567 (First 66 MHz
+                                   CPUs had heat troubles and were
+                                   released as 60 MHz items).
+
+Technology: 0.8 micron biCMOS.
+3.1E6 transistors.
+Die size: 18 x 16 mm.
+
+ID: step level Ax: DH = 0x05 (family ID), DL = 0x0X (model ID, revision),
+    step level Bx: DH = 0x05 (family ID), DL = 0x1X (model ID, revision).
+
+CPUID: step level Ax: family = 0x5, model = 0,
+       step level Bx: family = 0x5, model = 1.
+
+Model 1, step level 7: FDIV bug fixed.
+
+
+    2.36.2  Intel Pentium P54C CPU
+
+Upgrading: Intel Pentium P54M Overdrive (2 CPUs co-operating).
+
+60 MHz: 3.3 V, $380/1000.
+66 MHz: 64.5 SPECint92, 56.9 SPECfp92, 3.3 V, $470/1000.
+50/75 MHz (Intel Pentium 610\75 CPU) (notebooks, P54T):
+  3 V, August 1994, package: 320 pin TCP, $301/1000, iCOMP 610.
+60/90 MHz (Intel Pentium 735\90 CPU): 3.3 V, March 1994, $546/1000, iCOMP 735.
+66/100 MHz (Intel Pentium 815\100 CPU): 3.3 V, March 1994, $673/1000,
+                                        iCOMP 815.
+
+Technology: 4 layer metal, 0.6 micron biCMOS.
+3.3E6 transistors.
+Die size: 12 x 13 mm.
+
+ID: step level A: DH = 0x05 (family ID), DL = 0x2X (model ID, revision).
+
+CPUID: family = 0x5, model = 0x2.
+
+Model 2, step level 4: FDIV bug fixed.
+
+
+    2.36.3  Intel Pentium P55C CPU
+
+50/150 MHz: 2.5 V, November 1994.
+
+Technology: 0.6 micron.
+
+
+    2.36.4  Intel Pentium CPU announcements
+
+3,3 V Intel Pentium-66/150 CPU.
+
+P6 (fourth quarter 1995): 6E6 transistors, Oregon:
+  upward compatible with all previous iapx CPUs (RISC core with X86
+    translation),
+  ECC,
+  Fault Analysis & Recovery,
+  Functional Redundancy Checking.
+  256 kbyte level 2 cache.
+  Technology: 0.5 micron biCMOS.
+P7: 14E6 transistors, Santa Clara, CA.
+
+
+    2.37  Intel Overdrive CPU for Intel Pentium CPU
+
+    2.37.1  Intel Pentium P54M CPU
+
+Overdrive for Intel Pentium P54C CPU.
+
+Technology: CMOS.
+
+
+    2.38  AMD K5 CPU (K86 series)
+
+Intel Pentium CPU compatible.
+
+Superscalar: 3 integer pipelines,
+             1 FP pipeline.
+
+Announced: third quarter 1995.
+
+Technology: 0.5 micron CMOS (Fab 25, Texas),
+            0.35 micron CMOS (first quarter 1996).
+
+Announcements: AMD K6 CPU, AMD K7 CPU.
+
+
+    2.39  Cyrix M1 CPU
+
+Intel Pentium CPU compatible.
+
+Announced: second quarter 1995.
+
+16 kbyte cache: write-back.
+
+50 MHz.
+100 MHz.
+
+3.3 V.
+
+Superscalar: 2 pipelines.
+Superpipelined: 7 stages.
+
+FPU: 4 64 bit write buffers.
+
+Package: 296 pin PGA.
+
+Technology: 0.5 micron CMOS (IBM, SGS-Thomson).
+
+
+    2.40  NexGen Nx586/Nx587 CPU chipset
+
+Intel Pentium CPU instruction compatible.
+RISC (Reduced Instruction Set Computer): RISC86: interpreting (hardware)
+Intel Pentium CPU instruction set.
+
+Runs internally at 4 V; Compatibility with 5 V motherboard provided through
+the bus interface chip.
+
+16 kbyte instruction cache, 16 kbyte data cache (Harvard architecture).
+External L2 cache controller for 256 kbyte or 1 Mbyte.
+
+NexGen Nx586 CPU: 60 MHz,
+                  66 MHz.
+NexGen Nx587 NPX: 60 MHz,
+                  66 MHz.
+
+March 1994.
+
+NexGen NxVL Vesa Local Bus interface: 60 MHz,
+                                      66 Mhz.
+PCI version (announced: 3rd quarter 1994).
+
+Superscalar: 2 integer units,
+             FP adder (2 cycles),
+             FP multiplier (2 cycles).
+Branch prediction.
+
+NexGen Nx586 CPU: 4 V, $460/1000, 9 W, 3.5E6 transistors, 0.5 micron CMOS.
+NexGen Nx587 NPX: 4 V, $128/1000, 1.1 W, 0.7E6 transistors, 0.5 micron CMOS.
+NexGen NxVL Vesa Local Bus interface: 5 V, $86/1000, 1.0 W, 0.5 micron CMOS.
+
+75 MHz: September 1994, $404.
+80 MHz: September 1994.
+90 MHz: September 1994, $777.
+100 MHz (announced).
+
+Manufactured by IBM.
+
+
+    2.41  RISC CPU (Reduced Instruction Set Computer)
+
+Recently IBM announced to increase their effort on the development of the
+IBM, Motorola PowerPC CPU. They expect Microsoft's Windows NT (New Technology)
+running on a RISC (Reduced Instruction Set Computer) processor (theirs) to be
+the Microsoft MS-DOS / IBM PC/AT / Intel X86 CPU follow-up. In this section
+the non Intel X86 CPUs for which Microsoft's Windows NT is available are
+described (DEC DECchip-2106[468] CPU, MIPS R4X00 CPU,
+IBM, Motorola PowerPC CPU). For completeness some other RISC CPUs are
+described too (Sun Sparc CPU, HP PA CPU).
+
+
+    2.41.1  DEC DECchip-210 CPU
+
+RISC (Reduced Instruction Set Computer).
+64 bit architecture.
+
+64/128 bit data bus.
+
+Super scalar: 2 64 bit integer units,
+              floating point unit.
+
+21064-AA: 150 MHz: 3.3 V, end 1992, $500/3000,
+          200 MHz: external speed: 25, 50, 100 MHz, 3.3 V, end 1992,
+                   $610/10.000, 35 W.
+21064-AA: 2 level cache,
+          250 MHz: 3.3 V, June 1994,
+          300 MHz: 3.3 V, June 1994.
+21066: 21064 with PCI controller, DRAM/VRAM controller, graphics interface,
+       166 MHz, 7W,
+       200 MHz.
+21068: low cost 21066,
+       66 MHz, December 1993, 20 W,
+       100 MHz, December 1993.
+
+Alpha.
+
+Used in DEC Alpha AXP.
+
+
+    2.41.2  MIPS R4000 CPU
+
+RISC (Reduced Instruction Set Computer).
+
+64 bit data bus.
+64 bit address bus.
+data and address bus are multiplexed.
+
+8 kbyte instruction cache, 8 kbyte data cache (Harvard architecture): both
+direct mapped.
+MIPS R4000MC/R4000SC CPU: secondary external cache controller (128 bit bus).
+
+100 MHz: 5V.
+
+LSI Logic LR4000PC CPU: 50 MHz, 0.7 micron CMOS.
+LSI Logic LR4000MC CPU.
+LSI Logic LR4000SC CPU: internal / external clock rate selectable 1/2, 1/3,
+                        1/4, 100 MHz maximum.
+
+Also available from NEC, IDT and Toshiba.
+
+
+    2.41.3  MIPS R4200 CPU
+
+16 kbyte instruction cache, 8 kbyte data cache (Harvard architecture): both
+direct mapped.
+
+80 MHz: 3.3 V (also available from NEC).
+
+
+    2.41.4  MIPS R4400 CPU
+
+16 kbyte instruction cache, 16 kbyte data cache (Harvard architecture): both
+direct mapped.
+MIPS R4400MC/R4400SC CPU: secondary external cache controller (128 bit bus).
+
+100 MHz: 5 V.
+100 MHz: 3.3 V.
+133 MHz: 5 V.
+133 MHz: 3.3 V.
+150 MHz: 5 V.
+150 MHz: 3.3 V.
+200 MHz: 3.3 V, May 1994.
+
+Also available from NEC, IDT and Toshiba.
+
+
+    2.41.5  MIPS Orion R4600 CPU
+
+Designed by QED.
+
+16 kbyte instruction cache, 16 kbyte data cache (Harvard architecture): both
+2-way set associative.
+
+100 MHz: 5 V (also available from IDT).
+100 MHz: 3.3 V (also available from Toshiba).
+133 MHz: April 1994.
+150 MHz.
+
+
+    2.41.6  IBM, Motorola PowerPC CPU
+
+RISC (Reduced Instruction Set Computer).
+64 bit architecture.
+
+Somerset Alliance: IBM, Motorola, Apple; Austin, Texas; February 1991;
+Tom Mance.
+Somerset Design Center: Austin; 601, 603, 604, 620.
+Motorola, Israel; IBM, North Carolina: microcontrollers.
+
+PowerOpen Association: Apple, IBM, Motorola, Groupe Bull, Harris, Tadpole
+Technology, Thomson-CSF,
+Lobby group: Ford will use a PowerPC microcontroller in over 6,000,000 cars;
+             Canon will use the PowerPC; Parsytec will use the PowerPC in its
+             parallel computers.
+
+401: (embedded microprocessor), 3.3 V, third quarter 1994.
+     20 MHz,
+     25 MHz,
+     33 MHz.
+
+601: (personal computers).
+     64 bit external data bus.
+     32 bit address bus.
+
+     32 kbyte cache.
+
+     50 MHz: 3.6 V, $275, fourth quarter 1994,
+     60 MHz: $174/1000,
+     66 MHz: 3.6 V, $197/1000, 9 W, fourth quarter 1994,
+     80 MHz: 3.6 V, 85 SPECint92, 105 SPECfp92, $275/1000, 8 W,
+             fourth quarter 1994,
+             used in Apple Power Macintosh and IBM RS/6000
+     100 MHz (announced: fourth quarter 1994): 4 W, IBM 0.5 micron CMOS,
+     135 MHz (announced: fourth quarter 1994).
+
+     POWER (Performance Optimization With Enhanced RISC).
+
+     MC98601.
+
+602: (advanced consumer electronics, handheld computers).
+
+     66 MHz: February 1995.
+
+603: low power (notebooks).
+     8 kbyte cache.
+
+     50 MHz,
+     66 MHz: 3.3 V, $165, third quarter 1994,
+     80 MHz: 75 SPECint92, 85 SPECfp92, $195.
+
+     Troubles running SoftPC; probably a 603+ will be developed by Apple.
+
+603e: 16 kbyte cache.
+
+      100 MHz: February 1995, 1.2 W.
+
+604: (high performance desktop computers, workstations).
+     75 MHz: 3.3 V, fourth quarter 1994,
+     100 MHz: 3.3 V, fourth quarter 1994.
+
+     3.3 V, die size: 13 x 15 mm, 3.6E6 transistors,
+     technology: 0.5 micron CMOS.
+
+615: 80X86 interpreter (hardware) (announced: fourth quarter 1994).
+     Intel ODP CPU pin compatible.
+
+620: (announced: second quarter 1995): (servers).
+     64 bit data bus.
+     64 bit address bus.
+
+     VLIW (Very Long Instruction Word): 2 integer,
+                                        2 floating point,
+                                        2 branch, jump.
+
+     32 kbyte instruction cache.
+
+     POWER2 (Performance Optimization With Enhanced RISC 2).
+
+     71.5 MHz: 126 SPECint92, 260 SPECfp92,
+     130 MHz: 3.3 V,
+     150 MHz: 3.3 V.
+
+     Used in IBM System/36.
+
+630: (announced).
+     64 bit data bus.
+     64 bit address bus.
+
+     multi-chip CPU: core, cache, controller.
+
+     POWER3 (Performance Optimization With Enhanced RISC 3).
+
+
+    2.41.7  Sun Sparc CPU
+
+RISC (Reduced Instruction Set Computer).
+
+Texas Instruments SuperSPARC CPU (Viking).
+Texas Instruments SuperSPARC II CPU (announced).
+Texas Instruments UltraSPARC CPU (announced).
+
+Fujitsu MicroSPARC II CPU.
+
+Ross/Fujitsu Hypersparc CPU.
+
+
+    2.41.8  HP PA CPU (Precision Architecture)
+
+RISC (Reduced Instruction Set Computer).
+
+HP invested over $1,000,000,000 in this CPU and agreed with Intel to
+co-operate in the development of a new 64 bit RISC CPU using this
+architecture.
+
+
+    2.42  Motorola CPU
+
+In this section the Motorola CPU series, used in the Apple Macintosh personal
+computers and the Commodore Amiga home computers are described.
+
+Bit numbering: small endian.
+Byte numbering: big endian.
+
+
+    2.42.1  Motorola MC6800 CPU
+
+8 bit data bus.
+16 bit address bus.
+
+1 MHz.
+2 MHz.
+
+1976.
+
+
+    2.42.2  Motorola MC6802 CPU
+
+Motorola MC6800 CPU with extra features: 256 byte scratch pad at location 0,
+                                         internal clock oscillator.
+
+Hitachi 6802W CPU: Motorola MC6802 CPU.
+
+
+    2.42.3  Motorola MC68HC11 CPU
+
+Motorola MC6802 CPU with extra features: some 16 bit instructions,
+                                         on-board peripherals.
+
+
+    2.42.4  Motorola MC6809 CPU
+
+Optimized for high level languages.
+
+Motorola MC6809E CPU: external clock input for external sync.
+
+
+    2.42.5  Motorola MC68000 CPU
+
+16 bit data bus.
+24 bit address bus.
+
+1979.
+
+Used in Atari ST, Commodore Amiga, Apple Lisa, Macintosh.
+
+
+    2.42.6  Motorola MC68008 CPU
+
+8 bit data bus.
+20 bit address bus.
+
+Motorola MC68000 CPU instruction compatible.
+Same core as Motorola MC68000 CPU.
+
+
+    2.42.7  Motorola MC68302 CPU
+
+Integrated Multi-Protocol CPU.
+Motorola MC68000/MC68008 CPU core.
+
+System Integration Block: independent DMA,
+                          on-chip 1152 byte DPRAM,
+                          3 timers including watchdog,
+                          on-chip clock generator with output,
+                          low power stand-by modes,
+                          4 programmmable chip selects,
+                          programmable address mapping,
+                          parallel I/O ports with interrupt capability,
+                          interrupt controller,
+                          bus arbitration logic.
+Communications proccessor: RISC processor (Reduced Instruction Set Computer),
+                           3 independent full duplex SCCs, supporting
+                               HDLC/SDLC, UART, BISYNC, DDCMP,
+                               V.110 rate adaption, transfer mode protocols,
+                           supporting user configureable protocols using
+                               microcode,
+                           6 serial DMA channels,
+                           Flexible Physical Interface, using IDL, GCI, PCM,
+                               NMSI,
+                           SCP for synchronous communications,
+                           2 serial management controllers to support GCI and
+                               IDL.
+
+16.667 MHz.
+
+
+    2.42.8  Motorola MC68010 CPU
+
+Motorola MC68000 CPU upward instruction compatible: more instructions,
+more instructions with restart capabilities after interrupts.
+Motorola MC68000 CPU pin compatible.
+
+
+    2.42.9  Motorola MC68340 microprocessor
+
+Embedded version of Motorola MC68010 CPU.
+
+Included features: 2 DMA channels,
+                   2 serial I/O channels,
+                   2 multiple mode 16 bit timers,
+                   4 programmable chip select signals,
+                   system failure protection.
+
+16.78 MHz: 5 V.
+
+Package: 144 pin CQFP (Ceramic Quad Flat Package),
+         145 pin PGA (Pin Grid Array).
+
+
+    2.42.10  Motorola MC68020 CPU
+
+Motorola MC6800 CPU / Motorola MC68010 CPU instruction compatible.
+Modes: user mode, supervisor mode.
+
+32 bit data bus.
+32 bit address bus.
+
+256 byte instruction cache.
+
+MMU (Memory Management Unit): Motorola MC68851 Paged MMU.
+
+NPX: Motorola MC68881 NPX,
+     Motorola MC68882 NPX.
+
+16.67 MHz.
+20 MHz.
+25 MHz.
+33.33 MHz.
+
+Motorola MC68020RC CPU.
+Motorola MC68020RL CPU.
+Motorola MC68020RP CPU.
+Motorola MC68020FC CPU.
+Motorola MC68020FE CPU.
+
+1982.
+
+Used in Apple Macintosh.
+
+
+    2.42.11  Motorola MC68030 CPU
+
+MMU (Memory Management Unit), 16 kbyte burst mode.
+
+256 byte instruction cache, 256 byte data cache (Harvard architecture).
+
+25 MHz.
+
+Motorola MC68030RC CPU.
+Motorola MC68030RL CPU.
+Motorola MC68030RP CPU.
+Motorola MC69030FE CPU.
+
+NPX: Motorola MC68881 NPX.
+
+Used in NeXT.
+
+
+    2.42.12  Motorola MC68040 CPU
+
+MMU (Memory Management Unit), FPU (Floating Point Unit), pipelined,
+clock doubled.
+
+4 kbyte instruction cache, 4 kbyte data cache (Harvard Architecture).
+
+33 MHz.
+
+Used in NeXT.
+
+
+    2.42.13  Motorola MC68LC040 CPU
+
+Motorola MC68040 CPU without FPU (Floating Point Unit).
+
+
+    2.42.14  Motorola MC68040V CPU
+
+Low power version of the Motorola MC68040 CPU, no FPU (Floating Point Unit).
+
+Used in Apple Powerbook.
+
+
+    2.42.15  Motorola MC68050 CPU
+
+Never released.
+
+
+    2.42.16  Motorola MC68060 CPU
+
+32 bit data bus.
+32 bit address bus.
+
+Enhanced FPU (Floating Point Unit).
+
+Power management.
+
+8 kbyte instruction cache, 8 kbyte data cache (Harvard architecture).
+Cache line bursts.
+
+3.3 V.
+
+Superscalar.
+Branch Target Buffer (BTB).
+
+
+
+
+Compiled, Copyright 1993, 1994, 1995, by A. Offerman. Permission to use, copy
+or distribute this document in a non-commercial way for non-commercial use is
+hereby granted, provided that this copyright and permission notice appear in
+all copies. All other rights reserved.
+
+This document is provided "as is" without expressed or implied warranty.
+
+The specific products and their respective manufacturers are not to be taken
+as endorsements of, nor commercials for, the manufacturer.
+-- 
+******************************************************************************
+*  A. Offerman    <offerman@einstein.et.tudelft.nl>                          *
+*  Delft University of Technology, Dept. of Comp.Sc., Dept. of Electr.Eng.   *
+*                                                                            *
+*  Maintainer of the Personal Computer CHIPLIST:                             *
+*    http://einstein.et.tudelft.nl/~offerman/chiplist.html                   *
+*                                                                            *
+*  Good writers borrow from others. Great writers, they steal.               *
+******************************************************************************
+Path: bloom-beacon.mit.edu!apollo.hp.com!lf.hp.com!hpscit.sc.hp.com!news.dtc.hp.com!col.hp.com!simtel!news.kei.com!eff!news.duke.edu!godot.cc.duq.edu!hudson.lm.com!news.pop.psu.edu!news.cac.psu.edu!howland.reston.ans.net!Germany.EU.net!EU.net!sun4nl!news.nic.surfnet.nl!tudelft.nl!liberator.et.tudelft.nl!einstein.et.tudelft.nl!offerman
+From: offerman@einstein.et.tudelft.nl (Aad Offerman)
+Newsgroups: comp.sys.ibm.pc.hardware.chips,comp.sys.ibm.pc.hardware.systems,comp.sys.ibm.pc.hardware.misc,comp.sys.intel,comp.answers,news.answers
+Subject: Personal Computer CHIPLIST 7.3 part 4 of 4
+Supersedes: <3h5el9$ebr@liberator.et.tudelft.nl>
+Followup-To: poster
+Date: 24 Feb 1995 10:51:59 GMT
+Organization: Delft University of Technology, Dept. of Electrical Engineering
+Lines: 599
+Approved: news-answers-request@MIT.EDU
+Expires: 23 May 1995 00:00:00 WET
+Message-ID: <3ikdof$lkp@liberator.et.tudelft.nl>
+References: <3ikbvt$lel@liberator.et.tudelft.nl>
+Reply-To: offerman@einstein.et.tudelft.nl
+NNTP-Posting-Host: einstein.et.tudelft.nl
+Summary: This list contains the various CPUs and NPXs and their features,
+         used in the IBM PC, IBM PC/XT, IBM PC/AT, IBM PS/2 and compatibles,
+         and the differences between them.
+Keywords: PC, CPU, NPX
+X-Newsreader: NN version 6.5.0 #2 (NOV)
+Xref: bloom-beacon.mit.edu comp.sys.ibm.pc.hardware.chips:22867 comp.sys.ibm.pc.hardware.systems:15561 comp.sys.ibm.pc.hardware.misc:23248 comp.sys.intel:36445 comp.answers:10276 news.answers:35772
+
+Archive-name: pc-hardware-faq/chiplist/part4
+Last-modified: 1995/01/22
+Version: 7.3
+
+
+
+
+    3  NPX (Numerical Processor eXtension)
+
+    3.1 Introduction
+
+
+    3.2  Intel i8087 NPX
+
+NPX for Intel i8086 CPU, Intel i8088 CPU, Intel i80186 CPU, Intel i80188 CPU.
+
+5 MHz (8087-3): $45.
+8 MHz (8087-2): $49, HMOS.
+10 MHz (8087-1): 2400 mW, $85.
+
+Package: 40 pin CERDIP (CERamic Dual In-line Package).
+
+Technology: NMOS.
+
+
+    3.3  Intel i80287 NPX
+
+NPX for Intel i80286 CPU, Intel i80386 CPU.
+
+1983.
+
+6 MHz.
+8 MHz.
+10 MHz: 2400 mW.
+Intel i80287-fast10: 10 MHz, asynchronous.
+
+Package: 40 pin CERDIP (CERamic Dual In-line Package).
+
+Technology: NMOS.
+
+
+    3.4  AMD Am80287 NPX
+
+    3.4.1  AMD Am80C287 NPX
+
+Intel i80287 NPX instruction/pin compatible.
+Intel i80287 NPX core/microcode.
+
+1989.
+
+10 MHz: $50.
+12 MHz: $50.
+16 MHz: $50.
+
+Package: 40 pin CERDIP (CERamic Dual In-line Package),
+         40 pin plastic DIP (Dual In-line Package),
+         44 pin PLCC (Plastic Leaded Chip Carrier).
+
+Technology: CMOS.
+
+
+    3.4.2  AMD Am80EC287 NPX
+
+AMD Am80C287 NPX with power management.
+
+Technology: CMOS.
+
+
+    3.5  Cyrix Cx287 NPX
+
+Intel i80287 NPX instruction/pin compatible.
+
+8 MHz.
+10 MHz.
+12 MHz: $69.
+16 MHz.
+20 MHz.
+
+
+    3.6  Intel i80187 NPX
+
+NPX for Intel i80C186 CPU.
+
+Intel i80387 NPX core/microcode.
+Intel i80387 NPX instruction compatible.
+
+12.5 MHz: 1989, CMOS, 675 mW.
+16 MHz: 1989, CMOS, 780 mW.
+20 MHz: CMOS.
+
+Package: 40 pin CERDIP (CERamic Dual In-line Package),
+         44 pin PLCC (Plastic Leaded Chip Carrier).
+
+Dropped in 1991.
+
+
+    3.7  Intel i80287XL NPX
+
+NPX for Intel i80286 CPU, Intel i80386 CPU.
+
+Intel i80387 NPX instruction compatible.
+Intel i80387 NPX core/microcode.
+
+Intel i80287 NPX pin compatible.
+
+8 MHz.
+10 MHz.
+12.5 MHz: 1990, 675 mW, $85.
+16 MHz.
+20 MHz.
+
+Package: 40 pin CERDIP (CERamic Dual In-line Package),
+         44 pin PLCC (Plastic Leaded Chip Carrier) (Intel i80287XLT NPX).
+
+Technology: CMOS.
+
+
+    3.8  Cyrix FasMath Cx82S87 NPX
+
+NPX for Intel i80286 CPU, Intel i80386 CPU.
+
+Intel i80387 NPX instruction compatible.
+Cyrix FasMath Cx83D87 NPX core/microcode (until November 1991)
+Cyrix FasMath Cx387+ NPX core/microcode (from November 1991).
+
+6 MHz: 1991.
+8 MHz: 1991.
+10 MHz: 1991.
+12 MHz: 1991, $69.
+16 MHz: 1991.
+20 MHz: 1991.
+
+Package: 40 pin DIP (Dual In-line Package) (Intel i80287 NPX pin compatible),
+         44 pin PLCC (Plastic Leaded Chip Carrier) (Intel i80287XLT NPX pin
+           compatible).
+
+Static core.
+
+Technology: CMOS.
+
+
+    3.9  IIT IIT-2C87 NPX
+
+NPX for Intel i80286 CPU, Intel i80386 CPU.
+
+IIT IIT-3C87 NPX instruction compatible.
+IIT IIT-3C87 NPX core/microcode.
+
+Intel i80287 NPX pin compatible.
+
+8 MHz: $29.
+10 MHz: $39.
+IIT IIT-2C87-10F NPX: 10 MHz, asynchronous.
+12 MHz: $60.
+IIT IIT-2C87-12F NPX: 12 Mhz, asynchronous.
+16 MHz.
+20 MHz, 1989, 500 mW, $64.
+IIT IIT-2C87-20F NPX: 20 MHz, asynchronous.
+
+Technology: CMOS.
+
+
+    3.10  Intel i80387 NPX
+
+    3.10.1  Intel i80387 NPX
+
+NPX for Intel i80386/i80386DX CPU.
+
+1986.
+
+16 MHz: 750 mW.
+20 MHz: 950 mW.
+25 MHz: 1250 mW.
+33 MHz.
+
+Package: 68 pin, 2 row ceramic PGA (Pin Grid Array).
+
+Technology: 1.5 micron CHMOS III.
+
+
+    3.10.2  Intel i80387DX NPX
+
+NPX for Intel i80386/i80386DX CPU.
+Enhanced Intel i80387 NPX.
+
+1989.
+
+16 MHz: $75.
+20 MHz: 525 mW, $75.
+25 MHz: 625 mW, $75.
+33 MHz: 750 mW, $75.
+
+Package: 68 pin, 2 row PGA (Pin Grid Array).
+
+Technology: CHMOS IV.
+
+
+    3.10.3  Intel i80387SX NPX
+
+NPX for Intel i80386SX CPU.
+
+Intel i80387 NPX core/microcode.
+
+16 MHz: 740 mW, $75.
+20 MHz: 1000 mW, $75.
+25 MHz: $75.
+33 MHz: &59.
+
+Package: 68 pin PLCC (Plastic Leaded Chip Carrier).
+
+
+    3.10.4  Intel i80387SL Mobile NPX
+
+NPX for Intel i80386SL CPU.
+
+Intel i80387DX NPX core/microcode.
+Extra features: cache controller,
+                programmable memory controller,
+                expanded memory support.
+Static core.
+
+Power management: SMM (System Management Mode).
+
+1992.
+
+16 MHz.
+20 MHz.
+25 MHz: $75.
+33 MHz.
+
+Technology: CHMOS IV.
+
+
+    3.10.5  Intel i80X87SL Mobile NPX
+
+NPX for Intel i80386SX CPU.
+
+Intel i80387DX NPX core/microcode.
+
+16 MHz.
+20 MHz.
+25 MHz.
+
+
+    3.11  Chips & Technologies SuperMath 38700 NPX
+
+    3.11.1  Chips & Technologies SuperMath 38700DX NPX
+
+Intel i80387DX NPX instruction/pin compatible.
+
+Power Management.
+
+16 MHz: 1991.
+20 MHz: 1991.
+25 MHz: 1991.
+33 MHz: 1991.
+40 MHz: 1991.
+
+No longer available.
+
+Technology: 1.2 micron CMOS.
+
+
+    3.11.2  Chips & Technologies SuperMath 38700SX NPX
+
+Intel i80387SX NPX instruction/pin compatible.
+
+Power management.
+
+16 MHz: 1991.
+20 MHz: 1991.
+25 MHz: 1991.
+
+No longer available.
+
+
+    3.12  Cyrix 80387 NPX
+
+    3.12.1  Cyrix FasMath Cx83D87 NPX
+
+Intel i80387DX NPX instruction/pin compatible.
+
+Power management.
+
+Computations are executed faster than by Intel i80387DX NPX.
+
+Later versions (from November 1991) correctly co-operate with first generation
+Cyrix Cx486DLC CPUs, which were having synchronization problems, when
+co-operating with a NPX.
+
+1989.
+
+16 MHz: $64.
+20 MHz: $64.
+25 MHz: $64.
+33 MHz: 500 mW, $64.
+40 MHz: November 1991, $59.
+
+Technology: CMOS.
+
+
+    3.12.2  Cyrix FasMath Cx387+ NPX
+
+European name for Cyrix FasMath Cx83D87 NPX from November 1991.
+
+40 MHz: November 1991.
+
+
+    3.12.3  Cyrix FasMath EMC87 NPX
+
+Also know as Cyrix AutoMath.
+
+Cyrix Cx83D87 NPX with extra features: memory-mapped mode.
+
+20 MHz: $299.
+25 MHz: $299.
+33 MHz: $349, 2000 mW.
+40 MHz: $359.
+
+Package: 121 pin PGA (Pin Grid Array) (121 pin EMC: Extended Math Coprocessor)
+
+Technology: CMOS.
+
+
+    3.12.4  Cyrix FasMath 83S87 NPX
+
+Intel i80387SX NPX instruction/pin compatible.
+Cyrix Cx387+ NPX core/microcode after November 1991
+
+Power management.
+
+Computations are executed faster than by Intel i80387SX NPX.
+
+16 MHz: $57.
+20 MHz: 350 mW, $57.
+25 MHz: $57.
+33 MHz: $75.
+
+Technology: CMOS.
+
+
+    3.12.5  Cyrix Cx387DX NPX
+
+Intel i80387DX NPX instruction/pin compatible.
+
+16 MHz.
+20 MHz.
+25 MHz.
+33 MHz.
+40 MHz.
+
+Technology: CMOS.
+
+
+    3.12.6  Cyrix Cx387SX NPX
+
+Intel i80387SX NPX instruction/pin compatible.
+
+16 MHz.
+20 MHz.
+25 MHz.
+33 MHz.
+
+Technology: CMOS.
+
+    3.12.7  Cyrix Cx387 NPX announcements
+
+Clock doubled NPXs.
+
+
+    3.13  IIT IIT-3C87 NPX
+
+NPX for Intel i80386 CPU.
+
+Not fully Intel i80387 NPX instruction compatible.
+Extra features.
+
+
+    3.13.1  IIT IIT-3C87 NPX
+
+NPX for Intel i80386/i80386DX CPU.
+
+1989.
+
+16 MHz: $69.
+20 MHz: $69.
+25 MHz: $69.
+33 MHz: $69.
+40 MHz: 600 mW, $69.
+
+Intel i80387DX NPX pin compatible.
+
+Technology: CMOS.
+
+
+    3.13.2  IIT IIT-3C87SX NPX
+
+16 MHz: $69.
+20 MHz: $69.
+25 MHz: $69.
+33 MHz: $69.
+40 MHz.
+
+Intel i80387SX NPX pin compatible.
+
+Technology: CMOS.
+
+
+    3.13.3  IIT IIT-XC87DLX2 NPX
+
+Clock doubled version of the IIT IIT-3C87 NPX.
+
+25/50 Mhz: March 1994.
+
+
+    3.14  ULSI Math*Co 83C87 NPX
+
+Intel i80387DX NPX instruction/pin compatible.
+
+1991.
+
+20 MHz: 400 mW.
+25 MHz: 500 mW.
+33 MHz: 625 mW, $59.
+40 MHz: 750 mW, $59.
+
+Technology: CMOS.
+
+
+    3.15  ULSI Math*Co 83S87 NPX
+
+Intel i80387SX NPX instruction/pin compatible.
+
+Power management.
+
+16 MHz: 300 mW.
+20 MHz: 350 mW.
+25 MHz: 400 mW.
+
+
+    3.16  Weitek Abacus 1167 NPX
+
+NPX for Intel i80386DX CPU.
+
+Not Intel i80387 NPX instruction compatible.
+
+In fact a small PCB with three chips mounted on it.
+Not Intel i80387DX NPX pin compatible.
+
+
+    3.17  Weitek Abacus 3167 NPX
+
+NPX for Intel i80386DX CPU, Intel i80486 CPU.
+
+Not Intel i80387 NPX instruction compatible.
+
+Not Intel i80387DX NPX pin compatible.
+Package: 121 pin, 3 row PGA (Pin Grid Array) (EMC (Extended Math Coprocessor)
+         socket).
+Can be used together with Intel i80387DX NPX. If the motherboard has no apart
+PGA for the Abacus, two NPXs can be used simultaniously by installing an
+extra PCB, containing two PGAs, on the original PGA.
+
+20 MHz: $29.
+25 MHz: 1750 mW, $79.
+33 MHz: 2250 mW, $169.
+40 MHz: &199.
+
+
+    3.18  RISE 80387 NPX
+
+Intel i80387DX NPX instruction/pin compatible.
+
+
+    3.19  Symphony Laboratories 80387 NPX
+
+Intel i80387DX NPX instruction/pin compatible.
+
+Sample chips.
+
+
+    3.20  Cyrix Cx4C87DLC NPX
+
+NPX for Cyrix Cx486DLC CPU.
+
+25 MHz.
+33 MHz.
+40 MHz.
+
+Intel i80387DX NPX pin compatible.
+
+Technology: CMOS.
+
+
+    3.21  IIT IIT-4C87 NPX
+
+    3.21.1  IIT IIT-4C87DLC NPX
+
+NPX for 486DLC CPU.
+
+40 MHz.
+
+Intel i80387DX NPX pin compatible.
+
+Technology: CMOS.
+
+
+    3.21.2  IIT IIT-4C87 NPX announcements
+
+Clock doubled versions of IIT-4C87DLC NPX.
+
+
+    3.22  Intel i80487 NPX
+
+NPX for Intel i80486SX CPU.
+
+
+    3.22.1  Intel i80487SX NPX
+
+In fact an Intel i80486DX CPU with different pin layout (in Intel i80487SX NPX
+socket) and one extra pin assigned to disable the Intel i80486SX CPU. The
+Intel i80486SX CPU can be removed.
+
+20 MHz: 3250 mW.
+25 MHz: $329.
+
+Package: 169 pin PGA (Pin Grid Array).
+
+Technology: CMOS.
+
+ID: step level A0: DH = 0x04 (family ID), DL = 0x20 (model ID, revision),
+    step level B0: DH = 0x04 (family ID), DL = 0x21 (model ID, revision).
+
+
+    3.22.2  Intel i80487 NPX
+
+In fact an Intel i80486DX CPU with Intel i80486SX CPU pin layout (in
+Intel i80486SX CPU socket).
+
+25 MHz: $329.
+
+Technology: CMOS.
+
+
+    3.23  Cyrix Cx487S NPX
+
+NPX for Cyrix FasCache Cx486D CPU.
+
+Technology: CMOS.
+
+
+    3.24  Weitek Abacus 4167 NPX
+
+NPX for Intel i80486 CPU.
+
+Not Intel i80387 NPX instruction compatible.
+
+25 MHz: 2500 mW, $299.
+33 MHz: $529.
+
+Package: 142 pin, 3 row PGA (Pin Grid Array).
+
+
+
+
+Credits: Marc E. Nijdam,
+         Norbert Juffa (norbert@iit.com):
+           Performance Comparison Intel 386DX, Intel RapidCAD, C&T 38600DX,
+           Cyrix 486DLC (USENET News),
+           Everything You Always Wanted to Know about Math Coprocessors
+           (USENET News),
+         George Wang (georgew@pacsg.csg.mot.com),
+         Shark Yeuk-Hai Mok (yhmok@shark.mti.sgi.com),
+         Wayne Schlitt (backbone!wayne@tower.tssi.com),
+         Dmitry Stefankov (wizard@npi.msu.su),
+         Alex V. Potemkin (avp@iron.misa.ac.ru).
+
+
+           
+
+Compiled, Copyright 1993, 1994, 1995 by A. Offerman. Permission to use, copy
+or distribute this document in a non-commercial way for non-commercial use is
+hereby granted, provided that this copyright and permission notice appear in
+all copies. All other rights reserved.
+
+This document is provided "as is" without expressed or implied warranty.
+
+The specific products and their respective manufacturers are not to be taken
+as endorsements of, nor commercials for, the manufacturer.
+-- 
+******************************************************************************
+*  A. Offerman    <offerman@einstein.et.tudelft.nl>                          *
+*  Delft University of Technology, Dept. of Comp.Sc., Dept. of Electr.Eng.   *
+*                                                                            *
+*  Maintainer of the Personal Computer CHIPLIST:                             *
+*    http://einstein.et.tudelft.nl/~offerman/chiplist.html                   *
+*                                                                            *
+*  Good writers borrow from others. Great writers, they steal.               *
+******************************************************************************

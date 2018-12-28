@@ -1,0 +1,2667 @@
+From guido@cwi.nl Mon Aug  1 17:12:26 1994
+Newsgroups: alt.binaries.sounds.misc,alt.binaries.sounds.d,comp.dsp,alt.answers,comp.answers,news.answers
+From: guido@cwi.nl (Guido van Rossum)
+Subject: FAQ: Audio File Formats (part 1 of 2)
+Followup-To: alt.binaries.sounds.d,comp.dsp
+Supersedes: <audio-part1_767261825@charon.cwi.nl>
+Nntp-Posting-Host: voorn.cwi.nl
+Reply-To: guido@cwi.nl
+Organization: CWI, Amsterdam
+Date: Mon, 1 Aug 1994 08:45:41 GMT
+
+Archive-name: audio-fmts/part1
+Submitted-by: Guido van Rossum <guido@cwi.nl>
+Version: 3.09
+Last-modified: 1-Aug-1994
+
+FAQ: Audio File Formats
+=======================
+
+Table of contents
+-----------------
+
+Introduction
+Device characteristics
+Popular sampling rates
+Compression schemes
+Current hardware
+File formats
+File conversions
+Playing audio files on UNIX
+Playing audio files on micros
+The Sound Site Newsletter
+Posting sounds
+
+Appendices (in part 2):
+
+FTP access for non-internet sites
+AIFF Format (Audio IFF)
+The NeXT/Sun audio file format
+IFF/8SVX Format
+Playing sound on a PC
+The EA-IFF-85 documentation
+US Federal Standard 1016 availability
+Creative Voice (VOC) file format
+RIFF WAVE (.WAV) file format
+U-LAW and A-LAW definitions
+AVR File Format
+The Amiga MOD Format
+
+
+Introduction
+------------
+
+This is version 3 of this FAQ, which I started in November 1991 under
+the name "The audio formats guide".  I bumped the major version number
+again at the occasion of the split in two parts: part one is the main
+text and part two consists of the collection of appendices.
+
+I am posting this about once a fortnight, either unchanged (just to
+inform new readers), or updated (if I learn more or when new hardware
+or software becomes popular).  I post to alt.binaries.sounds.{misc,d}
+and to comp.dsp, for maximal coverage of people interested in audio,
+and to {news,comp}.answers, for easy reference.
+
+The entire FAQ is also available by anonymous ftp from ftp.cwi.nl,
+directory pub/audio, files AudioFormats.{part1,part2}.
+
+BTW: All FAQs, including this one, are available for anonymous ftp on
+the archive site rtfm.mit.edu in directory /pub/usenet/news.answers/.
+The name under which a FAQ is archived appears in the "Archive-Name:"
+line at the top of the article.  This FAQ is archived as
+audio-fmts/part[12].
+
+A companion posting with subject "Changes to: ..." is occasionally
+posted listing the diffs between a new version and the last.  This is
+not reposted, and it is suppressed when the diffs are bigger than the
+new version.
+
+Send updates, comments and questions to <guido@cwi.nl>.  I'd like to
+thank everyone who sent updates in the past.
+
+--Guido van Rossum, CWI, Amsterdam <guido@cwi.nl>
+
+
+Device characteristics
+----------------------
+
+In this text, I will only use the term "sample" to refer to a single
+output value from an A/D converter, i.e., a small integer number
+(usually 8 or 16 bits).
+
+Audio data is characterized by the following parameters, which
+correspond to settings of the A/D converter when the data was
+recorded.  Naturally, the same settings must be used to play the data.
+
+- sampling rate (in samples per second), e.g. 8000 or 44100
+
+- number of bits per sample, e.g. 8 or 16
+
+- number of channels (1 for mono, 2 for stereo, etc.)
+
+Approximate sampling rates are often quoted in Hz or kHz ([kilo-]
+Hertz), however, the politically correct term is samples per second
+(samples/sec).  Sampling rates are always measured per channel, so for
+stereo data recorded at 8000 samples/sec, there are actually 16000
+samples in a second.  I will sometimes write 8 k as a shorthand for
+8000 samples/sec.
+
+Multi-channel samples are generally interleaved on a frame-by-frame
+basis: if there are N channels, the data is a sequence of frames,
+where each frame contains N samples, one from each channel.  (Thus,
+the sampling rate is really the number of *frames* per second.)  For
+stereo, the left channel usually comes first.
+
+The specification of the number of bits for U-LAW (pronounced mu-law
+-- the u really stands for the Greek letter mu) samples is somewhat
+problematic.  These samples are logarithmically encoded in 8 bits,
+like a tiny floating point number; however, their dynamic range is
+that of 12 bit linear data.  Source for converting to/from U-LAW
+(written by Jef Poskanzer) is distributed as part of the SOX package
+mentioned below; it can easily be ripped apart to serve in other
+applications.  The official definition is the CCITT standard G.711.
+
+There exists another encoding similar to U-LAW, called A-LAW, which
+is used as a European telephony standard.  There is less support for
+it in UNIX workstations.
+
+(See the Appendix for some formulae describing U-LAW and A-LAW.)
+
+
+Popular sampling rates
+----------------------
+
+Some sampling rates are more popular than others, for various reasons.
+Some recording hardware is restricted to (approximations of) some of
+these rates, some playback hardware has direct support for some.  The
+popularity of divisors of common rates can be explained by the
+simplicity of clock frequency dividing circuits :-).
+
+Samples/sec     Description
+
+5500            One fourth of the Mac sampling rate (rarely seen).
+
+7333            One third of the Mac sampling rate (rarely seen).
+
+8000            Exactly 8000 samples/sec is a telephony standard that
+                goes together with U-LAW (and also A-LAW) encoding.
+                Some systems use an slightly different rate; in
+                particular, the NeXT workstation uses 8012.8210513,
+                apparently the rate used by Telco CODECs.
+
+11 k            Either 11025, a quarter of the CD sampling rate,
+                or half the Mac sampling rate (perhaps the most
+                popular rate on the Mac).
+
+16000           Used by, e.g. the G.722 compression standard.
+
+18.9 k          CD-ROM/XA standard.
+
+22 k            Either 22050, half the CD sampling rate, or the Mac
+                rate; the latter is precisely 22254.545454545454 but
+                usually misquoted as 22000.  (Historical note:
+                22254.5454... was the horizontal scan rate of the
+                original 128k Mac.)
+
+32000           Used in digital radio, NICAM (Nearly Instantaneous
+                Compandable Audio Matrix [IBA/BREMA/BBC]) and other
+                TV work, at least in the UK; also long play DAT and
+                Japanese HDTV.
+
+37.8 k          CD-ROM/XA standard for higher quality.
+
+44056           This weird rate is used by professional audio
+                equipment to fit an integral number of samples in a
+                video frame.
+
+44100           The CD sampling rate.  (DAT players recording
+                digitally from CD also use this rate.)
+
+48000           The DAT (Digital Audio Tape) sampling rate for
+                domestic use.
+
+Files samples on SoundBlaster hardware have sampling rates that are
+divisors of 1000000.
+
+While professinal musicians disagree, most people don't have a problem
+if recorded sound is played at a slightly different rate, say, 1-2%.
+On the other hand, if recorded data is being fed into a playback
+device in real time (say, over a network), even the smallest
+difference in sampling rate can frustrate the buffering scheme used...
+
+There may be an emerging tendency to standardize on only a few
+sampling rates and encoding styles, even if the file formats may
+differ.  The suggested rates and styles are:
+
+    rate (samp/sec) style mono/stereo
+
+    8000 8-bit U-LAW mono
+    22050 8-bit linear unsigned mono and stereo
+    44100 16-bit linear signed mono and stereo
+
+
+Compression schemes
+-------------------
+
+Strange though it seems, audio data is remarkably hard to compress
+effectively.  For 8-bit data, a Huffman encoding of the deltas between
+successive samples is relatively successful.  For 16-bit data,
+companies like Sony and Philips have spent millions to develop
+proprietary schemes.  Information about PASC (Philips' scheme) can be
+found in Advanced Digital Audio by Ken C. Pohlmann.
+
+Public standards for voice compression are slowly gaining popularity,
+e.g. CCITT G.721 (ADPCM at 32 kbits/sec) and G.723 (ADPCM at 24 and 40
+kbits/sec).  (ADPCM == Adaptive Delta Pulse Code Modulation.)  Sun
+Microsoft has placed the source code of a portable implementation of
+these algorithms (as well as G.711, which defines A-LAW and U-LAW) in
+the public domain (needless to say, their proprietary implementation
+distributed in binary form with Solaris is better :-).  One place to
+ftp this source code from is ftp.cwi.nl:/pub/audio/ccitt-adpcm.tar.Z.
+Source for another 32 kbits/sec ADPCM implementation, assumed to be
+compatible with Intel's DVI audio format, can be ftp'ed from
+ftp.cwi.nl:/pub/audio/adpcm.shar.  (** NOTE: if you are using v1.0,
+you should get v1.1, released 17-Dec-1992, which fixes a serious bug
+-- the quality of v1.1 is claimed to be better than U-LAW **)
+
+GSM 06.10 is a speech encoding in use in Europe that compresses 160
+13-bit samples into 260 bits (or 33 bytes), i.e. 1650 bytes/sec (at
+8000 samples/sec).  A free implementation can be ftp'ed from
+tub.cs.tu-berlin.de, file /pub/tubmik/gsm-1.0.tar.Z.
+
+There are also two US federal standards, 1016 (Code excited linear
+prediction (CELP), 4800 bits/s) and 1015 (LPC-10E, 2400 bits/s).  See
+also the appendix for 1016.
+
+Tony Robinson <ajr@eng.cam.ac.uk> has written a good FAST loss-less
+compression for lots of different audio formats (particularly good for
+WAV and MOD files).  The software is available by anonymous ftp from
+svr-ftp.eng.cam.ac.uk, directory misc, file shorten-1.08.tar.Z.
+
+(Note that U-LAW and silence detection can also be considered
+compression schemes.)
+
+Here's a note about audio codings by Van Jacobson <van@ee.lbl.gov>:
+Several people used the words "LPC" and "CELP" interchangably.  They
+are very different.  An LPC (Linear Predictive Coding) coder fits
+speech to a simple, analytic model of the vocal tract, then throws
+away the speech & ships the parameters of the best-fit model.  An LPC
+decoder uses those parameters to generate synthetic speech that is
+usually more-or-less similar to the original.  The result is
+intelligible but sounds like a machine is talking.  A CELP (Code
+Excited Linear Predictor) coder does the same LPC modeling but then
+computes the errors between the original speech & the synthetic model
+and transmits both model parameters and a very compressed
+representation of the errors (the compressed representation is an
+index into a 'code book' shared between coders & decoders -- this is
+why it's called "Code Excited").  A CELP coder does much more work
+than an LPC coder (usually about an order of magnitude more) but the
+result is much higher quality speech: The FIPS-1016 CELP we're working
+on is essentially the same quality as the 32Kb/s ADPCM coder but uses
+only 4.8Kb/s (the same as the LPC coder).
+
+The comp.compression FAQ has some text on the 6:1 audio compression
+scheme used by MPEG (a video compression standard-to-be).  It's
+interesting to note that video compression reaches much higher ratios
+(like 26:1).  This FAQ is ftp'able from rtfm.mit.edu in directory
+/pub/usenet/news.answers/compression-faq, files part1 and part2.
+
+Comp.compression also carries a regular posting "How to uncompress
+anything" by David Lemson <lemson@uiuc.edu>, which (tersely) hints on
+which program you need to uncompress a file whose name ends in .<foo>
+for almost any conceivable <foo>.  Ftp'able from ftp.cso.uiuc.edu
+in the directory /doc/pcnet as the file compression.
+
+Documentation on a digital cellular telephone system by Qualcomm Inc.
+can be ftp'ed from ftp.qualcomm.com:/pub/cdma; the vocoder is in
+appendix A.
+
+Apple has an Audio Compression/Expansion scheme called ACE (on the GS)
+/ MACE (on the Macintosh).  It's a lossy scheme that attempts to
+predict where the wave will go on the next sample. There's very little
+quality change on 8:4 compression, somewhat more for 8:3.  It does
+guarantee exactly 50% or 62.5% compression, though.  I believe MACE
+uses larger ratios/more loss, but I'm unsure of the specific numbers.
+(Marc Sira)
+
+
+Current hardware
+----------------
+
+I am aware of the following computer systems that can play back and
+(sometimes) record audio data, with their characteristics.  Note that
+for most systems you can also buy "professional" sampling hardware,
+which supports much better quality, e.g. >= 44.1 k 16 bits stereo.
+The characteristics listed here are a rough estimate of the
+capabilities of the basic hardware only (and even here I am on thin
+ice, with systems becoming ever more powerful).
+
+machine             bits            max sampling rate    #output channels
+
+Mac (all types)     8               22k                  1
+Mac (newer ones)    16              64k                  4(128)
+Apple IIgs          8               32k / >70k           16(st)
+PC/soundblaster pro 8               ?/(22k st, 44.1k mo) 1(st)
+PC/soundblaster 16  16              44.1k                1(st)
+PC/pas              8               44.1k st, 88.2k mo   1(st)
+PC/pas-16           16              44.1k st, 88.2k mo   1(st)
+PC/turtle beach multisound 16       44.1k                1(st)
+PC/cards with aria chipset 16       44.1k                1(st)
+PC/roland rap-10    16              44.1k                1(st)
+PC/gravis ultrasound 8/16           44.1k                14-32(st)
+Atari ST            8               22k                  1
+Atari STE,TT        8               50k                  2
+Atari Falcon 030    16              50k                  8(st)
+Amiga               8               varies above 29k     4(st)
+Sun Sparc           U-LAW           8k                   1
+Sun Sparcst. 10     U-LAW,8,16      48k                  1(st)
+NeXT                U-LAW,8,16      44.1k                1(st)
+SGI Indigo          8,16            48k                  4(st)
+SGI Indigo2,Indy    8,16            48k                  16(st,4-channel)
+Acorn Archimedes    ~U-LAW          ~180k                8(st)
+Sony NWS-3xxx       U,A,8,16        8-37.8k              1(st)
+Sony NWS-5xxx       U,A,8,16        8-48k                1(st)
+VAXstation 4000     U-LAW           8k                   1
+DEC 3000            U-LAW           8k                   1
+DEC 5000/20-25      U-LAW           8k                   1
+Tandy 1000/*L*      8               >=44k                1
+Tandy 2500          8               >=44k                1
+HP9000/705,710,425e U,A-LAW,16      8k                   1
+HP9000/715,725,735  U,A-LAW,16      48k                  1(st)
+HP9000/755 option:  U,A-LAW,16      48k                  1(st)
+NCD MCX terminal    U,A,8,16        52k                  1(st)
+
+4(st) means "four voices, stereo"; sampling rates xx/yy are
+different recording/playback rates; *L* is any type with 'L' in it.
+
+All these machines can play back sound without additional hardware,
+although the needed software is not always standard; also, some
+machines need external hardware to record sound (or to record at
+higher quality, like the NeXT, whose built-in sampling hardware only
+does 8000 samples/sec in U-LAW).  Please don't send me details on
+optional or 3rd party hardware, there is too much and it is really
+beyond the scope of this FAQ.  In particular, there is a separate
+newsgroup devoted to PC sound cards: comp.sys.ibm.pc.soundcard, which
+includes FAQ of its own (also posted to comp.answers and news.answers).
+
+The new VAXstation 4000 (VLC and model 60) series lets you PLAY audio
+(.au) files, and the package DECsound will let you do the recording.
+In fact, DECsound is given away free with Motif 1.1 and supports the
+VAXstation, Sun SPARCstation, DECvoice, and DECaudio devices.  Sun
+sound files work without change.  The Alpha systems also have DECsound
+bundled with Motif.  Also, the DEC2000/300 (aka DECpc AXP 150) can use
+a Microsoft Sound Card, with AudioFile (see below) for sound.
+
+Notes for the DECstation 5000/20-25: You need either XMedia tools from
+DEC ($$$$), or the AudioFile package (which works nicely) from
+crl.dec.com (see below). The audio device is "/dev/bba", you cannot
+send ".au" files directly to the device, the Xmedia/AF software
+provide an "audioserver" which must be run to play/record sounds.
+
+The SGI Personal IRIS 4D/30 and 4D/35 have the same capabilities as
+the Indigo. The audio board was optional on the 4D/30.
+The Indigo2 and Indy features are a superset of the Indigo features.
+
+The new Apple Macs have more powerful audio hardware; the latest
+models have built-in microphones.
+
+Software exists for the PC that can play sound on its 1-bit speaker
+using pulse width modulation (see appendix); the Soundblaster board
+records at rates up to 13 k and plays back up to 22 k (weird
+combination, but that's the way it is).
+
+Here's some info about the newest Atari machine, the Falcon030.  This
+machine has stereo 16 bit CODECs and a 32 MHz Motorola 56001 that can
+handle 8 channels of 16 bit audio, up to 50 khz/channel with
+simultaneous playback and record.  The Falcon DMA sound engine is also
+compatible with the 8 bit stereo DMA used on the STe and TT. All of
+these systems use signed data.
+
+On the NeXT, the Motorola 56001 DSP chip is programmable and you can
+(in principle) do what you want.  The SGI Indigo uses the same DSP chip but
+it can't be programmed by users -- SGI prefers to offer it as a shared
+system resource to multiple applications, thus enabling developers to
+program audio with their Audio Library and avoid code modifications
+for execution on future machines with different audio hardware, i.e. a
+different DSP. For example, the Indigo2 and Indy do not have a DSP chip.
+
+The Amiga also has a 6-bit volume, which can be used to produce
+something like a 14-bit output for each voice.  The hardware can also
+use one of each voice-pair to modulate the other in FM (period) or AM
+(volume, 6-bits).
+
+The Acorn Archimedes uses a variation on U-LAW with the bit order
+reversed and the sign bit in bit 0.  Being a 'minority' architecture,
+Arc owners are quite adept at converting sound/image formats from
+other machines, and it is unlikely that you'll ever encounter sound in
+one of the Arc's own formats (there are several).
+
+Tandy notes (Jeffrey L. Hayes <tvdog@delphi.com>): The maximum
+sampling rate for output is at least 44k.  (I don't know the maximum
+rates; I have recorded at 22k and played at 44k.  Higher rates are
+probably possible.)  There is one output channel, not three.  The
+belief that there are 3 channels probably stems from the fact that
+Music.pdm, bundled with these machines, can create 3- channel music
+modules (analogous to Amiga .mod's).  Music.pdm probably does that
+because it is designed to work with the Tandy's 3-voice tone generator
+circuitry (compatible with the Texas Instruments SN76496 in the IBM
+PC-Jr) if there is insufficient RAM to load sound samples.  The Tandy
+chip is able to record at lower rates than it is able to play back, as
+is the Soundblaster (i.e., the divider used to program the chip to
+record is lower than that used to program the chip to play back).  The
+Tandy DAC can go faster than the original Soundblaster, however.
+
+The NCD MCX terminal has audio integrated with its X server.  The
+NCDAudio server is an extension of the X server, working together with
+it, with stress on the networking capability of sound transmission.
+The NCDAudio API provides format handling (ULAW8, Linear Unsig 8,
+Linear Sig 8, Linear Sig 16 MSB, Linear Unsig 16 MSB), flowing (to the
+server, from the server, to the i/o, from the i/o), wave form
+generators (Square, Sine, Saw, Constant) and the capability of area
+broadcast using UDP.  Provision for manipulating data files
+(SND, WAV, VOC & AU) is also provided.
+
+CD-I machines form a special category.  The following formats are used:
+
+     - PCM 44.1 kHz standard CD format
+     - ADPCM - Addaptive Delta PCM
+       - Level A 37.8 kHz 8-bit
+       - Level B 37.8 kHz 4-bit
+       - Level C 18.9 kHz 4-bit
+
+
+File formats
+------------
+
+Historically, almost every type of machine used its own file format
+for audio data, but some file formats are more generally applicable,
+and in general it is possible to define conversions between almost any
+pair of file formats -- sometimes losing information, however.
+
+File formats are a separate issue from device characteristics.  There
+are two types of file formats: self-describing formats, where the
+device parameters and encoding are made explicit in some form of
+header, and "raw" formats, where the device parameters and encoding
+are fixed.
+
+Self-describing file formats generally define a family of data
+encodings, where a header fields indicates the particular encoding
+variant used.  Headerless formats define a single encoding and usually
+allows no variation in device parameters (except sometimes sampling
+rate, which can be a pain to figure out other than by listening to the
+sample).
+
+The header of self-describing formats contains the parameters of the
+sampling device and sometimes other information (e.g. a
+human-readable description of the sound, or a copyright notice).  Most
+headers begin with a simple "magic word".  (Some formats do not simply
+define a header format, but may contain chunks of data intermingled
+with chunks of encoding info.)  The data encoding defines how the
+actual samples are stored in the file, e.g. signed or unsigned, as
+bytes or short integers, in little-endian or big-endian byte order,
+etc.  Strictly spoken, channel interleaving is also part of the
+encoding, although so far I have seen little variation in this area.
+
+Some file formats apply some kind of compression to the data, e.g.
+Huffman encoding, or simple silence deletion.
+
+Here's an overview of popular file formats.
+
+        Self-describing file formats
+        ----------------------------
+
+extension, name   origin          variable parameters (fixed; comments)
+
+.au or .snd       NeXT, Sun       rate, #channels, encoding, info string
+.aif(f), AIFF     Apple, SGI      rate, #channels, sample width, lots of info
+.aif(f), AIFC     Apple, SGI      same (extension of AIFF with compression)
+.iff, IFF/8SVX    Amiga           rate, #channels, instrument info (8 bits)
+.voc              Soundblaster    rate (8 bits/1 ch; can use silence deletion)
+.wav, WAVE        Microsoft       rate, #channels, sample width, lots of info
+.sf               IRCAM           rate, #channels, encoding, info
+none, HCOM        Mac             rate (8 bits/1 ch; uses Huffman compression)
+none, MIME        Internet        (see below)
+none, NIST SPHERE DARPA speech community (see below)
+.mod or .nst      Amiga           (see below)
+
+Note that the filename extension ".snd" is ambiguous: it can be either
+the self-describing NeXT format or the headerless Mac/PC format, or
+even a headerless Amiga format.
+
+I know nothing for sure about the origin of HCOM files, only that
+there are a lot of them floating around on our system and probably at
+FTP sites over the world.  The filenames usually don't have a ".hcom"
+extension, but this is what SOX (see below) uses.  The file format
+recognized by SOX includes a MacBinary header, where the file
+type field is "FSSD".  The data fork begins with the magic word "HCOM"
+and contains Huffman compressed data; after decompression it it is 8
+bits unsigned data.
+
+IFF/8SVX allows for amplitude contours for sounds (attack/decay/etc).
+Compression is optional (and extensible); volume is variable; author,
+notes and copyright properties; etc.
+
+AIFF, AIFC and WAVE are similar in spirit but allow more freedom in
+encoding style (other than 8 bit/sample), amongst others.
+
+There are other sound formats in use on Amiga by digitizers and music
+programs, such as IFF/SMUS.
+
+Appendices describes the NeXT and VOC formats; pointers to more info
+about AIFF, AIFC, 8SVX and WAVE (which are too complex to describe
+here) are also in appendices.
+
+DEC systems (e.g. DECstation 5000) use a variant of the NeXT format
+that uses little-endian encoding and has a different magic number
+(0x0064732E in little-endian encoding).
+
+Standard file formats used in the CD-I world are IFF but on the disc
+they're in realtime files.
+
+An interesting "interchange format" for audio data is described in the
+proposed Internet Standard "MIME", which describes a family of
+transport encodings and structuring devices for electronic mail.  This
+is an extensible format, and initially standardizes a type of audio
+data dubbed "audio/basic", which is 8-bit U-LAW data sampled at 8000
+samples/sec.
+
+The "IRCAM" sound file system has now been superseded by the so-called
+"BICSF" (for Berkeley/IRCAM/CARL Sound File system) software release.
+More recently, there has been an effort at Princeton (Prof. Paul
+Lansky) and Stanford (Stephen Travis Pope) to standardize several
+extensions to BICSF.  A description of BICSF and the
+Princeton/Stanford extensions is available by anonymous ftp from
+ftp.cwi.nl, in directory /pub/audio/BICSF-info.  This file contains
+further ftp pointers to software.
+
+A sound file format popular in the DARPA speech community is the NIST
+SPHERE standard.  The most recent version of the SPHERE package is
+available via anonymous ftp from jaguar.ncsl.nist.gov in compressed
+tar form as "sphere-v.tar.Z" (where "v" is the version code).  The
+NIST SPHERE header is an object-oriented, 1024-byte blocked, ASCII
+structure which is prepended to the waveform data.  The header is
+composed of a fixed-format portion followed by an object-oriented
+variable portion.  I have placed a short description of NIST SPHERE on
+ftp.cwi.nl:/pub/audio/NIST-SPHERE.
+
+Finally, a somewhat different but popular format are "MOD" files,
+usually with extension ".mod" or ".nst" (they can also have a prefix
+of "mod.").  This originated at the Amiga but players now exist for
+many platforms.  MOD files are music files containing 2 parts: (1) a
+bank of digitized samples; (2) sequencing information describing how
+and when to play the samples.  See the appendix "The Amiga MOD Format"
+for a description of this file format (and pointers to ftp'able
+players and example MOD files).
+
+        Headerless file formats
+        -----------------------
+
+extension       origin          parameters
+or name
+
+.snd, .fssd     Mac, PC         variable rate, 1 channel, 8 bits unsigned
+.ul             US telephony    8 k, 1 channel, 8 bit "U-LAW" encoding
+.snd?           Amiga           variable rate, 1 channel, 8 bits signed
+
+It is usually easy to distinguish 8-bit signed formats from unsigned
+by looking at the beginning of the data with 'od -b <file | head';
+since most sounds start with a little bit of silence containing small
+amounts of background noise, the signed formats will have an abundance
+of bytes with values 0376, 0377, 0, 1, 2, while the unsigned formats
+will have 0176, 0177, 0200, 0201, 0202 instead.  (Using "od -c" will
+also show any headers that are tacked in front of the file.)
+
+The Apple IIgs records raw data in the same format as the Mac, but
+uses a 0 byte as a terminator; samples with value 0 are replaced by 1.
+
+        Sound formats and the Apple Macintosh
+        -------------------------------------
+
+(Thanks to Bill Houle, <Bill.Houle@SanDiegoCA.NCR.COM>)
+
+                             SOX/DOS   MAC
+Sound Format           file ext  type  Mac program to convert to 'snd'
+---------------------- --------  ----  -------------------------------
+Mac snd                .snd      sfil  [n/a]
+Amiga IFF/8SVX         .iff            AmigaSndConverter, BST
+Amiga SoundTracker     .mod      STrk  ModVoicer
+Audio IFF              .aiff     AIFF  SoundExtractor, Sample Editor,
+                                       UUTool, BST, M5Mac
+DSP Designer                     DSPs  SoundHack
+IRCAM                  .sf       IRCM  SoundHack
+MacMix                           MSND  SoundHack
+RIFF WAVE              .wav            SoundExtractor, BST, Balthazar
+SoundBlaster           .voc            SoundExtractor, BST
+SoundDesigner/AudioMedia         Sd2f  SoundHack
+Sound[Edit|Cap|Wave]   .hcom     FSSD  SoundExtractor, SoundEdit,
+                                       Wavicle, BST
+Sun uLaw/Next .snd     .au/.snd  NxTS  SoundExtractor, SoundHack,
+                                       au<->snd, UUTool, BST
+
+
+File conversions
+----------------
+
+        SOX (UNIX, PC, Amiga)
+        ---------------------
+
+The most versatile tool for converting between various audio formats
+is SOX ("Sound Exchange").  It can read and write various types of
+audio files, and optionally applies some special effects (e.g. echo,
+channel averaging, or rate conversion).
+
+SOX recognizes all filename extensions listed above except ".snd",
+which would be ambiguous anyway, and ".wav" (but there's a patch, see
+below).  Use type ".au" for NeXT ".snd" files.  Mac and PC ".snd"
+files are completely described by these parameters:
+
+        -t raw -b -u -r 11000
+
+(or -r 22000 or -r 7333 or -r 5500; 11000 seems to be the most common
+rate).
+
+The source for SOX, version 6, platchlevel 8, was posted to
+alt.sources, and should be widely archived.  (Patch 9 was posted later
+and incporporates some important .wav fixes.)  To save you the trouble
+of hunting it down, it can be gotten by anonymous ftp from
+wuarchive.wustl.edu, in the directory usenet/alt.sources/articles,
+files 7288.Z through 7295.Z.  (These files are compressed news
+articles containing shar files, if you hadn't guessed.)  I am sure
+many sites have similar archives, I'm just listing one that I know of
+and which carries a lot of this kind of stuff.  (Also see the appendix
+if you don't have Internet access.)
+
+A compressed tar file containing the same version of SOX is available
+by anonymous ftp from ftp.cwi.nl, in directory
+/pub/audio/sox<version>.tar.Z.  You may be able to locate a nearer
+version using archie!
+
+Ports of SOX:
+
+- The source as posted should compile on any UNIX and PC system.
+
+- A PC version is available by ftp from ftp.cwi.nl (see above) as
+  pub/audio/sox5dos.zip; also available from the garbo mail server.
+
+- The latest Amiga SOX is available via anonymous ftp to
+  wuarchive.wustl.edu, files systems/amiga/audio/utils/amisox*.  (See
+  below for a non-SOX solution.)
+  The final release of r6 will compile as distributed on the Amiga with
+  SAS/C version 6.  Binaries (since many Amiga users do not own
+  compilers) will continue to be available for FTP.
+
+SOX usage hints:
+
+- Often, the filename extension of sound files posted on the net is
+  wrong.  Don't give up, try a few other possibilities using the
+  "-t <type>" option.  Remember that the most common file type is
+  unsigned bytes, which can be indicated with "-t ub".  You'll have to
+  guess the proper sampling rate, but often it's 11k or 22k.
+
+- In particular, with SOX version 4 (or earlier), you have to
+  specify "-t 8svx" for files with an .iff extension.
+
+- When converting linear samples to U-LAW using the .au type for the
+  output file, you must specify "-U" for the output file, otherwise
+  you will end up with a file containing a NeXT/Sun header but linear
+  samples -- only the NeXT will play such files correctly.  Also, you
+  must explicitly specify an output sampling rate with "-r 8000".
+  (This may seem fixed for most cases in version 5, but it is still
+  occasionally necessary, so I'm keeping this warning in.)
+
+        Sun Sparc
+        ---------
+
+On Sun Sparcs, starting at SunOS 4.1, a program "raw2audio" is
+provided by Sun (in /usr/demo/SOUND -- see below) which takes a raw
+U-LAW file and turns it into a ".au" file by prefixing it with an
+appropriate header.
+
+        NeXT
+        ----
+
+On NeXTs, you can usually rename .au files to .snd and it'll work like
+a charm, but some .au files lack header info that the NeXT needs.
+This can be fixed by using sndconvert:
+
+        sndconvert -c 1 -f 1 -s 8012.8210513 -o nextfile.snd sunfile.au
+
+        SGI Indigo, Indigo2, Indy and Personal IRIS
+        -------------------------------------------
+
+SGI supports "soundfiler" (in /usr/sbin), a program similar in
+spirit to SOX but with a GUI.  Soundfiler plays aiff, aifc, NeXT/Sun
+and .wav formats.  It can do conversions between any of these formats
+and to and from raw formats including mulaw.  It also does sample rate
+conversions.
+
+Three shell commands are also provided that give the same functionality:
+"sfplay", "sfconvert", and "aifcresample" (all in /usr/sbin).
+
+        Amiga
+        -----
+
+Mike Cramer's SoundZAP can do no effects except rate change and it
+only does conversions to IFF, but it is generally much faster than
+SOX.  (Ftp'able from the same directory as amisox above.)
+
+Newer versions of OmniPlay (see below) will also convert to IFF.
+
+        Tandy
+        -----
+
+The Tandy uses a proprietary format, which can use compression
+(see appendix).  Jeffrey L. Hayes <tvdog@delphi.com> writes:
+
+There is in fact a Windows 3.1 sound driver for the Tandy 2500-series 
+available from Radio Shack.  My informant says:  "Say that you have a 
+2500SX/33 and you lost your Windows Utilities/Drivers disk.  The cost is 
+$5.00."  (The driver will work on any 2500.)
+
+Version 2.00 of Conv2snd by Kenneth Udut by Kenneth Udut is now on
+Simtel.  It converts any 8-bit mono unsigned PCM file to Tandy
+DeskMate .snd format.  The new version recognizes RIFF WAVE headers
+and comes with a utility to convert .snd to .wav, Snd2wav.
+
+In addition to the .snd format used by Sound.pdm, Tandy used an .sng format 
+with Music.pdm for song files.  .sng files are analogous to Amiga .mod 
+files, but they contain only the sequencing information.  The samples are 
+expected to be in .snd files in the current directory for Music.pdm.  It 
+should be possible to convert .sng to .mod - when I get around to it!
+
+I am collecting information and programs for the Tandy DAC chip.  I have 
+written a DOS .wav player for the Tandy DAC, as well as a program to make 
+the Tandy DAC emulate a Covox DAC for use with programs that support the 
+Covox or a DAC on a parallel port.  Those interested may write to me and 
+ask for the "Tandy DAC package" - help is needed!  The package includes 
+source code and programming information on the Tandy chip.  A DOS .wav 
+recorder and an Amiga .mod player for the Tandy DAC are in progress.  There 
+are two other programs (to my knowledge) to record and play back sounds on 
+a Tandy - Sampler and Tndsnd.  These programs are on Delphi but not on the 
+Internet as far as I know; users not on Delphi can write to me and ask for 
+them.  Those wishing to make a public announcement regarding the Tandy DAC 
+should post to comp.sys.tandy.
+
+Tandy now includes Soundblaster support in its machines.  New Tandy's do 
+not have the proprietary Tandy DAC.
+
+
+        Apple Macintosh
+        ---------------
+
+Bill Houle sent the following list:
+
+Popular commercial apps are indicated with a [*].  All other programs
+mentioned are shareware/freeware available from SUMEX and the various
+mirror sites, or check archie for the nearest FTP location.
+
+MAC SOUND CONVERSION PROGRAMS
+
+SoundHack [Tom Erbe, tom@mills.edu]
+  Can read/write Sound Designer II, Audio IFF, IRCAM, DSP Designer and NeXT 
+  .snd (or Sun .au); 8-bit uLaw, 8-bit linear, 32-bit floating point and 16-bit
+  linear data encoding.  Can read (but not write) raw data files.  Implements
+  soundfile convolution, a phase vocoder, a binaural filter and an amplitude 
+  analysis & gain change module.
+
+SoundExtractor [Alberto Ricci, FRicci@polito.it]
+  Extracts 'snd' resources, AIFF, SoundEdit, VOC, and WAV data from
+  practically anything, converting to 'snd' files.
+
+Balthazar [Craig Marciniak, AOL:TemplarDev]
+  Converts WAV files to 'snd'.
+  
+Brian's Sound Tool [Brian Scott, bscott@ironbark.ucnv.edu.au]
+  Converts 'snd' or SoundEdit to WAV.  Can also convert WAV, VOC, AIFF, Amiga
+  8SVX and uLaw to 'snd'.
+
+AmigaSndConverter [Povl H. Pederson, eco861771@ecostat.aau.dk]
+  Converts Amiga IFF/8SVX to Mac 'snd'.
+
+au<->Mac [Victor J. Heinz, vic:wbst128@xerox.com]
+  Converts Sun uLaw to Mac 'snd'.
+  
+ULAW [Rod Kennedy, rod@faceng.anu.edu.au]
+  Converts 'snd' to Sun uLaw.
+
+UUTool [Bernie Wieser, wieser@acs.ucalgary.ca]
+  Primarily a uuencode/decode program, but in true Swiss Army Knife
+  fashion can also read/write Sun uLaw, AIFF, and 'snd' files.
+
+ModVoicer [Kip Walker, Kip_Walker@mcimail.com]
+  Converts Amiga MOD voices into SoundEdit files or 'snd' resources.
+
+Music 5 Mac [Simone Bettini, space@maya.dei.unipd.it]
+  Primarily a Music Synthesis system, but can also convert between 'snd', AIFF,
+  and IBM .DAT(?).
+
+See also the section on players -- some players also do conversions.
+
+
+Playing audio files on UNIX
+---------------------------
+
+The commands needed to play an audio file depend on the file format
+and the available hardware and software.  Most systems can only
+directly play sound in their native format; use a conversion program
+(see above) to play other formats.
+
+        Sun Sparcstation running SunOS 4.x
+        ----------------------------------
+
+Raw U-LAW files can be played using "cat file >/dev/audio".
+
+A whole package for dealing with ".au" files is provided by Sun on an
+experimental basis, in /usr/demo/SOUND.  You may have to compile the
+programs first.  (If you can't find this directory, either you are not
+running SunOS 4.1 yet, or your system administrator hasn't installed
+it -- go ask him for it, not me!)  The program "play" in this
+directory recognizes all files in Sun/NeXT format, but a SS 1 or 2 can
+play only those using U-LAW encoding at 8 k -- the SS 10 hardware
+plays other encodings, too.
+
+If you ca't find "play", you can also cat a ".au" file to /dev/audio,
+if it uses U-LAW; the header will sound like a short burst of noise
+but the rest of the data will sound OK (really, the only difference in
+this case between raw U-LAW and ".au" files is the header; the U-LAW
+data is exactly the same).
+
+Finally, OpenWindows 3.0 has a full-fledged audio tool.  You can drop
+audio file icons into it, edit them, etc.
+
+        Sun Sparcstation running Solaris 2.0
+        ------------------------------------
+
+Under SVR4 (and hence Solaris 2.0), writing to /dev/audio from the
+shell is a bad idea, because the device driver will flush its queue as
+soon as the file is closed.  Use "audioplay" instead.  The supported
+formats and sampling rates are the same as above.
+
+        NeXT
+        ----
+
+On NeXT machines, the standard "sndplay" program can play all NeXT
+format files (this include Sun ".au" files).  It supports at least
+U-LAW at 8 k and 16 bits samples at 22 or 44.1 k.  It attempts
+on-the-fly conversions for other formats.
+
+Sound files are also played if you double-click on them in the file
+browser.
+
+        SGI Indigo, Indigo2, Indy and Personal IRIS
+        -------------------------------------------
+
+On SGI Indigo, Indigo2, Indy and the 4D/30 and /35 Personal IRIS workstations,
+"WorkSpace" plays audio files in .aiff, .aifc, .au, and .wav formats if
+you double click them and the sampling rate is one of 8000, 11025,
+16000, 22050, 32000, 44100, or 48000.  On the Personal IRIS, you need
+to have the audio board installed (check the output from hinv) and you
+must run IRIX 3.3.2 or 4.0 or higher.  These files can also be played
+with "soundfiler" and "sfplay".  ".aiff" and ".aifc" files at the above
+sampling rates can also be played with playaifc.  (All in /usr/sbin)
+
+There is no simple /dev/audio interface on these SGI machines.  (There
+was one on 4D/25 machines, reading and writing signed linear 8-bit
+samples at rates of 8, 16 and 32 k.)
+
+A program "playulaw" was posted as part of the "radio 2.0" release
+that I posted to several source groups; it plays raw U-LAW files on
+the Indigo, Indigo2, Indy or Personal IRIS audio hardware.
+
+        Sony NEWS
+        ---------
+
+The whole current Sony NEWS line (laptop, desktop, server) have
+builtin sound capabilities.  You can buy an external board for the
+older NEWS machines.  In the default mode (8k/8-bit mulaw), Sun .au
+files are directly supported (you can 'cat' .au files to /dev/sb0 and
+have them play.)  The /usr/sony/bin/sbplay command on NEWS-OS 6.0
+also supports Sun .au files.
+
+        Others
+        ------
+
+Most other UNIX boxes don't have audio hardware and thus can't play
+audio data.  This is actually rapidly changing and most new hardware
+that hits the market has some form of audio support.  Unfortunately
+there is no single portable interface for audio that comes near the
+acceptance and functionality (let alone code size :-) of X11 for
+graphics.  There are at least two network-transparent packages, both
+in some way based on the X11 architecture, that attempt to fillo the
+gap:
+
+DEC CRL's AudioFile supports Digital RISC systems running Ultrix,
+Digital Alpha AXP systems running OSF/1, Sun Sparcs, and SGI
+AL-capable systems (e.g., Indigo, Indy).  The source kit is located at
+ftp site crl.dec.com in /pub/DEC/AF.
+
+NCD's NetAudio supports NCD's MCX line of X terminals as well as
+Sparcs running either SunOS 4.1.3 or Solaris 2.2, using the /dev/audio
+interface (they claim it should be easy to port).  The source it
+located at ftp.x.org in contrib/netaudio.  It is also ported to SGI
+(tested on IRIX 5.x), and there are unconfirmed rumors that it is
+being ported to SCI and Linux.
+
+
+Playing audio files on the Vaxstation 4000 (VMS)
+------------------------------------------------
+
+1) Without DECsound
+
+".au" files can be played by COPYING them to device "SOA0:".  This
+device is set up by enabling the driver SODRIVER.  You can use the
+following command file:
+
+$!---------------- cut here -------------------------------
+$! sound_setup.com    enable SOUND driver
+$ run sys$system:sysgen
+connect soa0 /adapter=0 /csr=%x0e00 /vector=%o304 /driver=sodriver
+exit
+$ exit
+$!----------------- cut here ------------------------------------
+
+2) With DECsound (bundled with motif)
+
+Just start DECsound by selecting it from the session manager in the 
+applications menu. (Not there use "@vue$library:sound$vue_startup").
+Make sure settings; device type (vaxstation 4000) and play settings
+(headphone jack) are selected.  To play files from the DCL prompt 
+(handy if you want to play sounds on a remote workstation) set a 
+symbol up as follows; 
+PLAY == "$DECSOUND -VOLUME 50 -PLAY"
+usage;
+DCL> play sound.au
+
+3) Audio port
+
+The external audio port comes with a telephone-jack-like port.   For
+starters, you can plug a telephone RECEIVER right into this port to
+hear your first sound files.   After that, you can use the adapter
+(that came with the VaxStation), and plug in a small set of stereo
+speakers or headphones (the kind you'd plug into a WALKMAN, for 
+example), for more volume.  The adapter also has a microphone plug so
+that you can record sounds if DECsound is installed.
+
+
+Playing audio files on micros
+-----------------------------
+
+Most micros have at least a speaker built in, so theoretically all you
+need is the right software.  Unfortunately most systems don't come
+bundled with sound-playing software, so there are many public domain
+or shareware software packages, each with their own bugs and features.
+Most separate sound recording hardware also comes with playing
+software, most of which can play sound (in the file format used by
+that hardware) even on machines that don't have that hardware
+installed.
+
+        PC or compatible
+        ----------------
+
+Chris S. Craig announces the following software for PCs:
+
+ScopeTrax       This is a complete PC sound player/editor package.  Sounds
+                can be played back at ANY rate between 1kHz to 65kHz through
+                the PC speaker or the Sound Blaster.  It supports several
+                file formats including VOC, IFF/8SVX, raw signed and raw
+                unsigned.  A separate executable is provided to convert
+                .au and mu-law to raw format.  ScopeTrax requires EGA/VGA
+                graphics for editing and displaying sounds on a REALTIME
+                oscilloscope.  The package also includes:
+                      * An expanded memory player which can play sounds
+                        larger than 640K in size.
+                      * Basic (rough) sound compression/uncompression
+                        utilities.
+                      * Complete documentation.
+                The package is FREEWARE!  It is available on SIMTEL in the
+                PD1:[MSDOS.SOUND] directory.
+
+One of the appendices below contains a list of more programs to play
+sound on the PC.
+
+        Atari
+        -----
+
+For sounds on Atari STs - programs are in the atari/sound/players
+directory on atari.archive.umich.edu.
+
+        Tandy
+        -----
+
+On a Tandy 1000, sounds can be played and recorded with DeskMate Sound
+(SOUND.PDM), or if they not stored in compressed format, they can also
+be played be a program called PLAYSND.  No indication of whether
+PLAYSND is PD or not. It hasn't been updated since March of 89.
+
+        Amiga
+        -----
+
+On the Amiga, OmniPlay by David Champion <dgc3@midway.uchicago.edu>
+plays and converts IFF-8SVX, AIFF, WAV, VOC, .au, .snd, and 8 bit raw
+(signed, unsigned, u-law) samples.  As of version 1.23, OmniPlay will
+also convert any playable sample to 8SVX.  Files: wuarchive.wustl.edu
+in /systems/amiga/audio/sampleplayers/oplay123.lha (?)
+amiga.physik.unizh.ch in mus/play/oplay123.lha
+
+        Apple Macintosh
+        ---------------
+
+Malcolm Slaney from Apple writes:
+
+ "We do have tools to play sound back on most of our Unix hosts.  We wrote
+ a program called TcpPlay that lets us read a sound file on a Unix host,
+ open a TCP/IP connection to the Mac on my desk, and plays the file.  We
+ think of it as X windows for sound (at least a step in that direction.)
+
+ This software is available for anonymous FTP from ftp.apple.com.
+ Look for  ~ftp/pub/TcpPlay/TcpPlay.sit.hqx.
+
+ Finally, there are MANY tools for working with sound on the Macintosh. Three
+ applications that come to mind immediately are SoundEdit (formerly by
+ Farralon and now by MacroMind/Paracomp), Alchemy and Eric Keller's Signalyze.
+ There are lots of other tools available for sound editing (including some
+ of the QuickTime Movie tools.)"
+
+Bill Houle sent the following lists:
+
+Popular commercial apps are indicated with a [*].  All other programs
+mentioned are shareware/freeware available from SUMEX and the various
+mirror sites, or check archie for the nearest FTP location.
+
+MAC SOUND EDITORS
+
+Sample Editor [Garrick McFarlane, McFarlaneGA@Kirk.Vax.Aston.Ac.UK]
+  Plays AIFF and 'snd' sounds.  Can convert between AIFF and 'snd'.
+  Can record from built-in mic.  Can add effects such as fade,
+  normalize, delay, etc.
+
+Wavicle [Lee Fyock]
+  Plays SoundEdit files.  Can convert to 'snd'.  Can record from built-in mic.
+  Can add effects such as fade, filter, reverb, etc.
+
+[*]SoundEdit/SoundEdit Pro [Farallon/MacroMind*Paracomp]
+  Plays SoundEdit and 'snd' sounds.  Can read/write SoundEdit files and 'snd' 
+  sounds.  Can record from built-in mic.  Can add effects such as
+  echo, filter, reverb, etc.
+
+
+MAC SOUND PLAYERS
+
+Sound-Tracker  [Frank Seide]
+  Plays Amiga SoundTracker files in foreground or background.
+
+Macintosh Tracker [Thomas R. Lawrance, tomlaw@world.std.com]
+  Plays Amiga SoundTracker files in foreground or background. A port of Marc
+  Espie's Unix Tracker version with Frank Seide's core player thrown in for
+  good measure.
+
+The Player [Antoine Rosset & Mike Venturi]
+  Plays AIFF, SoundEdit, MOD, and 'snd' files.
+
+SoundMaster (aka [*]Kaboom!) [Bruce Tomlin]
+  Associates SoundEdit files to MacOS events.
+
+SndControl [Riccardo Ettore, 72277.1344@compuserve.com]
+  Associates 'snd' sounds to MacOS events.
+
+Canon 2 [Glenn Anderson, glenn@otago.ac.nz; Jeff Home, jeff@otago.ac.nz]
+  Plays AIFF or 'snd' files in foreground or background.
+
+Another Mac play/convert program: "It's called SoundApp. I wrote it,
+(franke1@llnl.gov) and it's FreeWare. It will play: SoundCap,
+SoundEdit, WAVE, VOC, MOD, Amiga IFF (8SVX), Sound Designer, AIFF, AU,
+Mac Resource, and DVI ADPCM. It can convert all the above to System 7
+sound resources (except MOD where just the samples are extracted.) And
+it will double buffer."
+
+
+The Sound Site Newsletter
+-------------------------
+
+An electronic publication with lots of info about digitised sound and
+sound formats, albeit mostly on PCs, is "The Sound Site Newsletter",
+maintained by David Komatsu <davek@uhunix.uhcc.hawaii.edu>.
+Issue 14 appeared in July 1993.  As of that issue, the Sound Site
+Newsletter has expanded its charter to include commercial products and
+will appear monthly.  There is now also a sound site network of ftp
+servers, bulletin boards and authors.  The Sound Site Newsletter (once
+again!) has its own ftp site: sound.usach.cl.
+
+The Sound Newsletter is posted to: comp.sys.ibm.pc.soundcard
+                                   comp.sys.ibm.pc.misc
+                                   rec.games.misc
+FTP: oak.oakland.edu (misc/sound)
+     garbo.uwasa.fi (pc/sound)
+     sound.usach.cl (pub/Sound/Newsltr) [Home Base]
+
+
+Posting sounds
+--------------
+
+The newsgroup alt.binaries.sounds.misc is dedicated to postings
+containing sound.  (Discussions related to such postings belong in
+alt.binaries.sounds.d.)
+
+There is no set standard for posting sounds; uuencoded files in most
+popular formats are welcome, if split in parts under 50 kBytes.  To
+accomodate automatic decoding software (such as the ":decode" command
+of the nn newsreader), please place a part indicator of the form
+(mm/nn) at the end of your subject meaning this is number mm of a
+total of nn part.
+
+It is recommended to post sounds in the format that was used for the
+original recording; conversions to other formats often lose
+information and would do people with identical hardware as the poster
+no favor.  For instance, convering 8-bit linear sound to U-LAW loses
+the lower few bits of the data, and rate changing conversions almost
+always add noise.  Converting from U-LAW to linear requires expansion
+to 16 bit samples if no information loss is allowed!
+
+U-LAW data is best posted with a NeXT/Sun header.
+
+If you have to post a file in a headerless format (usually 8-bit
+linear, like ".snd"), please add a description giving at least the
+sampling rate and whether the bytes are signed (zero at 0) or unsigned
+(zero at 0200).  However, it is highly recommended to add a header
+that indicates the sampling rate and encoding scheme; if necessary you
+can use SOX to add a header of your choice to raw data.
+
+Compression of sound files usually isn't worth it; the standard
+"compress" algorithm doesn't save much when applied to sound data
+(typically at most 10-20 percent), and compression algorithms
+specifically designed for sound (e.g. NeXT's) are usually
+proprietary.  (See also the section "Compression schemes" earlier.)
+
+From guido@cwi.nl Mon Aug  1 17:12:31 1994
+Newsgroups: alt.binaries.sounds.misc,alt.binaries.sounds.d,comp.dsp,alt.answers,comp.answers,news.answers
+From: guido@cwi.nl (Guido van Rossum)
+Subject: FAQ: Audio File Formats (part 2 of 2)
+Followup-To: alt.binaries.sounds.d,comp.dsp
+Supersedes: <audio-part2_767261825@charon.cwi.nl>
+Nntp-Posting-Host: voorn.cwi.nl
+Reply-To: guido@cwi.nl
+Organization: CWI, Amsterdam
+Date: Mon, 1 Aug 1994 08:45:47 GMT
+
+Archive-name: audio-fmts/part2
+Submitted-by: Guido van Rossum <guido@cwi.nl>
+Version: 3.09
+Last-modified: 1-Aug-1994
+
+Appendices
+==========
+
+Here are some more detailed pieces of info that I received by e-mail.
+They are reproduced here virtually without much editing.
+
+Table of contents
+-----------------
+
+FTP access for non-internet sites
+AIFF Format (Audio IFF)
+The NeXT/Sun audio file format
+IFF/8SVX Format
+Playing sound on a PC
+The EA-IFF-85 documentation
+US Federal Standard 1016 availability
+Creative Voice (VOC) file format
+RIFF WAVE (.WAV) file format
+U-LAW and A-LAW definitions
+AVR File Format
+The Amiga MOD Format
+The Sample Vision Format
+Some Miscellaneous Formats
+Tandy Deskmate .snd Format Notes
+
+
+------------------------------------------------------------------------
+FTP access for non-internet sites
+---------------------------------
+
+>From the sci.space FAQ:
+
+    Sites not connected to the Internet cannot use FTP directly, but
+    there are a few automated FTP servers which operate via email.
+    Send mail containing only the word HELP to ftpmail@decwrl.dec.com
+    or bitftp@pucc.princeton.edu, and the servers will send you
+    instructions on how to make requests.  (The bitftp service is no
+    longer available through UUCP gateways due to complaints about
+    overuse :-( )
+
+Also:
+
+    FAQ lists are available by anonymous FTP from rftm.mit.edu
+    and by email from mail-server@rtfm.mit.edu (send a message
+    containing "help" for instructions about the mail server).
+
+
+------------------------------------------------------------------------
+AIFF Format (Audio IFF) and AIFC
+--------------------------------
+
+This format was developed by Apple for storing high-quality sampled
+sound and musical instrument info; it is also used by SGI and several
+professional audio packages (sorry, I know no names).  An extension,
+called AIFC or AIFF-C, supports compression (see the last item below).
+
+I've made a BinHex'ed MacWrite version of the AIFF spec (no idea if
+it's the same text as mentioned below) available by anonymous ftp from
+ftp.cwi.nl; the file is /pub/audio/AudioIFF1.2.hqx.  A newer version
+is also available: /pub/audio/AudioIFF1.3.hqx.  But you may be better
+off with the AIFF-C specs, see below.
+
+Mike Brindley (brindley@ece.orst.edu) writes:
+
+"The complete AIFF spec by Steve Milne, Matt Deatherage (Apple) is
+available in 'AMIGA ROM Kernal Reference Manual: Devices (3rd Edition)'
+1991 by Commodore-Amiga, Inc.; Addison-Wesley Publishing Co.; 
+ISBN 0-201-56775-X, starting on page 435 (this edition has a charcoal
+grey cover).  It is available in most bookstores, and soon in many
+good librairies."
+
+According to Mark Callow (msc@sgi.com):
+
+A PostScript version of the AIFF-C specification is available via
+anonymous ftp on ftp.sgi.com as /sgi/aiff-c.9.26.91.ps.
+
+Benjamin Denckla <bdenckla@husc.harvard.edu> writes:
+
+A piece of information that may be of some use to people who want to use
+AIFF files with their Macintosh Think C programs:  AIFF data structures are
+contained in the file AIFF.h in the "Apple #Includes" folder that comes
+on the distribution disks.  I assume that this header file comes with 
+Apple programming products like MPW [C|C++] as well.  I found this out a 
+little too late: I had already coded my own structures.  These structures 
+of mine, along with other useful code for AIFF-based DSP in C, are 
+available for ftp at ftp.cs.jhu.edu in pub/dsp.
+
+An important file format for the Mac which is only mentioned once in the
+FAQ is the Sound Designer II file format.  There is also an older Sound
+Designer I format.  I have the SDII format in electronic form but I don't
+think I'm at liberty to distribute it.  It can be obtained by applying to
+become a 3rd Party Developer for Digidesign.  This process is simple
+(1-page application) and free.  Call Digidesign at 415-688-0600 for
+information.  The SDII file format is interesting in that all non-sample
+data (sample rate, channels, etc.) is contained in the resource fork and
+the data fork contains sample data only.
+
+------------------------------------------------------------------------
+The NeXT/Sun audio file format
+------------------------------
+
+Here's the complete story on the file format, from the NeXT
+documentation.  (Note that the "magic" number is ((int)0x2e736e64),
+which equals ".snd".)  Also, at the end, I've added a litte document
+that someone posted to the net a couple of years ago, that describes
+the format in a bit-by-bit fashion rather than from C.
+
+I received this from Doug Keislar, NeXT Computer.  This is also the
+Sun format, except that Sun doesn't recognize as many format codes.  I
+added the numeric codes to the table of formats and sorted it.
+
+
+SNDSoundStruct:  How a NeXT Computer Represents Sound
+
+The NeXT sound software defines the SNDSoundStruct structure to  
+represent sound.  This structure defines the soundfile and Mach-O  
+sound segment formats and the sound pasteboard type.  It's also used  
+to describe sounds in Interface Builder.  In addition, each instance  
+of the Sound Kit's Sound class encapsulates a SNDSoundStruct and  
+provides methods to access and modify its attributes.
+
+Basic sound operations, such as playing, recording, and cut-and-paste  
+editing, are most easily performed by a Sound object.  In many cases,  
+the Sound Kit obviates the need for in-depth understanding of the  
+SNDSoundStruct architecture.  For example, if you simply want to  
+incorporate sound effects into an application, or to provide a simple  
+graphic sound editor (such as the one in the Mail application), you  
+needn't be aware of the details of the SNDSoundStruct.  However, if  
+you want to closely examine or manipulate sound data you should be  
+familiar with this structure.
+
+The SNDSoundStruct contains a header, information that describes the  
+attributes of a sound, followed by the data (usually samples) that  
+represents the sound.  The structure is defined (in  
+sound/soundstruct.h) as:
+
+typedef struct {
+    int magic;               /* magic number SND_MAGIC */
+    int dataLocation;        /* offset or pointer to the data */
+    int dataSize;            /* number of bytes of data */
+    int dataFormat;          /* the data format code */
+    int samplingRate;        /* the sampling rate */
+    int channelCount;        /* the number of channels */
+    char info[4];            /* optional text information */
+} SNDSoundStruct;
+
+
+
+
+SNDSoundStruct Fields
+
+
+
+magic
+
+magic is a magic number that's used to identify the structure as a  
+SNDSoundStruct.  Keep in mind that the structure also defines the  
+soundfile and Mach-O sound segment formats, so the magic number is  
+also used to identify these entities as containing a sound.
+
+
+
+
+
+dataLocation
+
+It was mentioned above that the SNDSoundStruct contains a header  
+followed by sound data.  In reality, the structure only contains the  
+header; the data itself is external to, although usually contiguous  
+with, the structure.  (Nonetheless, it's often useful to speak of the  
+SNDSoundStruct as the header and the data.)  dataLocation is used to  
+point to the data.  Usually, this value is an offset (in bytes) from  
+the beginning of the SNDSoundStruct to the first byte of sound data.   
+The data, in this case, immediately follows the structure, so  
+dataLocation can also be thought of as the size of the structure's  
+header.  The other use of dataLocation, as an address that locates  
+data that isn't contiguous with the structure, is described in  
+"Format Codes," below.
+
+
+
+
+
+dataSize, dataFormat, samplingRate, and channelCount
+
+These fields describe the sound data.
+
+dataSize is its size in bytes (not including the size of the  
+SNDSoundStruct).
+
+dataFormat is a code that identifies the type of sound.  For sampled  
+sounds, this is the quantization format.  However, the data can also  
+be instructions for synthesizing a sound on the DSP.  The codes are  
+listed and explained in "Format Codes," below.
+
+samplingRate is the sampling rate (if the data is samples).  Three  
+sampling rates, represented as integer constants, are supported by  
+the hardware:
+
+Constant        Sampling Rate (samples/sec) 
+
+SND_RATE_CODEC  8012.821        (CODEC input)
+SND_RATE_LOW    22050.0 (low sampling rate output)
+SND_RATE_HIGH   44100.0 (high sampling rate output)
+
+channelCount is the number of channels of sampled sound.
+
+
+
+
+
+info
+
+info is a NULL-terminated string that you can supply to provide a  
+textual description of the sound.  The size of the info field is set  
+when the structure is created and thereafter can't be enlarged.  It's  
+at least four bytes long (even if it's unused).
+
+
+
+
+
+Format Codes
+
+A sound's format is represented as a positive 32-bit integer.  NeXT  
+reserves the integers 0 through 255; you can define your own format  
+and represent it with an integer greater than 255.  Most of the  
+formats defined by NeXT describe the amplitude quantization of  
+sampled sound data:
+
+Value   Code    Format 
+
+0       SND_FORMAT_UNSPECIFIED  unspecified format 
+1       SND_FORMAT_MULAW_8      8-bit mu-law samples
+2       SND_FORMAT_LINEAR_8     8-bit linear samples
+3       SND_FORMAT_LINEAR_16    16-bit linear samples
+4       SND_FORMAT_LINEAR_24    24-bit linear samples
+5       SND_FORMAT_LINEAR_32    32-bit linear samples
+6       SND_FORMAT_FLOAT        floating-point samples
+7       SND_FORMAT_DOUBLE       double-precision float samples
+8       SND_FORMAT_INDIRECT     fragmented sampled data
+9       SND_FORMAT_NESTED       ?
+10      SND_FORMAT_DSP_CORE     DSP program
+11      SND_FORMAT_DSP_DATA_8   8-bit fixed-point samples
+12      SND_FORMAT_DSP_DATA_16  16-bit fixed-point samples
+13      SND_FORMAT_DSP_DATA_24  24-bit fixed-point samples
+14      SND_FORMAT_DSP_DATA_32  32-bit fixed-point samples
+15      ?
+16      SND_FORMAT_DISPLAY      non-audio display data
+17      SND_FORMAT_MULAW_SQUELCH        ?
+18      SND_FORMAT_EMPHASIZED   16-bit linear with emphasis
+19      SND_FORMAT_COMPRESSED   16-bit linear with compression
+20      SND_FORMAT_COMPRESSED_EMPHASIZED        A combination of the two above
+21      SND_FORMAT_DSP_COMMANDS Music Kit DSP commands
+22      SND_FORMAT_DSP_COMMANDS_SAMPLES         ?
+[Some new ones supported by Sun.  This is all I currently know. --GvR]
+23      SND_FORMAT_ADPCM_G721
+24      SND_FORMAT_ADPCM_G722
+25      SND_FORMAT_ADPCM_G723_3
+26      SND_FORMAT_ADPCM_G723_5
+27      SND_FORMAT_ALAW_8
+
+
+Most formats identify different sizes and types of  
+sampled data.  Some deserve special note:  
+
+
+--      SND_FORMAT_DSP_CORE format contains data that represents a  
+loadable DSP core program.  Sounds in this format are required by the  
+SNDBootDSP() and SNDRunDSP() functions.  You create a  
+SND_FORMAT_DSP_CORE sound by reading a DSP load file (extension  
+".lod") with the SNDReadDSPfile() function.
+
+--      SND_FORMAT_DSP_COMMANDS is used to distinguish sounds that  
+contain DSP commands created by the Music Kit.  Sounds in this format  
+can only be created through the Music Kit's Orchestra class, but can  
+be played back through the SNDStartPlaying() function.
+
+--      SND_FORMAT_DISPLAY format is used by the Sound Kit's  
+SoundView class.  Such sounds can't be played.  
+
+
+--      SND_FORMAT_INDIRECT indicates data that has become  
+fragmented, as described in a separate section, below.  
+
+
+--      SND_FORMAT_UNSPECIFIED is used for unrecognized formats.
+
+
+
+
+
+Fragmented Sound Data
+
+Sound data is usually stored in a contiguous block of memory.   
+However, when sampled sound data is edited (such that a portion of  
+the sound is deleted or a portion inserted), the data may become  
+discontiguous, or fragmented.  Each fragment of data is given its own  
+SNDSoundStruct header; thus, each fragment becomes a separate  
+SNDSoundStruct structure.  The addresses of these new structures are  
+collected into a contiguous, NULL-terminated block; the dataLocation  
+field of the original SNDSoundStruct is set to the address of this  
+block, while the original format, sampling rate, and channel count  
+are copied into the new SNDSoundStructs.  
+
+
+Fragmentation serves one purpose:  It avoids the high cost of moving  
+data when the sound is edited.  Playback of a fragmented sound is  
+transparent-you never need to know whether the sound is fragmented  
+before playing it.  However, playback of a heavily fragmented sound  
+is less efficient than that of a contiguous sound.  The  
+SNDCompactSamples() C function can be used to compact fragmented  
+sound data.
+
+Sampled sound data is naturally unfragmented.  A sound that's freshly  
+recorded or retrieved from a soundfile, the Mach-O segment, or the  
+pasteboard won't be fragmented.  Keep in mind that only sampled data  
+can become fragmented.
+
+
+
+_________________________
+>From mentor.cc.purdue.edu!purdue!decwrl!ucbvax!ziploc!eps Wed Apr  4  
+23:56:23 EST 1990
+Article 5779 of comp.sys.next:
+Path: mentor.cc.purdue.edu!purdue!decwrl!ucbvax!ziploc!eps
+>From: eps@toaster.SFSU.EDU (Eric P. Scott)
+Newsgroups: comp.sys.next
+Subject: Re: Format of NeXT sndfile headers?
+Message-ID: <445@toaster.SFSU.EDU>
+Date: 31 Mar 90 21:36:17 GMT
+References: <14978@phoenix.Princeton.EDU>
+Reply-To: eps@cs.SFSU.EDU (Eric P. Scott)
+Organization: San Francisco State University
+Lines: 42
+
+In article <14978@phoenix.Princeton.EDU>
+        bskendig@phoenix.Princeton.EDU (Brian Kendig) writes:
+>I'd like to take a program I have that converts Macintosh sound  
+files
+>to NeXT sndfiles and polish it up a bit to go the other direction as
+>well.
+
+Two people have already submitted programs that do this
+(Christopher Lane and Robert Hood); check the various
+NeXT archive sites.
+
+>       Could someone please give me the format of a NeXT sndfile
+>header?
+
+"big-endian"
+        0       1       2       3
+        +-------+-------+-------+-------+
+0       | 0x2e  | 0x73  | 0x6e  | 0x64  |       "magic" number
+        +-------+-------+-------+-------+
+4       |                               |       data location
+        +-------+-------+-------+-------+
+8       |                               |       data size
+        +-------+-------+-------+-------+
+12      |                               |       data format (enum)
+        +-------+-------+-------+-------+
+16      |                               |       sampling rate (int)
+        +-------+-------+-------+-------+
+20      |                               |       channel count
+        +-------+-------+-------+-------+
+24      |       |       |       |       |       (optional) info  
+string
+
+28 = minimum value for data location
+
+data format values can be found in /usr/include/sound/soundstruct.h
+
+Most common combinations:
+
+         sampling  channel    data
+             rate    count  format              
+voice file   8012        1       1 =  8-bit mu-law
+system beep 22050        2       3 = 16-bit linear
+CD-quality  44100        2       3 = 16-bit linear
+
+------------------------------------------------------------------------
+IFF/8SVX Format
+---------------
+
+Newsgroups: alt.binaries.sounds.d,alt.sex.sounds
+Subject: Format of the IFF header (Amiga sounds)
+Message-ID: <2509@tardis.Tymnet.COM>
+From: jms@tardis.Tymnet.COM (Joe Smith)
+Date: 23 Oct 91 23:54:38 GMT
+Followup-To: alt.binaries.sounds.d
+Organization: BT North America (Tymnet)
+
+The first 12 bytes of an IFF file are used to distinguish between an Amiga
+picture (FORM-ILBM), an Amiga sound sample (FORM-8SVX), or other file
+conforming to the IFF specification.  The middle 4 bytes is the count of
+bytes that follow the "FORM" and byte count longwords.  (Numbers are stored
+in M68000 form, high order byte first.)
+
+                ------------------------------------------
+
+FutureSound audio file, 15000 samples at 10.000KHz, file is 15048 bytes long.
+
+0000: 464F524D 00003AC0 38535658 56484452    FORM..:.8SVXVHDR
+      F O R M     15040 8 S V X  V H D R
+0010: 00000014 00003A98 00000000 00000000    ......:.........
+            20    15000        0        0
+0020: 27100100 00010000 424F4459 00003A98    '.......BODY..:.
+     10000 1 0    1.0   B O D Y     15000
+
+0000000..03 = "FORM", identifies this as an IFF format file.
+FORM+00..03 (ULONG) = number of bytes that follow.  (Unsigned long int.)
+FORM+03..07 = "8SVX", identifies this as an 8-bit sampled voice.
+
+????+00..03 = "VHDR", Voice8Header, describes the parameters for the BODY.
+VHDR+00..03 (ULONG) = number of bytes to follow. 
+VHDR+04..07 (ULONG) = samples in the high octave 1-shot part.
+VHDR+08..0B (ULONG) = samples in the high octave repeat part.
+VHDR+0C..0F (ULONG) = samples per cycle in high octave (if repeating), else 0.
+VHDR+10..11 (UWORD) = samples per second.  (Unsigned 16-bit quantity.)
+VHDR+12     (UBYTE) = number of octaves of waveforms in sample.
+VHDR+13     (UBYTE) = data compression (0=none, 1=Fibonacci-delta encoding).
+VHDR+14..17 (FIXED) = volume.  (The number 65536 means 1.0 or full volume.)
+
+????+00..03 = "BODY", identifies the start of the audio data.
+BODY+00..03 (ULONG) = number of bytes to follow.
+BODY+04..NNNNN      = Data, signed bytes, from -128 to +127.
+
+0030: 04030201 02030303 04050605 05060605
+0040: 06080806 07060505 04020202 01FF0000
+0050: 00000000 FF00FFFF FFFEFDFD FDFEFFFF
+0060: FDFDFF00 00FFFFFF 00000000 00FFFF00
+0070: 00000000 00FF0000 00FFFEFF 00000000
+0080: 00010000 000101FF FF0000FE FEFFFFFE
+0090: FDFDFEFD FDFFFFFC FDFEFDFD FEFFFEFE
+00A0: FFFEFEFE FEFEFEFF FFFFFEFF 00FFFF01
+
+This small section of the audio sample shows the number ranging from -5 (0xFD)
+to +8 (0x08).  Warning: Do not assume that the BODY starts 48 bytes into the
+file.  In addition to "VHDR", chunks labeled "NAME", "AUTH", "ANNO", or 
+"(c) " may be present, and may be in any order.  You will have to check the
+byte count in each chunk to determine how many bytes to skip.
+
+------------------------------------------------------------------------
+Playing sound on a PC
+---------------------
+
+From: Eric A Rasmussen
+
+Any turbo PC (8088 at 8 Mhz or greater)/286/386/486/etc. can produce a quality
+playback of single channel 8 bit sounds on the internal (1 bit, 1 channel)
+speaker by utilizing Pulse-Width-Modulation, which toggles the speaker faster
+than it can physically move to simulate positions between fully on and fully
+off.  There are several PD programs of this nature that I know of:
+
+REMAC  - Plays MAC format sound files.  Files on the Macintosh, at least the
+         sound files that I've ripped apart, seem to contain 3 parts.  The
+         first two are info like what the file icon looks like and other
+         header type info.  The third part contains the raw sample data, and
+         it is this portion of the file which is saved to a seperate file,
+         often named with the .snd extension by PC users.  Personally, I like
+         to name the files .s1, .s2, .s3, or .s4 to indicate the sampling rate
+         of the file. (-s# is how to specify the playback rate in REMAC.)
+         REMAC provides playback rates of 5550hz, 7333hz, 11 khz, & 22 khz.
+REMAC2 - Same as REMAC, but sounds better on higher speed machines.
+REPLAY - Basically same as REMAC, but for playback of Atari ST sounds. 
+         Apparently, the Atari has two sound formats, one of which sounds like
+         garbage if played by REMAC or REPLAY in the incorrect mode.  The
+         other file format works fine with REMAC and so appears to be 'normal'
+         unsigned 8-bit data.  REPLAY provides playback rates of 11.5 khz,
+         12.5 khz, 14 khz, 16 khz, 18.5 khz, 22khz, & 27 khz.
+
+These three programs are all by the same author, Richard E. Zobell who does
+not have an internet mail address to my knowledge, but does have a GEnie email
+address of R.ZOBELL. 
+
+Additionally, there are various stand-alone demos which use the internal
+speaker, of which there is one called mushroom which plays a 30 second
+advertising jingle for magic mushroom room deoderizers which is pretty
+humerous.  I've used this player to playback samples that I ripped out of the
+commercial game program Mean Streets, which uses something they call RealSound
+(tm) to playback digital samples on the internal speaker. (Of course, I only do
+this on my own system, and since I own the game, I see no problems with it.)
+
+For owners of 8 Mhz 286's and above, the option to play 4 channel 8 bit sounds
+(with decent quality) on the internal speaker is also a reality.  Quite a
+number of PD programs exist to do this, including, but not limited to:
+
+ModEdit, ModPlay, ScreamTracker, STM, Star Trekker, Tetra, and probably a few
+more.  
+
+All these programs basically make use of various sound formats used by the
+Amiga line of computers.  These include .stm files, .mod files
+[a.k.a. mod. files], and .nst files [really the same hing].  Also,
+these programs pretty much all have the option to playback the 
+sound to add-on hardware such as the SoundBlaster card, the Covox series of
+devices, and also to direct the data to either one or two (for stereo)
+parallel ports, which you could attach your own D/A's to.  (From what I have
+seen, the Covox is basically an small amplified speaker with a D/A which plugs
+into the parallel port.  This sounds very similiar to the Disney Sound System
+(DSS) which people have been talking about recently.)  
+
+------------------------------------------------------------------------
+The EA-IFF-85 documentation
+---------------------------
+
+From: dgc3@midway.uchicago.edu
+
+As promised, here's an ftp location for the EA-IFF-85 documentation.  It's
+the November 1988 release as revised by Commodore (the last public release),
+with specifications for IFF FORMs for graphics, sound, formatted text, and
+more.  IFF FORMS now exist for other media, including structured drawing, and
+new documentation is now available only from Commodore.
+
+The documentation is at grind.isca.uiowa.edu, in the directory
+/amiga/f1/ff185.  The complete file list is as follows:
+
+DOCUMENTS.zoo    
+EXAMPLES.zoo     
+EXECUTABLE.zoo   
+INCLUDE.zoo      
+LINKER_INFO.zoo  
+OBJECT.zoo       
+SOURCE.zoo       
+TP_IFF_Specs.zoo 
+
+All files except DOCUMENTS.zoo are Amiga-specific, but may be used as a basis
+for conversion to other platforms.  Well, I take that tentatively back.  I
+don't know what TP_IFF_Specs.zoo contains, so it might be non-Amiga-specific.
+
+------------------------------------------------------------------------
+US Federal Standard 1016 availability
+-------------------------------------
+
+From: jpcampb@afterlife.ncsc.mil (Joe Campbell)
+
+The U.S. DoD's Federal-Standard-1016 based 4800 bps code excited linear
+prediction voice coder version 3.2 (CELP 3.2) Fortran and C simulation
+source codes are available for worldwide distribution (on DOS
+diskettes, but configured to compile on Sun SPARC stations) from NTIS
+and DTIC.  Example input and processed speech files are included.  A
+Technical Information Bulletin (TIB), "Details to Assist in
+Implementation of Federal Standard 1016 CELP," and the official
+standard, "Federal Standard 1016, Telecommunications:  Analog to
+Digital Conversion of Radio Voice by 4,800 bit/second Code Excited
+Linear Prediction (CELP)," are also available.
+
+This is available through the National Technical Information Service:
+
+NTIS
+U.S. Department of Commerce
+5285 Port Royal Road
+Springfield, VA  22161
+USA
+(703) 487-4650
+
+The "AD" ordering number for the CELP software is AD M000 118
+(US$ 90.00) and for the TIB it's AD A256 629 (US$ 17.50).  The LPC-10
+standard, described below, is FIPS Pub 137 (US$ 12.50).  There is a
+$3.00 shipping charge on all U.S. orders.  The telephone number for
+their automated system is 703-487-4650, or 703-487-4600 if you'd prefer
+to talk with a real person.
+
+(U.S. DoD personnel and contractors can receive the package from the
+Defense Technical Information Center:  DTIC, Building 5, Cameron
+Station, Alexandria, VA 22304-6145.  Their telephone number is
+703-274-7633.)
+
+The following articles describe the Federal-Standard-1016 4.8-kbps CELP
+coder (it's unnecessary to read more than one):
+ 
+Campbell, Joseph P. Jr., Thomas E. Tremain and Vanoy C. Welch,
+"The Federal Standard 1016 4800 bps CELP Voice Coder," Digital Signal
+Processing, Academic Press, 1991, Vol. 1, No. 3, p. 145-155.
+ 
+Campbell, Joseph P. Jr., Thomas E. Tremain and Vanoy C. Welch,
+"The DoD 4.8 kbps Standard (Proposed Federal Standard 1016),"
+in Advances in Speech Coding, ed. Atal, Cuperman and Gersho,
+Kluwer Academic Publishers, 1991, Chapter 12, p. 121-133.
+ 
+Campbell, Joseph P. Jr., Thomas E. Tremain and Vanoy C. Welch, "The
+Proposed Federal Standard 1016 4800 bps Voice Coder:  CELP," Speech
+Technology Magazine, April/May 1990, p. 58-64.
+
+
+The U.S. DoD's Federal-Standard-1015/NATO-STANAG-4198 based 2400 bps
+linear prediction coder (LPC-10) was republished as a Federal
+Information Processing Standards Publication 137 (FIPS Pub 137).
+It is described in:
+
+Thomas E. Tremain, "The Government Standard Linear Predictive Coding
+Algorithm:  LPC-10," Speech Technology Magazine, April 1982, p. 40-49.
+
+There is also a section about FS-1015 in the book:
+Panos E. Papamichalis, Practical Approaches to Speech Coding,
+Prentice-Hall, 1987.
+
+The voicing classifier used in the enhanced LPC-10 (LPC-10e) is described in:
+Campbell, Joseph P., Jr. and T. E. Tremain, "Voiced/Unvoiced Classification
+of Speech with Applications to the U.S. Government LPC-10E Algorithm,"
+Proceedings of the IEEE International Conference on Acoustics, Speech, and
+Signal Processing, 1986, p. 473-6.
+
+Copies of the official standard
+"Federal Standard 1016, Telecommunications: Analog to Digital Conversion
+of Radio Voice by 4,800 bit/second Code Excited Linear Prediction (CELP)"
+are available for US$ 5.00 each from:
+ 
+GSA Federal Supply Service Bureau
+Specification Section, Suite 8100
+470 E. L'Enfant Place, S.W.
+Washington, DC  20407
+(202)755-0325
+
+Realtime DSP code for FS-1015 and FS-1016 is sold by:
+ 
+John DellaMorte
+DSP Software Engineering
+165 Middlesex Tpk, Suite 206
+Bedford, MA  01730
+USA
+1-617-275-3733
+1-617-275-4323 (fax)
+dspse.bedford@channel1.com
+ 
+DSP Software Engineering's FS-1016 code can run on a DSP Research's Tiger 30
+(a PC board with a TMS320C3x and analog interface suited to development work).
+ 
+DSP Research                
+1095 E. Duane Ave.          
+Sunnyvale, CA  94086        
+USA
+(408)773-1042               
+(408)736-3451 (fax)         
+
+From: cfreese@super.org (Craig F. Reese)
+Newsgroups: comp.speech,comp.dsp,comp.compression.research
+Subject: CELP 3.2a release now available
+Organization: Supercomputing Research Center (Bowie, MD)
+Date: Tue, 3 Aug 1993 14:55:25 GMT
+
+3 August 1993
+
+CELP 3.2a Release
+
+Dear CELPers,
+
+We have placed an updated version of the FS-1016 CELP 3.2 code in the
+anonymous FTP area on super.org.  It's in:
+
+  /pub/celp_3.2a.tar.Z (please be sure to do the ftp in binary mode).
+
+This is essentially the PC release that was on fumar, except that we
+started directly from the PC disks.  The value added is that we have
+made over 69 corrections and fixes.  Most of these were necessary
+because of the 8 character file name limit on DOS, but there are some
+others, as well.
+
+The code (C, FORTRAN, diskio) all has been built and tested on a Sun4
+under SunOS4.1.3.  If you want to run it somewhere else, then you may
+have to do a bit of work.  (A Solaris 2.x-compatible release is
+planned soon.)
+
+[One note to PCers.  The files:
+[
+[       cbsearch.F celp.F csub.F mexcite.F psearch.F
+[
+[are meant to be passed through the C preprocessor (cpp).
+[We gather that DOS (or whatever it's called) can't distinguish 
+[the .F from a .f.  Be careful!
+
+Very limited support is available from the authors (Joe, et al.).
+Please do not send questions or suggestions without first reading the
+documentation (README files, the Technical Information Bulletin, etc.).
+The authors would enjoy hearing from you, but they have limited time
+for support and would like to use it as efficiently as possible.  They
+welcome bug reports, but, again, please read the documentation first.
+All users of FS-1016 CELP software are strongly encouraged to acquire
+the latest release (version 3.2a as of this writing).
+
+We do not know how long we will be able to leave the software on this
+site, but it should be _at_least_ through 1 October 1993 (if you find
+it missing, please drop me (Craig) a note).  Please try to get the
+software during off hours (8 p.m. - 7 a.m. Eastern Standard time) or
+folks here might complain and we'll have to get rid of the code (if
+that happens, we'll try to pass it on to someone else, who can put it
+on the net).  We would be more than happy for someone to copy it and
+make it available elsewhere.
+
+Good Luck,
+
+Craig F. Reese  (cfreese@super.org)
+IDA/Supercomputing Research Center
+
+Joe Campbell (jpcampb@afterlife.ncsc.mil)
+Department of Defense
+
+P.S.  Just so you all know, I (Craig) am not actually involved in
+CELP work.  I mainly got with Joe to help make the software available
+on the Internet.  In the course of doing so, I cleaned up much of it,
+but I am not, by any stretch, a CELP expert and will most likely
+be unable to answer any technical questions concerning it. ;^)
+
+From: tobiasr@monolith.lrmsc.loral.com (Richard Tobias)
+
+For U.S. FED-STD-1016 (4800 bps CELP) _realtime_ DSP code and
+information about products using this code using the AT&T DSP32C and
+AT&T DSP3210, contact:
+
+White Eagle Systems Technology, Inc.
+1123 Queensbridge Way
+San Jose, CA 95120
+(408) 997-2706
+(408) 997-3584 (fax)
+rjjt@netcom.com
+
+From: Cole Erskine <cole@analogical.com>
+
+[paraphrased]
+
+Analogical Systems has a _real-time_ multirate implementation of U.S.
+Federal Standard 1016 CELP operating at bit rates of 4800, 7200, and
+9600 bps on a single 27MHz Motorola DSP56001. Source and object code
+is available for a one-time license fee.
+
+FREE, _real-time_ demonstration software for the Ariel PC-56D is
+available for those who already have such a board by contacting
+Analogical Systems.  The demo software allows you to record and
+playback CELP files to and from the PC's hard disk.
+
+Analogical Systems
+2916 Ramona Street
+Palo Alto, CA 94306
+Tel: +1 (415) 323-3232
+FAX: +1 (415) 323-4222
+
+------------------------------------------------------------------------
+Creative Voice (VOC) file format
+--------------------------------
+
+From: galt@dsd.es.com
+
+(byte numbers are hex!)
+
+    HEADER (bytes 00-19)
+    Series of DATA BLOCKS (bytes 1A+) [Must end w/ Terminator Block]
+
+- ---------------------------------------------------------------
+
+HEADER:
+=======
+     byte #     Description
+     ------     ------------------------------------------
+     00-12      "Creative Voice File"
+     13         1A (eof to abort printing of file)
+     14-15      Offset of first datablock in .voc file (std 1A 00
+                in Intel Notation)
+     16-17      Version number (minor,major) (VOC-HDR puts 0A 01)
+     18-19      2's Comp of Ver. # + 1234h (VOC-HDR puts 29 11)
+
+- ---------------------------------------------------------------
+
+DATA BLOCK:
+===========
+
+   Data Block:  TYPE(1-byte), SIZE(3-bytes), INFO(0+ bytes)
+   NOTE: Terminator Block is an exception -- it has only the TYPE byte.
+
+      TYPE   Description     Size (3-byte int)   Info
+      ----   -----------     -----------------   -----------------------
+      00     Terminator      (NONE)              (NONE)
+      01     Sound data      2+length of data    *
+      02     Sound continue  length of data      Voice Data
+      03     Silence         3                   **
+      04     Marker          2                   Marker# (2 bytes)
+      05     ASCII           length of string    null terminated string
+      06     Repeat          2                   Count# (2 bytes)
+      07     End repeat      0                   (NONE)
+      08     Extended        4                   ***
+
+      *Sound Info Format:       **Silence Info Format:
+       ---------------------      ----------------------------
+       00   Sample Rate           00-01  Length of silence - 1
+       01   Compression Type      02     Sample Rate
+       02+  Voice Data
+
+    ***Extended Info Format:
+       ---------------------
+       00-01  Time Constant: Mono: 65536 - (256000000/sample_rate)
+                             Stereo: 65536 - (25600000/(2*sample_rate))
+       02     Pack
+       03     Mode: 0 = mono
+                    1 = stereo
+
+
+  Marker#           -- Driver keeps the most recent marker in a status byte
+  Count#            -- Number of repetitions + 1
+                         Count# may be 1 to FFFE for 0 - FFFD repetitions
+                         or FFFF for endless repetitions
+  Sample Rate       -- SR byte = 256-(1000000/sample_rate)
+  Length of silence -- in units of sampling cycle
+  Compression Type  -- of voice data
+                         8-bits    = 0
+                         4-bits    = 1
+                         2.6-bits  = 2
+                         2-bits    = 3
+                         Multi DAC = 3+(# of channels) [interesting--
+                                       this isn't in the developer's manual]
+
+------------------------------------------------------------------------
+RIFF WAVE (.WAV) file format
+----------------------------
+
+RIFF is a format by Microsoft and IBM which is similar in spirit and
+functionality as EA-IFF-85, but not compatible (and it's in
+little-endian byte order, of course :-).  WAVE is RIFF's equivalent of
+AIFF, and its inclusion in Microsoft Windows 3.1 has suddenly made it
+important to know about.
+
+Rob Ryan was kind enough to send me a description of the RIFF format.
+Unfortunately, it is too big to include here (27 k), but I've made it
+available for anonymous ftp as ftp.cwi.nl:/pub/audio/RIFF-format.
+
+The complete definition of the WAVE file format as defined by IBM and
+Microsoft is available for anonymous FTP from ftp.microsoft.com, in
+directory developer/MSDN/CD8 as file RIFFNE.ZIP, which contains a MS
+help file (riffne.hlp).
+
+------------------------------------------------------------------------
+U-LAW and A-LAW definitions
+---------------------------
+
+[Adapted from information provided by duggan@cc.gatech.edu (Rick
+Duggan) and davep@zenobia.phys.unsw.EDU.AU (David Perry)]
+
+u-LAW (really mu-LAW) is
+
+          sgn(m)   (     |m |)       |m |
+   y=    ------- ln( 1+ u|--|)       |--| =< 1
+         ln(1+u)   (     |mp|)       |mp|         
+
+A-LAW is
+
+     |     A    (m )                 |m |    1
+     |  ------- (--)                 |--| =< - 
+     |  1+ln A  (mp)                 |mp|    A     
+   y=|
+     | sgn(m) (        |m |)    1    |m |
+     | ------ ( 1+ ln A|--|)    - =< |--| =< 1
+     | 1+ln A (        |mp|)    A    |mp|         
+
+Values of u=100 and 255, A=87.6, mp is the Peak message value, m is
+the current quantised message value.  (The formulae get simpler if you
+substitute x for m/mp and sgn(x) for sgn(m); then -1 <= x <= 1.)
+
+Converting from u-LAW to A-LAW is in a sense "lossy" since there are
+quantizing errors introduced in the conversion.
+
+"..the u-LAW used in North America and Japan, and the
+A-LAW used in Europe and the rest of the world and
+international routes.."
+
+References:
+
+Modern Digital and Analog Communication Systems, B.P.Lathi., 2nd ed.
+ISBN 0-03-027933-X
+
+Transmission Systems for Communications
+Fifth Edition
+by Members of the Technical Staff at Bell Telephone Laboratories
+Bell Telephone Laboratories, Incorporated
+Copyright 1959, 1964, 1970, 1982
+
+A note on the resolution of U-LAW by Frank Klemm <pfk@rz.uni-jena.de>:
+
+8 bit U-LAW has the same lowest  magnitude like 12 bit linear and 12 bit
+U-LAW like 16 linear.
+
+Device/Coding   Resolution              Resolution
+                on maximal level        on low level
+ 8 bit linear    8                       8
+ 8 bit ulaw      6                      12      (used for digital telephone)
+12 bit linear   12                      12
+12 bit ulaw     10                      16      (used in DAT/Longplay)
+16 bit linear   16                      16
+
+estimated for some analoge technique:
+tape recorder (HiFi DIN)
+                 8                       9      (no Problem today)
+tape recorder (semiprofessional)
+                10.5                    13.5 
+
+------------------------------------------------------------------------
+AVR File Format
+---------------
+
+From: hyc@hanauma.Jpl.Nasa.Gov (Howard Chu)
+
+A lot of PD software exists to play Mac .snd files on the ST. One other
+format that seems pretty popular (used by a number of commercial packages)
+is the AVR format (from Audio Visual Research). This format has a 128 byte
+header that looks like this:
+
+        char magic[4]="2BIT";
+        char name[8];           /* null-padded sample name */
+        short mono;             /* 0 = mono, 0xffff = stereo */
+        short rez;              /* 8 = 8 bit, 16 = 16 bit */
+        short sign;             /* 0 = unsigned, 0xffff = signed */
+        short loop;             /* 0 = no loop, 0xffff = looping sample */
+        short midi;             /* 0xffff = no MIDI note assigned,
+                                   0xffXX = single key note assignment
+                                   0xLLHH = key split, low/hi note */
+        long rate;              /* sample frequency in hertz */
+        long size;              /* sample length in bytes or words (see rez) */
+        long lbeg;              /* offset to start of loop in bytes or words.
+                                   set to zero if unused. */
+        long lend;              /* offset to end of loop in bytes or words.
+                                   set to sample length if unused. */
+        short res1;             /* Reserved, MIDI keyboard split */
+        short res2;             /* Reserved, sample compression */
+        short res3;             /* Reserved */
+        char ext[20];           /* Additional filename space, used
+                                   if (name[7] != 0) */
+        char user[64];          /* User defined. Typically ASCII message. */
+
+-----------------------------------------------------------------------
+The Amiga MOD Format
+--------------------
+
+From: norlin@mailhost.ecn.uoknor.edu (Norman Lin)
+
+MOD files are music files containing 2 parts:
+
+(1) a bank of digitized samples
+(2) sequencing information describing how and when to play the samples
+
+MOD files originated on the Amiga, but because of their flexibility
+and the extremely large number of MOD files available, MOD players
+are now available for a variety of machines (IBM PC, Mac, Sparc
+Station, etc.)
+
+The samples in a MOD file are raw, 8 bit, signed, headerless, linear
+digital data.  There may be up to 31 distinct samples in a MOD file,
+each with a length of up to 128K (though most are much smaller; say,
+10K - 60K).  An older MOD format only allowed for up to 15 samples in
+a MOD file; you don't see many of these anymore.  There is no standard
+sampling rate for these samples.  [But see below.]
+
+The sequencing information in a MOD file contains 4 tracks of
+information describing which, when, for how long, and at what frequency
+samples should be played.  This means that a MOD file can have up
+to 31 distinct (digitized) instrument sounds, with up to 4 playing
+simultaneously at any given point.  This allows a wide variety
+of orchestrational possibilities, including use of voice samples
+or creation of one's own instruments (with appropriate sampling
+hardware/software).  The ability to use one's own samples as instruments
+is a flexibility that other music files/formats do not share, and
+is one of the reasons MOD files are so popular, numerous, and diverse.
+ 
+15 instrument MODs, as noted above, are somewhat older than 31
+instrument MODs and are not (at least not by me) seen very often
+anymore.  Their format is identical to that of 31 instrument MODs
+except:
+
+(1) Since there are only 15 samples, the information for the last (15th)
+    sample starts at byte 440 and goes through byte 469.
+(2) The songlength is at byte 470 (contrast with byte 950 in 31 instrument
+    MOD)
+(3) Byte 471 appears to be ignored, but has been observed to be 127.
+    (Sorry, this is from observation only)
+(4) Byte 472 begins the pattern sequence table (contrast with byte 952
+    in a 31 instrument MOD)
+(5) Patterns start at byte 600 (contrast with byte 1084 in 31 instrument MOD)
+
+"ProTracker," an Amiga MOD file creator/editor, is available for ftp
+everywhere as pt??.lzh.
+
+From: Apollo Wong <apollo@ee.ualberta.ca>
+
+From: M.J.H.Cox@bradford.ac.uk (Mark Cox)
+Newsgroups: alt.sb.programmer
+Subject: Re: Format for MOD files...
+Message-ID: <1992Mar18.103608.4061@bradford.ac.uk>
+Date: 18 Mar 92 10:36:08 GMT
+Organization: University of Bradford, UK
+
+wdc50@DUTS.ccc.amdahl.com (Winthrop D Chan) writes:
+>I'd like to know if anyone has a reference document on the format of the
+>Amiga Sound/NoiseTracker (MOD) files. The author of Modplay said he was going
+>to release such a document sometime last year, but he never did. If anyone
+
+I found this one, which covers it better than I can explain it - if you
+use this in conjunction with the documentation that comes with Norman
+Lin's Modedit program it should pretty much cover it.
+
+Mark J Cox
+
+/***********************************************************************
+
+Protracker 1.1B Song/Module Format:
+-----------------------------------
+
+Offset  Bytes  Description
+------  -----  -----------
+   0     20    Songname. Remember to put trailing null bytes at the end...
+
+Information for sample 1-31:
+
+Offset  Bytes  Description
+------  -----  -----------
+  20     22    Samplename for sample 1. Pad with null bytes.
+  42      2    Samplelength for sample 1. Stored as number of words.
+               Multiply by two to get real sample length in bytes.
+  44      1    Lower four bits are the finetune value, stored as a signed
+               four bit number. The upper four bits are not used, and
+               should be set to zero.
+               Value:  Finetune:
+                 0        0
+                 1       +1
+                 2       +2
+                 3       +3
+                 4       +4
+                 5       +5
+                 6       +6
+                 7       +7
+                 8       -8
+                 9       -7
+                 A       -6
+                 B       -5
+                 C       -4
+                 D       -3
+                 E       -2
+                 F       -1
+
+  45      1    Volume for sample 1. Range is $00-$40, or 0-64 decimal.
+  46      2    Repeat point for sample 1. Stored as number of words offset
+               from start of sample. Multiply by two to get offset in bytes.
+  48      2    Repeat Length for sample 1. Stored as number of words in
+               loop. Multiply by two to get replen in bytes.
+
+Information for the next 30 samples starts here. It's just like the info for
+sample 1.
+
+Offset  Bytes  Description
+------  -----  -----------
+  50     30    Sample 2...
+  80     30    Sample 3...
+   .
+   .
+   .
+ 890     30    Sample 30...
+ 920     30    Sample 31...
+
+Offset  Bytes  Description
+------  -----  -----------
+ 950      1    Songlength. Range is 1-128.
+ 951      1    Well... this little byte here is set to 127, so that old
+               trackers will search through all patterns when loading.
+               Noisetracker uses this byte for restart, but we don't.
+ 952    128    Song positions 0-127. Each hold a number from 0-63 that
+               tells the tracker what pattern to play at that position.
+1080      4    The four letters "M.K." - This is something Mahoney & Kaktus
+               inserted when they increased the number of samples from
+               15 to 31. If it's not there, the module/song uses 15 samples
+               or the text has been removed to make the module harder to
+               rip. Startrekker puts "FLT4" or "FLT8" there instead.
+
+Offset  Bytes  Description
+------  -----  -----------
+1084    1024   Data for pattern 00.
+   .
+   .
+   .
+xxxx  Number of patterns stored is equal to the highest patternnumber
+      in the song position table (at offset 952-1079).
+
+Each note is stored as 4 bytes, and all four notes at each position in
+the pattern are stored after each other.
+
+00 -  chan1  chan2  chan3  chan4
+01 -  chan1  chan2  chan3  chan4
+02 -  chan1  chan2  chan3  chan4
+etc.
+
+Info for each note:
+
+ _____byte 1_____   byte2_    _____byte 3_____   byte4_
+/                \ /      \  /                \ /      \
+0000          0000-00000000  0000          0000-00000000
+
+Upper four    12 bits for    Lower four    Effect command.
+bits of sam-  note period.   bits of sam-
+ple number.                  ple number.
+
+Periodtable for Tuning 0, Normal
+  C-1 to B-1 : 856,808,762,720,678,640,604,570,538,508,480,453
+  C-2 to B-2 : 428,404,381,360,339,320,302,285,269,254,240,226
+  C-3 to B-3 : 214,202,190,180,170,160,151,143,135,127,120,113
+
+To determine what note to show, scan through the table until you find
+the same period as the one stored in byte 1-2. Use the index to look
+up in a notenames table.
+
+This is the data stored in a normal song. A packed song starts with the
+four letters "PACK", but i don't know how the song is packed: You can
+get the source code for the cruncher/decruncher from us if you need it,
+but I don't understand it; I've just ripped it from another tracker...
+
+In a module, all the samples are stored right after the patterndata.
+To determine where a sample starts and stops, you use the sampleinfo
+structures in the beginning of the file (from offset 20). Take a look
+at the mt_init routine in the playroutine, and you'll see just how it
+is done.
+
+Lars "ZAP" Hamre/Amiga Freelancers
+
+***********************************************************************/
+ 
+-- 
+Mark J Cox -----
+Bradford, UK ---
+
+
+PS: A file with even *much* more info on MOD files, compiled by Lars
+Hamre, is available from ftp.cwi.nl:/pub/audio/MOD-info.  Enjoy!
+
+
+FTP sites for MODs and MOD players
+----------------------------------
+
+Subject: MODS AND PLAYERS!! **READ** info/where to get them
+From: cjohnson@tartarus.uwa.edu.au (Christopher Johnson)
+Newsgroups: alt.binaries.sounds.d
+Message-ID: <1h32ivINNglu@uniwa.uwa.edu.au>
+Date: 21 Dec 92 00:19:43 GMT
+Organization: The University of Western Australia
+
+Hello world,
+
+For all those asking, here is where to get those mod players and mods.
+
+SNAKE.MCS.KENT.EDU is the best site for general stuff.  look in /pub/SB-Adlib
+
+Simtel-20 or archie.au(simtel mirror) in <msdos.sound>
+
+for windows players ftp.cica.indiana.edu in pub/pc/win3/sound
+
+here is a short list of players
+
+mp or modplay   BEST OVERALL                    mp219b.zip      
+        simtel and snake
+
+wowii           best for vga/fast machines      wowii12b.zip    
+        simtel and snake
+
+trakblaster     best for compatability          trak-something  
+        simtel and snake        two versions, old one for slow
+        machines
+
+ss              cute display(hifi)              have_sex.arj
+        found on local BBS (western Australia White Ghost)
+
+superpro player generally good                  ssp.zip or similar
+        found on night owl 7 CD
+
+player?         cute display(hifi)              player.zip or similar
+        found on night owl 7 CD
+
+WINDOWS
+
+Winmod pro      does protracker                 wmp????.zip
+        cica
+
+winmod          more stable                     winmod12.zip or similar
+        cica
+
+Hope this helps, e-mail me if you find any more players and I will add them in for the next time mod player requests get a
+little out of hand.
+
+for mods ftp to wuarchive.wustl.edu and go to the amiga music directory (pub/amiga/music/ntsb ?????)  that should do you for
+a while
+
+see you soon
+
+Chris.
+
+-----------------------------------------------------------------------
+The Sample Vision Format
+------------------------
+
+From: "tim.dorcas@enest.com" <KURTZ@URIACC.URI.EDU>
+
+First, Sample Vision is a program used by professional musicians to
+send and receive samples via a MIDI interface to the PC. While on the
+PC, you can edit several parameters including loop points, pitch, time
+compression, normalize, sample rate, ect.  The list of supported
+samplers include: AKAI {S700,X700,S900, S950,S612,S1000/1100},
+Casio{FZ1,FZ10M,FZ20M}, Ensoniq{EPS,EPS16,ASR10,Mirage},
+Emu{Emax,EmaxII}, Korg{DSS1,DSM1,T workstation}, Oberheim DPX-1,
+Peavey DPM-3, Roland {S10,MKS100,S220,S50,S330,S550}, Sequential
+Circuits Prophet 2000/2002, Sample Dump Standard devices, Yamaha
+TX16W.
+
+The .smp format breaks down like this:
+
+Offset     Size        Description
+000        18          'SOUND SAMPLE DATA ' ASCII FILE ID
+0018       04          '2.1 '   ASCII FILE VERSION
+0022       60          USER COMMENTS    60 ASCII CHARACTERS
+0082       30          SAMPLE NAME    LEFT JUSTIFIED 30 ASCII CHARACTERS
+0112       04          SAMPLE SIZE   SAMPLE DATA COUNT IN WORDS
+0116       ??          SAMPLE DATA  1 WORD PER SAMPLE, LEAST SIGNIFICANT BYTE
+                                    FIRST, LSW FIRST; SIGNED 16 BIT INTEGERS
+
+??         02(DW)      RESERVED
+??         04(DD)      LOOP 1 START  USE SAMPLE COUNT NOT BYTE COUNT
+??         04(DD)      LOOP 1 END
+??         01(DB)      LOOP 1 TYPE   0=LOOP OFF,1=FORWARD,2=FORWARD/BACKWARD
+??         02(DW)      LOOP 1 COUNT  TIMES TO EXECUTE LOOP BEFORE NEXT LOOP
+
+THERE ARE SEVEN MORE IDENTICAL LOOP STRUCTURES FOR A TOTAL OF 8
+
+??         10          MARKER 1 NAME ASCII MARKER NAME
+??         04(DD)      MARKER 1 POSITION  FFFF MEANS UNUSED
+
+THER ARE SEVEN MORE IDENTICAL MARKER STRUCTURES FOR A TOTAL OF 8
+
+??         01(DB)       MIDI UNITY PLAYBACK NOTE         MIDI NOTE TO PLAY
+                                                         THE SAMPLE AT ITS
+                                                         ORIGINAL PITCH
+??         04(DD)       SAMPLE RATE IN HERTZ
+??         04(DD)       SMPTE OFFSET IN SUBFRAMES
+??         04(DD)       CYCLE SIZE         SAMPLE COUNT IN ONE CYCLE OF
+                                           THE SAMPLED SOUND. -1 IF UNKNOWN
+
+(DD) 4 BYTES, LS BYTE FIRST, LS WORD FIRST
+(DW) 2 BYTES, LS BYTE FIRST
+(DB) 1 BYTE
+
+That's about it. One thing I have noticed is that Sample Vision only
+writes seven loop structures to file as opposed to the eight
+structures it claims are written.
+-----------------------------------------------------------------------
+Some Miscellaneous Formats
+--------------------------
+
+From: bil@ccrma.Stanford.EDU (Bill Schottstaedt)
+
+I thought you might find some of this information amusing -- a few
+header formats I didn't find in your great audio file formats
+documentation.  Some taken from the AFsp sources, or sox, or
+local ancient documentation.  I also have short descriptions
+of BICSF, NeXT/Sun, AIFF, RIFF, SMP, VOC, and so on, plus
+full descriptions of the 2 Sound Designer formats, if you're
+interested.
+
+
+/* ------------------------------------ NIST ---------------------------------
+
+ * 
+
+ *   0: "NIST_1A"
+ *   8: data_location as ASCII representation of integer
+ *      (apparently always "   1024")
+ *  16: start of complicated header -- full details available upon request
+ *
+ *  here's an example:
+ *
+ *  NIST_1A
+ *     1024
+ *  database_id -s5 TIMIT
+ *  database_version -s3 1.0
+ *  utterance_id -s8 aks0_sa1
+ *  channel_count -i 1
+ *  sample_count -i 63488
+ *  sample_rate -i 16000
+ *  sample_min -i -6967
+ *  sample_max -i 7710
+ *  sample_n_bytes -i 2
+ *  sample_byte_format -s2 01
+ *  sample_sig_bits -i 16
+ *  end_head
+ */
+/* ------------------------------------ SNDT ---------------------------------
+ *
+ * this taken from sndrtool.c (sox-10):
+ *   0: "SOUND"
+ *   6: 0x1a
+ *   8-11: 0
+ *  12-15: nsamples
+ *  16-19: 0
+ *  20-23: nsamples
+ *  24-25: srate
+ *  26-27: 0
+ *  28-29: 10
+ *  30-31: 4
+ *  32-> : <filename> "- File created by Sound Exchange"
+ *  .->95: 0
+ */
+/* ------------------------------------ ESPS ---------------------------------
+
+ *
+ *   16: 0x00006a1a or 0x1a6a0000
+ *  136: if not 0, chans + format = 32-bit float
+ *  144: if not 0, chans + format = 16-bit linear
+ * 
+
+ *   from AFgetInfoES.c:
+ * 
+
+ *       Bytes     Type    Contents
+ *      8 -> 11    --     Header size (bytes)
+ *     12 -> 15    int    Sampled data record size
+ *     16 -> 19    int    File identifier
+ *     40 -> 65    char   File creation date
+ *    124 -> 127   int    Number of samples (may indicate zero)
+ *    132 -> 135   int    Number of doubles in a data record
+ *    136 -> 139   int    Number of floats in a data record
+ *    140 -> 143   int    Number of longs in a data record
+ *    144 -> 147   int    Number of shorts in a data record
+ *    148 -> 151   int    Number of chars in a data record
+ *    160 -> 167   char   User name
+ *    333 -> H-1   --     Generic header items, including "record_freq"
+ *                        {followed by a "double8"}
+ *      H -> ...   --     Audio data
+ */
+/* ------------------------------------ INRS ---------------------------------
+
+ * 
+
+ *   from AFgetInfoIN.c:
+ * 
+
+ *    INRS-Telecommunications audio file:
+ *       Bytes     Type    Contents
+ *      0 ->  3    float  Sampling Frequency (VAX float format)
+ *      6 -> 25    char   Creation time (e.g. Jun 12 16:52:50 1990)
+ *     26 -> 29    int    Number of speech samples in the file
+ *   The data in an INRS-Telecommunications audio file is in 16-bit integer
+ *   format.
+ * 
+
+ */
+/* old Mus10, SAM formats, just for completeness
+ *
+ * These were used for sound data on the PDP-10s at SAIL and CCRMA in the
+ * 70's and 80's.
+ * The word length was 36-bits.
+ *
+ * "New" format as used by nearly all CCRMA software pre-1990:
+ *
+ *  WD 0 - '525252525252
+ *  WD 1 - Clock rate in Hz (PDP-10 36-bit floating point)
+ *  WD 2 - #samples per word,,pack-code
+ *      (has # samples per word in LH, pack-code in RH)
+ *      0 for 12-bit fixed point
+ *      1 for 18-bit fixed point
+ *      2 for  9-bit floating point incremental
+ *      3 for 36-bit floating point
+ *      4 for 16-bit sambox fixed point, right justified
+ *      5 for 20-bit sambox fixed point
+ *      6 for 20-bit right-adjusted fixed point (sambox SAT format)
+ *      7 for 16-bit fixed point, left justified
+ *      N>9 for N bit bytes in ILDB format
+ *  WD 3 - # channels
+ *      1 for MONO
+ *      2 for STEREO
+ *      4 for QUAD
+ *  WD 4 - Maximum amplitude (if known)
+ *      is a floating point number
+ *      is zero if not known
+ *      is maximum magnitude (abs value) of signal
+ *  WD 5        number of Sambox ticks per pass
+ *              (inverse of Sambox clock rate, sort of)
+ *  WD 6 - Total #samples in file.
+ *         If 0 then #wds_in_file*#samps_per_wd assumed.
+ *  WD 7 - Block size (if any). 0 means sound is not blocked.
+ *  WDs '10-'77 Reserved for EDSND usage
+ *  WDs '100-'177 Text description of file (in ASCIZ format)
+ *
+ *
+ * "Old" format
+ *
+ *  WD 0 - '525252525252
+ *  WD 1 - Clock rate
+ *      has code in LH, actual INTEGER rate in RH
+ *      code=0 for 6.4Kc (or anything else)
+ *          =1 for 12.8Kc, =2 for 25.6Kc, =3 for 51.2Kc
+ *          =5 for 102.4Kc, =6 for 204.8Kc
+ *  WD 2 - pack
+ *      0 for 12 bit
+ *      1 for 16 bit (18 bit)
+ *      2 for 9 bit floating point incremental
+ *      3 for 36-bit floating point
+ *      N>9 for N bit bytes in ILDB format
+ *      has # samples per word in LH.
+ *  WD 3 - # channels
+ *      1 for MONO
+ *      2 for STEREO
+ *      4 for QUAD
+ *  WD 4 - Maximum amplitude (if known)
+ *      is a floating point number
+ *      is zero if not known
+ *      is maximum magnitude (abs value) of signal
+ *  WDs 5-77 Reserved for future expansion
+ *  WDs 100-177 Text description of file (in ASCIZ format)
+ */
+
+-----------------------------------------------------------------------
+Tandy Deskmate .snd Format Notes
+--------------------------------
+
+From: Jeffrey L. Hayes <tvdog@delphi.com>
+
+Tandy .snd files are created by Sound.pdm, a program that came with the 
+proprietary DeskMate environment.  They are used by Music.pdm to create 
+music modules (.sng files).  DeskMate Sound and Music require the Tandy 
+sound chip.  There is a program to convert RIFF WAVE and other 8-bit PCM 
+formats to .snd, Conv2snd, by Kenneth Udut.  Conv2snd v.2.00 comes with 
+Snd2wav, which converts .snd to RIFF WAVE.
+
+There are two types of DeskMate .snd files, sound files and instrument 
+files.  Both contain 8-bit unsigned PCM samples.
+
+Sound files are simpler.  These are garden-variety sample files with a 
+fixed-length header giving the name of the sound, the recording frequency, 
+and the length of the sound.  Sound files may be recorded at 5500Hz, 11kHz 
+or 22kHz.
+
+Instrument files contain samples as well as frequency and looping 
+information used by Music.pdm to represent an instrument.  Instrument files 
+provide for attack, sustain, and decay with several samples having 
+different implied frequencies and being used by Music.pdm to represent the 
+instrument in different pitch ranges.  Up to 16 different notes (with 16 
+different samples) can be contained in one instrument file.  Instrument 
+files are always recorded at 11kHz.  Both sound files and instrument files 
+may be compressed in one of two ways, "music" compression or "speech" 
+compression, or they may be uncompressed.  I don't know the compression 
+algorithms, but simple file comparison reveals that "music" and "speech" 
+compression are almost identical.
+
+The DeskMate .snd file header consists of 16 bytes of fixed header 
+information followed by one or more 28-byte note records.  The sample 
+information, which may be compressed, follows the header.
+
+DeskMate .snd File Format - Fixed Header
+----------------------------------------
+
+  offset    size      what
+  ------    ----      ----
+
+  0         byte      1Ah (.snd ID byte)
+
+  1         byte      Compression code:  0 = no compression; 1 = music
+                      compression; 2 = sound compression.
+
+  2         byte      Number of notes in the instrument file.  1 if sound
+                      file.
+
+  3         byte      Instrument number.  0 if sound file; 0FFh if instrument
+                      file with no number set.  Valid instrument numbers in
+                      an instrument file are 1 to 32.  Use this field to
+                      distinguish a sound file from an instrument file.
+
+  4         10 bytes  Sound or instrument name.  Filled on the right with
+                      nulls if less than 10 characters.
+
+  0Eh       word      Sampling rate in samples per second.  Note that although
+                      a sampling rate other than 5500, 11000 and 22000 can be
+                      entered here, Sound.pdm will not actually play at other
+                      rates.
+
+  10h       variable  Note records begin, 28 bytes each.  Number of records
+                      given in byte 2 above.
+
+ 
+DeskMate .snd File Format - Note Record
+---------------------------------------
+
+  0         byte      Pitch of the note:  1 = A1 in American Standard Pitch;
+                      2 = A#1; etc.  A1 is lowest note allowed; highest note
+                      allowed is B6 (3Fh).  Sound files have 0FFh here; so do
+                      instrument files with no note set.
+                          Note that Sound.pdm does not designate notes in the
+                      standard manner to the user.  Although A1 and B6 in
+                      Sound.pdm are the same as A1 and B6 in standard pitch,
+                      Sound.pdm starts octaves at A rather than at C (as is
+                      standard).  Thus, middle C, C4 in standard pitch, is C3
+                      in Sound.pdm.
+
+  1         byte      Sound files, and instrument files with no pitch set,
+                      have 0 here.  If the pitch is set, this byte is 0FFh.
+
+  2         2 bytes   Range of the note, first byte is lower limit, second
+                      is higher limit.  Byte encoding as for offset 0 (i.e.,
+                      01h to 3Fh).  Sound files have FF FF here; so do
+                      instrument files with no range set.
+
+  4         dword     Offset in the file where samples for this note begin
+                      (zero-relative), after compression if that was done.
+
+  8         dword     If compressed, the length of the compressed data in the
+                      file for this note.  Uncompressed files have 0 here.
+
+  0Ch       4 bytes   Unknown.  Set to zero.
+
+  10h       dword     Number of samples in the note, after decompression if
+                      necessary.
+
+  14h       dword     Number of sample at start of sustain region for the
+                      note, relative to the first (zeroth) sample of the note.
+                      For sound files, or if sustain is not set, this field is
+                      0.
+
+  18h       dword     Number of sample at end of sustain region for the note,
+                      relative to the first (zeroth) sample of the note.  For
+                      sound files, or if sustain is not set, this field is 0.
+

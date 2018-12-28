@@ -1,0 +1,104 @@
+3D Shading
+
+Seventh part of The 3D Coding Blackhole tutorial series
+
+Home at http://3Dblackhole.base.org
+
+NOTE: Some part of functions and some members of structures are not
+explained here, but we'll discuss them in other tutorials of the series.
+They're usually displayed in totality for the sake of similarity between
+the different tutorials and with the complete 3D engine.
+---------------------------------------------------------------------------
+
+   * Computing the Normals
+   * Doing the Cross Product
+   * Using a light table
+
+Computing the Normals
+
+Ok... we deeply discussed vectors and normals in the 3D mathematics
+tutorial, so here are some implementations:
+
+float VEC_DotProduct(_3D Vector1, _3D Vector2)
+{
+    return (Vector1.x*Vector2.x+Vector1.y*Vector2.y+Vector1.z*Vector2.z);
+}
+_3D VEC_CrossProduct(_3D Vector1, _3D Vector2)
+{
+   return P3D(Vector1.y*Vector2.z-Vector1.z*Vector2.y,
+              Vector1.z*Vector2.x-Vector1.x*Vector2.z,
+              Vector1.x*Vector2.y-Vector1.y*Vector2.x);
+}
+void VEC_Normalize(_3D * Vector)
+{
+   float
+m=sqrt(Vector->x*Vector->x+Vector->y*Vector->y+Vector->z*Vector->z);
+   Vector->x/=m;
+   Vector->y/=m;
+   Vector->z/=m;
+}
+
+For 3D shading, you need to add to ENG3D_SetPlane:
+
+   //Compute the normal of the plane
+   PlaneNormal=VEC_CrossProduct(P3D(x2-x1,y2-y1,z2-z1),P3D(x3-x1,y3-y1,z3-z1));
+   VEC_Normalize(&PlaneNormal);
+
+Doing the Cross Product
+
+Now, as we said in the maths part, the cosine of the angle between two
+vectors is equal to their dot product when both vectors are normalized. To
+find the light reaching a plane, we simply add the ambient light to the
+cross product of the world coordinate of our normalized light source,
+multiplied by the maximal light intensity. Here's some code:
+
+Global definitions:
+
+   WORD AmbientLight=20;
+   #define MAXLIGHT 32
+   static Vertex_t LightSource;
+   WORD light;
+
+And in SetPlane:
+
+   //Compute light intensity from the dot product of the normal and of
+   //the lightsource
+   light=MAXLIGHT*VEC_DotProduct(PlaneNormal,LightSource.World)+AmbientLight;
+   if(light>MAXLIGHT)light=MAXLIGHT;
+   if(light<1)light=1;
+
+And you obviously need to initialize the light source, exactly like a
+normal vertex.
+
+   //Initialize Light Source
+   LightSource.Local=P3D(0,0,0);
+   MAT_Identity(matrix);
+   TR_Translate(matrix, 10,10,10);
+   TR_Rotate(matrix, 0,128-32,128);
+   VEC_MultMatrix(&LightSource.Local,matrix,&LightSource.World);
+   VEC_Normalize(&LightSource.World);
+
+Using a light table
+
+A light table is a method of using light intensities on a palette based
+display. You find the best color match for every color at every intensity.
+Christopher Lampton made a great light table generator (makelite.cpp) in
+his book Gardens of Imagination. Unfortunately, that one uses a module of
+his own for pcx, so you have the choice of either modying it yourself
+(actually, you only need to load the palette of the pcx, not the image) or
+using my own modification (makelite.c or makelite.exe). Once we have our
+light table, we load it in a global array:
+
+BYTE LightTable[MAXLIGHT+1][256];
+
+Once you've loaded it, all you need to change in your TEX_HLine function is
+the following:
+
+   screen[offset]=LightTable[light][color];
+
+---------------------------------------------------------------------------
+And you have 3D shading!! E-mail me at jerstlouis@videotron.ca
+Back to Jerome St-Louis's Homepage
+Back to The 3D Coding BlackHole
+
+                                                  Last Updated: 08-24-1997

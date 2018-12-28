@@ -1,0 +1,151 @@
+                                    
+                          ÉÍ-ÍÍ-ÍÍú-ÍÍÍÍ=ú-Í¿
+                          º   / |====/ |    º
+                          º  ³==|===³  |    ³²Ü
+                          ³  ³ / ÄÄÄÅÄ /    .Ü²Ü
+                          º  ³/_____³/      º°²²
+                          |          - SBA -³².² 
+                          ÈÍÍÄÍÍúÍÍ=ÍÍÍÍ--ÍÍ¼°ß²
+                           ß.°²Ü²ß²úß²±²°±°².°²
+                           .   . Ü  . ß  ßÜ.±Üß
+                            Ü.   .. Ü . ±  ±Ü° 
+                                .   . Ü   Ü ßÜ
+                                            .  
+                                        .    .  
+                                            
+                                           .
+                           
+                           
+                           -=>  3D-Cameras <=- 
+                       ---------------------------
+                           
+           TeXt v1.0e - wRitTen bY ShaDoW BanDiT / Diabolic Force
+                            Date: July, 3th 1997
+==============================================================================
+
+Every Coder who hasn't them.......want them......dA magic Camera-Formulas.....
+        :)                  :)                    :)                :)
+Yeah, and today I will present you dA Formulas with some explanations.
+Ok, ok i will put some pseudo code in here, too.....      :)
+
+But firzt there must jump out a big greeting to Olaf Gaesing for giving me 
+the root-formula from his documents about programming robot-machines! 
+
+Ok, let's go on.....
+
+A Camera is a free defined viewing position in the Vector-World you know 
+surely. So you don't want to rotate the Object's directly in the world, so
+you must introduce the coordinates of each object are not moveable.
+But to define a camera position (a viewing-vector) in the world we have to 
+transform the complete world coordinate system to a camera coordinate system. 
+Before we do this we define a Cam-position for example X=75, Y=12 and Z=0.
+In our 3D-Engine I have coded that like this here:
+
+ex:=points3d^[n].x-cam_pos.x;
+ey:=points3d^[n].y-cam_pos.y;
+ez:=points3d^[n].z-cam_pos.z;
+
+Where in "points3d^" is the unmoveable World and cam_pos.n the viewing-
+position defined like above.
+Ok guYz..... now we come to the rotation-matrices for the camera.
+JumpinG oN:
+
+But first there's the root-formula:
+                                       -1
+P'= (Rot(x,phi1)rot(y,phi2)rot(z,phi3))  (P-delta_P)
+
+Around the X-Axis:
+====================
+
+    ³ 1     0          0     ³   
+  = ³ 0  cos_phi1 - sin_phi1 ³
+    ³ 0  sin_phi1   cos_phi1 ³
+
+    
+Around the Y-Axis:    
+====================    
+    
+    ³ cos_phi2   0  sin_phi2 ³
+  = ³    0       1     0     ³
+    ³ -sin_phi2  0  cos_phi2 ³
+ 
+
+Around the Z-Axis:
+====================
+
+    ³ cos_phi3 - sin_phi3  0 ³
+  = ³ sin_phi3   cos_phi3  0 ³
+    ³    0          0      1 ³
+
+
+In the one big matrice, we will first do the translation and then the 
+rotation. I think that's more effective.
+
+Where Cn is the angle >cos_phi< and Sn is >sin_phi< angle.
+( 1=x, 2=y, 3=z )
+
+    ³ c2*c3         ³-s3*c2         ³ s2     ³
+P'= ³ s1*s2*c3+c1*s3³-s3*s1*s2+c1*c3³ -s1*c2 ³ (P-delta_P)
+    ³-c3*c1*s2+s1*s3³ s3*c1*s2+c3*s1³ c1*c2  ³
+
+To calculate the sinus and cosiuns of each angle I have some code for this:
+(Unoptimized! Define s1,s2 a.s.o. as real (or float) var's!)
+
+s1:=sin(cam_pos.alpha/360); 
+s2:=sin(cam_pos.beta/360);
+s3:=sin(cam_pos.gamma/360);
+c1:=cos(cam_pos.alpha/360);
+c2:=cos(cam_pos.beta/360);
+c3:=cos(cam_pos.gamma/360);
+
+Where s1 and c1 is the sinus (cosinus) of the angle around the X-Axis (pitch),
+s2 and c2 the sinus (cosinus) of the angle around the Y-Axis (yaw) and s3 and 
+c3 the sinus (cosinus) of the angle around the Z-Axis (roll).
+Ok... that's all folks. Now yA only must calculate the new position of each
+point's component. I have defined some real-var's and converted them to long-
+int's in the formula and put them in another array.
+ 
+rotated^[n].x:=round((c2*c3)*ex+((-s3)*c2)*ey+(s2)*ez);
+
+rotated^[n].y:=round((s1*s2*c3+c1*s3)*ex+((-s3)*s1*s2+c1*c3)*ey+((-s1)*c2)*ez);
+
+rotated^[n].z:=round(((-c3)*c1*s2+s1*s3)*ex+(s3*c1*c2+c3*s1)*ey+(c1*c2)*ez);
+
+The new calculated world is now ready to draw. Don't think, that you have to
+copy the new coordinates to the source-array (where are the root-points) for 
+the next calculation.
+I'd like to copy da calculated points in another array like "rotated^[n]" or
+so and then draw from this array. 
+Ok folks that's all about camera rotations. Ya see.... there's little 
+difference between normal rotations and camera.
+
+
+greeTinX jumP tO: 
+
+   All Diabolic Force members - Yogi^Zyklop - Magic^Ethos9^Finix - 
+ MadMan^Finix - Gill Bates^Sicromoft ;) - Amable - Cubic Team -
+     Legend Design - KLF  - Strontium 90 and the Mekka organizers for giving
+   such a cool party! :) :) :) (other groups can be felt to greeted too) :)
+
+
+You have questions, critical things to say? Ok...don't hesistate to contact
+me:
+
+Snail-Mail:
+=============
+Michael Horstmann 
+Masteweg 14
+58640 Iserlohn
+Germany
+
+Phone: +49/02371-42923
+
+
+                            -=> End of File <=- 
+
+                                         
+                               signed: Shadow Bandit of Diabolic Force / coder
+
+
+
+sleeping now.....:)

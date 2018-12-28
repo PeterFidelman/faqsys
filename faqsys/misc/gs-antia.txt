@@ -1,0 +1,194 @@
+From jar92@ecs.southampton.ac.uk  Wed May  8 15:59:34 1996
+Return-Path: <jar92@ecs.southampton.ac.uk>
+X400-Received: by mta x400.chalmers.se in /PRMD=sunet/ADMD=sunet/C=se/; Relayed;
+               Wed, 8 May 1996 15:59:23 +0200
+X400-Received: by /PRMD=uk.ac/ADMD= /C=gb/; Relayed;
+               Wed, 8 May 1996 15:59:10 +0200
+X400-Received: by /PRMD=UK.AC/ADMD= /C=GB/; Relayed;
+               Wed, 8 May 1996 15:59:37 +0200
+X400-Received: by /PRMD=UK.AC/ADMD= /C=GB/; Relayed;
+               Wed, 8 May 1996 15:59:35 +0200
+X400-Received: by /PRMD=UK.AC/ADMD= /C=GB/; Relayed;
+               Wed, 8 May 1996 15:59:34 +0200
+Date: Wed, 8 May 1996 15:59:34 +0200
+X400-Originator: jar92@ecs.southampton.ac.uk
+X400-Recipients: non-disclosure:;
+X400-Mts-Identifier: [/PRMD=uk.ac/ADMD= /C=gb/;<Pine.LNX.3.91.960508144811.1777]
+X400-Content-Type: P2-1984 (2)
+Content-Identifier: Re: Gupta-Spr...
+Alternate-Recipient: Allowed
+From: Jon Rijk <jar92@ecs.southampton.ac.uk>
+Message-Id: <Pine.LNX.3.91.960508144811.17774A-100000@soolin>
+To: d94marka@isy.liu.se
+In-Reply-To: <199605081144.NAA07455@bastet.isy.liu.se>
+Subject: Re: Gupta-Sproull!
+X-Sender: jar92@soolin
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Length: 3903
+X-Lines: 163
+
+On Wed, 8 May 1996 d94marka@se.liu.isy wrote:
+
+> I just wanted to ask if you please could tell
+> me how this sort of antialiasing is done. 
+> I've heard a little about it, and it sounds
+> interesting.
+
+It's all in the Foley, Van Dam book, Computer Graphics
+Principles and Practices (or whatever), but just in case
+you don't have that or ain't yet understood it here's my
+prog I did awhile back:
+
+/*
+ *  Antialised line drawing on Silicon Graphics
+ *  (C) Jon Rijk, Dec 1995
+ */
+
+/*#define TIFF*/
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+
+#ifdef TIFF
+unsigned char **image;
+extern void TiffOut(unsigned char **Image, int width, int height, char *name);
+#else
+#include <gl/gl.h>
+#include <gl/device.h>
+#endif
+
+#define PI M_PI /* from math.h */
+
+#define swap(a,b) (a)=(a)^(b);(b)=(b)^(a);(a)=(a)^(b)
+
+int alias;
+int filter[192];
+
+void GSline(int x0, int y0, int x1, int y1)
+{
+  long p[2];
+  int  i, dx, dy, xi, yi, x=0, y=1, dE, dNE, d;
+
+  int    vdx;
+  double rdx, rvdx;
+
+  if((dx=x1-x0)<0) { dx=-dx; xi=-1; } else xi=1;
+  if((dy=y1-y0)<0) { dy=-dy; yi=-1; } else yi=1;
+
+  if(dy>dx) { swap(dx,dy); swap(xi,yi); swap(x,y); }
+
+  d=2*dy-dx;
+  dE=2*dy;
+  dNE=-2*dx; /* dE component has been taken out */
+
+  vdx=0;
+  rvdx=1.0/(2.0*sqrt(dx*dx + dy*dy));
+  rdx=2.0*dx*rvdx;
+
+  for(i=dx, p[x]=x0, p[y]=y0; i>0; i--) {
+#ifdef TIFF
+    if(alias) {
+      image[p[0]][p[1]]=filter[(int) (128*fabs(vdx*rvdx))];     p[y]+=yi;
+      image[p[0]][p[1]]=filter[(int) (128*fabs(rdx-vdx*rvdx))]; p[y]-=yi*2;
+      image[p[0]][p[1]]=filter[(int) (128*fabs(rdx+vdx*rvdx))]; p[y]+=yi;
+    }
+    else image[p[0]][p[1]]=255;
+#else
+    bgnpoint();
+    if(alias) {
+      color(filter[(int) (128*fabs(vdx*rvdx))]);     v2i(p); p[y]+=yi;
+      color(filter[(int) (128*fabs(rdx-vdx*rvdx))]); v2i(p); p[y]-=yi*2;
+      color(filter[(int) (128*fabs(rdx+vdx*rvdx))]); v2i(p); p[y]+=yi;
+    }
+    else v2i(p);
+    endpoint();
+#endif
+
+    if(d>0) {
+      vdx=d-dx;
+      d+=dNE;
+      p[y]+=yi;
+    }
+    else vdx=d+dx;
+    d+=dE;
+    p[x]+=xi;
+  }
+}
+
+int main(int argc, char *argv[])
+{
+  double ang;
+  int    i;
+
+  if(argc==1) alias=1; else alias=atoi(argv[1]);
+  if(alias<0 || alias>10) alias=1;
+
+#ifdef TIFF
+  image = (unsigned char**)calloc(250,sizeof(unsigned char*));
+  for (i=0;i<250;i++){
+      image[i] = (unsigned char*)calloc(250,sizeof(unsigned char));
+  }
+#else
+  prefsize(250,250);
+  if(winopen("Line Drawing")==-1) {
+    fprintf(stderr, "Error: Could not open graphics window");
+    exit(EXIT_FAILURE);
+  }
+
+  for(i=0; i<256; i++) mapcolor(i, i, i, i);
+  gflush();
+  color(0);
+  clear();
+
+  if(!alias) color(255);
+#endif
+
+  if(alias==1)            /* Linear Filter function */
+    for(i=0; i<192; i++)
+      filter[i]=255-(255*i/192);
+
+  else if(alias>1)        /* Gaussian Filter function */
+    for(i=0; i<192; i++)
+      filter[i]=(int) (255.0*exp(-1.0*pow(i/((alias-1.0)*20.0), 2.0)));
+
+  if(argc==6) {
+    GSline(atoi(argv[2]), atoi(argv[3]), atoi(argv[4]), atoi(argv[5]));
+  }
+  else if(argc==3) switch(atoi(argv[2])) {
+    case 1:
+      for(ang=0,i=3; ang<=PI/4; ang+=PI/(4*20),i+=5)
+        GSline(3, i, (int)(170*cos(ang))+3, (int)(170*sin(ang))+i);
+      break;
+
+    case 2:
+      GSline(10, 10, 190, 20);
+      GSline(10, 30, 190, 40);
+      GSline(10, 40, 190, 30);
+      break;
+  }
+  else
+    for(ang=0; ang<2*PI; ang+=PI/30)
+      GSline(100, 100, (int)(90*cos(ang))+100, (int)(90*sin(ang))+100);
+
+#ifdef TIFF
+  TiffOut(image, 250, 250, "out/tif");
+#else
+  while(!getbutton(ESCKEY));
+  gexit();
+#endif
+}
+
+Sorry it ain't the commented version, if you still don't get what's
+going on, I could send you the PostScript of my report on it, soz but
+I'm incredibly busy at the mo, I don't really have the time to remind
+myself of all the intracies.
+
+BTW how did you discover moi?
+
+-- Jon Rijk --
+email : jar92@ecs.soton.ac.uk  or  jar@mail.soton.ac.uk
+WWW   : http://whirligig.ecs.soton.ac.uk/~jar92
+
+

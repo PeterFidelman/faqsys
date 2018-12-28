@@ -1,0 +1,154 @@
+Font Set Manipulation in Textmode.
+
+
+
+1. Introduction
+2. Enable/Disable Font Manipulation
+3. Secondary Font Set
+4. BW Dithering
+5. Finito
+
+
+
+1. Introduction
+
+As many of you probably have noticed, Symantec uses a smooth mouse_arrow
+in textmode. The trick is font set manipulation. The phong_face in
+FAQSYS_about is also done with font set manipulation. How is it done?
+
+Remember to be in textmode!
+
+
+
+
+2. Enable/Disable Font Manipulation
+
+Well, first you will have to enable font manipulation. This is done by
+writing some word values to some ports:
+
+  port(0x03c4) = 0x0402;  Wait;
+  port(0x03c4) = 0x0704;  Wait;
+  port(0x03ce) = 0x0204;  Wait;
+  port(0x03ce) = 0x0005;  Wait;
+  port(0x03ce) = 0x0006;  Wait;
+
+After each port_writing you have to wait some ticks. I think you have to wait
+6 cycles or something, so this will work:
+
+  for (i=0; i<3; ++i);
+
+Now your videocard has enabled the font set to be manipulated. The font set
+has been copied to memory_address A000:0000. Each character (0 to 255) is
+located at a 32-byte block. So if you wanna find the offset to the char 'A',
+which has ASCII code 65, just:
+
+  A_address = 32*65;
+
+Only the first 16-byte block contains character-bitdata. As you know in
+80x25x16 (mode 3) the font set is 8x16, this means each byte in the 16-byte
+block presents one scanline, which means 8 pixels. The letter 'A' has this
+bitdata: (or something like this (I am not a graphic_man)!)
+
+
+ 128 32   8   2
+   64  16   4   1
+ÉÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ»
+º                º = 00000000 = 0
+º                º = 00000000 = 0
+º                º = 00000000 = 0
+º      ÛÛ        º = 00010000 = 16
+º    ÛÛ  ÛÛ      º = 00101000 = 40
+º  ÛÛ      ÛÛ    º = 01000100 = 68
+º  ÛÛ      ÛÛ    º = 01000100 = 68
+ºÛÛ          ÛÛ  º = 10000010 = 130
+ºÛÛ          ÛÛ  º = 10000010 = 130
+ºÛÛÛÛÛÛÛÛÛÛÛÛÛÛ  º = 11111110 = 254
+ºÛÛ          ÛÛ  º = 10000010 = 130
+ºÛÛ          ÛÛ  º = 10000010 = 130
+º                º = 00000000 = 0
+º                º = 00000000 = 0
+º                º = 00000000 = 0
+º                º = 00000000 = 0
+ÈÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼              
+                                
+                         ÚÄÄÄÄÄÄÙ
+                   ÚÄÄÄÄÄÁÄÄÄÄÄ¿
+Well, this is your 16-byte block for the beatiful letter 'A'. Just write it
+at offset (32*65). As you have finished manipulated chars, you will have to
+tell your videocard to save the font set and disable font manipulation.
+This is done almost the same way as enabling it. Some word values to some
+ports:
+
+  port(0x03c4) = 0x0302;  Wait;
+  port(0x03c4) = 0x0304;  Wait;
+  port(0x03ce) = 0x0004;  Wait;
+  port(0x03ce) = 0x1005;  Wait;
+  port(0x03ce) = 0x0e06;  Wait;
+
+
+If you have studied the Symantec_mousearrow you probably noticed the
+arrow changs some chars by adding a 9th bit. Well, the answer is that you
+have to use 9-bits chars (e.g Í ÙÄ ¿), so you don't get the arrow ugly_looking
+with vertical-lines! (There is one pixel_space between the chars on screen,
+except for 9-bit chars. The 9th bit is simply a copy of the first bit, so
+that is why some chars looks ugly. I am not sure if you can choose which
+char to be 9-bit, but I haven't done any research either.
+
+
+
+3. Secondary Font Set
+
+Another thing which is very interesting is to enable the secondary font-set,
+which means you don't have to care about all the chars you mess with, but
+there is one defect. As you enable the secondary font-set, you use one bit
+more, which means you will only get 0..7 background colors. If you like this
+and wanna enable 512-font set, do like this:
+
+  AH = 0x11
+  AL = 0x03
+  BL = 0x12
+  INT 0x10
+
+
+BL selects the charactor sets VIA bit 3 in char attribute. BL must be loaded
+so the video_controller knows which block to use. Depending on wether bit 3
+of the charactor attribute is ON or OFF. The upper 4 bits selects a block
+number to use for the ON state of bit 3, the lower four bits selects the OFF
+state of bit 3.
+
+
+
+4. BW Dithering
+
+If you are thinking of doing demo_effects in textmode with manipulated
+chars as the FAQSYS_vector, you will probably need a BW dither procedure.
+I read a Microsoft_doc once, and they said that pattern-dithering was
+very popular and classic. I tried it and it worked.
+Imagine you use 64 colors of shading in your virtual screenbuffer, and
+you wanna convert it to 2 colors, so it will look ok in textmode, you
+can replace each pixel with the pixel in the dither_pattern for that color.
+
+First precalc 64 patterns, 16x16 resolution works fine.
+Pattern  0 is empty
+Pattern 32 is half filled (every other pixel)
+Pattern 63 is solid filled
+
+So as you convert your virtual screenbuffer pixel by pixel, your dither_pixel
+is found by:
+
+                              Which pattern
+                                   ³   Y-Coordinate in pattern
+                                   ³          ³   X-Coordinate in pattern
+                                                       
+
+  dither_pixel = dither_pattern[shadecolor][y and 15][x and 15]
+
+I don't know if this is the correct way, but it works ok.
+
+
+5. Finito
+
+I think that was all. Not much, but ok if you didn't already knew this.
+Sorry, but my english could be much better.
+
+- STEFF/Sorrox

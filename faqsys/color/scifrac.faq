@@ -1,0 +1,2990 @@
+From: mctaylor@fractal.mta.ca (Michael Charles Taylor)
+Followup-To: poster
+Newsgroups: sci.fractals,sci.answers,news.answers
+Subject: sci.fractals FAQ
+Approved: news-answers-request@MIT.EDU
+Summary: Frequently Asked Questions about Fractals
+Keywords: fractals Mandelbrot Julia chaos IFS
+
+Archive-name: sci/fractals-faq
+Posting-Frequency: monthly
+Last-modified: July 27, 1997
+Version: v4n7
+URL: http://www.mta.ca/~mctaylor/sci.fractals-faq/
+
+               sci.fractals FAQ (Frequently Asked Questions)
+     _________________________________________________________________
+   
+   Volume 4 Number 7
+   Date July 27, 1997
+     _________________________________________________________________
+   
+   Copyright 1995-1997 by Michael C. Taylor. All Rights Reserved.
+     _________________________________________________________________
+   
+Introduction
+
+   This FAQ is posted monthly to sci.fractals, a Usenet newsgroup about
+   fractals; mathematics and software. This document is aimed at being a
+   reference about fractals, including answers to commonly asked
+   questions, archive listings of fractal software, images, and papers
+   that can be accessed via the Internet using FTP, gopher, or
+   World-Wide-Web (WWW), and a bibliography for further readings.
+   
+   The FAQ does not give a textbook approach to learning about fractals,
+   but a summary of information from which you can learn more about and
+   explore fractals.
+   
+   This FAQ is posted monthly to the Usenet newsgroups: sci.fractals
+   ("Objects of non-integral dimension and other chaos"), sci.answers,
+   and news.answers. Like most FAQs it can be obtained freely with a WWW
+   browser (such as Mosaic or Netscape), or by anonymous FTP from
+   ftp://rtfm.mit.edu/pub/usenet/news.answers/sci/fractals-faq (USA). It
+   is also available from
+   ftp://ftp.Germany.EU.net/pub/newsarchive/news.answers/sci/fractals-faq
+   .gz (Europe),
+   http://spanky.triumf.ca/pub/fractals/docs/SCI_FRACTALS.FAQ (Canada),
+   http://www.bdx1.u-bordeaux.fr/MAPBX/louvet/sci.fractals-faq/faq.html
+   (France) and http://www.mta.ca/~mctaylor/sci.fractals-faq/ (Canada).
+   
+   Those without FTP or WWW access can obtain the FAQ via email, by
+   sending a message to mail-server@rtfm.mit.edu with the message:
+   
+   send usenet/news.answers/sci/fractals-faq
+     _________________________________________________________________
+   
+  Suggestions, Comments, Mistakes
+  
+   Please send suggestions and corrections about the sci.fractals FAQ to
+   fractal-faq@mta.ca. Without your contributions, the FAQ for
+   sci.fractals will not grow in its wealth. "For the readers, by the
+   readers." Rather than calling me a fool behind my back, if you find a
+   mistake, whether spelling or factual, please send me a note. That way
+   readers of future versions of the FAQ will not be misled. Also if you
+   have problems with the appearance of the hypertext version. There
+   should not be any Netscape only markup tags contained in the hypertext
+   verion, but I have not followed strict HTML 3.2 specifications. If the
+   appearance is "incorrect" let me know what problems you experience.
+   
+  Why the different name?
+  
+   The old Fractal FAQ about fractals has not been updated for over two
+   years and has not been posted by Dr. Ermel Stepp, in as long. So this
+   is a new FAQ based on the previous FAQ's information and the readers
+   of primarily sci.fractals, and FRAC-L. Thus it is now called the
+   sci.fractals FAQ.
+   ______________________________________________________________________
+   
+                               Table of contents
+                   The questions which are answered include:
+                                       
+   
+   
+   Q0: I am new to the 'Net. What should I know about being online?
+          
+   Q1: I want to learn about fractals. What should I read first?
+          
+   Q2: What is a fractal? What are some examples of fractals?
+          
+   Q3a: What is chaos?
+          
+   Q3b: Are fractals and chaos synonymous?
+          
+   Q3c: Are there references to fractals used as finanical models? New
+          
+   Q4a: What is fractal dimension? How is it calculated?
+          
+   Q4b: What is topological dimension?
+          
+   Q5: What is a strange attractor?
+          
+   Q6a: What is the Mandelbrot set?
+          
+   Q6b: How is the Mandelbrot set actually computed?
+          
+   Q6c: Why do you start with z = 0?
+          
+   Q6d: What are the bounds of the Mandelbrot set? When does it diverge?
+          
+   Q6e: How can I speed up Mandelbrot set generation? 
+          
+   Q6f: What is the area of the Mandelbrot set? New
+          
+   Q6g: What can you say about the structure of the Mandelbrot set?
+          
+   Q6h: Is the Mandelbrot set connected?
+          
+   Q6i: What is the Mandelbrot Encyclopedia?
+          
+   Q6j: What is the dimension of the Mandelbrot Set? New
+          
+   Q7a: What is the difference between the Mandelbrot set and a Julia
+          set?
+          
+   Q7b: What is the connection between the Mandelbrot set and Julia sets?
+          
+   Q7c: How is a Julia set actually computed?
+          
+   Q7d: What are some Julia set facts?
+          
+   Q8a: How does complex arithmetic work?
+          
+   Q8b: How does quaternion arithmetic work?
+          
+   Q9: What is the logistic equation?
+          
+   Q10: What is Feigenbaum's constant?
+          
+   Q11a: What is an iterated function system (IFS)?
+          
+   Q11b: What is the state of fractal compression?
+          
+   Q12a: How can you make a chaotic oscillator?
+          
+   Q12b: What are laboratory demonstrations of chaos?
+          
+   Q13: What are L-systems?
+          
+   Q14: What are sources of fractal music?
+          
+   Q15: How are fractal mountains generated?
+          
+   Q16: What are plasma clouds?
+          
+   Q17a: Where are the popular periodically-forced Lyapunov fractals
+          described?
+          
+   Q17b: What are Lyapunov exponents?
+          
+   Q17c: How can Lyapunov exponents be calculated?
+          
+   Q18: Where can I get fractal T-shirts and posters?
+          
+   Q19: How can I take photos of fractals?
+          
+   Q20a: What are the rendering methods commonly used for 256-colour
+          fractals? New
+          
+   Q20b: How does rendering differ for true-colour fractals?? New
+          
+   Q21: How can 3-D fractals be generated?
+          
+   Q22a: What is Fractint?
+          
+   Q22b: How does Fractint achieve its speed?
+          
+   Q23: Where can I obtain software packages to generate fractals?
+          
+   Q24a: How does anonymous ftp work?
+          
+   Q24b: What if I can't use ftp to access files?
+          
+   Q25a: Where are fractal pictures archived?
+          
+   Q25b: How do I view fractal pictures from
+          alt.binaries.pictures.fractals?
+          
+   Q26: Where can I obtain fractal papers?
+          
+   Q27: How can I join fractal mailing lists?
+          
+   Q28: What is complexity?
+          
+   Q29a: What are some general references on fractals and chaos? New
+          
+   Q29b: What are some relevant journals?
+          
+   Q29c: What are some other Internet references? New
+          
+   Q30: What is a multifractal?
+          
+   Q31: Are there any special notices? New
+          
+   Q32: Who has contributed to the Fractal FAQ? New
+          
+   Q33: Copyright?
+
+            ____________________________________________________
+   
+
+Subject: USENET and Netiquette
+
+   Q0: I am new to the 'Net. What should I know about being online?
+   
+   A0: Read the guidelines and Frequently Asked Questions (FAQ) in
+   news.announce.newusers. They are available from:
+   
+   Welcome to news.newusers.questions
+          ftp://rtfm.mit.edu/pub/usenet/news.answers/news-newusers-intro
+          ftp://garbo.uwasa.fi/pc/doc-net/usenews.zip
+          
+   A Primer on How to Work With the Usenet Community
+          ftp://rtfm.mit.edu/pub/usenet/news.answers/usenet/primer/part1
+          
+   Frequently Asked Questions about Usenet
+          ftp://rtfm.mit.edu/pub/usenet/news.answers/usenet/faq/part1
+          
+   Rules for posting to Usenet
+          ftp://rtfm.mit.edu/pub/usenet/news.answers/usenet/posting-rules
+          /part1
+          
+   Emily Postnews Answers Your Questions on Netiquette
+          ftp://rtfm.mit.edu/pub/usenet/news.answers/usenet/emily-postnew
+          s/part1
+          
+   Hints on writing style for Usenet
+          ftp://rtfm.mit.edu/pub/usenet/news.answers/usenet/writing-style
+          /part1
+          
+   What is Usenet?
+          ftp://rtfm.mit.edu/pub/usenet/news.answers/usenet/what-is/part1
+          
+   There are a couple of common mistakes people make, posting ads,
+   posting large binaries (images or programs), and posting off-topic.
+   
+   Do Not Post Images to sci.fractals. If you follow this rule people
+   will be your friend. There is a special place for you to post your
+   images, alt.binaries.pictures.fractals. The other group
+   (alt.fractals.pictures) is considered obsolete and may not be carried
+   to as many people as alt.binaries.pictures.fractals. In fact there is
+   CancelBot which will delete any posts it finds in sci.fractals (and
+   most other non-binaries newsgroup) so nearly no one will see it.
+   
+   Post only about fractals, this includes fractal mathematics, software
+   to generate fractals, where to get fractal posters and T-shirts, and
+   fractals as art. Do not bother posting about news events not directly
+   related to fractals, or about which OS / hardware / language is
+   better. These lead to flame wars.
+   
+   Do not post advertisements. I should not have to mention this, but
+   people do stupid things. If you have some fractal software (or
+   posters) available is shareware or shrink-wrap commerical, post your
+   brief announcement once. After than, you should limit yourself to
+   notices of upgrades and responding via e-mail to people looking for
+   fractal software.
+
+Subject: Learning about fractals
+
+   Q1: I want to learn about fractals. What should I read/view first?
+   
+   A1: Chaos: Makeing a New Science, by James Gleick, is a good book to
+   get a general overview and history that does not require an extensive
+   math background. Fractals Everywhere, by Michael Barnsley, and Measure
+   Topology and Fractal Geometry, by G. A. Edgar, are textbooks that
+   describe mathematically what fractals are and how to generate them,
+   but they requires a college level mathematics background. Chaos,
+   Fractals, and Dynamics, by R. L. Devaney, is also a good start. There
+   is a longer book list at the end of the FAQ (see "What are some
+   general references?").
+   
+   Also, there are networked resources available, such as :
+   
+   Exploring Fractals and Chaos
+          http://www.lib.rmit.edu.au/fractals/exploring.html
+          
+   Fractal Microscope
+          http://www.ncsa.uiuc.edu/Edu/Fractal/Fractal_Home.html
+          
+   Dynamical Systems and Technology Project: a introduction for
+          high-school students
+          http://math.bu.edu/DYSYS/dysys.html
+          
+   An Introduction to Fractals (Written by Paul Bourke)
+          http://www.mhri.edu.au/~pdb/fractals/fracintro.html
+          
+   Fractals and Scale (by David G. Green)
+          http://life.csu.edu.au/complex/tutorials/tutorial3.html
+          
+   What are fractals? (by Neal Kettler)
+          http://www.vis.colostate.edu/~user1209/fractals/fracinfo.html
+          
+   Fract-ED a fractal tutorial for beginners, targeted for high
+          school/tech school students.
+          http://www.ealnet.com/ealsoft/fracted.htm
+          
+   Mandelbrot Questions & Answers (without any scary details) by Paul
+          Derbyshire
+          http://chat.carleton.ca/~pderbysh/mandlfaq.html
+          
+   The natural geometry of fractals a good text illustrated with
+          interactive Java applets
+          http://www.go2net.com/internet/deep/1996/12/11
+          
+   Godric's fractal gallery. A brief introduction to Fractals clear and
+          well illustrated explanations
+          http://www.gozen.demon.co.uk/godric/fracgall.html
+          
+   Lystad Fractal Info complex numbers and fractals
+          http://www.iglobal.net/pub/lystad/lystad-fractal-info.html
+          
+   Fractal eXtreme : fractal theory theoritical informations
+          http://www.cygnus-software.com/theory/theory.htm
+          
+   Frode Gill Fractal pages mathematical and programming data about
+          classical fractals and quaternions
+          http://www.krs.hia.no/~fgill/fractal.html
+          
+   Fractals : a history
+          http://www.bdx1.u-bordeaux.fr/MAPBX/louvet/history.html
+          
+   Basic informations about fractals
+          http://www.bdx1.u-bordeaux.fr/MAPBX/louvet/jpl1a.html
+
+Subject: What is a fractal?
+
+   Q2: What is a fractal? What are some examples of fractals?
+   
+   A2: A fractal is a rough or fragmented geometric shape that can be
+   subdivided in parts, each of which is (at least approximately) a
+   reduced-size copy of the whole. Fractals are generally self-similar
+   and independent of scale.
+   
+   There are many mathematical structures that are fractals; e.g.
+   Sierpinski triangle, Koch snowflake, Peano curve, Mandelbrot set, and
+   Lorenz attractor. Fractals also describe many real-world objects, such
+   as clouds, mountains, turbulence, coastlines, roots, branches of
+   trees, blood vesels, and lungs of animals, that do not correspond to
+   simple geometric shapes.
+   
+   Benoit B. Mandelbrot gives a mathematical definition of a fractal as a
+   set of which the Hausdorff Besicovich dimension strictly exceeds the
+   topological dimension. However, he is not satisfied with this
+   definition as it excludes sets one would consider fractals.
+   
+   According to Mandelbrot, who invented the word: "I coined fractal from
+   the Latin adjective fractus. The corresponding Latin verb frangere
+   means "to break:" to create irregular fragments. It is therefore
+   sensible - and how appropriate for our needs! - that, in addition to
+   "fragmented" (as in fraction or refraction), fractus should also mean
+   "irregular," both meanings being preserved in fragment." (The Fractal
+   Geometry of Nature, page 4.)
+
+Subject: Chaos
+
+   Q3a: What is chaos?
+   
+   A3a: Chaos is apparently unpredictable behavior arising in a
+   deterministic system because of great sensitivity to initial
+   conditions. Chaos arises in a dynamical system if two arbitrarily
+   close starting points diverge exponentially, so that their future
+   behavior is eventually unpredictable.
+   
+   Weather is considered chaotic since arbitrarily small variations in
+   initial conditions can result in radically different weather later.
+   This may limit the possibilities of long-term weather forecasting.
+   (The canonical example is the possibility of a butterfly's sneeze
+   affecting the weather enough to cause a hurricane weeks later.)
+   
+   Devaney defines a function as chaotic if it has sensitive dependence
+   on initial conditions, it is topologically transitive, and periodic
+   points are dense. In other words, it is unpredictable, indecomposable,
+   and yet contains regularity.
+   
+   Allgood and Yorke define chaos as a trajectory that is exponentially
+   unstable and neither periodic or asymptotically periodic. That is, it
+   oscillates irregularly without settling down.
+   
+   sci.fractals may not be the best place for chaos/non-linear dynamics
+   questions, sci.nonlinear newsgroup should be much better.
+   
+   Q3b: Are fractals and chaos synonymous ?
+   
+   A3b: No. Many people do confuse the two domains because books or
+   papers about chaos speak of the two concepts or are illustrated with
+   fractals.
+   Fractals and deterministic chaos are mathematical tools to modelise
+   different kinds of natural phenomena or objects. The keywords in chaos
+   are impredictability, sensitivity to initial conditions in spite of
+   the deterministic set of equations describing the phenomenon.
+   
+   On the other hand, the keywords to fractals are self-similarity,
+   invariance of scale. Many fractals are in no way chaotic (Sirpinski
+   triangle, Koch curve...).
+   
+   However, starting from very differents point of view, the two domains
+   have many things in common : many chaotic phenomena exhibit fractals
+   structures (in their strange attractors for example... fractal
+   structure is also obvious in chaotics phenomena due to successive
+   bifurcations ; see for example the logistic equation Q9 )
+   
+   The following resources may be helpful to understand chaos:
+   
+   sci.nonlinear FAQ (UK)
+          http://www.fen.bris.ac.uk/engmaths/research/nonlinear/faq.html
+          
+   sci.nonlinear FAQ (US)
+          http://amath.colorado.edu/appm/faculty/jdm/faq.html
+          
+   Exploring Chaos and Fractals
+          http://www.lib.rmit.edu.au/fractals/exploring.html
+          
+   Chaos and Complexity Homepage (M. Bourdour)
+          http://www.cc.duth.gr/~mboudour/nonlin.html
+          
+   The Institute for Nonlinear Science
+          http://inls.ucsd.edu/
+          
+   Q3c: Are there references to fractals used as finanical models?
+   
+   A3c: Most references are related to chaos being used as a model for
+   finanical forecasting.
+   
+   One reference that is about fractal models is, Fractal Market Analysis
+   - Applying Chaos Theory to Investment & Economics by Edgar Peters.
+   
+   Some recommended Chaos-related texts in finanical forecasting.
+   
+   Medio: Chaotic Dynmics - Theory and Applications to Economics
+          Cambridge University Press, 1993, ISBN 0-521-48461-8
+          
+   Vaga: Profiting from Chaos - Using Chaos Theory for Market Timing,
+          Stock Selection and Option Valuation
+          McGraw-Hill Inc, 1994, ISBN 0-07-066786-1
+
+Subject: Fractal dimension
+
+   Q4a : What is fractal dimension? How is it calculated?
+   
+   A4a: A common type of fractal dimension is the Hausdorff-Besicovich
+   Dimension, but there are several different ways of computing fractal
+   dimension.
+   
+   Roughly, fractal dimension can be calculated by taking the limit of
+   the quotient of the log change in object size and the log change in
+   measurement scale, as the measurement scale approaches zero. The
+   differences come in what is exactly meant by "object size" and what is
+   meant by "measurement scale" and how to get an average number out of
+   many different parts of a geometrical object. Fractal dimensions
+   quantify the static geometry of an object.
+   
+   For example, consider a straight line. Now blow up the line by a
+   factor of two. The line is now twice as long as before. Log 2 / Log 2
+   = 1, corresponding to dimension 1. Consider a square. Now blow up the
+   square by a factor of two. The square is now 4 times as large as
+   before (i.e. 4 original squares can be placed on the original square).
+   Log 4 / log 2 = 2, corresponding to dimension 2 for the square.
+   Consider a snowflake curve formed by repeatedly replacing ___ with
+   _/\_, where each of the 4 new lines is 1/3 the length of the old line.
+   Blowing up the snowflake curve by a factor of 3 results in a snowflake
+   curve 4 times as large (one of the old snowflake curves can be placed
+   on each of the 4 segments _/\_). Log 4 / log 3 = 1.261... Since the
+   dimension 1.261 is larger than the dimension 1 of the lines making up
+   the curve, the snowflake curve is a fractal.
+   
+   For more information on fractal dimension and scale, via the WWW
+   
+   Fractals and Scale (by David G. Green)
+          http://life.csu.edu.au/complex/tutorials/tutorial3.html
+          
+   Fractal dimension references:
+   
+    1. J. P. Eckmann and D. Ruelle, Reviews of Modern Physics 57, 3
+       (1985), pp. 617-656.
+    2. K. J. Falconer, The Geometry of Fractal Sets, Cambridge Univ.
+       Press, 1985.
+    3. T. S. Parker and L. O. Chua, Practical Numerical Algorithms for
+       Chaotic Systems, Springer Verlag, 1989.
+    4. H. Peitgen and D. Saupe, eds., The Science of Fractal Images,
+       Springer-Verlag Inc., New York, 1988. ISBN 0-387-96608-0.
+       This book contains many color and black and white photographs,
+       high level math, and several pseudocoded algorithms.
+    5. G. Procaccia, Physica D 9 (1983), pp. 189-208.
+    6. J. Theiler, Physical Review A 41 (1990), pp. 3038-3051.
+       
+   References on how to estimate fractal dimension:
+   
+    1. S. Jaggi, D. A. Quattrochi and N. S. Lam, Implementation and
+       operation of three fractal measurement algorithms for analysis of
+       remote-sensing data., Computers & Geosciences 19, 6 (July 1993),
+       pp. 745-767.
+    2. E. Peters, Chaos and Order in the Capital Markets , New York,
+       1991. ISBN 0-471-53372-6
+       Discusses methods of computing fractal dimension. Includes several
+       short programs for nonlinear analysis.
+    3. J. Theiler, Estimating Fractal Dimension, Journal of the Optical
+       Society of America A-Optics and Image Science 7, 6 (June 1990),
+       pp. 1055-1073.
+       
+   There are some programs available to compute fractal dimension. They
+   are listed in a section below (see Q22 "Fractal software").
+   
+  Reference on the Hausdorff-Besicovitch dimension
+  
+   A clear and concise (2 page) write-up of the definition of the
+   Hausdorff-Besicovitch dimension in MS-Word 6.0 format is available in
+   zip format.
+   
+   hausdorff.zip (~26KB)
+          http://www.newciv.org/jhs/hausdorff.zip
+          
+   Q4b : What is topological dimension?
+   
+   A4b: Topological dimension is the "normal" idea of dimension; a point
+   has topological dimension 0, a line has topological dimension 1, a
+   surface has topological dimension 2, etc.
+   
+   For a rigorous definition:
+   A set has topological dimension 0 if every point has arbitrarily small
+   neighborhoods whose boundaries do not intersect the set.
+   
+   A set S has topological dimension k if each point in S has arbitrarily
+   small neighborhoods whose boundaries meet S in a set of dimension k-1,
+   and k is the least nonnegative integer for which this holds.
+
+Subject: Strange attractors
+
+   Q5: What is a strange attractor?
+   
+   A5: A strange attractor is the limit set of a chaotic trajectory. A
+   strange attractor is an attractor that is topologically distinct from
+   a periodic orbit or a limit cycle. A strange attractor can be
+   considered a fractal attractor. An example of a strange attractor is
+   the Henon attractor.
+   
+   Consider a volume in phase space defined by all the initial conditions
+   a system may have. For a dissipative system, this volume will shrink
+   as the system evolves in time (Liouville's Theorem). If the system is
+   sensitive to initial conditions, the trajectories of the points
+   defining initial conditions will move apart in some directions, closer
+   in others, but there will be a net shrinkage in volume. Ultimately,
+   all points will lie along a fine line of zero volume. This is the
+   strange attractor. All initial points in phase space which ultimately
+   land on the attractor form a Basin of Attraction. A strange attractor
+   results if a system is sensitive to initial conditions and is not
+   conservative.
+   
+   Note: While all chaotic attractors are strange, not all strange
+   attractors are chaotic.
+   
+   Reference:
+   
+    1. Grebogi, et al., Strange Attractors that are not Chaotic, Physica
+       D 13 (1984), pp. 261-268.
+
+Subject: The Mandelbrot set
+
+   Q6a : What is the Mandelbrot set?
+   
+   A6a: The Mandelbrot set is the set of all complex c such that
+   iterating z -> z^2 + c does not go to infinity (starting with z = 0).
+   
+   Other images and resources are:
+   
+   Frank Rousell's hyperindex of clickable/retrievable Mandelbrot images
+          http://www.cnam.fr/fractals/mandel.html
+          
+   Neal Kettler's Interactive Mandelbrot
+          http://www.vis.colostate.edu/~user1209/fractals/explorer/
+          
+   Panagiotis J. Christias' Mandelbrot Explorer
+          http://www.softlab.ntua.gr/mandel/mandel.html
+          
+   2D & 3D Mandelbrot fractal explorer (set up by Robert Keller)
+          http://reality.sgi.com/employees/rck/hydra/
+          
+   Mandelbrot viewer written in Java (by Simon Arthur)
+          http://www.mindspring.com/~chroma/mandelbrot.html
+          
+   Mandelbrot Questions & Answers (without any scary details) by Paul
+          Derbyshire
+          http://chat.carleton.ca/~pderbysh/mandlfaq.html
+          
+   Quick Guide to the Mandelbrot Set (includes a tourist map) by Paul
+          Derbyshire
+          http://chat.carleton.ca/~pderbysh/manguide.html
+          
+   Beginner's guide to the Mandelbrot Set by Eric Carr
+          http://www.cs.odu.edu/~carr/mandelbr.html
+          
+   Java program to view the Mandelbrot Set by Ken Shirriff
+          http://www.sunlabs.com/~shirriff/java/
+          
+   Mu-Ency The Encyclopedia of the Mandelbrot Set by Robert Munafo
+          http://home.earthlink.net/~mrob/muency.html
+          
+   Q6b : How is the Mandelbrot set actually computed?
+   
+   A6b: The basic algorithm is: For each pixel c, start with z = 0.
+   Repeat z = z^2 + c up to N times, exiting if the magnitude of z gets
+   large. If you finish the loop, the point is probably inside the
+   Mandelbrot set. If you exit, the point is outside and can be colored
+   according to how many iterations were completed. You can exit if
+   |z| > 2, since if z gets this big it will go to infinity. The maximum
+   number of iterations, N, can be selected as desired, for instance 100.
+   Larger N will give sharper detail but take longer.
+   
+   Frode Gill has some information about generating the Mandelbrot Set at
+   http://www.krs.hia.no/~fgill/mandel.html.
+   
+   Q6c : Why do you start with z = 0?
+   
+   A6c: Zero is the critical point of z = z^2 + c, that is, a point where
+   d/dz (z^2 + c) = 0. If you replace z^2 + c with a different function,
+   the starting value will have to be modified. E.g. for z -> z^2 +  z,
+   the critical point is given by 2z + 1 = 0, so start with z = -0.5. In
+   some cases, there may be multiple critical values, so they all should
+   be tested.
+   
+   Critical points are important because by a result of Fatou: every
+   attracting cycle for a polynomial or rational function attracts at
+   least one critical point. Thus, testing the critical point shows if
+   there is any stable attractive cycle. See also:
+   
+    1. M. Frame and J. Robertson, A Generalized Mandelbrot Set and the
+       Role of Critical Points, Computers and Graphics 16, 1 (1992), pp.
+       35-40.
+       
+   Note that you can precompute the first Mandelbrot iteration by
+   starting with z = c instead of z = 0, since 02 + c = c.
+   
+   Q6d: What are the bounds of the Mandelbrot set? When does it diverge?
+   
+   A6d: The Mandelbrot set lies within |c| <= 2. If |z| exceeds 2, the z
+   sequence diverges.
+   Proof: if |z| > 2, then |z^2 + c| >= |z^2| - |c| > 2|z| - |c|. If
+   |z| >= |c|, then 2|z| - |c| > |z|. So, if |z| > 2 and |z| >= c, then
+   |z^2 + c| > |z|, so the sequence is increasing. (It takes a bit more
+   work to prove it is unbounded and diverges.) Also, note that |z| = c,
+   so if |c| > 2, the sequence diverges.
+   
+   Q6e : How can I speed up Mandelbrot set generation?
+   
+   A6e: See the information on speed below (see "Fractint"). Also see:
+   
+    1. R. Rojas, A Tutorial on Efficient Computer Graphic Representations
+       of the Mandelbrot Set, Computers and Graphics 15, 1 (1991), pp.
+       91-100.
+       
+   Q6f: What is the area of the Mandelbrot set?
+   
+   A6f: Ewing and Schober computed an area estimate using 240,000 terms
+   of the Laurent series. The result is 1.7274... However, the Laurent
+   series converges very slowly, so this is a poor estimate. A project to
+   measure the area via counting pixels on a very dense grid shows an
+   area around 1.5066. (Contact rpm%mrob.uucp@spdcc.com for more
+   information.) Hill and Fisher used distance estimation techniques to
+   rigorously bound the area and found the area is between 1.503 and
+   1.5701. Jay Hill's latest results using Root Solving and Component
+   Series Evaluation shows the area is at least 1.506302 and less than
+   1.5613027. See Fractal Horizons edited by Cliff Pickover and Hill's
+   home page for details about his work.
+   
+   References:
+   
+    1. J. H. Ewing and G. Schober, The Area of the Mandelbrot Set, Numer.
+       Math. 61 (1992), pp. 59-72.
+    2. Y. Fisher and J. Hill, Bounding the Area of the Mandelbrot Set,
+       Numerische Mathematik,. (Submitted for publication). Available via
+       
+        World Wide Web (in Postscript format)
+                http://inls.ucsd.edu/y/Complex/area.ps.Z.
+                
+    3. Jay Hill's Home page which includes his latest updates.
+       
+        Jay's Hill Home Page via the World Wide Web.
+                http://www.geocities.com/CapeCanaveral/Lab/3825/
+                
+   Q6g: What can you say about the structure of the Mandelbrot set?
+   
+   A6g: Most of what you could want to know is in Branner's article in
+   Chaos and Fractals: The Mathematics Behind the Computer Graphics.
+   
+   Note that the Mandelbrot set in general is not strictly self-similar;
+   the tiny copies of the Mandelbrot set are all slightly different,
+   mainly because of the thin threads connecting them to the main body of
+   the Mandelbrot set. However, the Mandelbrot set is quasi-self-similar.
+   However, the Mandelbrot set is self-similar under magnification in
+   neighborhoods of Misiurewicz points (e.g. -.1011 + .9563i). The
+   Mandelbrot set is conjectured to be self-similar around generalized
+   Feigenbaum points (e.g. -1.401155 or -.1528 + 1.0397i), in the sense
+   of converging to a limit set.
+   
+   References:
+   
+    1. T. Lei, Similarity between the Mandelbrot set and Julia Sets,
+       Communications in Mathematical Physics 134 (1990), pp. 587-617.
+    2. J. Milnor, Self-Similarity and Hairiness in the Mandelbrot Set, in
+       Computers in Geometry and Topology, M. Tangora (editor), Dekker,
+       New York, pp. 211-257.
+       
+   The "external angles" of the Mandelbrot set (see Douady and Hubbard or
+   brief sketch in "Beauty of Fractals") induce a Fibonacci partition
+   onto it.
+   
+   The boundary of the Mandelbrot set and the Julia set of a generic c in
+   M have Hausdorff dimension 2 and have topological dimension 1. The
+   proof is based on the study of the bifurcation of parabolic periodic
+   points. (Since the boundary has empty interior, the topological
+   dimension is less than 2, and thus is 1.)
+   
+   Reference:
+   
+    1. M. Shishikura, The Hausdorff Dimension of the Boundary of the
+       Mandelbrot Set and Julia Sets, The paper is available from
+       anonymous ftp: ftp://math.sunysb.edu/preprints/ims91-7.ps.Z
+       
+   Q6h: Is the Mandelbrot set connected?
+   
+   A6h: The Mandelbrot set is simply connected. This follows from a
+   theorem of Douady and Hubbard that there is a conformal isomorphism
+   from the complement of the Mandelbrot set to the complement of the
+   unit disk. (In other words, all equipotential curves are simple closed
+   curves.) It is conjectured that the Mandelbrot set is locally
+   connected, and thus pathwise connected, but this is currently
+   unproved.
+   
+   Connectedness definitions:
+   Connected: X is connected if there are no proper closed subsets A and
+   B of X such that A union B = X, but A intersect B is empty. I.e. X is
+   connected if it is a single piece.
+   
+   Simply connected: X is simply connected if it is connected and every
+   closed curve in X can be deformed in X to some constant closed curve.
+   I.e. X is simply connected if it has no holes.
+   
+   Locally connected: X is locally connected if for every point p in X,
+   for every open set U containing p, there is an open set V containing p
+   and contained in the connected component of p in U. I.e. X is locally
+   connected if every connected component of every open subset is open in
+   X. Arcwise (or path) connected: X is arcwise connected if every two
+   points in X are joined by an arc in X.
+   
+   (The definitions are from Encyclopedic Dictionary of Mathematics.)
+   
+   Reference:
+   Douady, A. and Hubbard, J., "Comptes Rendus" (Paris) 294, pp.123-126,
+   1982.
+   
+   Q6i: What is the Mandelbrot Encyclopedia?
+   
+   A6i: The Mandelbrot Encyclopedia is a web page by Robert Munafo
+   <rpm%mrob.uucp@spdcc.com> about the Mandelbrot Set. It is available
+   via WWW at <http://home.earthlink.net/~mrob/muency.html>.
+   
+   Q6j: What is the dimension of the Mandelbrot Set?
+   
+   A6j: The Mandelbrot Set has a dimension of 2. The Mandelbrot Set
+   contains and is contained in a disk. A disk has a dimension of 2, thus
+   so does the Mandelbrot Set.
+   
+   The Koch snowflake (Hausdorff dimension 1.2619...) does not satisfy
+   this condition because it is a thin boundary curve, thus containing no
+   disk. If you add the region inside the curve then it does have
+   dimension of 2.
+   
+   The boundary of the Mandelbrot set and the Julia set of a generic c in
+   M have Hausdorff dimension 2 and have topological dimension 1. The
+   proof is based on the study of the bifurcation of parabolic periodic
+   points. (Since the boundary has empty interior, the topological
+   dimension is less than 2, and thus is 1.) See reference above
+
+Subject: Julia sets
+
+   Q7a: What is the difference between the Mandelbrot set and a Julia
+   set?
+   
+   A7a: The Mandelbrot set iterates z^2 + c with z starting at 0 and
+   varying c. The Julia set iterates z^2 + c for fixed c and varying
+   starting z values. That is, the Mandelbrot set is in parameter space
+   (c-plane) while the Julia set is in dynamical or variable space
+   (z-plane).
+   
+   Q7b: What is the connection between the Mandelbrot set and Julia sets?
+   
+   A7b: Each point c in the Mandelbrot set specifies the geometric
+   structure of the corresponding Julia set. If c is in the Mandelbrot
+   set, the Julia set will be connected. If c is not in the Mandelbrot
+   set, the Julia set will be a Cantor dust.
+   
+   Q7c: How is a Julia set actually computed?
+   
+   A7c: The Julia set can be computed by iteration similar to the
+   Mandelbrot computation. The only difference is that the c value is
+   fixed and the initial z value varies.
+   
+   Alternatively, points on the boundary of the Julia set can be computed
+   quickly by using inverse iterations. This technique is particularly
+   useful when the Julia set is a Cantor Set. In inverse iteration, the
+   equation z1 = z0^2 + c is reversed to give an equation for z0: z0 =
+   ±sqrt(z1 - c). By applying this equation repeatedly, the resulting
+   points quickly converge to the Julia set boundary. (At each step,
+   either the positive or negative root is randomly selected.) This is a
+   nonlinear iterated function system.
+   
+   In pseudocode:
+   
+ z = 1 (or any value)
+loop
+ if (random number < .5) then
+  z = sqrt(z - c)
+ else
+  z = -sqrt(z - c)
+ endif
+ plot z
+end loop
+
+   Q7d: What are some Julia set facts?
+   
+   A7d: The Julia set of any rational map of degree greater than one is
+   perfect (hence in particular uncountable and nonempty), completely
+   invariant, equal to the Julia set of any iterate of the function, and
+   also is the boundary of the basin of attraction of every attractor for
+   the map.
+   
+   Julia set references:
+   
+    1. A. F. Beardon, Iteration of Rational Functions : Complex Analytic
+       Dynamical Systems, Springer-Verlag, New York, 1991.
+    2. P. Blanchard, Complex Analytic Dynamics on the Riemann Sphere,
+       Bull. of the Amer. Math. Soc 11, 1 (July 1984), pp. 85-141.
+       
+   This article is a detailed discussion of the mathematics of iterated
+   complex functions. It covers most things about Julia sets of rational
+   polynomial functions.
+
+Subject: Complex arithmetic and quaternion arithmetic
+
+   Q8a: How does complex arithmetic work?
+   
+   A8a: It works mostly like regular algebra with a couple additional
+   formulas:
+   (note: a, b are reals, x, y are complex, i is the square root of -1)
+   
+   Powers of i:
+          i^2 = -1
+          
+   Addition:
+          (a+i*b)+(c+i*d) = (a+c)+i*(b+d)
+          
+   Multiplication:
+          (a+i*b)*(c+i*d) = a*c-b*d + i*(a*d+b*c)
+          
+   Division:
+          (a+i*b) / (c+i*d) = (a+i*b)*(c-i*d) / (c^2+d^2)
+          
+   Exponentiation:
+          exp(a+i*b) = exp(a)*(cos(b)+i*sin(b))
+          
+   Sine:
+          sin(x) = (exp(i*x) - exp(-i*x)) / (2*i)
+          
+   Cosine:
+          cos(x) = (exp(i*x) + exp(-i*x)) / 2
+          
+   Magnitude:
+          |a+i*b| = sqrt(a^2+b^2)
+          
+   Log:
+          log(a+i*b) = log(|a+i*b|)+i*arctan(b / a) (Note: log is
+          multivalued.)
+          
+   Log (polar coordinates):
+          log(r e^(i*a)) = log(r)+i*a
+          
+   Complex powers:
+          x^y = exp(y*log(x))
+          
+   de Moivre's theorem:
+          x^n = r^n [cos(n*a) + i*sin(n*a)] (where n is an integer)
+          
+   More details can be found in any complex analysis book.
+   
+   Q8b: How does quaternion arithmetic work?
+   
+   A8b: quaternions have 4 components (a + ib + jc + kd) compared to the
+   two of complex numbers. Operations such as addition and multiplication
+   can be performed on quaternions, but multiplication is not
+   commutative.
+   
+   Quaternions satisfy the rules
+   
+     * i^2 = j^2 = k^2 = -1
+     * ij = -ji = k
+     * jk = -kj = i,
+     * ki = -ik = j
+       
+   See:
+   
+   Frode Gill's quaternions page
+          http://www.krs.hia.no/~fgill/quatern.html
+
+Subject: Logistic equation
+
+   Q9: What is the logistic equation?
+   
+   A9: It models animal populations. The equation is x -> c x (1 - x),
+   where x is the population (between 0 and 1) and c is a growth
+   constant. Iteration of this equation yields the period doubling route
+   to chaos. For c between 1 and 3, the population will settle to a fixed
+   value. At 3, the period doubles to 2; one year the population is very
+   high, causing a low population the next year, causing a high
+   population the following year. At 3.45, the period doubles again to 4,
+   meaning the population has a four year cycle. The period keeps
+   doubling, faster and faster, at 3.54, 3.564, 3.569, and so forth. At
+   3.57, chaos occurs; the population never settles to a fixed period.
+   For most c values between 3.57 and 4, the population is chaotic, but
+   there are also periodic regions. For any fixed period, there is some c
+   value that will yield that period. See An Introduction to Chaotic
+   Dynamical Systems, by R. L. Devaney, for more information.
+
+Subject: Feigenbaum's constant
+
+   Q10: What is Feigenbaum's constant?
+   
+   A10: In a period doubling cascade, such as the logistic equation,
+   consider the parameter values where period-doubling events occur (e.g.
+   r[1]=3, r[2]=3.45, r[3]=3.54, r[4]=3.564...). Look at the ratio of
+   distances between consecutive doubling parameter values; let delta[n]
+   = (r[n+1]-r[n])/(r[n+2]-r[n+1]). Then the limit as n goes to infinity
+   is Feigenbaum's (delta) constant.
+   
+   Based on computations by F. Christiansen, P. Cvitanovic and H.H. Rugh,
+   it has the value 4.6692016091029906718532038... Note: several books
+   have published incorrect values starting 4.66920166...; the last
+   repeated 6 is a typographical error.
+   
+   The interpretation of the delta constant is as you approach chaos,
+   each periodic region is smaller than the previous by a factor
+   approaching 4.669...
+   
+   Feigenbaum's constant is important because it is the same for any
+   function or system that follows the period-doubling route to chaos and
+   has a one-hump quadratic maximum. For cubic, quartic, etc. there are
+   different Feigenbaum constants.
+   
+   Feigenbaum's alpha constant is not as well known; it has the value
+   2.50290787509589282228390287272909. This constant is the scaling
+   factor between x values at bifurcations. Feigenbaum says,
+   "Asymptotically, the separation of adjacent elements of period-doubled
+   attractors is reduced by a constant value [alpha] from one doubling to
+   the next". If d[a] is the algebraic distance between nearest elements
+   of the attractor cycle of period 2^a, then d[a]/d[a+1] converges to
+   -alpha.
+   
+   References:
+   
+    1. K. Briggs, How to calculate the Feigenbaum constants on your PC,
+       Aust. Math. Soc. Gazette 16 (1989), p. 89.
+    2. K. Briggs, A precise calculation of the Feigenbaum constants,
+       Mathematics of Computation 57 (1991), pp. 435-439.
+    3. K. Briggs, G. R. W. Quispel and C. Thompson, Feigenvalues for
+       Mandelsets, J. Phys. A 24 (1991), pp. 3363-3368.
+    4. F. Christiansen, P. Cvitanovic and H.H. Rugh, "The spectrum of the
+       period-doubling operator in terms of cycles", J. Phys A 23, L713
+       (1990).
+    5. M. Feigenbaum, The Universal Metric Properties of Nonlinear
+       Transformations, J. Stat. Phys 21 (1979), p. 69.
+    6. M. Feigenbaum, Universal Behaviour in Nonlinear Systems, Los
+       Alamos Sci 1 (1980), pp. 1-4. Reprinted in Universality in Chaos,
+       compiled by P. Cvitanovic.
+       
+   Feigenbaum Constants
+          http://www.mathsoft.com/asolve/constant/fgnbaum/fgnbaum.html
+
+Subject: Iterated function systems and compression
+
+   Q11a: What is an iterated function system (IFS)?
+   
+   A11a: If a fractal is self-similar, you can specify mappings that map
+   the whole onto the parts. Iteration of these mappings will result in
+   convergence to the fractal attractor. An IFS consists of a collection
+   of these (usually affine) mappings. If a fractal can be described by a
+   small number of mappings, the IFS is a very compact description of the
+   fractal. An iterated function system is By taking a point and
+   repeatedly applying these mappings you end up with a collection of
+   points on the fractal. In other words, instead of a single mapping x
+   -> F(x), there is a collection of (usually affine) mappings, and
+   random selection chooses which mapping is used.
+   
+   For instance, the Sierpinski triangle can be decomposed into three
+   self-similar subtriangles. The three contractive mappings from the
+   full triangle onto the subtriangles forms an IFS. These mappings will
+   be of the form "shrink by half and move to the top, left, or right".
+   
+   Iterated function systems can be used to make things such as fractal
+   ferns and trees and are also used in fractal image compression.
+   Fractals Everywhere by Barnsley is mostly about iterated function
+   systems.
+   
+   The simplest algorithm to display an IFS is to pick a starting point,
+   randomly select one of the mappings, apply it to generate a new point,
+   plot the new point, and repeat with the new point. The displayed
+   points will rapidly converge to the attractor of the IFS.
+   
+   Interactive IFS Playground (Otmar Lendl)
+          http://www.cosy.sbg.ac.at/rec/ifs/
+          
+   Frank Rousell's hyperindex of IFS images
+          http://www.cnam.fr/fractals/ifs.html
+
+   Q11b: What is the state of fractal compression?
+   
+   A11b: Fractal compression is quite controversial, with some people
+   claiming it doesn't work well, and others claiming it works
+   wonderfully. The basic idea behind fractal image compression is to
+   express the image as an iterated function system (IFS). The image can
+   then be displayed quickly and zooming will generate infinite levels of
+   (synthetic) fractal detail. The problem is how to efficiently generate
+   the IFS from the image. Barnsley, who invented fractal image
+   compression, has a patent on fractal compression techniques
+   (4,941,193). Barnsley's company, Iterated Systems Inc
+   (http://www.iterated.com/), has a line of products including a Windows
+   viewer, compressor, magnifier program, and hardware assist board.
+   
+   Fractal compression is covered in detail in the comp.compression FAQ
+   file (See "compression-FAQ").
+   ftp://rtfm.mit.edu/pub/usenet/comp.compression .
+   
+   One of the best online references for Fractal Compress is Yuval
+   Fisher's Fractal Image Encoding page
+   (http://inls.ucsd.edu/y/Fractals/) at the Institute for Nonlinear
+   Science, University for California, San Diego. It includes references
+   to papers, other WWW sites, software, and books about Fractal
+   Compression.
+   
+   Three major research projects include:
+   
+   Waterloo Montreal Verona Fractal Research Initiative
+          http://links.uwaterloo.ca/
+          
+   Groupe FRACTALES
+          http://www-syntim.inria.fr/fractales/
+          
+   Bath Scalable Video Software Mk 2
+          http://dmsun4.bath.ac.uk/bsv-mk2/
+          
+   Several books describing fractal image compression are:
+   
+    1. M. Barnsley, Fractals Everywhere, Academic Press Inc., 1988. ISBN
+       0-12-079062-9. This is an excellent text book on fractals. This is
+       probably the best book for learning about the math underpinning
+       fractals. It is also a good source for new fractal types.
+    2. M. Barnsley and L. Anson, The Fractal Transform, Jones and
+       Bartlett, April, 1993. ISBN 0-86720-218-1. Without assuming a
+       great deal of technical knowledge, the authors explain the
+       workings of the Fractal Transform(TM).
+    3. M. Barnsley and L. Hurd, Fractal Image Compression, Jones and
+       Bartlett. ISBN 0-86720-457-5. This book explores the science of
+       the fractal transform in depth. The authors begin with a
+       foundation in information theory and present the technical
+       background for fractal image compression. In so doing, they
+       explain the detailed workings of the fractal transform. Algorithms
+       are illustrated using source code in C.
+    4. Y. Fisher (Ed), Fractal Image Compression: Theory and Application.
+       Springer Verlag, 1995.
+    5. Y. Fisher (Ed), Fractal Image Encoding and Analysis: A NATO ASI
+       Series Book, Springer Verlag, New York, 1996 contains the
+       proceedings of the Fractal Image Encoding and Analysis Advanced
+       Study Institute held in Trondheim, Norway July 8-17, 1995. The
+       book is currently being produced.
+       
+   Some introductary articles about fractal compression:
+   
+    1. The October 1993 issue of Byte discussed fractal compression. You
+       can ftp sample code:
+       ftp://ftp.uu.net/published/byte/93oct/fractal.exe .
+    2. A Better Way to Compress Images," M.F. Barnsley and A.D. Sloan,
+       BYTE, pp. 215-223, January 1988.
+    3. "Fractal Image Compression," M.F. Barnsley, Notices of the
+       American Mathematical Society, pp. 657-662, June 1996.
+       (http://www.ams.org/publications/notices/199606/barnsley.html)
+    4. A. E. Jacquin, Image Coding Based on a Fractal Theory of Iterated
+       Contractive Image Transformation, IEEE Transactions on Image
+       Processing, January 1992.
+    5. A "Hitchhiker's Guide to Fractal Compression" For Beginners by
+       E.R. Vrscay
+       ftp://links.uwaterloo.ca/pub/Fractals/Papers/Waterloo/vr95.ps.gz
+       
+   Andreas Kassler wrote a Fractal Image Compression with WINDOWS package
+   for a Fractal Compression thesis. It is available at
+   http://www-vs.informatik.uni-ulm.de/Mitarbeiter/Kassler.html
+   
+   Other references:
+   
+   Fractal Compression Bibliography
+          http://www.dip.ee.uct.ac.za/imageproc/compression/fractal/fract
+          al.bib.html
+          
+   Fractal Video Compression
+          http://inls.ucsd.edu/y/Fractals/Video/fracvideo.html
+          
+   Many fractal image compression papers are available from
+          ftp://ftp.informatik.uni-freiburg.de/documents/papers/fractal
+          
+   A review of the literature is in Guide.ps.gz.
+          ftp://ftp.informatik.uni-freiburg.de/documents/papers/fractal/R
+          EADME
+
+Subject: Chaotic demonstrations
+
+   Q12a: How can you make a chaotic oscillator?
+   
+   A12a: Two references are:
+   
+    1. T. S. Parker and L. O. Chua, Chaos: a tutorial for engineers,
+       Proceedings IEEE 75 (1987), pp. 982-1008.
+    2. New Scientist, June 30, 1990, p. 37.
+       
+   Q12b: What are laboratory demonstrations of chaos?
+   
+   A12b: Robert Shaw at UC Santa Cruz experimented with chaos in dripping
+   taps. This is described in:
+   
+    1. J. P. Crutchfield, Chaos, Scientific American 255, 6 (Dec. 1986),
+       pp. 38-49.
+    2. I. Stewart, Does God Play Dice?: the Mathematics of Chaos, B.
+       Blackwell, New York, 1989.
+       
+   Two references to other laboratory demonstrations are:
+   
+    1. K. Briggs, Simple Experiments in Chaotic Dynamics, American
+       Journal of Physics 55, 12 (Dec 1987), pp. 1083-1089.
+    2. J. L. Snider, Simple Demonstration of Coupled Oscillations,
+       American Journal of Physics 56, 3 (Mar 1988), p. 200.
+       
+   See sci.nonlinear FAQ and the sci.nonlinear newsgroup for further
+   information.
+
+Subject: L-Systems
+
+   Q13: What are L-systems?
+   
+   A13: A L-system or Lindenmayer system is a formal grammar for
+   generating strings. (That is, it is a collection of rules such as
+   replace X with XYX.) By recursively applying the rules of the L-system
+   to an initial string, a string with fractal structure can be created.
+   Interpreting this string as a set of graphical commands allows the
+   fractal to be displayed. L-systems are very useful for generating
+   realistic plant structures.
+   
+   Some references are:
+   
+    1. P. Prusinkiewicz and J. Hanan, Lindenmayer Systems, Fractals, and
+       Plants, Springer-Verlag, New York, 1989.
+    2. P. Prusinkiewicz and A. Lindenmayer, The Algorithmic Beauty of
+       Plants, Springer-Verlag, NY, 1990. ISBN 0-387-97297-8. A very good
+       book on L-systems, which can be used to model plants in a very
+       realistic fashion. The book contains many pictures.
+     _________________________________________________________________
+   
+   More information can be obtained via the WWW at:
+   
+   L-Systems Tutorial by David Green
+          http://life.csu.edu.au/complex/tutorials/tutorial2.html
+          
+   L-system leaf
+          http://www.csu.edu.au/complex_systems/iconfern.gif
+          
+   3 Dim. L-system Tree program (P.J.Drinkwater)
+          http://hill.lut.ac.uk/TestStuff/trees/
+          
+   Graphics Archive at the Center for the Computation and Visualization
+          of Geometric Structures contains various fractals created from
+          L-Systems.
+          http://www.geom.umn.edu/graphics/pix/General_Interest/Fractals/
+
+Subject: Fractal music
+
+   Q14: What are sources of fractal music?
+   
+   A14: One fractal recording is "The Devil's Staircase: Composers and
+   Chaos" on the Soundprint label. Does anyone know of others? Mail me at
+   fractal-faq@mta.ca.
+   
+   Some references, many from an unpublished article by Stephanie Mason,
+   are:
+   
+    1. R. Bidlack, Chaotic Systems as Simple (But Complex) Compositional
+       Algorithms, Computer Music Journal, Fall 1992.
+    2. C. Dodge, A Musical Fractal, Computer Music Journal 12, 13 (Fall
+       1988), p. 10.
+    3. K. J. Hsu and A. Hsu, Fractal Geometry of Music, Proceedings of
+       the National Academy of Science, USA 87 (1990), pp. 938-941.
+    4. K. J. Hsu and A. Hsu, Self-similatrity of the '1/f noise' called
+       music., Proceedings of the National Academy of Science USA 88
+       (1991), pp. 3507-3509.
+    5. C. Pickover, Mazes for the Mind: Computers and the Unexpected, St.
+       Martin's Press, New York, 1992.
+    6. P. Prusinkiewicz, Score Generation with L-Systems, International
+       Computer Music Conference 86 Proceedings, 1986, pp. 455-457.
+    7. Byte 11, 6 (June 1986), pp. 185-196.
+       
+   Online resources include:
+   
+   Well Tempered Fractal v3.0 by Robert Greenhouse
+          http://www-ks.rus.uni-stuttgart.de/people/schulz/fmusic/wtf/
+          
+   A fractal music C++ package is available at
+          http://hamp.hampshire.edu/~gpzF93/inSanity.html
+          
+   The Fractal Music Project (Claus-Dieter Schulz)
+          http://www-ks.rus.uni-stuttgart.de/people/schulz/fmusic
+          
+   Chua's Oscillator: Applications of Chaos to Sound and Music
+          http://www.ccsr.uiuc.edu/People/gmk/Projects/ChuaSoundMusic/Chu
+          aSoundMusic.html
+          
+   There is now a Fractal Music mailing list. It's purposes are:
+   
+    1. To inform people about news, updates, changes on the Fractal Music
+       Projects WWW pages.
+    2. To encourage discussion between people working in that area.
+       
+   The Fractal Music Mailinglist: fmusic@kssun7.rus.uni-stuttgart.de
+   
+   
+          To subscribe to the list please send mail to
+          fmusic-request@kssun7.rus.uni-stuttgart.de
+
+Subject: Fractal mountains
+
+   Q15: How are fractal mountains generated?
+   
+   A15: Usually by a method such as taking a triangle, dividing it into 3
+   sub-triangles, and perturbing the center point. This process is then
+   repeated on the sub-triangles. This results in a 2-d table of heights,
+   which can then be rendered as a 3-d image. This is referred to as
+   midpoint displacement. Two references are:
+   
+    1. M. Ausloos, Proc. R. Soc. Lond. A 400 (1985), pp. 331-350.
+    2. H.O. Peitgen, D. Saupe, The Science of Fractal Images,
+       Springer-Velag, 1988
+       
+   Available online is an implementation of fractal Brownian motion (fBm)
+   such as described in The Science of Fractal Images. Lucasfilm became
+   famous for its fractal landscape sequences in Star Trek II: The Wrath
+   of Khan the primary one being the Genesis planet transformation. Pixar
+   and Digital Productions are have produced fractal landscapes for
+   Hollywood.
+   
+   Fractal landscape information available online:
+   
+   EECS News: Fall 1994: Building Fractal Planets by Ken Musgrave
+          http://www.seas.gwu.edu/faculty/musgrave/article.html
+          
+   Gforge and Landscapes (John Beale)
+          http://www.best.com/~beale/
+
+Subject: Plasma clouds
+
+   Q16: What are plasma clouds?
+   
+   A16: They are a Fractint fractal and are similar to fractal mountains.
+   Instead of a 2-d table of heights, the result is a 2-d table of
+   intensities. They are formed by repeatedly subdividing squares.
+   
+   Robert Cahalan has fractal information about Earth's Clouds including
+   how they differ from plasma clouds.
+   
+   Fractal Clouds Reference by Robert F. Cahalan
+          (cahalan@clouds.gsfc.nasa.gov)
+          http://climate.gsfc.nasa.gov/~cahalan/FractalClouds/
+          
+   Also some plasma-based fractals clouds by John Walker are available.
+   
+   Fractal generated clouds
+          http://ivory.nosc.mil/html/trancv/html/cloud-fract.html
+          
+   The Center for the Computation and Visualization of Geometric
+          Structures also has some fractal clouds.
+          http://www.geom.umn.edu/graphics/pix/General_Interest/Fractals/
+          
+   Two articles about the fractal nature of Earth's clouds:
+   
+    1. "Fractal statistics of cloud fields," R. F. Cahalan and J. H.
+       Joseph, Mon. Wea.Rev. 117, 261-272, 1989
+    2. "The albedo of fractal stratocumulus clouds," R. F. Cahalan, W.
+       Ridgway, W. J. Wiscombe, T. L. Bell and J. B. Snider, J. Atmos.
+       Sci. 51, 2434-2455, 1994
+
+Subject: Lyapunov fractals
+
+   Q17a: Where are the popular periodically-forced Lyapunov fractals
+   described?
+   
+   A17a: See:
+   
+    1. A. K. Dewdney, Leaping into Lyapunov Space, Scientific American,
+       Sept. 1991, pp. 178-180.
+    2. M. Markus and B. Hess, Lyapunov Exponents of the Logistic Map with
+       Periodic Forcing, Computers and Graphics 13, 4 (1989), pp.
+       553-558.
+    3. M. Markus, Chaos in Maps with Continuous and Discontinuous Maxima,
+       Computers in Physics, Sep/Oct 1990, pp. 481-493.
+       
+   Q17b: What are Lyapunov exponents?
+   
+   A17b: Lyapunov exponents quantify the amount of linear stability or
+   instability of an attractor, or an asymptotically long orbit of a
+   dynamical system. There are as many lyapunov exponents as there are
+   dimensions in the state space of the system, but the largest is
+   usually the most important.
+   
+   Given two initial conditions for a chaotic system, a and b, which are
+   close together, the average values obtained in successive iterations
+   for a and b will differ by an exponentially increasing amount. In
+   other words, the two sets of numbers drift apart exponentially. If
+   this is written e^(n*(lambda) for n iterations, then e^(lambda) is the
+   factor by which the distance between closely related points becomes
+   stretched or contracted in one iteration. Lambda is the Lyapunov
+   exponent. At least one Lyapunov exponent must be positive in a chaotic
+   system. A simple derivation is available in:
+   
+    1. H. G. Schuster, Deterministic Chaos: An Introduction, Physics
+       Verlag, 1984.
+       
+   Q17c: How can Lyapunov exponents be calculated?
+   
+   A17c: For the common periodic forcing pictures, the lyapunov exponent
+   is:
+   
+   lambda = limit as N -> infinity of 1/N times sum from n=1 to N of
+   log2(abs(dx sub n+1 over dx sub n))
+   
+   In other words, at each point in the sequence, the derivative of the
+   iterated equation is evaluated. The Lyapunov exponent is the average
+   value of the log of the derivative. If the value is negative, the
+   iteration is stable. Note that summing the logs corresponds to
+   multiplying the derivatives; if the product of the derivatives has
+   magnitude < 1, points will get pulled closer together as they go
+   through the iteration.
+   
+   MS-DOS and Unix programs for estimating Lyapunov exponents from short
+   time series are available by ftp: ftp://inls.ucsd.edu/pub/ncsu/
+   
+   Computing Lyapunov exponents in general is more difficult. Some
+   references are:
+   
+    1. H. D. I. Abarbanel, R. Brown and M. B. Kennel, Lyapunov Exponents
+       in Chaotic Systems: Their importance and their evaluation using
+       observed data, International Journal of Modern Physics B 56, 9
+       (1991), pp. 1347-1375.
+    2. A. K. Dewdney, Leaping into Lyapunov Space, Scientific American,
+       Sept. 1991, pp. 178-180.
+    3. M. Frank and T. Stenges, Journal of Economic Surveys 2 (1988), pp.
+       103- 133.
+    4. T. S. Parker and L. O. Chua, Practical Numerical Algorithms for
+       Chaotic Systems, Springer Verlag, 1989.
+
+Subject: Fractal items
+
+   Q18: Where can I get fractal T-shirts and posters?
+   
+   A18: One source is Art Matrix, P.O. box 880, Ithaca, New York, 14851,
+   1-800-PAX-DUTY.
+   
+   Another source is Media Magic; they sell many fractal posters,
+   calendars, videos, software, t-shirts, ties, and a huge variety of
+   books on fractals, chaos, graphics, etc. Media Magic is at PO Box 598
+   Nicasio, CA 94946, 415-662-2426.
+   
+   A third source is Ultimate Image; they sell fractal t- shirts,
+   posters, gift cards, and stickers. Ultimate Image is at PO Box 7464,
+   Nashua, NH 03060-7464.
+   
+   Yet another source is Dave Kliman (516) 625-2504 dkliman@pb.net, whose
+   products are distributed through Spencer Gifts, Posterservice,
+   1-800-666-7654, and Scandecor International., this spring, through JC
+   Penny, featuring all-over fractal t-shirts, and has fractal umbrellas
+   available from Shaw Creations (800) 328-6090.
+   
+   Cyber Fiber produces fractal silk scarves, t-shirts, and postcards.
+   Contact Robin Lowenthal, Cyber Fiber, 4820 Gallatin Way, San Diego, CA
+   92117.
+   
+   Chaos MetaLink website
+   (http://www.industrialstreet.com/chaos/metalink.htm) also has
+   postcards, CDs, and videos.
+   
+   Free fractal posters are available if you send a self-addressed
+   stamped envelope to the address given on
+   http://www.xmission.com/~legalize/. For foreign requests (outside USA)
+   include two IRCs (international reply coupons) to cover the weight.
+   
+   ReFractal Design (http://www.refractal.com/) sells jewelry based on
+   fractals.
+   
+   There is a form of broccoli called Romanesco which is actually
+   cauli-brocs, cross between cauliflowers and broccoli. It has a fractal
+   like form. It was created in Italy about eight years ago and available
+   in many stores in Europe.
+
+Subject: How can I take photos of fractals?
+
+   Q19: How can I take photos of fractals?
+   
+   A19: Noel Giffin gets good results with the following setup: Use 100
+   ISO (ASA) Kodak Gold for prints or 64 ISO (ASA) for slides. Use a long
+   lens (100mm) to flatten out the field of view and minimize screen
+   curvature. Use f/4 stop. Shutter speed must be longer than frame rate
+   to get a complete image; 1/4 seconds works well. Use a tripod and
+   cable release or timer to get a stable picture. The room should be
+   completely blackened, with no light, to prevent glare and to prevent
+   the monitor from showing up in the picture.
+   
+   You can also obtain high quality images by sending your Targa or GIF
+   images to a commercial graphics imaging shop. They can provide much
+   higher resolution images. Prices are about $10 for a 35mm slide or
+   negative and about $50 for a high quality 4x5 negative.
+
+Subject: 3-D fractals
+
+   Q21: How can 3-D fractals be generated?
+   
+   A21: A common source for 3-D fractals is to compute Julia sets with
+   quaternions instead of complex numbers. The resulting Julia set is
+   four dimensional. By taking a slice through the 4-D Julia set (e.g. by
+   fixing one of the coordinates), a 3-D object is obtained. This object
+   can then be displayed using computer graphics techniques such as ray
+   tracing.
+   
+   Frank Rousell's hyperindex of 3D images
+          http://www.cnam.fr/fractals/mandel3D.html
+          
+   4D Quaternions by Tom Holroyd
+          http://bambi.ccs.fau.edu/~tomh/fractals/fractals.html
+          
+   The papers to read on this are:
+   
+    1. J. Hart, D. Sandin and L. Kauffman, Ray Tracing Deterministic 3-D
+       Fractals, SIGGRAPH, 1989, pp. 289-296.
+    2. A. Norton, Generation and Display of Geometric Fractals in 3-D,
+       SIGGRAPH, 1982, pp. 61-67.
+    3. A. Norton, Julia Sets in the Quaternions, Computers and Graphics,
+       13, 2 (1989), pp. 267-278.
+       
+   Two papers on cubic polynomials, which can be used to generate 4-D
+   fractals:
+   
+    1. B. Branner and J. Hubbard, The iteration of cubic polynomials,
+       part I., Acta Math 66 (1988), pp. 143-206.
+    2. J. Milnor, Remarks on iterated cubic maps, This paper is available
+       from ftp://math.sunysb.edu/preprints/ims90-6.ps.Z. Published in
+       1991 SIGGRAPH Course Notes #14: Fractal Modeling in 3D Computer
+       Graphics and Imaging.
+       
+   Instead of quaternions, you can of course use hypercomplex number such
+   as in "FractInt", or other functions. For instance, you could use a
+   map with more than one parameter, which would generate a
+   higher-dimensional fractal.
+   
+   Another way of generating 3-D fractals is to use 3-D iterated function
+   systems (IFS). These are analogous to 2-D IFS, except they generate
+   points in a 3-D space.
+   
+   A third way of generating 3-D fractals is to take a 2-D fractal such
+   as the Mandelbrot set, and convert the pixel values to heights to
+   generate a 3-D "Mandelbrot mountain". This 3-D object can then be
+   rendered with normal computer graphics techniques.
+   
+   POV-Ray 3.0, a freely available ray tracing package, has added 4-D
+   fractal support. It takes a 3-D slice of a 4-D Julia set based on an
+   arbitrary 3-D "plane" done at any angle. For more information see the
+   POV Ray web site at http://www.povray.org/ .
+
+Subject: Fractint
+
+   Q22a: What is Fractint?
+   
+   A22a: Fractint is a very popular freeware (not public domain) fractal
+   generator. There are DOS, MS-Windows, OS/2, Amiga, and Unix/X-Windows
+   versions. The DOS version is the original version, and is the most
+   up-to-date.
+   
+   Please note: sci.fractals is not a product support newsgroup for
+   Fractint. Bugs in Fractint/Xfractint should usually go to the authors
+   rather than being posted.
+   
+   Fractint is on many ftp sites. For example:
+   
+   A Guide to getting FractInt by Noel at Spanky (Canada)
+   http://spanky.triumf.ca/www/fractint/getting.html
+   
+  DOS
+  
+   19.6 executable via FTP and WWW from SimTel & mirrors world-wide
+          http://www.coast.net/cgi-bin/coast/dwn?msdos/graphics/frain196.
+          zip
+          
+   19.6 source via FTP and WWW from SimTel & mirrors world-wide
+          http://www.coast.net/cgi-bin/coast/dwn?msdos/graphics/frasr196.
+          zip
+          
+   19.6 executable via FTP from Canada
+          ftp://fractal.mta.ca/pub/spanky/programs/ibmpc/frain196.zip
+          
+   19.6 source via FTP from Canada
+          ftp://fractal.mta.ca/pub/spanky/programs/ibmpc/frasr196.zip
+          
+   (The suffix 196 will change as new versions are released.)
+   
+   Fractint is available on Compuserve: GO GRAPHDEV and look for
+   FRAINT.EXE and FRASRC.EXE in LIB 4.
+   
+  Windows
+  
+   MS-Window FractInt 18.21 via FTP and WWW from SimTel & mirrors
+          world-wide
+          http://www.coast.net/cgi-bin/coast/dwn?win3/graphics/winf1821.z
+          ip
+          
+   MS-Window FractInt 18.21 via FTP from Canada
+          ftp://fractal.mta.ca/pub/spanky/programs/ibmpc/windows/winf1821
+          .zip
+          
+   MS-Windows FractInt 18.21 source via FTP and WWW from SimTel & mirrors
+          world-wide
+          http://www.coast.net/cgi-bin/coast/dwn?win3/graphics/wins1821.z
+          ip
+          
+   MS-Windows FractInt 18.21 source via FTP from Canada
+          ftp://fractal.mta.ca/pub/spanky/programs/ibmpc/windows/wins1821
+          .zip
+          
+  OS/2
+  
+   Available on Compuserve in its GRAPHDEV forum. The files are PM*.ZIP.
+   These files are also available by
+   ftp://ftp-os2.nmsu.edu/os2/graphics/pmfra2.zip
+   
+  Unix
+  
+   The Unix version of FractInt, called XFractInt requires X-Windows. The
+   current version 3.04 is based on FractInt 19.6.
+   
+   3.04 source Western Canada
+          http://spanky.triumf.ca/pub/fractals/programs/unix/xfract304.tg
+          z
+          
+   3.04 source Atlantic Canada
+          http://fractal.mta.ca/spanky/programs/unix/xfract304.tgz
+          
+   XFractInt is also available in LIB 4 of Compuserve's GO GRAPHDEV forum
+   in XFRACT.ZIP.
+   
+   Xmfract is a port FractInt by Darryl House to a X/motif multi-window
+   interface. The current version is 1.4 which is compatible with
+   FractInt 18.2.
+   
+   Xmfract Homepage by Thomas Marsh <amadeus@bga.com>
+          http://www.realtime.net/~amadeus/xmfract/
+          
+   README
+          http://fractal.mta.ca/pub/fractals/programs/unix/xmfract_1-4.re
+          adme
+          
+   xmfract_1-4_tar.gz
+          http://fractal.mta.ca/pub/fractals/programs/unix/xmfract_1-4_ta
+          r.gz
+          
+  Macintosh
+  
+   There is NO Macintosh version of Fractint, although there may be
+   several people working on a port. It is possibleto run Fractint on the
+   Macintosh if you use Insignia Software's SoftAT, which is a PC AT
+   emulator.
+   
+  Amiga
+  
+   There is an Amiga version also available:
+   
+   FracInt 3.2 via WWW from an AmiNET archive in USA
+          http://wuarchive.wustl.edu/pub/aminet/gfx/fract/fractint32.lha
+          
+   FractInt 3.2 via FTP from an AmiNET archive in USA
+          ftp://wuarchive.wustl.edu/pub/aminet/gfx/fract/fractint32.lha
+          
+   The latest version (3.2) via WWW from Norway
+          http://login.eunet.no/~terjepe/aboutfractint.html
+          
+  FracXtra
+  
+   There is a collection of map, parameter, etc. files for FractInt,
+   called FracXtra. It is available at
+   
+   FracXtra via FTP and WWW from SimTel & mirrors world-wide
+          http://www.coast.net/cgi-bin/coast/dwn?msdos/graphics/fracxtr6.
+          zip
+          
+   FracXtra Home Page by Dan Goldwater
+          http://fatmac.ee.cornell.edu/~goldwada/fracxtra.html
+          
+   FracXtra via FTP
+          ftp://fractal.mta.ca/pub/spanky/programs/ibmpc/fracxtr6.zip
+          
+   For European users, these files are available from
+   ftp://ftp.uni-koeln.de/. If you can't use ftp, see the mail server
+   information below.
+   
+   Q22b: How does Fractint achieve its speed?
+   
+   A22b: Fractint's speed (such as it is) is due to a combination of:
+   
+    1. Using fixed point math rather than floating point where possible
+       (huge improvement for non-coprocessor machine, small for 486's).
+    2. Exploiting symmetry of the fractal.
+    3. Detecting nearly repeating orbits, avoid useless iteration (e.g.
+       repeatedly iterating 02+0 etc. etc.).
+    4. Reducing computation by guessing solid areas (especially the
+       "lake" area).
+    5. Using hand-coded assembler in many places.
+    6. Obtaining both sin and cos from one 387 math coprocessor
+       instruction.
+    7. Using good direct memory graphics writing in 256-color modes.
+       
+   The first four are probably the most important. Some of these
+   introduce errors, usually quite acceptable.
+
+Subject: Fractal software
+
+   Q23: Where can I obtain software packages to generate fractals?
+   
+   A23:
+   
+     * Amiga
+     * Java
+     * Macintosh
+     * MS-DOS
+     * MS-Windows
+     * SunView
+     * UNIX
+     * X-Windows
+       
+     * Software to calculate fractal dimension
+
+  For Amiga:
+  
+   (all entries marked "ff###" are directories where the inividual
+   archives of the Fred Fish Disk set available at
+   ftp://ftp.funet.fi/pub/amiga/fish/ and other sites)
+   
+   General Mandelbrot generators with many features: Mandelbrot (ff030),
+   Mandel (ff218), Mandelbrot (ff239), TurboMandel (ff302), MandelBltiz
+   (ff387), SMan (ff447), MandelMountains (ff383, in 3-D), MandelPAUG
+   (ff452, MandFXP movies), MandAnim (ff461, anims), ApfelKiste (ff566,
+   very fast), MandelSquare (ff588, anims)
+   
+   Mandelbrot and Julia sets generators: MandelVroom (ff215), Fractals
+   (ff371, also Newton-R and other sets)
+   
+   With different algorithmic approaches (shown): FastGro (ff188, DLA),
+   IceFrac (ff303, DLA), DEM (ff303, DEM), CPM (ff303, CPM in 3-D),
+   FractalLab (ff391, any equation)
+   
+   Iterated Function System generators (make ferns, etc): FracGen (ff188,
+   uses "seeds"), FCS (ff465), IFSgen (ff554), IFSLab (ff696, "Collage
+   Theorem")
+   
+   Unique fractal types: Cloud (ff216, cloud surfaces), Fractal (ff052,
+   terrain), IMandelVroom (strange attractor contours?), Landscape
+   (ff554, scenery), Scenery (ff155, scenery), Plasma (ff573, plasma
+   clouds)
+   
+   Fractal generators: PolyFractals (ff015), FFEX (ff549)
+   
+   Lyapunov fractals
+          http://www.itsnet.com/~bug/fractals/Lyapunovia.html
+          
+   XoaS, by Jan Hubicka, fast portable real-time interactive fractal
+          zoomer. 256 workbench displays only.
+          http://www.paru.cas.cz/~hubicka/XaoS/
+          
+   Commercial packages: Fractal Pro 5.0, Scenery Animator 2.0, Vista
+   Professional, Fractuality (reviewed in April '93 Amiga User
+   International). MathVISION 2.4. Generates Julia, Mandelbrot, and
+   others. Includes software for image processing, complex arithmetic,
+   data display, general equation evaluation. Available for $223 from
+   Seven Seas Software, Box 1451, Port Townsend WA 98368.
+
+  Java applets
+  
+   Chaos!
+          http://www.vt.edu:10021/B/bwn/Chaos.html
+          
+   Fractal Lab
+          http://www.wmin.ac.uk/~storyh/fractal/frac.ht ml
+          
+   The Mandelbrot Set
+          http://www.mindspring.com/~chroma/m andelbrot.html
+          
+   The Mandelbrot set (Paton J. Lewis)
+          http://numinous.com/_private/people/pjl/graphics/mandelbrot/man
+          delbrot.html
+          
+   Mark's Java Julia Set Generator
+          http://www.stolaf.edu/people/mcclure/java/Julia/
+          
+   Fractals by Sun Microsystems
+          http://java.sun.com/jav
+          a.sun.com/applets/applets/Fractal/example1.html
+          
+   The Mandelbrot set
+          http://www.franceway.com/java/fractale /mandel_b.htm
+          
+   Mandelbrot Java Applet
+          http://www.mit.edu:8001/people/m kgray/java/Mandel.html
+          
+   Ken Shirriff Java language pages
+          http://www.sunlabs.com/~shirriff/java/
+          
+   example of the plasma method of fractal terrain by Carl Burke,
+          <cburke@mitre.org>
+          http://www.geocities.com/Area51/6902/t_sd_app.html
+          
+   Mandelbrot generator in Javascript by Frode Gill.
+          http://www.krs.hia.no/~fgill/javascript/mandscr.htm
+          
+   Fracula Java Applet. A java applet to glide into the Mandelbrot set
+          (best with Pentium and MSIE 3.0). Vince Ruddy
+          <vruddy1@san.rr.com>
+          http://www.geocities.com/SiliconValley/Pines/5788/index.html
+          
+   Chaos and Fractals. Many java applets by Stephen Oswin
+          <stephen.oswin@ukmail.org>
+          www.ukmail.org/~oswin/
+          
+   IFS Fractals using javascript (Richard L. Bowman
+          <rbowman@bridgewater.edu>)
+          http://www.bridgewater.edu/~rbowman/FracMain.html
+
+  For Macs:
+  
+                               For PowerMacs
+             (and PowerPC-based Macintosh compatible computers)
+                                      
+  FracPPC - v1.1
+  
+     * Fractal generator for PowerMacs only, by Dennis C. De Mars
+     * Generates the Mandelbrot set and associated Julia sets, allows the
+       user to edit the color map, 24-bit colour
+          + http://members.aol.com/ddemars/fracppc.html
+       
+  MandelBrowser 2.0
+  
+     * by the author of Mandella, 24-bit colour
+          +
+            ftp://mirrors.aol.com/pub/mac/graphics/fractal/mandelbrowser2.
+            0.sit.hqx
+     _________________________________________________________________
+   
+                                For 68K Macs
+                                      
+  Mandella 8.7
+  
+     * generation of many different types of fractals, allow editing of
+       the color map, and other display & calculation options. Some
+       features not available on PowerMacs.
+          +
+            ftp://mirrors.aol.com/pub/mac/graphics/fractal/mandella8.7.cpt
+            .hqx
+       
+  Mandelzot 4.0.1
+  
+     * generation of many different types of fractals, allow editing of
+       the color map, and other display & calculation options. Some
+       features not available on PowerMacs.
+          +
+            ftp://mirrors.aol.com/pub/mac/graphics/fractal/mandelzot4.01.c
+            pt.hqx
+       
+  SuperMandelZoom 1.0.6
+  
+     * useful to those rare individuals who are still using a Mac Plus/SE
+       class machine
+          +
+            ftp://mirrors.aol.com/pub/mac/graphics/fractal/supermandelzoom
+            1.06.cpt.hqx
+     _________________________________________________________________
+   
+                           Miscellaneous programs
+                                      
+     * Australian mirror of Info-Mac archive, fractals sections
+          + ftp://plaza.aarnet.edu.au/mac/info-mac/
+     * FDC - Fractal Dimension Calculator
+          + http://www.mhri.edu.au/~pdb/fractals/fracdim.html
+     * Lsystem, 3D-L-System, IFS, FracHill
+          + http://www.mhri.edu.au/~pdb/fractals/
+     * Color Fractal Generator 2.12
+          +
+            ftp://mirrors.aol.com/pub/mac/graphics/fractal/colorfractalgen
+            2.12.sit.hqx
+     * MandelNet (uses several Macs on an AppleTalk network to calculate
+       the Mandebrot set!)
+          +
+            ftp://mirrors.aol.com/pub/mac/graphics/fractal/mandelnet1.2.si
+            t.hqx
+     * Julia's Nightmare - original and cool program, as you drag the
+       mouse about the complex plane, the corresponding Julia set is
+       generated in real time!
+          +
+            ftp://mirrors.aol.com/pub/mac/graphics/fractal/juliasnightmare
+            .sit.hqx
+     * Lyapunov 1.0.1
+          +
+            ftp://mirrors.aol.com/pub/mac/graphics/fractal/lyapunov1.01.cp
+            t.hqx
+     * Fract 1.0 - A fractal-drawing program that uses the IFS algorithm.
+       Change parameters to get different self-similar patterns.
+          +
+            ftp://mirrors.aol.com/pub/mac/graphics/fractal/fract1.0.cpt.hq
+            x
+     * XoaS 2.1 - fast portable real-time interactive fractal zoomer
+          + http://www.paru.cas.cz/~hubicka/XaoS/
+     _________________________________________________________________
+   
+                                 Commerical
+                                      
+   There are also commercial programs: IFS Explorer and Fractal Clip Art
+   (published by Koyn Software (314) 878-9125), Kai's Fractal Explorer
+   (part of the Kai's Power Tools package)
+
+  For MSDOS:
+  
+   DEEPZOOM: a high-precision Mandelbrot Set program for displaying
+          highly zoomed fractals
+          http://spanky.triumf.ca/pub/fractals/programs/ibmpc/depzm13.zip
+          
+   Fractal WitchCraft: a very fast fractal design program
+          ftp://garbo.uwasa.fi/pc/demo/fw1-08.zip
+          ftp://ftp.cdrom.com/pub/garbo/garbo_pc/show/fw1-08.zip
+          
+   CAL: generates more than 15 types of fractals including Lyapunov, IFS,
+          user-defined, logistic, and Quaternion Julia
+          http://www.simtel.net/pub/simtelnet/msdos/graphics/frcal040.zip
+          
+   Fractal Discovery Laboratory: designed for use in a science museum or
+          school setting. The Lab has five sections: Art Gallery,
+          Microscope, Movies, Tools, and Library
+          Sampler available from Compuserve GRAPHDEV Lib 4 in DISCOV.ZIP,
+          or send high-density disk and self-addressed, stamped envelope
+          to: Earl F. Glynn, 10808 West 105th Street, Overland Park,
+          Kansas 66214-3057.
+          
+   WL-Plot 2.59 : plots functions including bifurcations and recursive
+          relations
+          ftp://archives.math.utk.edu/software/msdos/graphing/wlplt/wlplt
+          259.zip
+          
+   From http://www.simtel.net/pub/simtelnet/msdos/graphics/
+          forb01a.zip: Displays orbits of Mandelbrot Set mapping. C/E/VGA
+          
+          fract3.zip: Mandelbrot/Julia set 2D/3D EGA/VGA Fractal Gen
+          fractfly.zip: Create Fractal flythroughs with FRACTINT
+          fdesi313.zip: Program to visually design IFS fractals
+          frain195.zip: FRACTINT v19.5 EGA/VGA/XGA fractal generator
+          frasr195.zip: C & ASM src for FRACTINT v19.5
+          frcal040.zip: Fractal drawing program: 15 formulae available
+          
+   vlotkatc uses VESA 640x480x16 Million colour mode to generate
+          Volterra-Lotka images.
+          http://spanky.triumf.ca/pub/fractals/programs/ibmpc/vlotkatc.zi
+          p
+          http://spanky.triumf.ca/pub/fractals/programs/ibmpc/vlotkatc.do
+          c
+          
+   Fast FPU Fractal Fun 2.0 (FFFF2.0) is the first Mandelbrot Set
+          generator working in hicolor gfx modes thus using up to 32768
+          different colors on screen by Daniele Paccaloni requires 386DX+
+          and VESA support
+          http://spanky.triumf.ca/pub/fractals/programs/IBMPC/FFFF20.ZIP
+          
+   3DFract generates 3-D fractals including Sierpinski cheese and 3-D
+          snowflake
+          http://www.cstp.umkc.edu/users/bhugh/home.html
+          
+   FracTrue 2.10 - Hi/TrueColor Generator including a formular parser.
+          286+ VGA by Bernd Hemmerling
+          
+   LyapTrue 2.10 Lyapunov generator
+          
+   ChaosTrue 2.00 - 18 types
+          
+   Atractor 1.00 256 colour
+          http://www.cs.tu-berlin.de/~hemmerli/fractal.html
+          
+   HOP based on the HOPALONG fractal type. Math coprocessor (386DX and
+          above) and SuperVGA required. shareware ($30) Places to
+          download HOPZIP.EXE from:
+          Compuserve GRAPHDEV forum, lib 4
+          The Well under ibmpc/graphics
+          http://ourworld.compuserve.com/homepages/mpeters/hop.htm
+          ftp://ftp.uni-heidelberg.de/pub/msdos/graphics/
+          http://spanky.triumf.ca/pub/fractals/programs/ibmpc/
+          
+   ZsManJul 1.0 (requires 386DX+) by Zsolt Zsoldos
+          http://www.chem.leeds.ac.uk/ICAMS/people/zsolt/zsmanjul.html
+          
+   FractMovie 1.62 a real-time 2D/3D IFS fractal movie renderer (requires
+          486DX+) with GIF save
+          http://www2.ntu.ac.sg:8000/~eyqchen/fractmovie/fractmovie.html
+          
+   FracZoom by Niels Ulrik Reinwald 386DX+
+          http://users.cybercity.dk/~ccc23578/index.html
+          
+   RMandel 1.2 80-bit floating point Mandelbrot Set animation generator
+          by Marvin R. Lipford
+          ftp://fractal.mta.ca/pub/cnam/anim/FRACSOFT/rmandel.zip
+          
+   M24, the new version of TruMand by Mike Freeman 486DX+ True-colour
+          Mandelbrot Set generator
+          http://www.capcollege.bc.ca/~mfreeman/mand.html
+          
+   FAE - Fractal Animation Engine shareware by Brian Towles
+          http://spanky.triumf.ca/pub/fractals/programs/ibmpc/FAE210B.ZIP
+          
+   XaoS 2.2 fast portable realtime interactive fractal zoomer/morpher for
+          MS-DOS (and others) by Jan Hubicka <hubicka@limax.paru.cas.cz>
+          11 fractal formulas, "Autopilot", solid guessing, zoom up to
+          64051194700380384 times
+          http://www.paru.cas.cz/~hubicka/XaoS/
+          
+   Ultra Fractal. A DOS program with graphic interface, 256 colors or
+          truecolor. Very fast, many formulas. Shareware (Frederik
+          Slijkerman <slijkerman@compuserve.com>)
+          http://ourworld.compuserve.com/homepages/slijkerman/
+
+  For MS-Windows:
+  
+   dy-syst: Explores Newton's method, Mandelbrot and Julia sets
+          ftp://cssun.mathcs.emory.edu/pub/riddle/
+          
+   bmand 1.1 shareware by Christopher Bare Mandelbrot program
+          http://www.gi.net/MSDOS_A/PM-1995/95-01/95-01-24/0012.html
+          
+   Quaternion-generator generates Julia-set Quaternions by Frode Gill
+          http://www.krs.hia.no/~fgill/fractal.html
+          
+   A Fractal Experience 32 for Windows 95/NT by David Wright
+          <wgwright@mnsinc.com>
+          http://www.mnsinc.com/wgwright/fracexp/
+          
+   Iterate 32 for Windows 95/NT written in VisualBasic. Generates IFS,
+          includes 10 built-in attractors, plots via chaos algorithm or
+          MRCM (multiple reduction copy machine), includes MS-Word
+          document about IFS and fractal compression in easy to
+          understand terms. Freeware by Jeff Colvin <kd4syw@usit.net>
+          http://hamnetcenter.com/jeffc/fractal.html
+          
+   IFS Explorer for Windows 95/NT, a companion to Iterate 32, allows
+          users to explore IFS by changing the IFS parameters. Requires
+          800x600 screen. Freeware by Jeff Colvin <kd4syw@usit.net>
+          http://hamnetcenter.com/jeffc/fractal.html
+          
+   DFRAC 1.4 by John Ratcliff a Windows 95 DirectDraw Mandelbrot explorer
+          with movie feature. Requires DirectDraw, FPU, and
+          monitor/graphics card capable of 800x600 graphic mode.
+          Freeware.
+          http://www.inlink.com/~jratclif/john.htm
+          
+   QS W95 Fractals generates several fractals types in 24-bit colour
+          includind Volterra-Lotka, enhanced sine, "Escher-like tiling"
+          of Julia Set, magnetism formulae, and "self-squared dragons".
+          Supports FractInt MAP files, saves 24-bit Targa or 8-bit GIF,
+          several colour options. Freeware by Michael Sargent
+          <msargent@zoo.uvm.edu>.
+          http://www.uvm.edu/~msargent/
+          
+   Fractal eXtreme for 32-bit Windows 1.01. A fast interactive fractal
+          explorer of Mandelbrot, Julia Set, and Mandelbrot to various
+          powers, Newton, "Hidden Mandelbrot", and Auto Quadratic.
+          Movies, curve-based palette editor, deep zoom (>2000 digits
+          percision for some types), Auto-Explore. Shareware, with
+          ability to register online, by Cygnus Software.
+          http://www.cygnus-software.com/
+          
+   Iterations and Flarium24 2 original programs : Iterations is 256
+          colors ; Flarium24 is truecolor. For W95 or NT. Both are
+          freeware by Stephen C. Ferguson (<itriazon@gte.net>)
+          http://home1.gte.net/itriazon/
+          
+   JuliaSaver : a W95 screen saver that does real-time fractals, by
+          Damien M. Jones (<dmj@emi.net>)
+          http://www.emi.net/~dmj/juliasaver/
+          
+   Mndlzoom W95 or Nt program which iterate the Mandelbrot set within the
+          coprocessor stack : very fast, 19-digits significance (Philip
+          A. Seeger <PASeeger@aol.com>)
+          http://members.aol.com/paseeger/
+          
+   Frang : a real-time zooming Mandelbrot set generator. Needs DirectX
+          (can be downloaded from the same URL or from Microsoft).
+          Shareware (Michael Baldwin <baldwin@servtech.com>)
+          http://www.servtech.com/public/baldwin/frang/frang.html
+          
+   Fractal Orbits; A nice implementation of Bubble, Ring, Stalk methods
+          by Phil Pickard <plptrigon@enterprise.net >. Very easy to use.
+          W95, NT.
+          ftp://ftp-hs.iuta.u-bordeaux.fr/fractorb/
+          
+   Zplot. A very comprehensive program which gathers several powerful
+          methods (original or found in other programs). 16 and 32 bits
+          versions. You can download for trials version 3.26 (latest one
+          is 3.29). A true color version is under development. Shareware
+          by Terry W. Gintz <twgg@ix.netcom.com>.
+          http://www.geocities.com/SoHo/Lofts/5601/gallery.htm
+
+  For SunView:
+  
+   Mandtool: generates Mandelbrot Set
+          http://fractal.mta.ca/spanky/programs/mandtool/m_tar.z
+          ftp://spanky.triumf.ca/fractals/programs/mandtool/M_TAR.Z
+
+  For Unix/C:
+  
+   lsys: L-systems as PostScript (in C++)
+          ftp://ftp.cs.unc.edu/pub/users/leech/lsys.tar.gz
+          
+   lyapunov: PGM Lyapunov exponent images
+          ftp://ftp.uu.net/usenet/comp.sources.misc/volume23/lyapunov/
+          
+   SPD: fractal mountain, tree, recursive tetrahedron
+          ftp://ftp.povray.org/pub/povray/spd/
+          
+   Fractal Studio: Mandelbrot set; handles distributed computing
+          ftp://archive.cs.umbc.edu/pub/peter/fractal-studio
+          
+   fanal: analysis of fractal dimension for Linux by Jürgen Dollinger
+          ftp://ftp.uni-stuttgart.de/pub/systems/linux/local/math/fanal-0
+          1b.tar.gz
+          
+   XoaS, by Jan Hubicka, fast portable real-time interactive fractal
+          zoomer. supports X11 (8,15,16,24,31-bit colour, StaticGray,
+          StaticColor), Curses, Linux/SVGAlib
+          http://www.paru.cas.cz/~hubicka/XaoS/
+
+  For X windows :
+  
+   xmntns xlmntn: fractal mountains
+          ftp://ftp.uu.net/usenet/comp.sources.x/volume8/xmntns
+          
+   xfroot: fractal root window
+          X11 distribution
+          
+   xmartin: Martin hopalong root window
+          X11 distribution
+          
+   xmandel: Mandelbrot/Julia sets
+          X11 distribution
+          
+   lyap: Lyapunov exponent images
+          ftp://ftp.uu.net/usenet/comp.sources.x/volume17/lyapunov-xlib
+          
+   spider: Uses Thurston's algorithm, Kobe algorithm, external angles
+          http://inls.ucsd.edu/y/Complex/spider.tar.Z
+          
+   xfractal_explorer: fractal drawing program
+          ftp://ftp.x.org/contrib/applications/xfractal_explorer-v1.0.tar
+          .gz
+          
+   Xmountains: A fractal landscape generator
+          ftp://ftp.epcc.ed.ac.uk/pub/personal/spb/xmountains
+          
+   xfract: Mandelbrot with a color-cycling feature
+          ftp://charm.il.ft.hse.nl/pub/X11/src/xfract.tar.gz
+          
+   xmfract v1.4: Needs Motif 1.2+, based on FractInt
+          ftp://ftp.x.org/contrib/graphics/xmfract_1.4.tar.gz
+          
+   Fast Julia Set and Mandelbrot for X-Windows by Zsolt Zsoldos
+          http://www.chem.leeds.ac.uk/ICAMS/people/zsolt/mandel.html
+          
+   XaoS realtime fractal zoomer for X11 or SVGAlibs by Jan Hubicka
+          <hubicka@limax.paru.cas.cz>
+          http://www.paru.cas.cz/~hubicka/XaoS/
+          
+   Xmfract
+          http://www.realtime.net/~amadeus/xmfract/
+          
+   AlmondBread-0.2. Fast algorithm ; simultaneous orbit iteration ;
+          Fractint-compatible GIF and MAP files ; Tcl/Tk user interface
+          (Michael R. Ganss <rms@cs.tu-berlin.de>)
+          http://www.cs.tu-berlin.de/~rms/AlmondBread/
+          
+  Distributed X systems:
+  
+   MandelSpawn: Mandelbrot/Julia on a network
+          ftp://ftp.x.org/R5contrib/mandelspawn-0.07.tar.Z
+          ftp://ftp.funet.fi/pub/X11/R5contrib/mandelspawn-0.07.tar.Z
+          
+   gnumandel: Mandelbrot on a network
+          ftp://ftp.elte.hu/pub/software/unix/gnu/gnumandel.tar.Z
+
+  Software for computing fractal dimension:
+  
+   Fractal Dimension Calculator is a Macintosh program which uses the
+   box-counting method to compute the fractal dimension of planar
+   graphical objects.
+   
+   http://wuarchive.wustl.edu/edu/math/software/mac/fractals/FDC/
+          
+   http://wuarchive.wustl.edu/packages/architec/Fractals/FDC2D.sea.hqx
+          
+   http://wuarchive.wustl.edu/packages/architec/Fractals/FDC3D.sea.hqx
+          
+   FD3: estimates capacity, information, and correlation dimension from a
+   list of points. It computes log cell sizes, counts, log counts, log of
+   Shannon statistics based on counts, log of correlations based on
+   counts, two-point estimates of the dimensions at all scales examined,
+   and over-all least-square estimates of the dimensions.
+   
+   ftp://inls.ucsd.edu/pub/cal-state-stan
+          
+   ftp://inls.ucsd.edu/pub/inls-ucsd
+          for an enhanced Grassberger-Procaccia algorithm for correlation
+          dimension.
+          
+   A MS-DOS version of FP3 is available by request to
+   gentry@altair.csustan.edu.
+
+Subject: FTP questions
+
+   Q24a: How does anonymous ftp work?
+   
+   A24a: Anonymous ftp is a method of making files available to anyone on
+   the Internet. In brief, if you are on a system with ftp (e.g. Unix),
+   you type "ftp fractal.mta.ca", or whatever system you wish to access.
+   You are prompted for your name and you reply "anonymous". You are
+   prompted for your password and you reply with your email address. You
+   then use "ls" to list the files, "cd" to change directories, "get" to
+   get files, an "quit" to exit. For example, you could say "cd /pub",
+   "ls", "get README", and "quit"; this would get you the file "README".
+   See the man page ftp(1) or ask someone at your site for more
+   information.
+   
+   In this FAQ, anonymous ftp addresses are given in the URL form
+   ftp://name.of.machine/pub/path [138.73.1.18]. The first part is the
+   protocol, FTP, rather than say "gopher", the second part
+   "name.of.machine" is the machine you must ftp to. If your machine
+   cannot determine the host from the name, you can try the numeric
+   Internet address: "ftp 138.73.1.18". The part after the name:
+   "/pub/path" is the file or directory to access once you are connected
+   to the remote machine.
+   
+   Q24b: What if I can't use ftp to access files?
+   
+   A24b: If you don't have access to ftp because you are on a UUCP,
+   Fidonet, BITNET network there is an e-mail gateway at
+   ftpmail@decwrl.dec.com that can retrieve the files for you. To get
+   instructions on how to use the ftp gateway send a message to
+   ftpmail@decwrl.dec.com with one line containing the word "help".
+   
+   Warning, these archives can be very large, sometimes several megabytes
+   (MB) of data which will be sent to your e-mail address. If you have a
+   disk quota for incoming mail, often 1MB or less, be careful not exceed
+   it.
+
+Subject: Archived pictures
+
+   Q25a: Where are fractal pictures archived?
+   
+  News groups
+  
+   A25a: Fractal images (GIFs, etc.) used to be posted to
+   alt.fractals.pictures ; this newsgroup has been replaced by
+   alt.binaries.pictures.fractals (known as abpf). However, several
+   alt.binaries.pictures groups been badly reputed, alt.fractals.pictures
+   seems to have some new activity.
+   
+  The fractals posted in abpf are recorded dayly at
+  
+   http://www.xmission.com/~legalize/fractals/index.html
+   http://galaxy.uci.agh.edu.pl/pictures//alt.binaries.pictures.fractals/
+          last.html
+   http://www.cs.uni-magdeburg.de/pictures/Usenet/fractals/summary/
+   http://x-ray.tip.nl/usenet/showgroup.cgi/alt.binaries.pictures.fractal
+          s (this last one, only with MSIE 3)
+          
+   The following lists are scanty and will evolve soon.
+   
+  Other archives and university sites (images, tutorials...)
+  
+   Many Mandelbrot set images are available via
+          ftp://ftp.ira.uka.de/pub/graphic/fractals
+   Pictures from 1990 and 1991 are available via anonymous ftp at
+          ftp://csus.edu/pub/alt.fractals.pictures
+   Fractal images including some recent alt.binaries.pictures.fractals
+          images are archived at ftp://spanky.triumf.ca/fractals 
+   This can also be accessed via WWW at http://spanky.triumf.ca/ or
+          http://fractal.mta.ca/spanky/
+   From Paris, France one of the largest collections (>= 460MB) is Frank
+          Roussel's at http://www.cnam.fr/fractals.html
+   These images are also available via FTP at
+          ftp://sunsite.cnam.fr/pub/Fractals
+   Fractal animations in MPG and FLI format are in
+          ftp://ftp.cnam.fr/pub/Fractals/anim
+   or http://www.cnam.fr/fractals/anim.html
+   In Bordeaux (France) there is a mirror of this site,
+          http://www.bdx1.u-bordeaux.fr/MAPBX/roussel/fractals.html
+   and a Canadian mirror at http://fractal.mta.ca/cnam/
+   Another collection of fractal images is archived at
+          ftp://ftp.maths.tcd.ie/pub/images/Computer
+   Fractal Microscope
+          http://www.ncsa.uiuc.edu/Edu/Fractal/Fractal_Home.html
+   "Contours of the Mind"
+          http://online.anu.edu.au/ITA/ACAT/contours/contours.html
+   Spanky Fractal Datbase (Noel Giffin)
+          http://spanky.triumf.ca/www/spanky.html
+   Yahoo Index of Fractal Art
+          http://www.yahoo.com/Arts/Visual_Arts/Computer_Generated/Fracta
+          ls/
+   Geometry Centre at University of Minnesota
+          http://www.geom.umn.edu/graphics/pix/General_Interest/Fractals/
+   Computer Graphics Gallery
+          http://www.maths.tcd.ie/pub/images/images.html
+          
+  Many fractal creators have personal web pages showing images, tutorials...
+  
+   Flame Index A collection of interesting smoke- and flame-like jpeg
+          iterated function system images
+          http://www.cs.cmu.edu/~spot/flame.htm
+          Some images are also available from:
+          ftp://hopeless.mess.cs.cmu.edu/spot/film/
+          
+   Cliff Pickover
+          http://sprott.physics.wisc.edu/pickover/home.htm
+          
+   Fractal Gallery (J. C. Sprott) Personal images and a thousand of
+          fractals collected in abpf
+          http://sprott.physics.wisc.edu/fractals.htm
+          
+   The San Francisco Fractal Factory
+          http://www.awa.com/sfff/sfff.html
+          
+   Fractal from Ojai (Art Baker)
+          http://www.bhs.com/ffo/
+          
+   Skal's 3D-fractal collection (Pascal Massimino)
+          http://www.eleves.ens.fr:8080/home/massimin/quat/f_gal.ang.html
+          
+   3d Fractals (Stewart Dickson) via Mathart.com
+          http://www.wri.com/~mathart/portfolio/SPD_Frac_portfolio.html
+          
+   Softsource
+          http://www.softsource.com/softsource/fractal.html
+          
+   Favourite Fractals (Ryan Grant)
+          http://www.ncsa.uiuc.edu/SDG/People/rgrant/fav_pics.html
+          
+   Eric Schol
+          http://snt.student.utwente.nl/~schol/gallery/
+          
+   Mandelbrot and Julia Sets (David E. Joyce)
+          http://aleph0.clarku.edu/~djoyce/home.html
+          
+   Newton's method
+          http://aleph0.clarku.edu/~djoyce/newton/newton.html
+          
+   Gratuitous Fractals (evans@ctrvax.vanderbilt.edu)
+          http://www.vanderbilt.edu/VUCC/Misc/Art1/fractals.html
+          
+   Xmorphia
+          http://www.ccsf.caltech.edu/ismap/image.html
+          
+   Fractal Prairie Page (George Krumins)
+          http://www.prairienet.org/astro/fractal.html
+          
+   Fractal Gallery (Paul Derbyshire)
+          http://chat.carleton.ca/~pderbysh/fractgal.html
+          
+   David Finton's fractal homepage
+          http://www.d.umn.edu/~dfinton/fractals/
+          
+   Algorithmic Image Gallery (Giuseppe Zito)
+          http://www.ba.infn.it/gallery
+          
+   Octonion Fractals built using hyper-hyper-complex numbers by Onar Em
+          http://www.stud.his.no/~onar/Octonion.html
+          
+   B' Plasma Cloud (animated gif)
+          http://www.az.com/~rsears/fractp1.html
+          
+   John Bailey's fractal images (<john_bayley@wb.xerox.com>)
+          http://www.frontiernet.net/~jmb184/interests/fractals/
+          
+   Fractal Art Parade (Douglas "D" Cootey <D@itsnet.com>)
+          http://www.itsnet.com/~bug/fractals.html
+          
+   The Fractory (John/Alex <kulesza@math.gmu.edu>)
+          http://tqd.advanced.org/3288/
+          
+   FracPPC gallery (Dennis C. De Mars <demars@netcom.com>)
+          http://members.aol.com/ddemars/gallery.html
+          
+   http://galifrey.triode.net.au/ (Frances Griffin
+          <kgriffin@triode.net.au>)
+          http://galifrey.triode.net.au/
+          
+   http://www.geocities.com/CapeCanaveral/5003/ (Richard Hopkins
+          <r.hopkins@ic.ac.uk>)
+          http://www.geocities.com/CapeCanaveral/5003/
+          
+   J.P. Louvet's Fractal Album
+          http://www.bdx1.u-bordeaux.fr/MAPBX/louvet/jpl0a.html )
+          (Jean-Pierre Louvet <louvet@iuta.u-bordeaux.fr> French and
+          English versions)
+          
+   Carlson's Fractal Gallery
+          http://sprott.physics.wisc.edu/carlson.htm (Paul Carlson
+          <pjcarlsn@ix.netcom.com>)
+          
+   Fractals by Paul Carlson
+          http://fractal.mta.ca/fractals/carlson/ (an other Paul
+          Carlson's Gallery)
+          
+   Daves's Graphics Page
+          http://www.unpronounceable.com/graphics/
+          
+   Gumbycat's cyberhome
+          http://www.geocities.com/~gumbycat/index.html
+          
+   Sylvie Gallet Gallery
+          http://spanky.triumf.ca/www/fractint/SYLVIE/GALLET.HTML
+          
+   Howard Herscovitch's Home Page
+          http://www.echo-on.net/~hnhersco/
+          
+   Fractalus Home. Fractals by Damien M. Jones
+          http://www.geocities.com/SoHo/Lofts/2605/
+          
+   Fractopia Home page. Bill Rossi
+          http://members.aol.com/billatny/fractopi.htm
+          
+  The Infinite Fractal Loop
+  
+   Douglas Cootey (<D@itsnet.com>) run under this name a link between a
+   number of personal fractal galleries. The home page of the subscribers
+   display the logo of the Infinite Fractal Loop. By clicking on selected
+   areas of this logo the server of the loop will call an other site of
+   this loop and from this new page, you can go to an other gallery...
+   There are currently 34 members in the loop. There are 11 waiting in
+   the wings to join.
+   
+   You can have more information and subscribe at
+   http://www.itsnet.com/~bug/fractals/theloop.html
+
+   Q25b: How do I view fractal pictures from
+   alt.binaries.pictures.fractals?
+   
+   A25b: A detailed explanation is given in the "alt.binaries.pictures
+   FAQ" (see "pictures-FAQ"). This is posted to the pictures newsgroups
+   and is available by ftp:
+   ftp://rtfm.mit.edu:/pub/usenet/news.answers/pictures-faq/
+   [18.181.0.24].
+   
+   In brief, there is a series of things you have to do before viewing
+   these posted images. It will depend a little on the system your
+   working with, but there is much in common. Some newsreaders have
+   features to automatically extract and decode images ready to display
+   ("e" in trn) but if you don't you can use the following manual method:
+   
+    1. Save/append all posted parts sequentially to one file.
+    2. Edit this file and delete all text segments except what is between
+       the BEGIN-CUT and END-CUT portions. This means that BEGIN-CUT and
+       END-CUT lines will disappear as well. There will be a section to
+       remove for each file segment as well as the final END-CUT line.
+       What is left in the file after editing will be bizarre garbage
+       starting with begin 660 imagename.GIF and then about 6000 lines
+       all starting with the letter "M" followed by a final "end" line.
+       This is called a uuencoded file.
+    3. You must uudecode the uuencoded file. There should be an
+       appropriate utility at your site; "uudecode filename " should work
+       under Unix. Ask a system person or knowledgeable programming type.
+       It will decode the file and produce another file called
+       imagename.GIF. This is the image file.
+    4. You must use another utility to view these GIF images. It must be
+       capable of displaying color graphic images in GIF format. (If you
+       get a JPG or JPEG format file, you may have to convert it to a GIF
+       file with yet another utility.) In the XWindows environment, you
+       may be able to use "xv", "xview", or "xloadimage" to view GIF
+       files. If you aren't using X, then you'll either have to find a
+       comparable utility for your system or transfer your file to some
+       other system. You can use a file transfer utility such as Kermit
+       to transfer the binary file to an IBM-PC.
+       
+   If you use a web browser such as Netscape to read
+   alt.binaries.pictures.fractals, then it will automate the decoding for
+   you. This is not be true of all web browsers.
+
+Subject: Where can I obtain papers about fractals?
+
+   Q26: Where can I obtain papers about fractals?
+   
+   A26: There are several Internet sites with fractal papers: There is an
+   ftp archive site for preprints and programs on nonlinear dynamics and
+   related subjects at: ftp://inls.ucsd.edu/pub.
+   
+   There are also articles on dynamics, including the IMS preprint
+   series, available from ftp://math.sunysb.edu/preprints.
+   
+   The WWW site http://inls.ucsd.edu/y/Complex/ has some fractal papers.
+   
+   The site life.csu.edu.au has a collection of fractal programs, papers,
+   information related to complex systems, and gopher and World Wide Web
+   connections.
+   
+   The ftp path is:
+          ftp://life.csu.edu.au/pub/complex/ (Look in fractals, tutorial,
+          and anu92)
+          
+   via WWW:
+          http://life.csu.edu.au/complex/
+          
+   R. Vojak has some papers and preprints available from his home page at
+   Université Paris IX Dauphine.
+   
+   R. Vojak's home page
+          http://www.ceremade.dauphine.fr/~vojak/
+
+Subject: How can I join the FRAC-L fractal discussion?
+
+   Q27: How can I join the FRAC-L fractal discussion?
+   
+   A27: FRAC-L is a mailing list "Forum on Fractals, Chaos, and
+   Complexity". The purpose of frac-l is to be a globally networked forum
+   for discourse and collaboration on fractals, chaos, and complexity in
+   multiple disciplines, professions, and arts.
+   
+   To subscribe to frac-l an email message to
+   listproc@archives.math.utk.edu containing the sole line of text:
+   SUBSCRIBE FRAC-L Your_first_name Your_last_name
+   (substituting your actual first and last names, of course).
+   
+   To unsubscribe from frac-l, send LISTPROC (NOT frac-l) the message:
+   UNSUBSCRIBE FRAC-L
+   
+   Messages may be posted to frac-l by sending email to:
+   frac-l@archives.math.utk.edu
+   
+   If there is any difficulty contact the listowner: Ermel Stepp
+   (stepp@marshall.edu).
+   
+  The Fractal-Art Discussion List
+  
+   This mailing list is open to all individuals and organizations
+   interested in all aspects of Fractal Art. This would include fractal
+   and digital artists, fractal software developers, gallery owners,
+   museum curators, art marketers and brokers, printers, art collectors,
+   and simply anybody who just plain likes to look at fractal images.
+   This should include just about everybody!
+   
+   Administrator: Jon Noring noring@netcom.com
+   
+   To subscribe Fractal-Art send an email message to majordomo@aros.net
+   containing the sole line of text:
+   
+     subscribe fractal-art
+   
+   Messages may be posted to the fractal-art mailing list by sending
+   email to: fractal-art@aros.net
+
+Subject: Complexity
+
+   Q28: What is complexity?
+   
+   A28: Emerging paradigms of thought encompassing fractals, chaos,
+   nonlinear science, dynamic systems, self-organization, artificial
+   life, neural networks, and similar systems comprise the science of
+   complexity. Several helpful online resources on complexity are:
+   
+   Institute for Research on Complexity
+          http://www.marshall.edu/~stepp/vri/irc/irc.html
+          
+   The site life.csu.edu.au has a collection of fractal programs, papers,
+   information related to complex systems, and gopher and World Wide Web
+   connections.
+   
+   LIFE via WWW
+          http://life.csu.edu.au/complex/
+          
+   Complex Systems (UPENN)
+          http://www.seas.upenn.edu/~ale/cplxsys.html
+          
+   Center for Complex Systems Research (UIUC)
+          http://www.ccsr.uiuc.edu/
+          
+   Complexity International Journal
+          http://www.csu.edu.au/ci/ci.html
+          
+   Nonlinear Science Preprints
+          ftp://xyz.lanl.gov/nlin-sys
+          
+   Nonlinear Science Preprints via email:
+          
+   To subscribe to public bulletin board to receive announcements of the
+   availability of preprints from Los Alamos National Laboratory, send
+   email to nlin-sys@xyz.lanl.gov containing the sole line of text:
+   subscribe your-real-name
+
+Subject: References
+
+   Q29a: What are some general references on fractals, chaos, and
+   complexity?
+   
+   A29a: Some references are:
+   
+   M. Barnsley, Fractals Everywhere, Academic Press Inc., 1988, 1993.
+   ISBN 0-12-079062-9. This is an excellent text book on fractals. This
+   is probably the best book for learning about the math underpinning
+   fractals. It is also a good source for new fractal types.
+   
+   M. Barnsley, The Desktop Fractal Design System Versions 1 and 2. 1992,
+   1988. Academic Press. Available from Iterated Systems.
+   
+   M. Barnsley and P H Lyman, Fractal Image Compression. 1993. AK Peters
+   Limited. Available from Iterated Systems.
+   
+   M. Barnsley and L. Anson, The Fractal Transform, Jones and Bartlett,
+   April, 1993. ISBN 0-86720-218-1. This book is a sequel to Fractals
+   Everywhere. Without assuming a great deal of technical knowledge, the
+   authors explain the workings of the Fractal Transform(tm). The Fractal
+   Transform is the compression tool for storing high-quality images in a
+   minimal amount of space on a computer. Barnsley uses examples and
+   algorithms to explain how to transform a stored pixel image into its
+   fractal representation.
+   
+   R. Devaney and L. Keen, eds., Chaos and Fractals: The Mathematics
+   Behind the Computer Graphics, American Mathematical Society,
+   Providence, RI, 1989. This book contains detailed mathematical
+   descriptions of chaos, the Mandelbrot set, etc.
+   
+   R. L. Devaney, An Introduction to Chaotic Dynamical Systems, Addison-
+   Wesley, 1989. ISBN 0-201-13046-7. This book introduces many of the
+   basic concepts of modern dynamical systems theory and leads the reader
+   to the point of current research in several areas. It goes into great
+   detail on the exact structure of the logistic equation and other 1-D
+   maps. The book is fairly mathematical using calculus and topology.
+   
+   R. L. Devaney, Chaos, Fractals, and Dynamics, Addison-Wesley, 1990.
+   ISBN 0-201-23288-X. This is a very readable book. It introduces chaos
+   fractals and dynamics using a combination of hands-on computer
+   experimentation and precalculus math. Numerous full-color and black
+   and white images convey the beauty of these mathematical ideas.
+   
+   R. Devaney, A First Course in Chaotic Dynamical Systems, Theory and
+   Experiment, Addison Wesley, 1992. A nice undergraduate introduction to
+   chaos and fractals.
+   
+   A. K. Dewdney, (1989, February). Mathematical Recreations. Scientific
+   American, pp. 108-111.
+   
+   G. A. Edgar, Measure Topology and Fractal Geometry, Springer-Verlag
+   Inc., 1990. ISBN 0-387-97272-2. This book provides the math necessary
+   for the study of fractal geometry. It includes the background material
+   on metric topology and measure theory and also covers topological and
+   fractal dimension, including the Hausdorff dimension.
+   
+   K. Falconer, Fractal Geometry: Mathematical Foundations and
+   Applications, Wiley, New York, 1990.
+   
+   J. Feder, Fractals, Plenum Press, New York, 1988. This book is
+   recommended as an introduction. It introduces fractals from
+   geometrical ideas, covers a wide variety of topics, and covers things
+   such as time series and R/S analysis that aren't usually considered.
+   
+   Y. Fisher (ed), Fractal Image Compression: Theory and Application.
+   Springer Verlag, 1995.
+   
+   L. Gardini (ed), Chaotic Dynamics in Two-Dimensional Noninvertive
+   Maps. World Scientific 1996, ISBN: 9810216475
+   
+   J. Gleick, Chaos: Making a New Science, Penguin, New York, 1987.
+   
+   B. Hao, ed., Chaos, World Scientific, Singapore, 1984. This is an
+   excellent collection of papers on chaos containing some of the most
+   significant reports on chaos such as "Deterministic Nonperiodic Flow"
+   by E.N. Lorenz.
+   
+   I. Hargittai and C. Pickover. Spiral Symmetry 1992 World Scientific
+   Publishing, River Edge, New Jersey 07661. ISBN 981-02-0615-1. Topics:
+   Spirals in nature, art, and mathematics. Fractal spirals, plant
+   spirals, artist's spirals, the spiral in myth and literature... Loads
+   of images.
+   
+   H. Jurgens, H. O Peitgen, & D. Saupe. 1990 August, The Language of
+   Fractals. Scientific American, pp. 60-67.
+   
+   H. Jurgens, H. O. Peitgen, H.O., & D. Saupe, 1992, Chaos and Fractals:
+   New Frontiers of Science. New York: Springer-Verlag.
+   
+   S. Levy, Artificial life : the quest for a new creation, Pantheon
+   Books, New York, 1992. This book takes off where Gleick left off. It
+   looks at many of the same people and what they are doing post-Gleick.
+   
+   B. Mandelbrot, The Fractal Geometry of Nature, W. H. FreeMan, New
+   York. ISBN 0-7167-1186-9. In this book Mandelbrot attempts to show
+   that reality is fractal-like. He also has pictures of many different
+   fractals.
+   
+   B. Mandelbrot, Les objets fractals, Flammarion, Paris. ISBN
+   2-08-211188-1. The French Mandelbrot's book, where the word fractal
+   has been used for the first time.
+   
+   J.L. McCauley, Chaos, dynamics, and fractals : an algorithmic approach
+   to deterministic chaos, Cambridge University Press, 1993.
+   
+   E. R. Mac Cormac (ed), M. Stamenov (ed), Fractals of Brain, Fractals
+   of Mind : In Search of a Symmetry Bond (Advances in Consciousness
+   Research, No 7), John Benjamins, ISBN: 1556191871, Subjects include:
+   Neural networks (Neurobiology), Mathematical models, Fractals, and
+   Consciousness
+   
+   G.V. Middleton, (ed), 1991: Nonlinear Dynamics, Chaos and Fractals (w/
+   application to geological systems) Geol. Assoc. Canada, Short Course
+   Notes Vol. 9, 235 p. This volume contains a disk with some examples
+   (also as pascal source code) ($25 CDN)
+   
+   T.F. Nonnenmacher, G.A Losa, E.R Weibel (ed.) Fractals in Biology and
+   Medicine Birkhaeuser Verlag
+   
+   L. Nottale, Fractal Space-Time and Microphysics, Towards a Theory of
+   Scale Relativity, World Scientific (1993).
+   
+   E. Ott, Chaos in dynamical systems, Cambridge University Press, 1993.
+   
+   E. Ott, T. Sauer, J.A. Yorke (ed.) Coping with chaos : analysis of
+   chaotic data and the exploitation of chaotic systems, New York, J.
+   Wiley, 1994.
+   
+   D. Peak and M. Frame, Chaos Under Control: The Art and Science of
+   Complexity, W.H. Freeman and Company, New York 1994, ISBN
+   0-7167-2429-4 "The book is written at the perfect level to help a
+   beginner gain a solid understanding of both basic and subtler appects
+   of chaos and dynamical systems." - a review on the back cover
+   
+   H. O. Peitgen and P. H. Richter, The Beauty of Fractals,
+   Springer-Verlag, New York, 1986. ISBN 0-387-15851-0. This book has
+   lots of nice pictures. There is also an appendix giving the
+   coordinates and constants for the color plates and many of the other
+   pictures.
+   
+   H. Peitgen and D. Saupe, eds., The Science of Fractal Images,
+   Springer-Verlag, New York, 1988. ISBN 0-387-96608-0. This book
+   contains many color and black and white photographs, high level math,
+   and several pseudocoded algorithms.
+   
+   H. Peitgen, H. Juergens and D. Saupe, Fractals for the Classroom,
+   Springer-Verlag, New York, 1992. These two volumes are aimed at
+   advanced secondary school students (but are appropriate for others
+   too), have lots of examples, explain the math well, and give BASIC
+   programs.
+   
+   H. Peitgen, H. Juergens and D. Saupe, Chaos and Fractals: New
+   Frontiers of Science, Springer-Verlag, New York, 1992.
+   
+   E. Peters, Fractal Market Analysis - Applying Chaos Theory to
+   Investment & Economics, John Wiley & Sons, 1994, ISBN 0-471-58524-6.
+   
+   C. Pickover, Computers, Pattern, Chaos, and Beauty: Graphics from an
+   Unseen World, St. Martin's Press, New York, 1990. This book contains a
+   bunch of interesting explorations of different fractals.
+   
+   C. Pickover, Keys to Infinity, (1995) John Wiley: NY. ISBN
+   0-471-11857-5.
+   
+   C. Pickover, (1995) Chaos in Wonderland: Visual Adventures in a
+   Fractal World. St. Martin's Press: New York. ISBN 0-312-10743-9.
+   (Devoted to the Lyapunov exponent.)
+   
+   C. Pickover, Computers and the Imagination (Subtitled: Visual
+   Adventures from Beyond the Edge) (1993) St. Martin's Press: New York.
+   
+   C. Pickover. The Pattern Book: Fractals, Art, and Nature (1995) World
+   Scientific. ISBN 981-02-1426-X Some of the patterns are ultramodern,
+   while others are centuries old. Many of the patterns are drawn from
+   the universe of mathematics.
+   
+   C. Pickover, Visualizing Biological Information (1995) World
+   Scientific: Singapore, New Jersey, London, Hong Kong.
+   on the use of computer graphics, fractals, and musical techniques to
+   find patterns in DNA and amino acid sequences.
+   
+   C. Pickover, Fractal Horizons: The Future Use of Fractals. (1996) St.
+   Martin's Press, New York.
+   Speculates on advances in the 21st Century. Six broad sections:
+   Fractals in Education, Fractals in Art, Fractal Models and Metaphors,
+   Fractals in Music and Sound, Fractals in Medicine, and Fractals and
+   Mathematics. Topics include: challenges of using fractals in the
+   classroom, new ways of generating art and music, the use of fractals
+   in clothing fashions of the future, fractal holograms, fractals in
+   medicine, fractals in boardrooms of the future, fractals in chess.
+   
+   J. Pritchard, The Chaos Cookbook: A Practical Programming Guide,
+   Butterworth-Heinemann, Oxford, 1992. ISBN 0-7506-0304-6. It contains
+   type in and go listings in BASIC and Pascal. It also eases you into
+   some of the mathematics of fractals and chaos in the context of
+   graphical experimentation. So it's more than just a
+   type-and-see-pictures book, but rather a lab tutorial, especially good
+   for those with a weak or rusty (or even nonexistent) calculus
+   background.
+   
+   P. Prusinkiewicz and A. Lindenmayer, The Algorithmic Beauty of Plants,
+   Springer-Verlag, NY, 1990. ISBN 0-387-97297-8. A very good book on
+   L-systems, which can be used to model plants in a very realistic
+   fashion. The book contains many pictures.
+   
+   Edward R. Scheinerman, Invitation to Dynamical Systems, Prentice-Hall,
+   1996, ISBN 0-13-185000-8, xvii + 373 pages
+   
+   M. Schroeder, Fractals, Chaos, and Power Laws: Minutes from an
+   Infinite Paradise, W. H. Freeman, New York, 1991. This book contains a
+   clearly written explanation of fractal geometry with lots of puns and
+   word play.
+   
+   J. Sprott, Strange Attractors: Creating Patterns in Chaos, M&T Books
+   (subsidary of Henry Holt and Co.), New York. ISBN 1-55851-298-5. This
+   book describes a new method for generating beautiful fractal patterns
+   by iterating simple maps and ordinary differential equations. It
+   contains over 350 examples of such patterns, each producing a
+   corresponding piece of fractal music. It also describes methods for
+   visualizing objects in three and higher dimensions and explains how to
+   produce 3-D stereoscopic images using the included red/blue glasses.
+   The accompanying 3.5" IBM-PC disk contain source code in BASIC, C,
+   C++, Visual BASIC for Windows, and QuickBASIC for Macintosh as well as
+   a ready-to-run IBM-PC executable version of the program. Available for
+   $39.95 + $3.00 shipping from M&T Books (1-800-628-9658).
+   
+   D. Stein (ed), Proceedings of the Santa Fe Institute's Complex Systems
+   Summer School, Addison-Wesley, Redwood City, CA, 1988. See especially
+   the first article by David Campbell: "Introduction to nonlinear
+   phenomena".
+   
+   R. Stevens, Fractal Programming in C, M&T Publishing, 1989 ISBN
+   1-55851-038-9. This is a good book for a beginner who wants to write a
+   fractal program. Half the book is on fractal curves like the Hilbert
+   curve and the von Koch snow flake. The other half covers the
+   Mandelbrot, Julia, Newton, and IFS fractals.
+   
+   I. Stewart, Does God Play Dice?: the Mathematics of Chaos, B.
+   Blackwell, New York, 1989.
+   
+   Y. Takahashi, Algorithms, Fractals, and Dynamics, Plenum Pub Corp,
+   (May) 1996, ISBN: 0306451271 Subjects: Differentiable dynamical syste,
+   Congresses, Fractals, Algorithms, Differentiable Dynamical Systems,
+   Algorithms (Computer Programming)
+   
+   T. Wegner and B. Tyler, Fractal Creations, 2nd ed. The Waite Group,
+   1993. ISBN 1-878739-34-4 This is the book describing the Fractint
+   program.
+
+   Q29b: What are some relevant journals?
+   
+   A29b: Some relevant journals are:
+   
+   "Chaos and Graphics" section in the quarterly journal Computers and
+   Graphics. This contains recent work in fractals from the graphics
+   perspective, and usually contains several exciting new ideas.
+   
+   "Mathematical Recreations" section by I. Stewart in Scientific
+   American.
+   
+   Fractal Report. Reeves Telecommunication Labs.
+   West Towan House, Porthtowan, TRURO, Cornwall TR4 8AX, U.K.
+   WWW: http://ourworld.compuserve.com/homepages/JohndeR/fractalr.htm
+   Email: John@longevb.demon.co.uk (John de Rivaz)
+   
+   FRAC'Cetera. This is a gazetteer of the world of fractals and related
+   areas, supplied on IBM PC format HD disk. FRACT'Cetera is the home of
+   FRUG - the Fractint User Group. For more information, contact: Jon
+   Horner, Editor,
+   FRAC'Cetera Le Mont Ardaine, Rue des Ardains, St. Peters Guernsey GY7
+   9EU Channel Islands, United Kingdom. Email: 100112.1700@compuserve.com
+   
+   Fractals, An interdisciplinary Journal On The Complex Geometry of
+   Nature
+   This is a new journal published by World Scientific. B.B Mandelbrot is
+   the Honorary Editor and T. Vicsek, M.F. Shlesinger, M.M Matsushita are
+   the Managing Editors). The aim of this first international journal on
+   fractals is to bring together the most recent developments in the
+   research of fractals so that a fruitful interaction of the various
+   approaches and scientific views on the complex spatial and temporal
+   behavior could take place.
+     _________________________________________________________________
+   
+   Q28c: What are some other Internet references?
+   
+   A28c: Some other Internet references:
+   
+   Web references to nonlinear dynamics
+   
+   Dynamical Systems (G. Zito)
+          http://alephwww.cern.ch/~zito/chep94sl/sd.html
+          
+   Scanning huge number of events (G. Zito)
+          http://alephwww.cern.ch/~zito/chep94sl/chep94sl.html
+          
+   The Who Is Who Handbook of Nonlinear Dynamics
+          http://www.nonlin.tu-muenchen.de/chaos/Dokumente/WiW/wiw.html
+
+Multifractals
+
+   Q30: What are multifractals?
+   
+   A30: It is not easy to give a succinct definition of multifractals.
+   Following Feder (1988) one may distinguish a measure (of probability,
+   or some physical quantity) from its geometric support - which might or
+   might not have fractal geometry. Then if the measure has different
+   fractal dimension on different parts of the support, the measure is a
+   multifractal.
+   
+   Hastings and Sugihara (1993) distinguish multifractals from
+   multiscaling fractals - which have different fractal dimensions at
+   different scales (e.g. show a break in slope in a dividers plot, or
+   some other power law). I believe different authors use different names
+   for this phenomenon, which is often confused with true multifractal
+   behaviour.
+
+Subject: Notices
+
+   Q31: Are there any special notices?
+   
+   A31:
+   
+   From: John de Rivaz <John@longevb.demon.co.uk>
+   
+Mr Roger Bagula, publisher of The Fractal Translight Newsletter, is seeking
+new articles. Write to him for a sample copy - he is not on the Internet -
+and he appreciates something for materials and postage.
+
+Mr Roger Bagula,
+11759 Waterhill Road
+Lakeside
+CA 90240-2905
+USA
+
+   NOTICE from J. C. (Clint) Sprott <SPROTT@juno.physics.wisc.edu>:
+   
+   The program, Chaos Data Analyzer, which I authored is a research and
+   teaching tool containing 14 tests for detecting hidden determinism in
+   a seemingly random time series of up to 16,382 points provided by the
+   user in an ASCII data file. Sample data files are included for model
+   chaotic systems. When chaos is found, calculations such as the
+   probability distribution, power spectrum, Lyapunov exponent, and
+   various measures of the fractal dimension enable you to determine
+   properties of the system Underlying the behavior. The program can be
+   used to make nonlinear predictions based on a novel technique
+   involving singular value decomposition. The program is menu-driven,
+   very easy to use, and even contains an automatic mode in which all the
+   tests are performed in succession and the results are provided on a
+   one-page summary.
+   
+   Chaos Data Analyzer requires an IBM PC or compatible with at least
+   512K of memory. A math coprocessor is recommended (but not required)
+   to speed some of the calculations. The program is available on 5.25 or
+   3.5" disk and includes a 62-page User's Manual. Chaos Data Analyzer is
+   peer-reviewed software published by Physics Academic Software, a
+   cooperative Project of the American Institute of Physics, the American
+   Physical Society, And the American Association of Physics Teachers.
+   
+   Chaos Data Analyzer and other related programs are available from The
+   Academic Software Library, North Carolina State University, Box 8202,
+   Raleigh, NC 27695-8202, Tel: (800) 955-TASL or (919) 515-7447 or Fax:
+   (919) 515-2682. The price is $99.95. Add $3.50 for shipping in U.S. or
+   $12.50 for foreign airmail. All TASL programs come with a 30-day,
+   money-back guarantee.
+   
+   From Clifford Pickover <cliff@watson.ibm.com>
+   
+   You are cordially invited to submit interesting, well-written articles
+   for the "Chaos and Graphics Section" of the international journal
+   Computers and Graphics. I edit this on-going section which appears in
+   each issue of the journal. Topics include the mathematical,
+   scientific, and artistic application of fractals, chaos, and related.
+   Your papers can be quite short if desired, for example, often a page
+   or two is sufficient to convey an idea and a pretty graphic. Longer,
+   technical papers are also welcome. The journal is peer-reviewed. I
+   publish color, where appropriate. Write to me for guidelines. Novelty
+   of images is often helpful.
+   
+  Goals
+  
+   The goal of my section is to provide visual demonstrations of
+   complicated and beautiful structures which can arise in systems based
+   on simple rules. The section presents papers on the seemingly
+   paradoxical combinations of randomness and structure in systems of
+   mathematical, physical, biological, electrical, chemical, and artistic
+   interest. Topics include: iteration, cellular automata, bifurcation
+   maps, fractals, dynamical systems, patterns of nature created from
+   simple rules, and aesthetic graphics drawn from the universe of
+   mathematics and art.
+
+                           Subject: Acknowledgements
+                                       
+   Q32: Who has contributed to the sci.fractals FAQ?
+   
+   A32: Former editors, participants in the Usenet group sci.fractals and
+   the listserv forum frac-l have provided most of the content of
+   sci.fractals FAQ. For their help with this FAQ, "thank you" to:
+   
+   Alex Antunes, Simon Arthur, John Beale, Matthew J. Bernhardt, Steve
+   Bondeson, Erik Boman, Jacques Carette, John Corbit, Douglas Cootey,
+   Predrag Cvitanovic, Paul Derbyshire, John de Rivaz, Abhijit Deshmukh,
+   Tony Dixon, Jürgen Dollinger, Robert Drake, Detlev Droege, Gerald
+   Edgar, Gordon Erlebacher, Yuval Fisher, Duncan Foster, David Fowler,
+   Murray Frank, Jean-loup Gailly, Noel Giffin, Frode Gill, Terry W.
+   Gintz, Earl Glynn, Lamont Granquist, John Holder, Jon Horner, Luis
+   Hernandez-Urëa, Jay Hill, Arto Hoikkala, Carl Hommel, Robert Hood,
+   Larry Husch, Oleg Ivanov, Simon Juden, J. Kai-Mikael, Leon Katz, Matt
+   Kennel, Robert Klep, Dave Kliman, Tal Kubo, Per Olav Lande, Paul N.
+   Lee, Jon Leech, Otmar Lendl, Jean-Pierre Louvet, Douglas Martin, Brian
+   Meloon, Tom Menten, Guy Metcalfe, Eugene Miya, Lori Moore, Robert
+   Munafo, Miriam Nadel, Ron Nelson, Tom Parker, Dale Parson, Matt Perry,
+   Cliff Pickover, Francois Pitt, Olaf G. Podlaha, Francesco Potortì,
+   Kevin Ring, Michael Rolenz, Tom Scavo, Jeffrey Shallit, Rollo Silver,
+   J. C. Sprott, Ken Shirriff, Gerolf Starke, Bruce Stewart, Dwight
+   Stolte, Tommy Vaske, Tim Wegner, Andrea Whitlock, Erick Wong, Wayne
+   Young, Giuseppe Zito, and others.
+   
+   A special thanks to Jean-Pierre Louvet, who has taken on the task of
+   maintaining the sections for fractal software and where fractal
+   pictures are archived.
+   
+   If I have missed you, I am very sorry, let me know
+   (fractal-faq@mta.ca) and I will add you to the list. Without the help
+   of these contributors, the sci.fractals FAQ would be not be possible.
+
+                              Subject: Copyright
+                                       
+   Q33: Copyright?
+   
+   A33: This document, "sci.fractals FAQ", is Copyright © 1995-1997 by
+   Michael C. Taylor. All Rights Reserved. This document is published in
+   New Brunswick, Canada.
+   
+   Previous versions:
+          Copyright 1995 Ermel Stepp (edition v2n1)
+          Copyright 1993-1994 Ken Shirriff
+          
+   The Fractal FAQ was created by Ken Shirriff and edited by him through
+   September 26, 1994. The second editor of the Fractal FAQ is Ermel
+   Stepp (Feb 13, 1995). Since December 2, 1995 the acting editor has
+   been Michael C. Taylor.
+   
+   Permission is granted for non-profit reproduction and distribution of
+   this issue of the sci.fractals FAQ as a complete document. You may
+   product complete copies, including this notice, of the sci.fractals
+   FAQ for classroom use. This does not mean automatic permission for
+   usage in CD-ROM collections or commerical educational products. If you
+   would like to include sci.fractals FAQ, in whole or in part, in a
+   commerical product contact Michael C. Taylor.
+   
+Warranty
+
+   This document is provided as is without any express or implied
+   warranty.
+   
+  Contacting the editor
+  
+   If you would like to provide a review copy of your program or book,
+   please send it to the editor at:
+   
+   Attn: Michael Taylor
+   Computing Services
+   Mount Allison University
+   Sackville, New Brunswick
+   E0A 3C0, CANADA
+   
+   email: Any one of (in order of preference)
+   
+   fractal-faq@mta.ca
+   mctaylor@mta.ca
+   aa459@chebucto.ns.ca

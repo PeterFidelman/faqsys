@@ -1,0 +1,492 @@
+[Extract from AVRIL.doc]
+
+          Appendix E - WLD FILE FORMAT
+
+          WLD files were designed to store information about the layout of
+          objects in a virtual world.
+
+                    This format will soon be considered obsolete.
+
+          There will soon be a file format for the interchange of virtual
+          objects and virtual worlds between VR systems; at that point,
+          support for the WLD file format will diminish.  Conversion
+          programs will be made available to convert WLD files to the new
+          format.
+
+          A WLD file is entirely ascii.  Each statement is one line;
+          anything after the first '#' is treated as a comment and ignored. 
+          Blank lines are also ignored.  The format is intended to be
+          highly extensible; any line which cannot be recognized should
+          simply be ignored.  Each statement contains some information
+          about the scene; the possible types of statements are listed
+          below.  Everything is case-insensitive; keywords are shown below
+          in uppercase, but are generally entered in lowercase.
+
+          LOADPATH path
+               Specifies a path prefix for loading files.  Any files
+               (whether specified in the world file itself, subsequent
+               world files, or in referenced FIG files) will be loaded from
+               the specified directory.  However, if a filename begins with
+               the '\' or '/' characters, it is used verbatim (i.e. the
+               LOADPATH setting is ignored).
+
+          PALETTE filename
+               Loads a 256-entry binary palette file (3 bytes (R,G,B) for
+               each entry).  Note that alternate palettes may not handle
+               shading as well as the default one does.
+
+          SKYCOLOR index
+               Specifies which of the 256 available colors should be used
+               for the "sky".
+
+          GROUNDCOLOR index
+               Specifies which of the 256 available colors should be used
+               for the "ground". If the sky and ground color are identical,
+               a solid screen clear is used; this is a bit faster.
+
+          SCREENCLEAR value
+               If the specified value is non-zero, then the screen will be
+               cleared before each frame; if it's zero, the screen clearing
+               is not done (this is useful if you know that the entire
+               window will be covered by the image, and that no background
+               will show through; in such a situation, specifying this
+               option will improve performance).
+
+                                                                         72
+
+
+
+
+
+          AMBIENT value
+               Specifies the level of the ambient light; 76 is the default,
+               and a good value to use.
+
+          LIGHT x,y,z
+               Specifies the location of a light source in world
+               coordinates.
+
+          CAMERA x,y,z tilt,pan,roll zoom
+               Specifies your starting location, viewing direction and zoom
+               factor.  The x,y,z values are floating-point numbers giving
+               coordinates, the tilt,pan,roll values are floating-point
+               angles, and the zoom is a floating-point number giving the
+               zoom factor.
+
+          HITHER value
+               Specifies the near clipping distance in world coordinates. 
+               The value should typically be 10 or more.
+
+          YON value
+               Specifies the far clipping distance in world coordinates. 
+               The value should typically be 1000000 or more.
+
+          OBJECT [objname=]filename sx,sy,sz rx,ry,rz tx,ty,tz depthtype
+          mappings parent
+               Loads an object from a .plg file with the given filename. 
+               If the objname= is present, it assigns the newly-loaded
+               object that name for future reference.  The sx,sy,sz values
+               are floating-point scale factors to increase or decrease the
+               size of the object as it's loaded.  The rx,ry,rz values are
+               the angles to rotate the object around in each of the three
+               axes; ry is done first, then rx and finally rz.  The
+               tx,ty,tz values translate (move) the object to a new
+               location; this is done after the scaling and rotation.  The
+               depthtype field is not currently used.  The mappings feature
+               is explained below.  The parent field is the name of the
+               object that this object is a child of; if omitted, the child
+               moves independently.  If parent is the word "fixed", then
+               the object is fixed in space and cannot be moved.  All
+               fields are optional, but you must include all the fields
+               prior to the last one you wish to use (i.e. you can only
+               leave things off the end, not off the beginning or out of
+               the middle).
+
+          FIGURE [figname=]filename sx,sy,sz rx,ry,rz tx,ty,tz parent
+               Loads a segmented figure from a FIG file with the given
+               filename.  All the parameters have the same meaning as for
+               the OBJECT statement described above.
+
+          POLYOBJ npts surface x1,y1,z1 x2,y2,z2 [...] x8,y8,z8
+               Directly specifies a facet to be placed in the scene.  The
+               value npts is the number of points (maximum 8), the surface
+
+                                                                         73
+
+
+
+
+
+               is a surface name (see below on surfaces) and the vertices
+               are given in world coordinates.
+
+          POLYOBJ2 npts surface1,surface2 x1,y1,z1 x2,y2,z2 [...] x8,y8,z8
+               Directly specifies a double-sided facet to be placed in the
+               scene.  The value npts is the number of points (maximum 8),
+               surface1 and surface2 are surface names (see below on
+               surfaces) and the vertices are given in world coordinates.
+
+          INCLUDE filename
+               Includes the specified file as if its contents appeared at
+               the current point in the current file.
+
+          POSITION objname x,y,z
+               Moves (i.e. translates) the specified object to the given
+               x,y,z location.
+
+          ROTATE objname rx,ry,rz
+               Rotates the specified object to the given angles about each
+               of the axes.  The angles are specified in floating point,
+               and are measured in degrees.  The rotation order is Y then X
+               then Z.
+
+          VERSION number
+               Allows you to define a version number.  Not currently used
+               for anything; can be omitted.
+
+          TITLE text
+               Allows you to define a title for your world.
+
+          About Mapping
+
+          A PLG file can contain indexed color values (such as 0x8002)
+          which are used to index a surface map.  Entries in surface maps
+          refer to surfaces.  Surfaces are created using the SURFACEDEF
+          statement, surface maps are created with the SURFACEMAP
+          statement, and entries are placed in them with the SURFACE
+          statement.  The statement formats are as follows:
+
+          SURFACEDEF name value
+               Defines a new surface; maps a surface name (such as "wood")
+               to a numeric surface descriptor (value) of the type
+               described in Appendix C.
+
+          SURFACEMAP name maxentries
+               Marks the start of a new surface map.  All subsequent
+               SURFACE entries will be placed in this map.  The maxentries
+               field gives the maximum number of entries this surface map
+               will have; if omitted, it defaults to 10.
+
+          SURFACE index name
+
+
+                                                                         74
+
+
+
+
+
+               Defines an entry in the current surface map, which takes an
+               index value (the bottom 15 bits of the value in the .plg
+               file) and maps it into a surface name (which is in turn
+               mapped to a 16-bit color value).
+
+          USEMAP mapname
+               Causes all subsequently loaded objects that don't have a
+               mapname on their OBJECT statements to use the specified
+               mapname.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                                                         75
+
+
+
+
+
+
+          Appendix F - WRITING DEVICE DRIVERS
+
+          Writing device drivers for AVRIL is easy.  You basically create a
+          single function with a unique name; for example, if you want to
+          support a (mythical) RealTronics Atomic Tracking System, your
+          function might be
+
+               int vrl_ATSDevice(vrl_DeviceCommand cmd, vrl_Device *device)
+                                  {
+                                  [...]
+                                  }
+
+          You should add an entry for your new function to the list in
+          avrildrv.h, and possibly to the cfg.c file.
+
+               Your driver routine will get called periodically by the
+          application.  The vrl_Device struct is pre-allocated by AVRIL, so
+          you just have to fill in the various fields.  The cmd is one of
+          VRL_DEVICE_INIT, VRL_DEVICE_RESET, VRL_DEVICE_POLL, or
+          VRL_DEVICE_QUIT.
+
+               When a device is first opened, AVRIL will set all the fields
+          in the vrl_Device struct to reasonable values.  The
+          VRL_DEVICE_INIT call should fill in the following fields with
+          driver-specific information:
+
+               char *desc;                 /* user-readable device description */
+                          int nchannels;              /* number of input channels the device has */
+                          vrl_DeviceChannel *channels;   /* pointer to array of channels */
+
+          The desc is a string describing the device, the nchannels value
+          is the number of input channels the device has (should be at
+          least 6) and the channels field is set to point to an array of
+          vrl_DeviceChannel structs, one per channel.  These channels
+          should be dynamically allocated, rather than using a static
+          struct; this is to allow multiple instances of the same type of
+          device (for example, a Cyberman on each of COM1 and COM2, each
+          with its own channel-specific data).  For this same reason, your
+          driver shouldn't use any global variables; you should instead
+          dynamically allocate memory for any additional per-device-
+          instance data and store the pointer to that data in the localdata
+          field of the vrl_Device struct.  The VRL_DEVICE_INIT call should
+          also fill in the appropriate values for all the channels.
+
+          The VRL_DEVICE_INIT call may also choose to fill in some or all
+          of the following:
+
+               int nbuttons;               /* number of buttons the device has */
+                          int noutput_channels;       /* number of output channels */
+                          vrl_DeviceOutputFunction *outfunc;  /* function to call to generate output */
+                          vrl_DeviceMotionMode rotation_mode;     /* rotation mode for this device */
+
+                                                                                                                            76
+
+
+
+
+
+                          vrl_DeviceMotionMode translation_mode;  /* translation mode for this device */
+                          vrl_Buttonmap *buttonmap;   /* button mapping table for 2D devices */
+                          int version;                /* device struct version number */
+                          int mode;                   /* mode of operation */
+                          vrl_Time period;            /* milliseconds between reads */
+
+          The number of buttons the device has is assumed to be zero unless
+          you set it otherwise, as is the number of output channels.  The
+          outfunc field is a pointer to a function (probably declared
+          static in the same source file as your driver function) that
+          handles output to the device; this is described in more detail
+          below.  If your device doesn't do output, leave this field at its
+          default value of NULL.
+
+               The meaning of the two vrl_DeviceMotionMode type fields was
+          described earlier in this document, in the section on Devices. 
+          They both default to VRL_MOTION_RELATIVE.  The mode is driver-
+          specific, and can be initialized to whatever value you like
+          (since the value is only interpreted by your driver).  The
+          version field should be left at its default value of zero by
+          drivers following this version of the driver specification; as
+          the driver specification evolves, this value will increase.
+
+               The period defaults to zero, meaning that a call to
+          vrl_DevicePoll() will always result in your driver function being
+          called with a cmd of VRL_DEVICE_POLL.  If you don't want to be
+          polled every cycle, set the period to the minimum number of ticks
+          (milliseconds) that should elapse between polls.  Note that this
+          is a minimum value; the delay between polls may be even longer if
+          the system is busy doing other things.
+
+               The VRL_DEVICE_RESET command is very similar to
+          VRL_DEVICE_INIT, and may in fact be the same for some devices. 
+          The difference is that VRL_DEVICE_INIT does one-time
+          initializations (such as taking over interrupt vectors).
+
+               The VRL_DEVICE_QUIT command should "shut down" the device,
+          putting it in a quiescent state and undoing anything that was
+          done in VRL_DEVICE_INIT and VRL_DEVICE_RESET (for example,
+          restoring interrupt vectors).  It's also responsible for
+          releasing any memory that was dynamically allocated by
+          VRL_DEVICE_INIT, including that pointed to by the channels field
+          and the localdata field if it was used.
+
+               Serial devices can assume that when VRL_DEVICE_INIT is
+          called, the port they'll be using is already open, and that the
+          port field is set; the driver also does not need to (and should
+          not) close the port.  However, devices that actually use the port
+          should check that it's not NULL, and return -4 if it is.
+
+               The VRL_DEVICE_POLL command should read the raw data from
+          the hardware (for example, by calling vrl_DeviceGetPacket()) and
+
+                                                                         77
+
+
+
+
+
+          decoding the values into the rawdata fields of the appropriate
+          channels.  You should be sure to set the changed field for any
+          channels that you update.
+
+          There are a number of values associated with each channel; they
+          are as follows:
+
+          struct _vrl_device_channel
+                          {
+                          vrl_32bit centerpoint;        /* value of center point in raw device coords */
+                          vrl_32bit deadzone;           /* minimum acceptable value in device coords */
+                          vrl_32bit range;              /* maximum absolute value relative to zero */
+                          vrl_Scalar scale;             /* maximum returned value */
+                          vrl_Boolean accumulate : 1;   /* if set, accumulate values */
+                          vrl_Boolean changed : 1;      /* set if rawvalue has changed */
+                          vrl_32bit rawvalue;           /* current value in raw device coordinates */
+                          vrl_32bit oldvalue;           /* previous value in raw device coordinates */
+                          vrl_Scalar value;             /* current value (processed) */
+                          };
+
+          The only fields you must set are the centerpoint, deadzone,
+          range, scale and accumulate.  The centerpoint is the current
+          "zero" value of the device; for example, the value an analog
+          joystick on a PC-compatible reports when the stick is at rest can
+          be considered its centerpoint.
+
+               The deadzone has two different interpretations.  If the
+          accumulate flag is set, then the deadzone is the minimum
+          displacement from the centerpoint that will be recognized.  If
+          the accumulate flag is clear, then the value is the minimum
+          change from the previous value (as stored in oldvalue by the
+          higher-level routines) that will be recognized.
+
+               The scale, and range values are used to convert the rawvalue
+          into units more suitable for the application.  The scale is the
+          number of world-space units corresponding to the range in device
+          units.  The scale, and deadzone should both be positive values,
+          and can be changed by the application.  The range value can be
+          negative; this is useful for reversing the direction of a device
+          axis.  The range value is only ever set by your driver.
+
+               The accumulate flag, in addition to controlling how the
+          deadzone is interpreted, causes the value to be scaled by the
+          elapsed time in seconds since the last poll.
+
+               The best way to understand all this is to consider what
+          happens when you read new values from the device.  First, you
+          store the data for each channel in the corresponding channel's
+          rawvalue field; you can re-map axes at this point (device
+          coordinate Y goes into the Z channel, for example).  You should
+          set the changed flag, to indicate there's a new value there.
+
+
+                                                                         78
+
+
+
+
+
+               Next, the higher-level code takes your rawvalue and
+          subtracts the centerpoint.  If the channel is in accumlate mode,
+          it checks if the absolute value of the data is less than
+          deadzone; if it is, it truncates it to zero.  If the channel is
+          not in accumulate mode, the data is compared to the oldvalue
+          field; if it's within plus or minus deadzone of it, the data is
+          ignored.
+
+               Once the value has been centered and deadzoned, it is
+          multiplied by the scale and divided by the range.  If accumulate
+          is set, the resulting value is multiplied by the elapsed time in
+          milliseconds and then divided by 1000 to convert to seconds.
+
+          Buttonmaps
+
+               Some 2D devices (such as mice and joysticks) can be used as
+          6D devices, by using their buttons to map their input axes to the
+          6 possible degrees of freedom.  Such devices should set their
+          nbuttons field to zero (or at least to the number of buttons that
+          will not be used for mapping).  They should also set their
+          buttonmap field to point to a default set of axis mappings.
+
+               The buttonmap field is a pointer to a two-dimensional array. 
+          Each row of the array corresponds to a button combination; on a
+          two-button device, row 0 is for no buttons down, row 1 is for the
+          first button down, row 2 is for the second button down and row
+          three is for both buttons down.  There are two columns in the
+          array, the first of which contains the index of the channel that
+          the input device's X value should be stored in, and the second of
+          which contains the index of the Y channel.
+
+          For example,
+
+               static vrl_Buttonmap default_map =
+                                  { { YROT, Z }, { X, Y }, { ZROT, XROT }, { X, Y }};
+
+          Would mean that when no buttons are down, the device's X axis
+          corresponds to a Y rotation, and its Y channel to a Z
+          translation.  When the first button is down, the device's X axis
+          corresponds to an X translation, and its Y axis to a Y
+          translation, and so on.
+
+               The application can change the buttonmap field (using
+          vrl_DeviceSetButtonmap()) to point to a different set of
+          mappings.
+
+               One thing to watch out for: since only two channels at a
+          time are active, the others should have their rawvalue set equal
+          to their centerpoint, and their changed flags set; otherwise,
+          they'll retain whatever values they had last time a particular
+          button combination was active.
+
+
+                                                                         79
+
+
+
+
+
+          Output
+
+               Some devices are capable of tactile or auditory feedback;
+          those that are should set the outfunc field in the vrl_Device
+          struct to point to a function that does the actual work, and set
+          the noutput_channels field to the number of output channels the
+          device has.  Such a function for our mythical ATS device might
+          look like this:
+
+               int vrl_SpaceballOutput(vrl_Device *dev, int parm1, vrl_Scalar parm2)
+                                  {
+                                  [...]
+                                  }
+
+                 The parm1 parameter is the output channel number, and parm2 is
+          the value to output (in the range 0 to 255).  The routine should
+          return 0 on success and non-zero on failure, although those
+          values are not currently used or reported.
+

@@ -1,0 +1,105 @@
+From - Mon Apr 13 21:01:57 1998
+Path: ifi.uio.no!news-feed.ifi.uio.no!howland.erols.net!feed1.news.erols.com!winter.news.erols.com!not-for-mail
+From: "Russ Williams" <russ@algorithm.demon.co.uk>
+Newsgroups: comp.graphics.algorithms,rec.games.programmer,comp.lang.asm.x86
+Subject: Re: challenge: Can You Optimize This?!
+Date: 13 Apr 1998 18:19:31 GMT
+Organization: none
+Lines: 84
+Approved: <johnfine@erols.com>
+Message-ID: <6gtkvj$2ab$1@winter.news.erols.com>
+References: <6gr1pp$45q$1@nntp1.ba.best.com>
+NNTP-Posting-Host: 207-172-240-118.s55.as2.bsd.erols.com
+X-Trace: winter.news.erols.com 892491571 2379 207.172.240.118 (13 Apr 1998 18:19:31 GMT)
+X-Complaints-To: abuse@erols.com
+X-Newsreader: Microsoft Outlook Express 4.72.2106.4
+X-MimeOLE: Produced By Microsoft MimeOLE V4.72.2106.4
+X-UIDL: 7e0b680c54
+Content-Length: 2246
+X-Mozilla-Status: 0801
+Xref: ifi.uio.no comp.graphics.algorithms:66879 rec.games.programmer:188313 comp.lang.asm.x86:67478
+
+Matti Antero Dahlbom wrote in message <6gr1pp$45q$1@nntp1.ba.best.com>...
+[...]
+>;eax      transfer
+>;ebx   -     |     -     |     ty     |    tx
+>;ecx      tyLower        |      0     |   count
+>;edx      txLower        |   txHiAdd  |    ty
+>;esi      txLoAdd        |      0     |  tyHiAdd
+>;edi    whole edi points to the screen region
+>;ebp    whole ebp points to the texture map
+[...]
+> textInner:       add ecx,[Data]               ;update tylower - pairs
+>in (u)
+>                      mov ax,[ebp+ebx*2]   ;read pixel - pairs in (v)
+>                      adc edx,esi                ;update tyhigher and
+>txlower - pairs in (u)
+>                      adc bl,ch                ;update txhigher - pairs
+>in (v)
+>                      mov [edi],ax           ;write pixel - pairs in (u)
+>
+>                      mov bh,dl                ;copy tyhigher - pairs in
+>(v)
+>                      add edi,2                ;move to next pixel -
+>pairs in (u)
+>                      and ebx,7f7fh           ;and off extras - pairs in
+>(v)
+>                      dec cl                    ;dec counter - pairs in
+>(u)
+>                      jnz textInner           ;loop - pairs in (v)
+>
+>5 ticks on a Pentium, no AGI stalls - whoa?
+
+More like 10:
+1u    add ecx,[Data]
+2u    mov ax,[ebp+ebx*2]
+3u    adc edx,esi
+4u    adc bl,ch
+5u    mov [edi],ax
+7u    mov bh,dl
+7v    add edi,2
+8u    and ebx,7f7fh
+8v    dec cl
+9v    jnz textInner
++1 clock for the taken jump
+
+>i WANNA see you outdo me, because i KNOW you can.
+>(never was a real GURU...=)
+
+OK, how about:
+
+(The data is 4 bytes/texel - the high word is a copy of the low
+word, to eliminate the need to shift).
+
+@top:
+1u    mov [edi],eax
+1v    add ecx,esp
+2u    adc edx,esi
+2v    mov eax,[ebp+ebx*4]
+3u    adc bl,ch
+3v    and eax,0x0000FFFF
+4u    mov bh,dl
+4v    add edi,4
+5u    and ebx,0x00007F7F
+5v    add ecx,esp
+6u    dec cl
+6v    jz @exit
+7u    adc edx,esi
+7v    mov esp,[ebp+ebx*4]
+8u    adc bl,ch
+8v    and esp,0xFFFF0000
+9u    mov bh,dl
+9v    or eax,esp
+10u    and ebx,0x00007F7F
+10v    mov esp,[Data]
+11v    jmp @top
+@exit
+
+Not for a PPro/P-II, obviously, with all those partial register
+stalls.
+
+---
+Russ
+
+
+

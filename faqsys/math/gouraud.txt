@@ -1,0 +1,88 @@
+Warning: this homepage works only with netscape 2.0 or higher
+
+                              Gouraud shading
+
+Warning: some knowledge about vectors required
+
+Types of shading
+
+Shading is the change in saturation on a surface because of reflection.
+Shading depends on the properties of the surface and the angle between
+surface, light source and your eyes There are three types of shading which
+are commonly used in computer graphic programs.
+
+Flat shading
+
+This type of shading is very simple and fast. The object you are to shade
+is divided in a lot of flat surfaces. You take the normal on a surface (a
+normal is a vector perpendicular on the surface) and you compute the angle
+between the light source vector (the direction in which the light shines)
+and the normal. This angle is then translated to a shade. So every surface
+has one shade. For example when you have 16 shades, 0 being the dullest and
+16 the brightest, you divide them between 0 and x degrees. x is an angle
+between 0 and 90 degrees. Why 90? Because light can't go around a corner. A
+smaller x means a smaller spot of light (hotspot).
+
+Phong shading
+
+Phong shading produces the best results but is real slow. What you do is,
+you calculate the normal on every point of the surface. Now you will
+ask:"How am I supposed to calculate the normal of a point?". Well, that's
+impossible. But you can make a plane consisting of adjacent points and take
+the normal of that plane. Next you shade all points the same way as with
+flat shading. Of course there are a lot of methods to make it faster, but I
+haven't looked at them yet.
+
+Gouraud shading
+
+After flat and before phong comes gouraud shading. With gouraud shading you
+divide the object into flat triangles. Each triangle has of course three
+vertices. From each vertex you take the normal. Same problem: how do you
+calculate the normal of a point. Not. In this case you take the average
+direction of the triangle normals of the triangles of which the vertex is a
+part. After you did that, you shade the vertices and you interpolate the
+shading over the triangle. The easiest and fastest way of doing this is:
+
+   * Trace the edges. You know where the edges begin and end. You also know
+     the light intensity of those points, so it's easy to calculate dY/dX
+     and dI/dX of the edges and calculate the edge and the colors along the
+     edge.
+   * Trace the scanlines. By tracing the edges, you have acquired all
+     starting points, ending points, starting intensities and ending
+     intensities of the triangles scanlines. So all you have to do is fill
+     up the lines between the edges.
+
+Tracing the scanlines can be a problem. When you use a floating-point
+divide per scanline, it'll run like a snail. To overcome this, you can use
+Bresenham, DDA or setup a DIV-table.
+
+   * Bresenham uses no DIVs at all, but the time it takes to draw one pixel
+     is longer than the other methods. See some code.
+   * Digital Differential Analyser. DDA uses IDIVs, but as you might know
+     IDIVs are much faster than DIVs or FDIVs. This technique is called
+     fixed point. It means that you give a pre-determined amount of bits to
+     the integer and the fraction of the number.
+     Example:
+          Take 10 bits and divide them between integer and fraction:
+          111111.1111 e.g. 0000010100 makes 1.25.
+
+     Converting from floating point to fixed is just a matter of
+     multiplying with 2number of fraction bits and casting it into an
+     integer. But beware of the fact that you have less bits for the
+     integer part.
+     From fixed point to normal integer is done by adding 2(number of
+     fraction bits)-1 and shifting the bits fraction places to the right.
+     Code is available.
+   * Division table. This is essentially the same as DDA, but now you don't
+     do the division. Instead you look it up in an array. Only to be used
+     on a processor that doesn't divide faster than it does a memory
+     lookup.
+
+Soon: MMX Code!
+Download render.zip. This is a gouraud shaded and texture mapped vector
+engine. It was made by Peter Zijlstra (peter@mcs.nl) and me. x86, FPU and
+VESA 1.2 required.
+---------------------------------------------------------------------------
+Go back to my homepage.
+
+This page was made by Marijn Meijles

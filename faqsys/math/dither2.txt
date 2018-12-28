@@ -1,0 +1,146 @@
+From - Mon Apr 13 20:27:07 1998
+Path: ifi.uio.no!news-feed.ifi.uio.no!howland.erols.net!cpk-news-hub1.bbnplanet.com!news.bbnplanet.com!news1.bellglobal.com!garnet.nbnet.nb.ca!news.unb.ca!sol.sun.csd.unb.ca!y82s1
+From: GLYPH <y82s1@unb.ca>
+Newsgroups: comp.os.ms-windows.programmer.graphics,comp.programming,comp.graphics.algorithms
+Subject: Re: Error Diffusion Dithering
+Date: Tue, 7 Apr 1998 23:29:31 -0300
+Organization: University of New Brunswick
+Lines: 53
+Message-ID: <Pine.SOL.3.96.980407231314.29441B-100000@sol.sun.csd.unb.ca>
+References: <352332A4.6500@ms7.hinet.net>
+NNTP-Posting-Host: sol-alt1.unb.ca
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Sender: y82s1@sol.sun.csd.unb.ca
+To: Yuen-Chang Sun <ycsun@ms7.hinet.net>
+In-Reply-To: <352332A4.6500@ms7.hinet.net>
+Xref: ifi.uio.no comp.os.ms-windows.programmer.graphics:28834 comp.programming:65049 comp.graphics.algorithms:66632
+
+On Wed, 1 Apr 1998, Yuen-Chang Sun wrote:
+
+> Could anybody show me or point me to the
+> error diffusion dithering algorithm?  I
+> now have to write a program to convert
+> 24-bit bitmaps to 8-bit ones.  THE PALETTE
+> IS GIVEN, so all I have to do is dither.
+> I think this should be a commonly used
+> algorithm, isn't it?  Please help me!
+> Thank you in advance.
+> 
+
+
+The *nicest possible* dither is as follows:
+For each pixel
+{
+ find closest color (A) in palette to 24-bit color (C)
+
+ find second-closest color (B) in palette to 24-bit color (C)
+
+ minimize the function Dist((z*A + (1-z)*B),C) over z, where Dist computes
+ the perceived distance between two colors (use your favorite method for
+ computing color distances and solve the minimization with your favorite
+ math program)
+
+ if (z > 1), set z = 1
+
+ compute Poisson(x,y,z) where x and y are the co-ordinates of the pixel,
+ and Poisson(,,z) is an image such that a fraction of the pixels (z)
+ return 0 (off) and the other fraction (1-z) return 1 (on), and such that
+ the pixels which are on are as far apart from each other as possible.
+ (a pseudo monte-carlo distribution will do fine, and even a random
+ distribution looks okay)
+
+ if Poisson(x,y,z) returns 0, use color A.  Else, use color B.
+}
+
+There is no possible better looking dither.  Methods such as F-S and stuff
+causes errors to bleed across pixels.  This method does not.  F-S and such
+can cause speckly areas with several ugly looking spattered colors where
+you wouldn't want them.  This method does not.
+
+         - GLYPH
+
+ E-Mail <y82s1@unb.ca>
+     or <graham_fyffe@hotmail.com>
+
+------------------
+
+Shameless plug for my web page:
+<http://www.geocities.com/CollegePark/9315>
+
+======================================NEW===========================================
+
+From - Mon Apr 13 20:27:18 1998
+Path: ifi.uio.no!news-feed.ifi.uio.no!howland.erols.net!cpk-news-hub1.bbnplanet.com!news.bbnplanet.com!gatech!news.cis.uab.edu!not-for-mail
+From: Kenneth Sloan <sloan@cis.uab.edu>
+Newsgroups: comp.os.ms-windows.programmer.graphics,comp.programming,comp.graphics.algorithms
+Subject: Re: Error Diffusion Dithering
+Followup-To: comp.graphics.algorithms
+Date: 07 Apr 1998 23:28:21 -0500
+Organization: CIS, University of Alabama at Birmingham
+Lines: 58
+Message-ID: <t7emz97x95.fsf@cis.uab.edu>
+References: <352332A4.6500@ms7.hinet.net> <Pine.SOL.3.96.980407231314.29441B-100000@sol.sun.csd.unb.ca>
+NNTP-Posting-Host: docena.cis.uab.edu
+X-Newsreader: Gnus v5.4.37/XEmacs 19.15
+Xref: ifi.uio.no comp.os.ms-windows.programmer.graphics:28835 comp.programming:65061 comp.graphics.algorithms:66640
+
+GLYPH <y82s1@unb.ca> writes:
+
+> The *nicest possible* dither is as follows:
+> For each pixel
+> {
+>  find closest color (A) in palette to 24-bit color (C)
+> 
+>  find second-closest color (B) in palette to 24-bit color (C)
+> 
+>  minimize the function Dist((z*A + (1-z)*B),C) over z, 
+
+this method does not produce an accurate rendition of colors which lie
+in the interior of a tetrahedron determined by 4 nearby pallette colors.
+
+Consider a pallette of 6 colors:
+
+ Red,Green,Blue,Yellow,Cyan,Magenta,White,Black
+
+Now consider a large gray area of the image.  Every pixel will ask for
+the same Gray.  Every pixel will ask for the same two colors in the
+pallette (say...Red and Blue).  The area will be appear to be a medium
+intensity shade of purple.  It is probable that the intensity and the
+hue of the perceived area will be incorrect.
+(if you think this is a cartoon example - you are right, but the effect
+is the same, on a smaller scale, everywhere in any pallette).
+
+A properly implemented version of Floyd-Steinberg (or similar method)
+will use at least 4 distinct pallette colors to render such a patch.
+
+Beware - there are a lot of *bad* implementations of error-diffusion
+(especially in color).  It's not trivial to correct the flaws you
+mention - but it can be done.  In particular, I recommend limiting the
+magnitude of the accumulated error (to cut down on "blooming") and
+adding a small ordered-dither component (to break up classic
+error-diffusion textures).  Many people recommend limiting the pallette
+colors to consider to those very close to the target color in Intensity
+- but I think this may just be a cheap way to consider perceptual
+distance (well...I'm not so sure about that, so...) Texture is a
+particularly rich area for further work - there are interesting "design
+handles" which can be made available so that the (inevitable) dithering
+textures are either minimized...or used as a separate channel in the
+rendered image.  For example, one of my students did some preliminary
+experimentation on methods which try to impose a dithering texture which
+agrees with the local image gradient (that is, the textures attempted to
+reinforce edges in the original).
+
+"nicest possible" is a slippery term.  Different people have different
+ideas about what "error" needs to be minimized (and what textures are
+objectionable).  Techniques which work well on certain size pallettes,
+and certain final image resolutions - work not at all at other size
+pallettes and resolutions.  You need to be very careful about specifying
+an observer model before making claims about "nicest possible".
+
+-- 
+Kenneth Sloan                                        sloan@cis.uab.edu
+Computer and Information Sciences                       (205) 934-2213
+University of Alabama at Birmingham                 FAX (205) 934-5473
+Birmingham, AL 35294-1170   http://www.cis.uab.edu/info/faculty/sloan/
+
